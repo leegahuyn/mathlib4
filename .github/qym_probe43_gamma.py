@@ -11,6 +11,9 @@ VARIANTS = {
     "gamma_revert_decide",
     "gamma_entry_coe",
     "gamma_entry_invexpl",
+    "gamma_entry_solve",
+    "gamma_membership_norm",
+    "gamma_entry_simp_all",
 }
 
 HEADER = """theorem gammaTwo_matrix_eq_one_or_neg_one_of_mem_fd_fixed
@@ -35,6 +38,23 @@ ENTRY_FACTS = """  have h00 : ((gamma 0 0 : ℤ) : ZMod 2) = 1 :=
     (CongruenceSubgroup.Gamma_mem.mp hGamma).2.2.1
   have h11 : ((gamma 1 1 : ℤ) : ZMod 2) = 1 :=
     (CongruenceSubgroup.Gamma_mem.mp hGamma).2.2.2
+"""
+
+ENTRY_01_10 = """  have h01 : ((gamma 0 1 : ℤ) : ZMod 2) = 0 :=
+    (CongruenceSubgroup.Gamma_mem.mp hGamma).2.1
+  have h10 : ((gamma 1 0 : ℤ) : ZMod 2) = 0 :=
+    (CongruenceSubgroup.Gamma_mem.mp hGamma).2.2.1
+"""
+
+SIMP_SET = """CongruenceSubgroup.Gamma_mem,
+        Matrix.SpecialLinearGroup.SL2_inv_expl,
+        Matrix.SpecialLinearGroup.coe_mul,
+        Matrix.mul_fin_two,
+        ModularGroup.S, ModularGroup.T"""
+
+CASE_SPLIT = """  all_goals
+    rcases ‹(_ ∨ _) ∧ _› with ⟨hMatrix, _⟩
+    rcases hMatrix with rfl | rfl
 """
 
 GAMMA_REVERT_DECIDE = HEADER + CLASSIFY + """  all_goals
@@ -65,10 +85,30 @@ GAMMA_ENTRY_INVEXPL = HEADER + ENTRY_FACTS + CLASSIFY + """  all_goals
         Matrix.mul_apply, Fin.sum_univ_two] at h00 h01 h10 h11
 """
 
+GAMMA_ENTRY_SOLVE = HEADER + ENTRY_01_10 + CLASSIFY + CASE_SPLIT + f"""    all_goals
+      exfalso
+      solve
+      | norm_num [{SIMP_SET}] at h01
+      | norm_num [{SIMP_SET}] at h10
+"""
+
+GAMMA_MEMBERSHIP_NORM = HEADER + CLASSIFY + CASE_SPLIT + f"""    all_goals
+      exfalso
+      norm_num [{SIMP_SET}] at hGamma
+"""
+
+GAMMA_ENTRY_SIMP_ALL = HEADER + ENTRY_01_10 + CLASSIFY + CASE_SPLIT + f"""    all_goals
+      exfalso
+      simp_all only [{SIMP_SET}, Int.cast_neg, neg_eq_zero, one_ne_zero]
+"""
+
 PROOFS = {
     "gamma_revert_decide": GAMMA_REVERT_DECIDE,
     "gamma_entry_coe": GAMMA_ENTRY_COE,
     "gamma_entry_invexpl": GAMMA_ENTRY_INVEXPL,
+    "gamma_entry_solve": GAMMA_ENTRY_SOLVE,
+    "gamma_membership_norm": GAMMA_MEMBERSHIP_NORM,
+    "gamma_entry_simp_all": GAMMA_ENTRY_SIMP_ALL,
 }
 
 DECL_RE = re.compile(
@@ -113,7 +153,7 @@ def main() -> None:
         raise SystemExit(f"forbidden token audit failed: {forbidden}")
 
     print(json.dumps({
-        "schema": "qym-probe43-gamma-v1",
+        "schema": "qym-probe43-gamma-v2",
         "variant": variant,
         "input_sha256": hashlib.sha256(before).hexdigest(),
         "input_blob": git_blob(before),
