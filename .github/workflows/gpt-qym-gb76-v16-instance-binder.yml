@@ -21,13 +21,13 @@ env:
   QYM: PrimalitySheafVerification/QYM.lean
   OLEAN: .lake/build/lib/lean/PrimalitySheafVerification
   BASE_ERRORS: '76'
-  BASE_WARNINGS: '360'
-  BASE_SHA256: 6c5939797480dbd6a610b32ea408617a0384be30d342e59fadf2fa2dd5061795
-  BASE_BLOB: d9dd84141deea6251214e27b5668c2bb6b67d4f6
-  EXPECTED_CANDIDATE_SHA256: 7ea415739b891a8de75ff42738d03c707a0f7052b7e1c131eb5064e82457a22a
-  EXPECTED_CANDIDATE_BLOB: c2676b8d07df5f39030c772ceaffbd7db804753e
+  BASE_WARNINGS: '358'
+  BASE_SHA256: fada22264b6618467f89d436ddacff27453db1242769717d5e7a386682d4efb3
+  BASE_BLOB: 29d446743036dccd5d9ad8757c351b39d526cfa9
+  EXPECTED_CANDIDATE_SHA256: 7ee25cfadbb1e9ca872ae7648830adb1ba67a3e6c4b52e197c561d0d73c8cb49
+  EXPECTED_CANDIDATE_BLOB: 1a6a08d254ba2c81ea36c0c7220989facfdad7e8
   SOURCE_RUN_ID: '32281700927'
-  SOURCE_ARTIFACT_ID: '9376998174'
+  SOURCE_ARTIFACT_ID: '9377474435'
   VARIANT: instance_binder
   OUT_ROOT: /tmp/qym-gb76-v16
 
@@ -62,7 +62,7 @@ jobs:
           test -s "$result"
           test -s "$source"
           test "$(jq -r '.run_id' "$result")" = "$SOURCE_RUN_ID"
-          test "$(jq -r '.variant' "$result")" = normsq_simpa
+          test "$(jq -r '.variant' "$result")" = normsq_simp_then_rw
           test "$(jq -r '.full_compile_executed' "$result")" = true
           test "$(jq -r '.strict_improvement' "$result")" = true
           test "$(jq -r '.error_headers' "$result")" -eq "$BASE_ERRORS"
@@ -156,11 +156,11 @@ jobs:
               'NEW_PATCHER = Path(".github/qym_patch_gb77_v15.py")':
                   'NEW_PATCHER = Path(".github/qym_patch_gb76_v16.py")',
               'BASE_SHA = "b6f0126c27dfc08b5f81c306a7140f9531fcc3d6ca6b75dd8abbd71101d458fd"':
-                  'BASE_SHA = "6c5939797480dbd6a610b32ea408617a0384be30d342e59fadf2fa2dd5061795"',
+                  'BASE_SHA = "fada22264b6618467f89d436ddacff27453db1242769717d5e7a386682d4efb3"',
               'BASE_BLOB = "c6e8883353b350f22b7f48d955fc5cfa4e61f88f"':
-                  'BASE_BLOB = "d9dd84141deea6251214e27b5668c2bb6b67d4f6"',
+                  'BASE_BLOB = "29d446743036dccd5d9ad8757c351b39d526cfa9"',
               'BASE_ERRORS = 77': 'BASE_ERRORS = 76',
-              'BASE_WARNINGS = 360': 'BASE_WARNINGS = 360',
+              'BASE_WARNINGS = 360': 'BASE_WARNINGS = 358',
               'TARGET = "theorem conj_mul_hyperbolicRightNormal_im"':
                   'TARGET = "section ConditionalSmoothAtlas"',
               'TARGET_END = "/-! ## 2. The actual geometric normal"':
@@ -194,10 +194,10 @@ jobs:
           import re
           import sys
 
-          BASE_SHA256 = "6c5939797480dbd6a610b32ea408617a0384be30d342e59fadf2fa2dd5061795"
-          BASE_BLOB = "d9dd84141deea6251214e27b5668c2bb6b67d4f6"
-          EXPECTED_SHA256 = "7ea415739b891a8de75ff42738d03c707a0f7052b7e1c131eb5064e82457a22a"
-          EXPECTED_BLOB = "c2676b8d07df5f39030c772ceaffbd7db804753e"
+          BASE_SHA256 = "fada22264b6618467f89d436ddacff27453db1242769717d5e7a386682d4efb3"
+          BASE_BLOB = "29d446743036dccd5d9ad8757c351b39d526cfa9"
+          EXPECTED_SHA256 = "7ee25cfadbb1e9ca872ae7648830adb1ba67a3e6c4b52e197c561d0d73c8cb49"
+          EXPECTED_BLOB = "1a6a08d254ba2c81ea36c0c7220989facfdad7e8"
           VARIANT = "instance_binder"
 
           def sha256(data: bytes) -> str:
