@@ -1,0 +1,63 @@
+name: GPT QYM GB79 multibranch observer
+
+on:
+  push:
+    branches:
+      - gpt/qym-gb79-multibranch-observer-20260819
+    paths:
+      - .github/workflows/gpt-qym-gb79-multibranch-observer.yml
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: write
+
+jobs:
+  observe:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: true
+      - name: Capture target workflow runs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .github/qym-frontier
+          tmp="$(mktemp -d)"
+          branches=(
+            'gpt/qym-gb79-v11-edgeparametertransport-20260819'
+            'gpt/qym-gb79-v12-complexnormal-probe-20260819'
+            'gpt/qym-gb79-v13-groupoid-fact-probe-20260819'
+            'gpt/qym-gb79-v13-inverseeta-fibre-20260819'
+            'gpt/qym-gb79-v13-timeout-repair-20260819'
+          )
+          echo '{}' > "$tmp/all.json"
+          for b in "${branches[@]}"; do
+            curl --fail --silent --show-error \
+              -H "Authorization: Bearer $GH_TOKEN" \
+              -H 'Accept: application/vnd.github+json' \
+              --get --data-urlencode "branch=$b" --data-urlencode 'per_page=10' \
+              "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/runs" > "$tmp/runs.json"
+            jq --arg b "$b" --slurpfile r "$tmp/runs.json" \
+              '. + {($b): ($r[0].workflow_runs | map({id,run_number,run_attempt,status,conclusion,event,head_sha,path,name,created_at,updated_at,html_url}) | .[0:10])}' \
+              "$tmp/all.json" > "$tmp/next.json"
+            mv "$tmp/next.json" "$tmp/all.json"
+          done
+          jq -n --arg observed_at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" --slurpfile targets "$tmp/all.json" \
+            '{schema:"qym-gb79-multibranch-observer-v1",observed_at:$observed_at,targets:$targets[0]}' \
+            > .github/qym-frontier/GB79_MULTIBRANCH_LIVE.json
+          cat .github/qym-frontier/GB79_MULTIBRANCH_LIVE.json
+      - name: Persist observation
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .github/qym-frontier/GB79_MULTIBRANCH_LIVE.json
+          git commit -m 'QYM GB79: record live multibranch runs'
+          git push origin "HEAD:gpt/qym-gb79-multibranch-observer-20260819"
