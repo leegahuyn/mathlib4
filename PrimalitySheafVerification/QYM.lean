@@ -44230,8 +44230,10 @@ theorem edgeParameterTransport_hasDerivAt
     (e : QYM.FullCertification.PolygonTraceExtension.PolygonEdge) (t : ℝ) :
     HasDerivAt (QYM.FullCertification.P2NormalGreenExtension.edgeParameterTransport e)
       (e.2.parameterSign : ℝ) t := by
-  simpa [QYM.FullCertification.P2NormalGreenExtension.edgeParameterTransport] using
-    (hasDerivAt_id t).const_mul (e.2.parameterSign : ℝ)
+  change HasDerivAt
+    (fun x : ℝ => (e.2.parameterSign : ℝ) * x)
+    (e.2.parameterSign : ℝ) t
+  simpa using (hasDerivAt_id t).const_mul (e.2.parameterSign : ℝ)
 
 /-- Exact derivative of the transported target curve. -/
 theorem pairedTransportCoordinate_hasDerivAt

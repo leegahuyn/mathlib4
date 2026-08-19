@@ -1,0 +1,14 @@
+{
+  "baseline_error_headers": 79,
+  "candidate_run_id": 32263184255,
+  "error_headers": 78,
+  "lean_exit": 1,
+  "panic_lines": 0,
+  "qym_blob": "029620c5d7085dbc7a11c8eaaa485a67fe9312fe",
+  "qym_sha256": "1a1abeeb248031cd91577034329944caab08fd9f9e6c70f7a913c1dd66e0e714",
+  "schema": "qym-gb79-v11b-independent-verification-v2",
+  "selector_run_id": 32263184255,
+  "true_pass": false,
+  "variant": "change_const_mul",
+  "verified": true
+}
