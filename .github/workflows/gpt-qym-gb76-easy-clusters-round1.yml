@@ -1,0 +1,211 @@
+name: GPT QYM GB76 easy-cluster batch round1
+
+on:
+  push:
+    branches:
+      - gpt/qym-gb76-easy-clusters-round1-20260820
+    paths:
+      - .github/workflows/gpt-qym-gb76-easy-clusters-round1.yml
+      - .github/qym_patch_gb76_easy_round1.py
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: gpt-qym-gb76-easy-clusters-round1
+  cancel-in-progress: true
+
+env:
+  BRANCH: gpt/qym-gb76-easy-clusters-round1-20260820
+  QYM: PrimalitySheafVerification/QYM.lean
+  OLEAN: .lake/build/lib/lean/PrimalitySheafVerification
+  BASE_SHA256: fada22264b6618467f89d436ddacff27453db1242769717d5e7a386682d4efb3
+  BASE_BLOB: 29d446743036dccd5d9ad8757c351b39d526cfa9
+
+jobs:
+  candidate:
+    name: easy-${{ matrix.variant }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        variant: [convert, change, norm_num]
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - name: Gate exact GB76 and patch generator
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF_NAME" = "$BRANCH"
+          test "$(tr -d '\r\n' < lean-toolchain)" = leanprover/lean4:v4.33.0-rc1
+          test "$(sha256sum "$QYM" | awk '{print $1}')" = "$BASE_SHA256"
+          test "$(git hash-object "$QYM")" = "$BASE_BLOB"
+          python3 -m py_compile .github/qym_patch_gb76_easy_round1.py
+          mkdir -p "$OLEAN" "/tmp/qym-easy/${{ matrix.variant }}"
+
+      - name: Install pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT="/tmp/qym-easy/${{ matrix.variant }}"
+          curl --retry 8 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none > "$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          tc="$(tr -d '\r\n' < lean-toolchain)"
+          for attempt in 1 2 3 4 5; do
+            elan toolchain install "$tc" >> "$OUT/toolchain.log" 2>&1 && break
+            sleep $((attempt * 5))
+          done
+          lean --version | tee "$OUT/lean-version.txt"
+          lake --version | tee "$OUT/lake-version.txt"
+          for attempt in 1 2 3 4 5; do
+            lake exe cache get >> "$OUT/mathlib-cache.log" 2>&1 && break
+            sleep $((attempt * 5))
+          done
+
+      - name: Restore completed dependency objects
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: |
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.ilean
+          key: qym-deps-v4-${{ runner.os }}-${{ hashFiles('lean-toolchain','lake-manifest.json','lakefile.lean','PrimalitySheafVerification/Mock2.lean','PrimalitySheafVerification/Mock2_Advanced.lean','PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean','PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean') }}
+          restore-keys: |
+            qym-deps-v3-${{ runner.os }}-
+            qym-probe4-deps-v1-${{ runner.os }}-
+
+      - name: Ensure dependency objects by actual Lean
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT="/tmp/qym-easy/${{ matrix.variant }}"
+          for source in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated; do
+            if [[ ! -s "$OLEAN/$source.olean" || ! -s "$OLEAN/$source.ilean" ]]; then
+              max_errors=1
+              if [[ "$source" = Mock2_FunctionalAnalysis || "$source" = Mock2_FunctionalAnalysis_Integrated ]]; then max_errors=2000; fi
+              rm -f "$OLEAN/$source.olean" "$OLEAN/$source.ilean"
+              lake env lean "-DmaxErrors=$max_errors" -DwarningAsError=false \
+                -o "$OLEAN/$source.olean" -i "$OLEAN/$source.ilean" \
+                "PrimalitySheafVerification/$source.lean" > "$OUT/$source.log" 2>&1
+            fi
+            test -s "$OLEAN/$source.olean"
+            test -s "$OLEAN/$source.ilean"
+          done
+
+      - name: Build cumulative candidate and run authoritative direct Lean
+        shell: bash
+        env:
+          VARIANT: ${{ matrix.variant }}
+        run: |
+          set -euo pipefail
+          OUT="/tmp/qym-easy/$VARIANT"
+          cp "$QYM" "$OUT/QYM.GB76.lean"
+          python3 -B .github/qym_patch_gb76_easy_round1.py \
+            "$OUT/QYM.GB76.lean" "$OUT/QYM.candidate.lean" "$VARIANT"
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          base=Path('/tmp/qym-easy/'+__import__('os').environ['VARIANT']+'/QYM.GB76.lean').read_text()
+          cand=Path('/tmp/qym-easy/'+__import__('os').environ['VARIANT']+'/QYM.candidate.lean').read_text()
+          patterns=[r'\bsorry\b',r'\badmit\b',r'\bunsafe\b',r'\bnative_decide\b',r'Lean\.ofReduceBool',r'maxHeartbeats\s*=\s*0']
+          for p in patterns:
+              assert len(re.findall(p,cand)) == len(re.findall(p,base)), (p,len(re.findall(p,base)),len(re.findall(p,cand)))
+          PY
+          cp "$OUT/QYM.candidate.lean" "$QYM"
+          set +e
+          started="$(date +%s)"
+          lake env lean -DmaxErrors=10000 -DwarningAsError=false "$QYM" > "$OUT/full.log" 2>&1
+          rc=$?
+          ended="$(date +%s)"
+          set -e
+          errors="$(grep -cE '^.*\.lean:[0-9]+:[0-9]+: error' "$OUT/full.log" || true)"
+          warnings="$(grep -cE '^.*\.lean:[0-9]+:[0-9]+: warning' "$OUT/full.log" || true)"
+          panic="$(grep -ciE 'internal error|uncaught exception|panic(!|:| )' "$OUT/full.log" || true)"
+          first="$(grep -m1 -E '^.*\.lean:[0-9]+:[0-9]+: error' "$OUT/full.log" || true)"
+          export rc errors warnings panic first started ended OUT
+          python3 - <<'PY'
+          import hashlib,json,os,pathlib,subprocess
+          out=pathlib.Path(os.environ['OUT']); src=out/'QYM.candidate.lean'; log=out/'full.log'
+          d={'schema':'qym-gb76-easy-round1-v1','authority':'actual full-QYM direct Lean','run_id':int(os.environ['GITHUB_RUN_ID']),'variant':os.environ['VARIANT'],'exit':int(os.environ['rc']),'error_headers':int(os.environ['errors']),'warning_headers':int(os.environ['warnings']),'panic_lines':int(os.environ['panic']),'elapsed_seconds':int(os.environ['ended'])-int(os.environ['started']),'first_error':os.environ['first'] or None,'source_sha256':hashlib.sha256(src.read_bytes()).hexdigest(),'source_blob':subprocess.check_output(['git','hash-object',str(src)],text=True).strip(),'log_sha256':hashlib.sha256(log.read_bytes()).hexdigest()}
+          d['strict_improvement']=d['error_headers']<76 and d['panic_lines']==0
+          d['pass']=d['exit']==0 and d['error_headers']==0 and d['panic_lines']==0
+          (out/'RESULT.json').write_text(json.dumps(d,indent=2)+'\n')
+          print(json.dumps(d,indent=2))
+          PY
+
+      - name: Upload immutable candidate evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-gb76-easy-${{ matrix.variant }}-${{ github.run_id }}
+          path: /tmp/qym-easy/${{ matrix.variant }}
+          if-no-files-found: error
+          retention-days: 30
+
+  selector:
+    name: select-and-freeze
+    if: always()
+    needs: candidate
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: qym-gb76-easy-*-${{ github.run_id }}
+          path: /tmp/downloaded
+          merge-multiple: false
+
+      - name: Select verified best and persist exact source
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,pathlib,shutil,os
+          rows=[]
+          for p in pathlib.Path('/tmp/downloaded').rglob('RESULT.json'):
+              d=json.loads(p.read_text()); rows.append((d['error_headers'],d['warning_headers'],d['variant'],p,d))
+          if not rows: raise SystemExit('no candidate results')
+          rows.sort(key=lambda x:(x[0],x[1],x[2])); _,_,variant,p,best=rows[0]
+          dest=pathlib.Path('.github/qym-frontier/EASY_ROUND1')
+          dest.mkdir(parents=True,exist_ok=True)
+          shutil.copy2(p,dest/'RESULT.json')
+          shutil.copy2(p.parent/'full.log',dest/'full.log')
+          shutil.copy2(p.parent/'QYM.candidate.lean',dest/'QYM_EASY_ROUND1_BEST.lean')
+          (dest/'ALL_RESULTS.json').write_text(json.dumps([r[4] for r in rows],indent=2)+'\n')
+          if best['strict_improvement']:
+              shutil.copy2(p.parent/'QYM.candidate.lean','PrimalitySheafVerification/QYM.lean')
+          print(json.dumps(best,indent=2))
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .github/qym-frontier/EASY_ROUND1 PrimalitySheafVerification/QYM.lean
+          git commit -m "QYM GB76: freeze easy-cluster round1 ${GITHUB_RUN_ID} [skip ci]"
+          for attempt in 1 2 3; do
+            git fetch origin "$BRANCH"
+            git rebase "origin/$BRANCH"
+            git push origin "HEAD:$BRANCH" && exit 0
+            git rebase --abort || true
+            sleep $((attempt * 4))
+          done
+          exit 1
