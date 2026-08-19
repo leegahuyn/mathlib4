@@ -1,0 +1,72 @@
+name: GPT QYM source inspector v3 focused
+
+on:
+  push:
+    branches:
+      - gpt/qym-probe43-observer-20260819
+    paths:
+      - .github/workflows/gpt-qym-source-inspector-v3.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - name: Extract focused declaration contexts
+        shell: bash
+        run: |
+          set -euo pipefail
+          out=.github/qym-probe43-observer/SOURCE_INSPECTION_V3_FOCUSED.txt
+          mkdir -p "$(dirname "$out")"
+          : > "$out"
+
+          extract_first() {
+            label="$1"
+            pattern="$2"
+            printf '\n===== %s =====\n' "$label" >> "$out"
+            hit="$(grep -R -n --include='*.lean' -E "$pattern" PrimalitySheafVerification Mathlib 2>/dev/null | head -n 1 || true)"
+            if [[ -z "$hit" ]]; then
+              echo 'NO MATCH' >> "$out"
+              return
+            fi
+            file="${hit%%:*}"
+            rest="${hit#*:}"
+            line="${rest%%:*}"
+            lo=$((line > 80 ? line - 80 : 1))
+            hi=$((line + 120))
+            printf 'MATCH %s:%s\n' "$file" "$line" >> "$out"
+            sed -n "${lo},${hi}p" "$file" | nl -ba -v "$lo" >> "$out"
+          }
+
+          extract_first 'upperLift definition' '^[[:space:]]*(noncomputable[[:space:]]+)?def[[:space:]]+upperLift\b'
+          extract_first 'SmoothQuotientCompactFunction declaration' '^[[:space:]]*(noncomputable[[:space:]]+)?(def|abbrev|structure)[[:space:]]+SmoothQuotientCompactFunction\b'
+          extract_first 'InverseEtaFixedPhaseCore declaration' '^[[:space:]]*(noncomputable[[:space:]]+)?(def|abbrev|structure)[[:space:]]+InverseEtaFixedPhaseCore\b'
+          extract_first 'GammaTwoCusp declaration' '^[[:space:]]*(inductive|def|abbrev)[[:space:]]+GammaTwoCusp\b'
+          extract_first 'gammaTwoCuspScaling definition' '^[[:space:]]*(noncomputable[[:space:]]+)?def[[:space:]]+gammaTwoCuspScaling\b'
+          extract_first 'coe_smul_of_det_pos lemma' '^[[:space:]]*(theorem|lemma)[[:space:]]+coe_smul_of_det_pos\b'
+          extract_first 'coe_specialLinearGroup_apply theorem' '^[[:space:]]*(theorem|lemma)[[:space:]]+coe_specialLinearGroup_apply\b'
+
+          printf '\n===== ALL upperLift HIT LINES =====\n' >> "$out"
+          grep -R -n --include='*.lean' 'upperLift' PrimalitySheafVerification Mathlib 2>/dev/null | head -n 120 >> "$out" || true
+          printf '\n===== ALL gammaTwoCuspScaling HIT LINES =====\n' >> "$out"
+          grep -R -n --include='*.lean' 'gammaTwoCuspScaling' PrimalitySheafVerification Mathlib 2>/dev/null | head -n 120 >> "$out" || true
+          test -s "$out"
+
+      - name: Persist focused inspection
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .github/qym-probe43-observer/SOURCE_INSPECTION_V3_FOCUSED.txt
+          git commit -m 'QYM inspector v3: persist focused source contexts'
+          git push origin HEAD:gpt/qym-probe43-observer-20260819
