@@ -1,4 +1,5 @@
 name: GPT QYM GB79 V11.1 edge targeted
+# retrigger: edge-targeted-2
 on:
   push:
     branches: [gpt/qym-gb79-v11-1-edge-targeted-20260819]
