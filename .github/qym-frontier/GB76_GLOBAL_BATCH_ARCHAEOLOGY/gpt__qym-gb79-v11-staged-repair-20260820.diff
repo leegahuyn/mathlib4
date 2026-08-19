@@ -1,0 +1,681 @@
+diff --git a/PrimalitySheafVerification/QYM.lean b/PrimalitySheafVerification/QYM.lean
+index 29d4467430..43aee9530d 100644
+--- a/PrimalitySheafVerification/QYM.lean
++++ b/PrimalitySheafVerification/QYM.lean
+@@ -43827,280 +43827,244 @@ theorem edgeParameterSet_mem_nhds_of_regular
+       have ht' : (0 : ℝ) < t := by
+         simpa [QYM.FullCertification.P2NormalGreenExtension.regularEdgeParameterSet,
+           QYM.FullCertification.P2NormalGreenExtension.edgeParameterSet,
+           QYM.FullCertification.P2NormalGreenExtension.edgeEndpointSet,
+           Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.modularTileEdgeParameterSet,
+           Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.modularTileEdgeEndpoints] using ht
+       exact Ici_mem_nhds ht'
+   | rightVerticalSegment =>
+       have ht' : (0 : ℝ) < t := by
+         simpa [QYM.FullCertification.P2NormalGreenExtension.regularEdgeParameterSet,
+           QYM.FullCertification.P2NormalGreenExtension.edgeParameterSet,
+           QYM.FullCertification.P2NormalGreenExtension.edgeEndpointSet,
+           Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.modularTileEdgeParameterSet,
+           Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.modularTileEdgeEndpoints] using ht
+       exact Ici_mem_nhds ht'
+ 
+ /-- The circular-arc regularity hypothesis is exactly strict membership in
+ `(-1,1)`. -/
+ theorem circularArc_strict_bounds {q : Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.GammaTwoRightCoset} {t : ℝ}
+     (ht : t ∈ QYM.FullCertification.P2NormalGreenExtension.regularEdgeParameterSet
+       (q, Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.GammaTwoModularTileEdge.circularArc)) :
+     (-1 : ℝ) < t ∧ t < 1 := by
+   simpa [QYM.FullCertification.P2NormalGreenExtension.regularEdgeParameterSet,
+     QYM.FullCertification.P2NormalGreenExtension.edgeParameterSet,
+     QYM.FullCertification.P2NormalGreenExtension.edgeEndpointSet,
+     Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.modularTileEdgeParameterSet,
+     Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.modularTileEdgeEndpoints] using ht
+ 
+ /-- The radicand in the circular formula is strictly positive at every
+ regular parameter. -/
+ theorem circularArc_radicand_pos {q : Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.GammaTwoRightCoset} {t : ℝ}
+     (ht : t ∈ QYM.FullCertification.P2NormalGreenExtension.regularEdgeParameterSet
+       (q, Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.GammaTwoModularTileEdge.circularArc)) :
+     0 < 1 - (t / 2) ^ 2 := by
+   have hb := circularArc_strict_bounds ht
+   have htAdd : 0 < t + 1 := by
+     linarith [hb.1]
+   have hp : 0 < (1 - t) * (t + 1) :=
+     mul_pos (sub_pos.mpr hb.2) htAdd
+   nlinarith
+ 
+ /-! ## 3. Exact derivatives of the three base curves -/
+ 
+ /-- Exact derivative of the circular radicand. -/
+ theorem hasDerivAt_circularRadicand (t : ℝ) :
+     HasDerivAt (fun s : ℝ => 1 - (s / 2) ^ 2) (-t / 2) t := by
+   have hg0 := (hasDerivAt_const t (1 : ℝ)).sub
+       (((hasDerivAt_id t).div_const 2).pow 2)
+   have hg : HasDerivAt
+       (fun s : ℝ => 1 - (s / 2) ^ 2)
+       (0 - (2 : ℝ) * (t / 2) ^ (2 - 1) * (1 / 2)) t :=
+     hg0.congr_of_eventuallyEq
+       (Filter.Eventually.of_forall (fun s => by
+         change 1 - (s / 2) ^ 2 = 1 - (s / 2) ^ 2
+         rfl))
+   have hcoeff :
+       (0 - (2 : ℝ) * (t / 2) ^ (2 - 1) * (1 / 2)) = -t / 2 := by
+     ring
+   rw [hcoeff] at hg
+   exact hg
+ 
+ /-- Exact derivative of the positive circular square-root branch. -/
+ theorem hasDerivAt_circularHeight {q : Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.GammaTwoRightCoset} {t : ℝ}
+     (ht : t ∈ QYM.FullCertification.P2NormalGreenExtension.regularEdgeParameterSet
+       (q, Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.GammaTwoModularTileEdge.circularArc)) :
+     HasDerivAt
+       (fun s : ℝ => Real.sqrt (1 - (s / 2) ^ 2))
+       (-t / (4 * Real.sqrt (1 - (t / 2) ^ 2))) t := by
+   have hpos := circularArc_radicand_pos ht
+   have h := (hasDerivAt_circularRadicand t).sqrt hpos.ne'
+   convert h using 1
+   field_simp [Real.sqrt_ne_zero'.mpr hpos]
+   <;> ring
+ 
+ /-- Exact ambient derivative of all three base edge constructors. -/
+ theorem baseEdgeCoordinate_hasDerivAt
+     (e : QYM.FullCertification.PolygonTraceExtension.PolygonEdge) {t : ℝ}
+     (ht : t ∈ QYM.FullCertification.P2NormalGreenExtension.regularEdgeParameterSet e) :
+     HasDerivAt (baseEdgeCoordinate e.2)
+       (baseEdgeVelocity e.2 t) t := by
+-  letI : AddCommGroup ℂ := Complex.addCommGroup
+   rcases e with ⟨q, k⟩
+   cases k with
+   | circularArc =>
+       have hx :
+           HasDerivAt (fun s : ℝ => ((s / 2 : ℝ) : ℂ))
+             (((1 : ℝ) / 2 : ℝ) : ℂ) t :=
+         ((hasDerivAt_id t).div_const 2).ofReal_comp
+       have hy :
+           HasDerivAt
+             (fun s : ℝ =>
+               ((Real.sqrt (1 - (s / 2) ^ 2) : ℝ) : ℂ))
+             ((-t / (4 * Real.sqrt (1 - (t / 2) ^ 2)) : ℝ) : ℂ) t :=
+         (hasDerivAt_circularHeight ht).ofReal_comp
+-      have h0 := hx.add (hy.mul_const Complex.I)
+-      have hfun :
+-          ((fun s : ℝ => ((s / 2 : ℝ) : ℂ)) +
+-            fun s : ℝ =>
+-              ((Real.sqrt (1 - (s / 2) ^ 2) : ℝ) : ℂ) * Complex.I) =
+-            (fun s : ℝ =>
+-              Complex.mk (s / 2) (Real.sqrt (1 - (s / 2) ^ 2))) := by
+-        funext s
+-        apply Complex.ext <;> simp
+       change HasDerivAt
+         (fun s : ℝ =>
+           Complex.mk (s / 2) (Real.sqrt (1 - (s / 2) ^ 2)))
+         (Complex.mk ((1 : ℝ) / 2)
+           (-t / (4 * Real.sqrt (1 - (t / 2) ^ 2)))) t
+-      rw [← hfun]
+-      simpa [Complex.mk_eq_add_mul_I] using h0
++      simpa [Complex.mk_eq_add_mul_I] using
++        hx.add (hy.mul_const Complex.I)
+   | leftVerticalSegment =>
+-      let c : ℂ :=
+-        Complex.mk (-((1 : ℝ) / 2)) (Real.sqrt 3 / 2)
+-      have hs : HasDerivAt (fun s : ℝ => (s : ℂ)) (1 : ℂ) t :=
+-        (hasDerivAt_id t).ofReal_comp
+-      have h0 := (hasDerivAt_const t c).add (hs.mul_const Complex.I)
+-      have hfun :
+-          ((fun _ : ℝ => c) + fun s : ℝ => (s : ℂ) * Complex.I) =
+-            (fun s : ℝ =>
+-              Complex.mk (-((1 : ℝ) / 2)) (Real.sqrt 3 / 2 + s)) := by
+-        funext s
+-        apply Complex.ext <;> simp [c]
++      have h :=
++        ((((hasDerivAt_id (t : ℂ)).const_mul Complex.I).comp_ofReal).const_add
++            ((-((1 : ℝ) / 2) : ℂ) +
++              ((Real.sqrt 3 / 2 : ℝ) : ℂ) * Complex.I))
+       change HasDerivAt
+         (fun s : ℝ =>
+           Complex.mk (-((1 : ℝ) / 2)) (Real.sqrt 3 / 2 + s))
+         Complex.I t
+-      rw [← hfun]
+-      simpa using h0
++      simpa [baseEdgeCoordinate, baseEdgeVelocity,
++        Complex.mk_eq_add_mul_I, add_mul,
++        mul_comm, mul_left_comm, mul_assoc] using h
+   | rightVerticalSegment =>
+-      let c : ℂ :=
+-        Complex.mk ((1 : ℝ) / 2) (Real.sqrt 3 / 2)
+-      have hs : HasDerivAt (fun s : ℝ => (s : ℂ)) (1 : ℂ) t :=
+-        (hasDerivAt_id t).ofReal_comp
+-      have h0 := (hasDerivAt_const t c).add (hs.mul_const Complex.I)
+-      have hfun :
+-          ((fun _ : ℝ => c) + fun s : ℝ => (s : ℂ) * Complex.I) =
+-            (fun s : ℝ =>
+-              Complex.mk ((1 : ℝ) / 2) (Real.sqrt 3 / 2 + s)) := by
+-        funext s
+-        apply Complex.ext <;> simp [c]
++      have h :=
++        ((((hasDerivAt_id (t : ℂ)).const_mul Complex.I).comp_ofReal).const_add
++            ((((1 : ℝ) / 2 : ℝ) : ℂ) +
++              ((Real.sqrt 3 / 2 : ℝ) : ℂ) * Complex.I))
+       change HasDerivAt
+         (fun s : ℝ =>
+           Complex.mk ((1 : ℝ) / 2) (Real.sqrt 3 / 2 + s))
+         Complex.I t
+-      rw [← hfun]
+-      simpa using h0
++      simpa [baseEdgeCoordinate, baseEdgeVelocity,
++        Complex.mk_eq_add_mul_I, add_mul,
++        mul_comm, mul_left_comm, mul_assoc] using h
+ 
+ /-! ## 4. Transport through the selected coset representative -/
+ 
+ /-- The real matrix underlying the selected integral coset representative. -/
+ def selectedRepresentativeRealMatrix
+     (q : Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.GammaTwoRightCoset) : GL (Fin 2) ℝ :=
+   ((Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.gammaTwoCosetRep q : SL(2, ℤ)) : GL (Fin 2) ℝ)
+ 
+ /-- Affine denominator of the selected representative in the ambient chart. -/
+ def selectedRepresentativeDenom
+     (q : Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.GammaTwoRightCoset) (w : ℂ) : ℂ :=
+   UpperHalfPlane.denom (selectedRepresentativeRealMatrix q) w
+ 
+ /-- Coordinate action of the selected representative on the upper half-plane. -/
+ def selectedRepresentativeCoordinate
+     (q : Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.GammaTwoRightCoset) (z : ℍ) : ℂ :=
+   ((Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.gammaTwoCosetRep q • z : ℍ) : ℂ)
+ 
+ /-- Ambient-chart version of `selectedRepresentativeCoordinate`. -/
+ def selectedRepresentativeChart
+     (q : Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.GammaTwoRightCoset) (w : ℂ) : ℂ :=
+   selectedRepresentativeCoordinate q (UpperHalfPlane.ofComplex w)
+ 
+ /-- A selected representative still has determinant one, so its exact complex
+ derivative is the reciprocal square of its affine denominator. -/
+ theorem selectedRepresentativeChart_hasStrictDerivAt
+     (q : Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.GammaTwoRightCoset) (z : ℍ) :
+     HasStrictDerivAt (selectedRepresentativeChart q)
+       (1 / selectedRepresentativeDenom q (z : ℂ) ^ 2) (z : ℂ) := by
+-  letI : AddCommGroup ℂ := Complex.addCommGroup
+-  have hdet : (selectedRepresentativeRealMatrix q).val.det = 1 := by
+-    simpa [selectedRepresentativeRealMatrix] using
+-      (Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.gammaTwoCosetRep q :
+-        SL(2, ℝ)).det_coe
+-  have hpos : 0 < (selectedRepresentativeRealMatrix q).val.det := by
+-    rw [hdet]
+-    norm_num
+-  have hraw :=
+-    UpperHalfPlane.hasStrictDerivAt_smul
+-      (g := selectedRepresentativeRealMatrix q) hpos z
+-  have hchart :
+-      selectedRepresentativeChart q =
+-        (fun w : ℂ =>
+-          ((selectedRepresentativeRealMatrix q • UpperHalfPlane.ofComplex w : ℍ) : ℂ)) := by
+-    funext w
+-    change
+-      ((Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.gammaTwoCosetRep q •
+-          UpperHalfPlane.ofComplex w : ℍ) : ℂ) =
+-        ((selectedRepresentativeRealMatrix q • UpperHalfPlane.ofComplex w : ℍ) : ℂ)
+-    rw [MulAction.compHom_smul_def]
+-    rfl
+-  rw [hchart]
+-  rw [hdet] at hraw
+-  simpa [selectedRepresentativeDenom] using hraw
++  simpa [selectedRepresentativeChart, selectedRepresentativeCoordinate,
++    selectedRepresentativeDenom, selectedRepresentativeRealMatrix,
++    one_div] using
++      (UpperHalfPlane.hasStrictDerivAt_smul
++        (g := selectedRepresentativeRealMatrix q) (by
++          change 0 <
++            (((Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.gammaTwoCosetRep q :
++              SL(2, ℤ)) : GL (Fin 2) ℝ)).val.det
++          exact
++            Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseIntrinsicAdjointCutoff.integralMoebius_det_pos
++              (Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.gammaTwoCosetRep q)) z)
+ 
+ /-- Fully explicit complex coordinate of an actual selected polygon edge. -/
+ def explicitActualEdgeCoordinate (e : QYM.FullCertification.PolygonTraceExtension.PolygonEdge) (t : ℝ) : ℂ :=
+   selectedRepresentativeChart e.1 (baseEdgeCoordinate e.2 t)
+ 
+ /-- Fully explicit velocity of an actual selected polygon edge. -/
+ def explicitActualEdgeVelocity (e : QYM.FullCertification.PolygonTraceExtension.PolygonEdge) (t : ℝ) : ℂ :=
+   baseEdgeVelocity e.2 t /
+     selectedRepresentativeDenom e.1 (baseEdgeCoordinate e.2 t) ^ 2
+ 
+ /-- Pointwise identification of the existing total curve and the explicit
+ ambient formula on the genuine parameter set. -/
+ theorem actualEdgeCoordinate_eq_explicit_of_mem
+     (e : QYM.FullCertification.PolygonTraceExtension.PolygonEdge) {t : ℝ} (ht : t ∈ QYM.FullCertification.P2NormalGreenExtension.edgeParameterSet e) :
+     QYM.FullCertification.P2NormalGreenExtension.actualEdgeCoordinate e t = explicitActualEdgeCoordinate e t := by
+   rw [QYM.FullCertification.P2NormalGreenExtension.actualEdgeCoordinate, QYM.FullCertification.P2NormalGreenExtension.actualEdgePoint_of_mem e ht]
+   change
+     ((Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.gammaTwoCosetRep e.1 •
+         Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.modularTileEdgeParam e.2 ⟨t, ht⟩ : ℍ) : ℂ) = _
+   simp only [explicitActualEdgeCoordinate, selectedRepresentativeChart,
+     selectedRepresentativeCoordinate]
+   rw [← coe_modularTileEdgeParam_eq_baseEdgeCoordinate e.2 ⟨t, ht⟩,
+     UpperHalfPlane.ofComplex_apply]
+ 
+ /-- The old total curve and explicit formula agree throughout a neighbourhood
+ of every regular parameter. -/
+ theorem actualEdgeCoordinate_eventuallyEq_explicit
+     (e : QYM.FullCertification.PolygonTraceExtension.PolygonEdge) {t : ℝ}
+     (ht : t ∈ QYM.FullCertification.P2NormalGreenExtension.regularEdgeParameterSet e) :
+     QYM.FullCertification.P2NormalGreenExtension.actualEdgeCoordinate e =ᶠ[𝓝 t] explicitActualEdgeCoordinate e := by
+   filter_upwards [edgeParameterSet_mem_nhds_of_regular e ht] with s hs
+   exact actualEdgeCoordinate_eq_explicit_of_mem e hs
+ 
+ /-- The explicit actual curve has the displayed ordinary derivative. -/
+ theorem explicitActualEdgeCoordinate_hasDerivAt
+     (e : QYM.FullCertification.PolygonTraceExtension.PolygonEdge) {t : ℝ}
+     (ht : t ∈ QYM.FullCertification.P2NormalGreenExtension.regularEdgeParameterSet e) :
+     HasDerivAt (explicitActualEdgeCoordinate e)
+       (explicitActualEdgeVelocity e t) t := by
+   have htSet : t ∈ QYM.FullCertification.P2NormalGreenExtension.edgeParameterSet e := ht.1
+   let z : ℍ := Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.modularTileEdgeParam e.2 ⟨t, htSet⟩
+   have hz : (z : ℂ) = baseEdgeCoordinate e.2 t := by
+     exact coe_modularTileEdgeParam_eq_baseEdgeCoordinate e.2 ⟨t, htSet⟩
+   have hOuter :=
+     (selectedRepresentativeChart_hasStrictDerivAt e.1 z).hasDerivAt.complexToReal_fderiv
+   rw [hz] at hOuter
+   have hBase := baseEdgeCoordinate_hasDerivAt e ht
+   have hComp := hOuter.comp_hasDerivAt t hBase
+   change HasDerivAt
+     (fun x : ℝ =>
+       selectedRepresentativeChart e.1 (baseEdgeCoordinate e.2 x))
+     (explicitActualEdgeVelocity e t) t
+   simpa [explicitActualEdgeCoordinate, explicitActualEdgeVelocity,
+     Function.comp_def, hz, ContinuousLinearMap.smul_apply,
+     smul_eq_mul, div_eq_mul_inv, mul_comm, mul_left_comm, mul_assoc] using hComp
+ 
+ /-- Ordinary derivative of the existing total edge coordinate. -/
+ theorem actualEdgeCoordinate_hasDerivAt
+     (e : QYM.FullCertification.PolygonTraceExtension.PolygonEdge) {t : ℝ}
+     (ht : t ∈ QYM.FullCertification.P2NormalGreenExtension.regularEdgeParameterSet e) :
+     HasDerivAt (QYM.FullCertification.P2NormalGreenExtension.actualEdgeCoordinate e)
+       (explicitActualEdgeVelocity e t) t := by
+   exact (explicitActualEdgeCoordinate_hasDerivAt e ht).congr_of_eventuallyEq
+     (actualEdgeCoordinate_eventuallyEq_explicit e ht)
+ 
+ /-- The `derivWithin` stored in the old API is exactly the explicit formula. -/
+ theorem actualEdgeVelocity_eq_explicit
+     (e : QYM.FullCertification.PolygonTraceExtension.PolygonEdge) {t : ℝ}
+     (ht : t ∈ QYM.FullCertification.P2NormalGreenExtension.regularEdgeParameterSet e) :
+     QYM.FullCertification.P2NormalGreenExtension.actualEdgeVelocity e t = explicitActualEdgeVelocity e t := by
+   unfold QYM.FullCertification.P2NormalGreenExtension.actualEdgeVelocity
+   rw [derivWithin_of_mem_nhds
+     (edgeParameterSet_mem_nhds_of_regular e ht)]
+   exact (actualEdgeCoordinate_hasDerivAt e ht).deriv
+ 
+ /-- Equivalent derivative statement whose derivative is written with the old
+ `actualEdgeVelocity` name. -/
+ theorem actualEdgeCoordinate_hasDerivAt_actualEdgeVelocity
+     (e : QYM.FullCertification.PolygonTraceExtension.PolygonEdge) {t : ℝ}
+     (ht : t ∈ QYM.FullCertification.P2NormalGreenExtension.regularEdgeParameterSet e) :
+@@ -44153,164 +44117,162 @@ theorem actualEdgeVelocity_rightVerticalSegment
+     baseEdgeCoordinate] using
+       (actualEdgeVelocity_eq_explicit
+         (q, Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.GammaTwoModularTileEdge.rightVerticalSegment) ht)
+ 
+ /-! ## 6. Differentiate the exact paired-edge identity -/
+ 
+ /-- Source curve obtained by acting on the old actual edge point. -/
+ def actedSourceCoordinate (e : QYM.FullCertification.PolygonTraceExtension.PolygonEdge) (t : ℝ) : ℂ :=
+   Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGreenBoundary.gammaTwoActionCoordinate e.pairingElement (QYM.FullCertification.P2NormalGreenExtension.actualEdgePoint e t)
+ 
+ /-- Target curve with the exact signed real-parameter transport. -/
+ def pairedTransportCoordinate (e : QYM.FullCertification.PolygonTraceExtension.PolygonEdge) (t : ℝ) : ℂ :=
+   QYM.FullCertification.P2NormalGreenExtension.actualEdgeCoordinate e.paired (QYM.FullCertification.P2NormalGreenExtension.edgeParameterTransport e t)
+ 
+ /-- The proved point-pairing identity holds on a whole neighbourhood of a
+ regular parameter, not merely at the parameter itself. -/
+ theorem actedSourceCoordinate_eventuallyEq_pairedTransportCoordinate
+     (e : QYM.FullCertification.PolygonTraceExtension.PolygonEdge) {t : ℝ}
+     (ht : t ∈ QYM.FullCertification.P2NormalGreenExtension.regularEdgeParameterSet e) :
+     actedSourceCoordinate e =ᶠ[𝓝 t] pairedTransportCoordinate e := by
+   filter_upwards [edgeParameterSet_mem_nhds_of_regular e ht] with s hs
+   have h := congrArg (fun z : ℍ => (z : ℂ))
+     (QYM.FullCertification.P2NormalGreenExtension.actualEdgePoint_pairing e hs)
+   simpa [actedSourceCoordinate, pairedTransportCoordinate,
+     Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGreenBoundary.gammaTwoActionCoordinate, QYM.FullCertification.P2NormalGreenExtension.actualEdgeCoordinate] using h
+ 
+ /-- Exact derivative of the acted source curve, expressed using `d1`. -/
+ theorem actedSourceCoordinate_hasDerivAt
+     (e : QYM.FullCertification.PolygonTraceExtension.PolygonEdge) {t : ℝ}
+     (ht : t ∈ QYM.FullCertification.P2NormalGreenExtension.regularEdgeParameterSet e) :
+     HasDerivAt (actedSourceCoordinate e)
+       (d1 (Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGreenBoundary.gammaTwoActionCoordinate e.pairingElement)
+         (QYM.FullCertification.P2NormalGreenExtension.actualEdgePoint e t) (QYM.FullCertification.P2NormalGreenExtension.actualEdgeVelocity e t)) t := by
+   have hEdge := actualEdgeCoordinate_hasDerivAt_actualEdgeVelocity e ht
+   have hOuter :=
+     (gammaTwoMoebiusChart_hasStrictDerivAt e.pairingElement
+       (QYM.FullCertification.P2NormalGreenExtension.actualEdgePoint e t)).hasDerivAt.complexToReal_fderiv
+   have hComp := hOuter.comp_hasDerivAt t hEdge
+   have hD1 :
+       d1 (Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGreenBoundary.gammaTwoActionCoordinate e.pairingElement)
+           (QYM.FullCertification.P2NormalGreenExtension.actualEdgePoint e t) (QYM.FullCertification.P2NormalGreenExtension.actualEdgeVelocity e t) =
+         QYM.FullCertification.P2NormalGreenExtension.actualEdgeVelocity e t /
+           inverseEtaPaperOrbitDenom e.pairingElement
+             (QYM.FullCertification.P2NormalGreenExtension.actualEdgePoint e t) ^ 2 := by
+     change
+       d1 (gammaTwoMoebiusCoordinate e.pairingElement)
+           (QYM.FullCertification.P2NormalGreenExtension.actualEdgePoint e t)
+           (QYM.FullCertification.P2NormalGreenExtension.actualEdgeVelocity e t) =
+         QYM.FullCertification.P2NormalGreenExtension.actualEdgeVelocity e t /
+           inverseEtaPaperOrbitDenom e.pairingElement
+             (QYM.FullCertification.P2NormalGreenExtension.actualEdgePoint e t) ^ 2
+     exact d1_gammaTwoMoebiusCoordinate e.pairingElement
+       (QYM.FullCertification.P2NormalGreenExtension.actualEdgePoint e t)
+       (QYM.FullCertification.P2NormalGreenExtension.actualEdgeVelocity e t)
+   have hComp' :
+       HasDerivAt (actedSourceCoordinate e)
+         (QYM.FullCertification.P2NormalGreenExtension.actualEdgeVelocity e t /
+           inverseEtaPaperOrbitDenom e.pairingElement
+             (QYM.FullCertification.P2NormalGreenExtension.actualEdgePoint e t) ^ 2) t := by
+     change HasDerivAt
+       (fun x : ℝ =>
+         Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGreenBoundary.gammaTwoActionCoordinate
+           e.pairingElement
+           (QYM.FullCertification.P2NormalGreenExtension.actualEdgePoint e x))
+       (QYM.FullCertification.P2NormalGreenExtension.actualEdgeVelocity e t /
+         inverseEtaPaperOrbitDenom e.pairingElement
+           (QYM.FullCertification.P2NormalGreenExtension.actualEdgePoint e t) ^ 2) t
+     simpa [actedSourceCoordinate, gammaTwoMoebiusChart,
+       gammaTwoMoebiusCoordinate, Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGreenBoundary.gammaTwoActionCoordinate,
+       QYM.FullCertification.P2NormalGreenExtension.actualEdgeCoordinate, Function.comp_def,
+       ContinuousLinearMap.smul_apply, smul_eq_mul, div_eq_mul_inv,
+       mul_comm, mul_left_comm, mul_assoc,
+       UpperHalfPlane.ofComplex_apply] using hComp
+   exact hComp'.congr_deriv hD1.symm
+ 
+ /-- The real parameter transport has the declared constant derivative. -/
+ theorem edgeParameterTransport_hasDerivAt
+     (e : QYM.FullCertification.PolygonTraceExtension.PolygonEdge) (t : ℝ) :
+     HasDerivAt (QYM.FullCertification.P2NormalGreenExtension.edgeParameterTransport e)
+       (e.2.parameterSign : ℝ) t := by
+-  change HasDerivAt
+-    (fun x : ℝ => (e.2.parameterSign : ℝ) * x)
+-    (e.2.parameterSign : ℝ) t
+-  simpa using (hasDerivAt_id t).const_mul (e.2.parameterSign : ℝ)
++  simpa [QYM.FullCertification.P2NormalGreenExtension.edgeParameterTransport] using
++    (hasDerivAt_id t).const_mul (e.2.parameterSign : ℝ)
+ 
+ /-- Exact derivative of the transported target curve. -/
+ theorem pairedTransportCoordinate_hasDerivAt
+     (e : QYM.FullCertification.PolygonTraceExtension.PolygonEdge) {t : ℝ}
+     (ht : t ∈ QYM.FullCertification.P2NormalGreenExtension.regularEdgeParameterSet e) :
+     HasDerivAt (pairedTransportCoordinate e)
+       (((e.2.parameterSign : ℝ) : ℂ) *
+         QYM.FullCertification.P2NormalGreenExtension.actualEdgeVelocity e.paired (QYM.FullCertification.P2NormalGreenExtension.edgeParameterTransport e t)) t := by
+   have ht' :
+       QYM.FullCertification.P2NormalGreenExtension.edgeParameterTransport e t ∈
+         QYM.FullCertification.P2NormalGreenExtension.regularEdgeParameterSet e.paired :=
+     (QYM.FullCertification.P2NormalGreenExtension.edgeParameterTransport_mem_regular_iff e t).2 ht
+   have hPaired :=
+     actualEdgeCoordinate_hasDerivAt_actualEdgeVelocity e.paired ht'
+   have hComp := hPaired.scomp t (edgeParameterTransport_hasDerivAt e t)
+   change HasDerivAt
+     (fun x : ℝ =>
+       QYM.FullCertification.P2NormalGreenExtension.actualEdgeCoordinate e.paired
+         (QYM.FullCertification.P2NormalGreenExtension.edgeParameterTransport e x))
+     (((e.2.parameterSign : ℝ) : ℂ) *
+       QYM.FullCertification.P2NormalGreenExtension.actualEdgeVelocity e.paired
+         (QYM.FullCertification.P2NormalGreenExtension.edgeParameterTransport e t)) t
+   simpa [pairedTransportCoordinate, Function.comp_def,
+     Complex.real_smul] using hComp
+ 
+ /-- The concrete paired-edge velocity chain rule at every regular parameter. -/
+ theorem pairedEdgeVelocityChainRuleAt
+     (e : QYM.FullCertification.PolygonTraceExtension.PolygonEdge) {t : ℝ}
+     (ht : t ∈ QYM.FullCertification.P2NormalGreenExtension.regularEdgeParameterSet e) :
+     QYM.FullCertification.P2NormalGreenExtension.PairedEdgeVelocityChainRuleAt e t := by
+   unfold QYM.FullCertification.P2NormalGreenExtension.PairedEdgeVelocityChainRuleAt
+   exact (actedSourceCoordinate_hasDerivAt e ht).unique
+     ((pairedTransportCoordinate_hasDerivAt e ht).congr_of_eventuallyEq
+       (actedSourceCoordinate_eventuallyEq_pairedTransportCoordinate e ht))
+ 
+ /-- Unconditional inhabitant of the previously isolated global residual. -/
+ theorem actualPairedEdgeVelocityChainRule :
+     QYM.FullCertification.P2NormalGreenExtension.ActualPairedEdgeVelocityChainRule := by
+   intro e t ht
+   exact pairedEdgeVelocityChainRuleAt e ht
+ 
+ /-! ## 7. A nonvanishing audit for the explicit tangent -/
+ 
+ /-- The base tangent is nonzero for every regular parameter. -/
+ theorem baseEdgeVelocity_ne_zero
+     (e : QYM.FullCertification.PolygonTraceExtension.PolygonEdge) {t : ℝ}
+     (ht : t ∈ QYM.FullCertification.P2NormalGreenExtension.regularEdgeParameterSet e) :
+     baseEdgeVelocity e.2 t ≠ 0 := by
+   rcases e with ⟨q, k⟩
+   cases k with
+   | circularArc =>
+       intro h
+       have hre := congrArg Complex.re h
+       norm_num [baseEdgeVelocity] at hre
+   | leftVerticalSegment =>
+       simpa [baseEdgeVelocity] using Complex.I_ne_zero
+   | rightVerticalSegment =>
+       simpa [baseEdgeVelocity] using Complex.I_ne_zero
+ 
+ /-- The selected affine denominator never vanishes on an upper-half-plane
+ point. -/
+ theorem selectedRepresentativeDenom_ne_zero
+     (q : Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.GammaTwoRightCoset) (z : ℍ) :
+     selectedRepresentativeDenom q (z : ℂ) ≠ 0 := by
+   exact UpperHalfPlane.denom_ne_zero (selectedRepresentativeRealMatrix q) z
+ 
+ /-- Hence every actual regular edge tangent is nonzero. -/
+ theorem actualEdgeVelocity_ne_zero
+     (e : QYM.FullCertification.PolygonTraceExtension.PolygonEdge) {t : ℝ}
+     (ht : t ∈ QYM.FullCertification.P2NormalGreenExtension.regularEdgeParameterSet e) :
+     QYM.FullCertification.P2NormalGreenExtension.actualEdgeVelocity e t ≠ 0 := by
+   rw [actualEdgeVelocity_eq_explicit e ht]
+   have htSet : t ∈ QYM.FullCertification.P2NormalGreenExtension.edgeParameterSet e := ht.1
+   let z : ℍ := Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.modularTileEdgeParam e.2 ⟨t, htSet⟩
+   have hz : (z : ℂ) = baseEdgeCoordinate e.2 t :=
+     coe_modularTileEdgeParam_eq_baseEdgeCoordinate e.2 ⟨t, htSet⟩
+   exact div_ne_zero (baseEdgeVelocity_ne_zero e ht)
+     (pow_ne_zero 2 (by
+       rw [← hz]
+       exact selectedRepresentativeDenom_ne_zero e.1 z))
+@@ -44670,192 +44632,179 @@ namespace QYM.FullCertification.P2ExplicitEdgeNormalExtension
+ 
+ 
+ 
+ 
+ 
+ open Mock2FA.PaperCorrections.AutomorphicSobolev
+ open Mock2FA.PaperCorrections.AutomorphicSobolev.HalfIntegralMultiplier
+ open Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators
+ open QYM.Mock2EtaCovariantDerivativeExtension
+ open QYM.Mock2EtaCovariantDerivativeExtension.Geometry
+ 
+ /-!
+ # The explicit outward hyperbolic unit normal
+ 
+ For the actual regular edge velocity `v`, let `s` be the stored boundary
+ orientation sign and put `w = s v`.  The outward normal is the right normal
+ to this oriented tangent,
+ 
+ `(y / ||w||) * (-I) * w`.
+ 
+ The preceding producer proves `v != 0`, so this formula has no singularity on
+ the regular parameter set.  We prove, without a geometric certificate input,
+ that it has hyperbolic length one, is orthogonal to the old actual velocity,
+ and lies on the strict right/outward side of the stored orientation.
+ 
+ The second half proves the paired negative-normal law for the already
+ available real-chart derivative `d1`.  The old proposition
+ `N.HasOppositePairedNormalPushforward` was deliberately stated with the
+ manifold derivative `mfderiv`.  Its value on this actual normal is shown to be
+ equivalent to one explicit chart-compatibility equality.  Thus no equality
+ between two derivative APIs is silently assumed.
+ -/
+ 
+ /-! ## 1. Oriented tangent and right-normal algebra -/
+ 
+ /-- The actual tangent multiplied by the frozen boundary-orientation sign. -/
+ def orientedActualEdgeVelocity (e : QYM.FullCertification.PolygonTraceExtension.PolygonEdge) (t : ℝ) : ℂ :=
+   (((e.orientationSign : ℝ) : ℂ) * QYM.FullCertification.P2NormalGreenExtension.actualEdgeVelocity e t)
+ 
+ /-- The oriented actual tangent is nonzero at every regular parameter. -/
+ theorem orientedActualEdgeVelocity_ne_zero
+     (e : QYM.FullCertification.PolygonTraceExtension.PolygonEdge) {t : ℝ}
+     (ht : t ∈ QYM.FullCertification.P2NormalGreenExtension.regularEdgeParameterSet e) :
+     orientedActualEdgeVelocity e t ≠ 0 := by
+   apply mul_ne_zero
+   · rcases e with ⟨q, k⟩
+     cases k <;>
+       norm_num [Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.GammaTwoActualPolygonEdge.orientationSign,
+         Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.GammaTwoModularTileEdge.orientationSign]
+   · exact QYM.FullCertification.P2ExplicitEdgeVelocityExtension.actualEdgeVelocity_ne_zero e ht
+ 
+ /-- Euclidean right normal rescaled to have hyperbolic length one at height
+ `y`.  It is used only when `w` is nonzero. -/
+ def hyperbolicRightNormal (y : ℝ) (w : ℂ) : ℂ :=
+   (((y / ‖w‖ : ℝ) : ℂ) * (-Complex.I)) * w
+ 
+ /-- Its Euclidean norm is exactly `y`; hence its hyperbolic norm is one. -/
+ theorem norm_hyperbolicRightNormal {y : ℝ} (hy : 0 ≤ y)
+     {w : ℂ} (hw : w ≠ 0) :
+     ‖hyperbolicRightNormal y w‖ = y := by
+   have hn : 0 < ‖w‖ := norm_pos_iff.mpr hw
+   rw [hyperbolicRightNormal, norm_mul, norm_mul,
+     Complex.norm_real, Real.norm_of_nonneg (div_nonneg hy hn.le),
+     norm_neg, Complex.norm_I, mul_one, div_mul_cancel₀ y hn.ne']
+ 
+ /-- Rotation by `-I` is orthogonal to the original vector. -/
+ theorem conj_mul_hyperbolicRightNormal_re (y : ℝ) (w : ℂ) :
+     (star w * hyperbolicRightNormal y w).re = 0 := by
+   rw [hyperbolicRightNormal,
+     show star w * ((((y / ‖w‖ : ℝ) : ℂ) * (-Complex.I)) * w) =
+         (((y / ‖w‖ : ℝ) : ℂ) * (-Complex.I)) *
+           (star w * w) by ring]
+   simp [Complex.mul_re] <;> ring_nf <;> simp
+ 
+ /-- The same right normal is orthogonal to `v` when the oriented vector is
+ any real multiple `s v`. -/
+ theorem conj_mul_hyperbolicRightNormal_realMultiple_re
+     (y s : ℝ) (v : ℂ) :
+     (star v *
+       hyperbolicRightNormal y (((s : ℝ) : ℂ) * v)).re = 0 := by
+-  by_cases hs : s = 0
+-  · subst s
+-    simp [hyperbolicRightNormal]
+-  · have horth :=
+-      conj_mul_hyperbolicRightNormal_re y (((s : ℝ) : ℂ) * v)
+-    have hstar :
+-        star (((s : ℝ) : ℂ) * v) = ((s : ℝ) : ℂ) * star v := by
+-      simp [map_mul, Complex.star_def, mul_comm]
+-    rw [hstar] at horth
+-    have hscaled :
+-        s * (star v *
+-          hyperbolicRightNormal y (((s : ℝ) : ℂ) * v)).re = 0 := by
+-      simpa [Complex.mul_re, mul_assoc] using horth
+-    exact (mul_eq_zero.mp hscaled).resolve_left hs
++  simp [hyperbolicRightNormal, Complex.mul_re, Complex.mul_im]
++  ring_nf
+ 
+ /-- Exact signed-area formula for the right normal. -/
+ theorem conj_mul_hyperbolicRightNormal_im {y : ℝ} {w : ℂ}
+     (hw : w ≠ 0) :
+     (star w * hyperbolicRightNormal y w).im =
+       -y * ‖w‖ := by
+   have hn : ‖w‖ ≠ 0 := norm_ne_zero_iff.mpr hw
+-  have hstar : star w * w = (Complex.normSq w : ℂ) := by
+-    simpa [Complex.star_def] using
+-      (Complex.normSq_eq_conj_mul_self (z := w)).symm
+   rw [hyperbolicRightNormal,
+     show star w * ((((y / ‖w‖ : ℝ) : ℂ) * (-Complex.I)) * w) =
+         (((y / ‖w‖ : ℝ) : ℂ) * (-Complex.I)) *
+-          (star w * w) by ring,
+-    hstar]
+-  simp [Complex.mul_re, Complex.mul_im]
+-  rw [Complex.normSq_eq_norm_sq]
+-  field_simp [hn] <;> ring
++          (star w * w) by ring]
++  simp only [Complex.mul_im, Complex.ofReal_re, Complex.ofReal_im,
++    Complex.neg_re, Complex.neg_im, Complex.I_re, Complex.I_im,
++    neg_zero, mul_zero, zero_mul, sub_zero, zero_sub,
++    pow_two]
++  field_simp [hn]
++  <;> ring_nf
+ 
+ /-! ## 2. The actual geometric normal and its three unconditional laws -/
+ 
+ /-- Concrete outward hyperbolic unit normal on every actual polygon edge.
+ Only its values at regular parameters are advertised. -/
+ def actualOutwardHyperbolicUnitNormal : QYM.FullCertification.P2NormalGreenExtension.EdgeNormalField :=
+   fun e t => hyperbolicRightNormal (QYM.FullCertification.P2NormalGreenExtension.actualEdgePoint e t).im
+     (orientedActualEdgeVelocity e t)
+ 
+ /-- Strict right-side condition relative to the stored boundary orientation.
+ For a positively oriented planar boundary, this is the outward side. -/
+ def IsStrictlyOutwardForStoredOrientation
+     (normal : QYM.FullCertification.P2NormalGreenExtension.EdgeNormalField) : Prop :=
+   ∀ (e : QYM.FullCertification.PolygonTraceExtension.PolygonEdge) (t : ℝ),
+     t ∈ QYM.FullCertification.P2NormalGreenExtension.regularEdgeParameterSet e →
+       (star (orientedActualEdgeVelocity e t) * normal e t).im < 0
+ 
+ /-- The concrete field has hyperbolic unit length. -/
+ theorem actualOutwardHyperbolicUnitNormal_isHyperbolicUnit :
+     QYM.FullCertification.P2NormalGreenExtension.IsHyperbolicUnitEdgeField actualOutwardHyperbolicUnitNormal := by
+   intro e t ht
+   exact norm_hyperbolicRightNormal
+     (le_of_lt (QYM.FullCertification.P2NormalGreenExtension.actualEdgePoint e t).im_pos)
+     (orientedActualEdgeVelocity_ne_zero e ht)
+ 
+ /-- The concrete field is orthogonal to the exact `derivWithin` velocity. -/
+ theorem actualOutwardHyperbolicUnitNormal_isOrthogonal :
+     QYM.FullCertification.P2NormalGreenExtension.IsOrthogonalToActualEdgeVelocity
+       actualOutwardHyperbolicUnitNormal := by
+   intro e t ht
+   exact conj_mul_hyperbolicRightNormal_realMultiple_re
+     (QYM.FullCertification.P2NormalGreenExtension.actualEdgePoint e t).im (e.orientationSign : ℝ)
+       (QYM.FullCertification.P2NormalGreenExtension.actualEdgeVelocity e t)
+ 
+ /-- The concrete field is strictly on the right/outward side of every stored
+ oriented edge. -/
+ theorem actualOutwardHyperbolicUnitNormal_isStrictlyOutward :
+     IsStrictlyOutwardForStoredOrientation
+       actualOutwardHyperbolicUnitNormal := by
+   intro e t ht
+   change
+     (star (orientedActualEdgeVelocity e t) *
+       hyperbolicRightNormal
+         (QYM.FullCertification.P2NormalGreenExtension.actualEdgePoint e t).im
+         (orientedActualEdgeVelocity e t)).im < 0
+   rw [conj_mul_hyperbolicRightNormal_im
+     (orientedActualEdgeVelocity_ne_zero e ht)]
+   have hp := mul_pos (QYM.FullCertification.P2NormalGreenExtension.actualEdgePoint e t).im_pos
+     (norm_pos_iff.mpr (orientedActualEdgeVelocity_ne_zero e ht))
+   nlinarith
+ 
+ /-! ## 3. Conformal scale under the exact paired-edge map -/
+ 
+ /-- The `d1` formula under the Green-boundary name. -/
+ theorem d1_gammaTwoActionCoordinate
+     (γ : Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.GammaTwo) (z : ℍ) (ξ : ℂ) :
+     d1 (Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGreenBoundary.gammaTwoActionCoordinate γ) z ξ =
+       ξ / inverseEtaPaperOrbitDenom γ z ^ 2 := by
+   change d1 (gammaTwoMoebiusCoordinate γ) z ξ =
+     ξ / inverseEtaPaperOrbitDenom γ z ^ 2
+   exact d1_gammaTwoMoebiusCoordinate γ z ξ
+ 
+ /-- The paired point has the usual exact Möbius height scale. -/
+ theorem paired_actualEdgePoint_im
+     (e : QYM.FullCertification.PolygonTraceExtension.PolygonEdge) {t : ℝ}
+     (ht : t ∈ QYM.FullCertification.P2NormalGreenExtension.edgeParameterSet e) :
+     (QYM.FullCertification.P2NormalGreenExtension.actualEdgePoint e.paired (QYM.FullCertification.P2NormalGreenExtension.edgeParameterTransport e t)).im =
+       (QYM.FullCertification.P2NormalGreenExtension.actualEdgePoint e t).im /
+         Complex.normSq
+           (inverseEtaPaperOrbitDenom e.pairingElement
+             (QYM.FullCertification.P2NormalGreenExtension.actualEdgePoint e t)) := by
+   rw [← QYM.FullCertification.P2NormalGreenExtension.actualEdgePoint_pairing e ht]
+   simpa [inverseEtaPaperOrbitDenom] using
+     (ModularGroup.im_smul_eq_div_normSq
+       (e.pairingElement : SL(2, ℤ)) (QYM.FullCertification.P2NormalGreenExtension.actualEdgePoint e t))
+ 
+ /-- The norm of the stored-oriented velocity equals the norm of the raw
+ actual velocity: every stored orientation sign is `+1` or `-1`. -/
+ theorem norm_orientedActualEdgeVelocity
+     (e : QYM.FullCertification.PolygonTraceExtension.PolygonEdge) (t : ℝ) :

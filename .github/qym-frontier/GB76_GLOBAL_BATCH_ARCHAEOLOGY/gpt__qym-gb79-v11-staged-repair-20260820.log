@@ -1,0 +1,5 @@
+677ceb53b6 (origin/gpt/qym-gb79-v11-staged-repair-20260820) QYM GB79 V11: launch staged full-QYM repair and parallel V12 preparation
+01c245616c QYM GB79 V11: add staged monotonic direct-Lean repair driver
+baac47f1b9 (origin/gpt/qym-gb83-v10-instance-repair-20260819) QYM GB83 V10: launch overlapping direct-Lean repair tournament
+e131aa5c4f QYM GB83 V10: add direct-Lean tournament driver
+7c54ab4530 QYM GB83 V10: add instance/determinant repair variants

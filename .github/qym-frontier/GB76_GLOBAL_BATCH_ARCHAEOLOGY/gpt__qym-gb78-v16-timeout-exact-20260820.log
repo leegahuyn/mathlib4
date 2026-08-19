@@ -1,0 +1,5 @@
+59cb24712c (origin/gpt/qym-gb78-v16-timeout-exact-20260820) QYM V16: launch exact deterministic-timeout repair
+87db2322c9 QYM V16: add exact timeout verification driver
+03d239701e QYM V16: add exact timeout repair patcher
+ae29cfaca1 (origin/gpt/qym-gb79-v11-2-edgeparametertransport-20260819) QYM V11.2: promote verified 78-error frontier
+a632366c19 QYM V11.2: normalize edgeParameterTransport derivative instances

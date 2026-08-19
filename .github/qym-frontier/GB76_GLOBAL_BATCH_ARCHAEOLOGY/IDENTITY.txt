@@ -1,0 +1,6 @@
+work_branch=gpt/qym-gb76-global-batch-repair-20260820
+work_sha=5f04fa495dbc9b97baa0d966c5c87d47bfd746bc
+base_branch=gpt/qym-gb77-v14-right-normal-im-20260820
+base_commit=1873f7db158bfe77390fb32231af6ede356a5db9
+qym_sha256=fada22264b6618467f89d436ddacff27453db1242769717d5e7a386682d4efb3
+qym_blob=29d446743036dccd5d9ad8757c351b39d526cfa9

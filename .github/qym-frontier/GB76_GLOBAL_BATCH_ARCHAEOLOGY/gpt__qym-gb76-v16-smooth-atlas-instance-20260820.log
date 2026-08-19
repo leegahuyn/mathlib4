@@ -1,0 +1,4 @@
+1cdfd884c6 (origin/gpt/qym-gb76-v16-smooth-atlas-instance-20260820) ci(qym): persist authoritative V16 direct-Lean evidence
+592472b81a ci(qym): launch authoritative GB76 V16 persistence run
+54db54d77f ci(qym): retarget V16 to exact canonical GB76
+5717ced252 ci(qym): launch GB76 V16 smooth-atlas instance binder
