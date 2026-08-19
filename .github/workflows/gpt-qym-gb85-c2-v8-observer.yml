@@ -1,5 +1,5 @@
 name: GPT QYM GB85 C2 v8 observer
-# trigger: locate-all-v8-runs-2
+# trigger: cancel-duplicate-v8-run-3
 
 on:
   push:
@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  actions: read
+  actions: write
   contents: write
 
 jobs:
@@ -21,8 +21,8 @@ jobs:
       GH_TOKEN: ${{ github.token }}
       REPO: leegahuyn/mathlib4
       OBSERVER_BRANCH: gpt/qym-gb85-c2-v8-observer-20260819
-      TARGET_BRANCH: gpt/qym-gb85-c2-v8-convert-20260819
-      TARGET_WORKFLOW: gpt-qym-gb85-c2-v8.yml
+      PRIMARY_RUN: "32242484026"
+      DUPLICATE_RUN: "32242630422"
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
@@ -30,22 +30,35 @@ jobs:
           fetch-depth: 0
           persist-credentials: true
 
-      - name: Locate all exact v8 runs
+      - name: Cancel only the exact pending duplicate
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p .github/qym-v8-observer
-          payload="$(gh api -H 'Accept: application/vnd.github+json' "repos/$REPO/actions/workflows/$TARGET_WORKFLOW/runs?branch=$TARGET_BRANCH&event=push&per_page=20")"
-          jq --arg observed_at "$(date -u +%FT%TZ)" '{observed_at:$observed_at,runs:[.workflow_runs[] | {id,name,path,head_sha,run_number,status,conclusion,html_url,created_at,updated_at,run_attempt}] | sort_by(.run_number)}' <<<"$payload" > .github/qym-v8-observer/RUNS.json
-          test "$(jq '.runs | length' .github/qym-v8-observer/RUNS.json)" -ge 1
-          cat .github/qym-v8-observer/RUNS.json
+          primary="$(gh api -H 'Accept: application/vnd.github+json' "repos/$REPO/actions/runs/$PRIMARY_RUN")"
+          duplicate="$(gh api -H 'Accept: application/vnd.github+json' "repos/$REPO/actions/runs/$DUPLICATE_RUN")"
+          test "$(jq -r '.id' <<<"$primary")" -eq "$PRIMARY_RUN"
+          test "$(jq -r '.id' <<<"$duplicate")" -eq "$DUPLICATE_RUN"
+          test "$(jq -r '.head_sha' <<<"$primary")" = 45a04b51eacc664678062b2131fbfad541636ff1
+          test "$(jq -r '.head_sha' <<<"$duplicate")" = e39be10b4065b383b2ee2b0c053f73cd040c3729
+          primary_status="$(jq -r '.status' <<<"$primary")"
+          duplicate_status="$(jq -r '.status' <<<"$duplicate")"
+          cancelled=false
+          case "$duplicate_status" in
+            pending|queued|requested|waiting)
+              gh api -X POST -H 'Accept: application/vnd.github+json' "repos/$REPO/actions/runs/$DUPLICATE_RUN/cancel"
+              cancelled=true
+              ;;
+          esac
+          jq -n --arg observed_at "$(date -u +%FT%TZ)" --arg primary_status "$primary_status" --arg duplicate_status "$duplicate_status" --argjson cancelled "$cancelled" --argjson primary_run "$PRIMARY_RUN" --argjson duplicate_run "$DUPLICATE_RUN" '{observed_at:$observed_at,primary_run:$primary_run,primary_status:$primary_status,duplicate_run:$duplicate_run,duplicate_status_before:$duplicate_status,cancel_requested:$cancelled}' > .github/qym-v8-observer/CANCEL_RESULT.json
+          cat .github/qym-v8-observer/CANCEL_RESULT.json
 
-      - name: Persist read-only run list
+      - name: Persist cancellation evidence
         shell: bash
         run: |
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add .github/qym-v8-observer/RUNS.json
-          git commit -m 'QYM C2 v8 observer: record all run identities [skip ci]'
+          git add .github/qym-v8-observer/CANCEL_RESULT.json
+          git commit -m 'QYM C2 v8 observer: cancel exact duplicate run [skip ci]'
           git push origin "HEAD:$OBSERVER_BRANCH"
