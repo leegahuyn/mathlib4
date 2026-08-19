@@ -45,6 +45,9 @@ noncomputable def effectiveToOriginal :
       rcases
           Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.effective_exists_gamma g
         with ⟨gamma, hgamma⟩
+      change
+        Mock2.Definition15Geometry.quotientMap (g • w) =
+          Mock2.Definition15Geometry.quotientMap w
       rw [hgamma w]
       exact Mock2.Definition15Geometry.quotientMap_smul gamma w)
 
