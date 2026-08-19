@@ -1,0 +1,241 @@
+import Mathlib.Algebra.Algebra.Equiv
+import Mathlib.Algebra.Algebra.Spectrum.Basic
+import Mathlib.Algebra.BigOperators.Ring.Finset
+import Mathlib.Algebra.Order.Archimedean.Basic
+import Mathlib.Algebra.Order.Ring.Abs
+import Mathlib.Analysis.Complex.UpperHalfPlane.Exp
+import Mathlib.Analysis.Complex.Norm
+import Mathlib.Analysis.Complex.CauchyIntegral
+import Mathlib.Analysis.InnerProductSpace.Basic
+import Mathlib.Analysis.InnerProductSpace.LaxMilgram
+import Mathlib.Analysis.InnerProductSpace.LinearPMap
+import Mathlib.Analysis.InnerProductSpace.PiL2
+import Mathlib.Analysis.InnerProductSpace.Positive
+import Mathlib.Analysis.InnerProductSpace.Projection.Submodule
+import Mathlib.Analysis.InnerProductSpace.Spectrum
+import Mathlib.Analysis.InnerProductSpace.l2Space
+import Mathlib.Analysis.Normed.Module.DoubleDual
+import Mathlib.Analysis.Normed.Module.FiniteDimension
+import Mathlib.Analysis.Normed.Module.Normalize
+import Mathlib.Analysis.Normed.Lp.SmoothApprox
+import Mathlib.Analysis.Normed.Operator.Banach
+import Mathlib.Analysis.Normed.Operator.Basic
+import Mathlib.Analysis.Normed.Operator.Bilinear
+import Mathlib.Analysis.Normed.Operator.Compact
+import Mathlib.Analysis.Normed.Operator.Extend
+import Mathlib.Analysis.Normed.Operator.Prod
+import Mathlib.Analysis.SpecificLimits.Basic
+import Mathlib.Analysis.SpecialFunctions.Log.Basic
+import Mathlib.Data.Finset.Card
+import Mathlib.Data.Finset.Max
+import Mathlib.Data.Finsupp.Basic
+import Mathlib.Data.List.Basic
+import Mathlib.Data.Set.Finite.Lemmas
+import Mathlib.Data.Set.Countable
+import Mathlib.Data.Set.Finite.Lattice
+import Mathlib.Data.Real.Sqrt
+import Mathlib.Data.ENNReal.Basic
+import Mathlib.Data.ENNReal.Inv
+import Mathlib.Data.ENNReal.Real
+import Mathlib.Data.Nat.Find
+import Mathlib.LinearAlgebra.BilinearMap
+import Mathlib.LinearAlgebra.Matrix.PosDef
+import Mathlib.LinearAlgebra.Matrix.Hermitian
+import Mathlib.LinearAlgebra.Matrix.ConjTranspose
+import Mathlib.LinearAlgebra.Matrix.Notation
+import Mathlib.LinearAlgebra.Matrix.Trace
+import Mathlib.LinearAlgebra.Pi
+import Mathlib.Order.LiminfLimsup
+import Mathlib.Order.Filter.AtTopBot.Archimedean
+import Mathlib.Order.Filter.Cofinite
+import Mathlib.Analysis.SpecialFunctions.Pow.Real
+import Mathlib.Tactic
+import Mathlib.Tactic.NoncommRing
+import Mathlib.Topology.Semicontinuity.Basic
+import Mathlib.Topology.Algebra.InfiniteSum.ENNReal
+import Mathlib.Topology.ClusterPt
+import Mathlib.Topology.Compactness.Compact
+import Mathlib.Topology.Connected.Basic
+import Mathlib.Topology.Connected.Clopen
+import Mathlib.Topology.MetricSpace.Cauchy
+import Mathlib.Topology.MetricSpace.Pseudo.Basic
+import Mathlib.Topology.Order.OrderClosed
+import Mathlib.Topology.Sequences
+import Mathlib.Topology.Homeomorph.Lemmas
+import Mathlib.Topology.Instances.AddCircle.Real
+import Mathlib.Analysis.Complex.UpperHalfPlane.Measure
+import Mathlib.Analysis.Complex.UpperHalfPlane.Metric
+import Mathlib.Analysis.Complex.UpperHalfPlane.Manifold
+import Mathlib.Analysis.Complex.ReImTopology
+import Mathlib.Analysis.Calculus.ContDiff.RCLike
+import Mathlib.Analysis.Calculus.BumpFunction.FiniteDimension
+import Mathlib.Analysis.Calculus.Deriv.Comp
+import Mathlib.Analysis.Complex.RealDeriv
+import Mathlib.Analysis.InnerProductSpace.ProdL2
+import Mathlib.Analysis.SpecialFunctions.Sqrt
+import Mathlib.Geometry.Manifold.ChartedSpace
+import Mathlib.Geometry.Manifold.ContMDiff.Atlas
+import Mathlib.Geometry.Manifold.LocalDiffeomorph
+import Mathlib.Geometry.Manifold.MFDeriv.Basic
+import Mathlib.MeasureTheory.Function.L2Space
+import Mathlib.MeasureTheory.Function.ConvergenceInMeasure
+import Mathlib.MeasureTheory.Function.LpSeminorm.Indicator
+import Mathlib.MeasureTheory.Function.LpSeminorm.Monotonicity
+import Mathlib.MeasureTheory.Function.LpSeminorm.SMul
+import Mathlib.MeasureTheory.Function.LpSpace.Complete
+import Mathlib.MeasureTheory.Function.UniformIntegrable
+import Mathlib.MeasureTheory.Integral.Bochner.Basic
+import Mathlib.MeasureTheory.Integral.Bochner.Set
+import Mathlib.MeasureTheory.MeasurableSpace.Constructions
+import Mathlib.MeasureTheory.Measure.Lebesgue.Integral
+import Mathlib.MeasureTheory.Measure.Prod
+import Mathlib.Topology.Algebra.Module.Basic
+import Mathlib.Topology.Algebra.Group.Quotient
+import Mathlib.Topology.Covering.Quotient
+import Mathlib.Topology.OpenPartialHomeomorph.Composition
+import Mathlib.Topology.SeparatedMap
+import Mathlib.Topology.Separation.Hausdorff
+import PrimalitySheafVerification.Mock2
+import PrimalitySheafVerification.Mock2_FunctionalAnalysis_Integrated
+import Mathlib.Algebra.Module.TransferInstance
+import Mathlib.Analysis.Calculus.FDeriv.Const
+import Mathlib.Geometry.Manifold.ContMDiff.NormedSpace
+import Mathlib.Tactic.FieldSimp
+import Mathlib.Tactic.Ring
+import Mathlib.Topology.Algebra.ConstMulAction
+import Mathlib.Topology.FiberBundle.IsHomeomorphicTrivialBundle
+import Mathlib.Analysis.Normed.Operator.ContinuousLinearMap
+import Mathlib.Geometry.Manifold.Instances.Real
+import Mathlib.MeasureTheory.Function.LpSpace.Indicator
+import Mathlib.MeasureTheory.Measure.Comap
+import Mathlib.Topology.Constructions
+import Mathlib.Topology.OpenPartialHomeomorph.Basic
+import Mathlib.Analysis.InnerProductSpace.Adjoint
+import Mathlib.Analysis.InnerProductSpace.Dual
+import Mathlib.Analysis.InnerProductSpace.Orthogonal
+import Mathlib.Data.Fintype.EquivFin
+import Mathlib.Geometry.Manifold.Diffeomorph
+import Mathlib.Geometry.Manifold.IsManifold.ExtChartAt
+import Mathlib.LinearAlgebra.Dimension.Finite
+import Mathlib.LinearAlgebra.FiniteDimensional.Defs
+import Mathlib.LinearAlgebra.Projection
+import Mathlib.MeasureTheory.Constructions.Polish.Basic
+import Mathlib.MeasureTheory.Function.ContinuousMapDense
+import Mathlib.MeasureTheory.Integral.Bochner.ContinuousLinearMap
+import Mathlib.MeasureTheory.Integral.Lebesgue.DominatedConvergence
+import Mathlib.MeasureTheory.Measure.Support
+import Mathlib.Order.Filter.IndicatorFunction
+import Mathlib.Order.Interval.Set.Infinite
+import Mathlib.RingTheory.Finiteness.Basic
+import Mathlib.Topology.Bases
+import Mathlib.Topology.MetricSpace.Antilipschitz
+import Mathlib.Topology.Metrizable.Urysohn
+import Mathlib.Topology.Order.Compact
+import Mathlib.Topology.UrysohnsLemma
+import Mathlib.MeasureTheory.Integral.DivergenceTheorem
+
+/-!
+# QYM: audited elementary cores, corrected surrogates, and no-go results
+
+This file preserves every public declaration from the original `QYM.lean` compatibility artifact
+and integrates independently audited algebraic, finite-dimensional, variational, and no-go source
+fragments.  Its scope is deliberately narrower
+than the paper *Modular q-Yang--Mills on Admissible Gauge Slices, Modular Flow, and a Spectral
+Mass--Gap Mechanism*.
+
+## Status guide
+
+* Declarations directly in `QYM` are **legacy surrogates** retained for compatibility.  They prove
+  elementary ring or real-order statements under their displayed hypotheses; they are not faithful
+  constructions of a differential graded gauge theory, an unbounded Hamiltonian, or its spectrum.
+* Namespaces containing `NoGo` give unconditional elementary obstructions or counterexamples to
+  specific proposed inferences.
+* `QYM.AffineGauge`, `QYM.ConstantTwoDimensionalDGA`, `QYM.WeightedTraceCore`,
+  `QYM.SpectralFlowCore`, `QYM.FiniteHamiltonian`, `QYM.FiniteGalerkinDissipation`,
+  `QYM.FiniteDualRieszFlow`, `QYM.AbstractFormSign`, and `QYM.FullCertification.Corrected` contain
+  **corrected concrete or algebraic cores**.  They isolate conclusions that follow from their
+  displayed finite, algebraic, variational, form-theoretic, or spectral data.
+* `QYM.InfiniteDiagonalHamiltonian` is a raw-sequence diagonal sign model.  It is an algebraic
+  obstruction for the displayed surrogate, not an analytic realization of the paper's operator.
+* `QYM.FinsuppDiagonalQuadraticForm` strengthens that sign audit on the genuine finite-support
+  space `ℕ →₀ ℝ`: it proves a quadratic-form lower-bound obstruction for `-n + vₙ` and the
+  corresponding lower bound for the corrected `n + vₙ` sign.
+* `QYM.FinsuppStrongNormNoGo` separates lower boundedness from strong-norm coercivity, while
+  `QYM.SpectralFlowCore.GroundMultiplicityCounterexample` records the failure of an adjacent-level
+  gap when the ground eigenspace is degenerate.
+* `QYM.SpectralWindowStability` proves finite indexed-spectrum window inclusions and count bounds
+  from a pointwise eigenvalue-error estimate; it does not supply the spectra or that estimate.
+  `QYM.FiniteSpectralFamilyStability` adds finite-family error, gap, and window consequences under
+  similarly explicit hypotheses.
+* `QYM.FormSmallPerturbationCore` formalizes the pointwise relative-form inequality, its
+  existential B2 coefficient package, and the explicit transferred lower bound.  It does not
+  claim KLMN closedness or construct a self-adjoint operator.
+* `QYM.RelativeSpectralB2NoGo` proves the energy-dependent B2 error estimate and gives an explicit
+  unbounded-spectrum countermodel to an index-independent additive error.  The two-sided relative
+  interval itself is retained.
+* `QYM.AsymptoticGapLiminf` isolates the complete-order liminf implication behind Corollary 4.25;
+  the pointwise gap comparison is an explicit input because Proposition 4.23 does not supply it
+  in the presence of ground-state multiplicity.
+* `QYM.QuadraticFirstVariationCore` proves the exact affine-line expansion, difference quotient,
+  symmetric/skew decomposition, four-component additivity, and explicit-admissibility criticality
+  of abstract real quadratic forms.  It does not supply the paper's curvature, integral, or
+  Sobolev differentiability arguments.
+* `QYM.TestKernelTailCore` uses `ℝ≥0∞` so infinite smoothed counts and tails are defined without a
+  hidden summability hypothesis.  Its window and geometric-tail conclusions expose every
+  majorization, counting, decomposition, and decay supplier.
+* `QYM.KernelTailUniformityNoGo` gives a moving-cutoff spike whose every fixed-parameter kernel has
+  compact upper support but which admits no finite parameter-uniform inverse-linear natural-tail
+  bound.  It refutes only the missing pointwise-to-uniform inference, not the actual Paper-I
+  transformed kernel.
+* `QYM.DiagonalSpectralDirectionNoGo` proves that the printed `-Δ + V` diagonal sign runs toward
+  `-∞` and has no least indexed level in the constant-potential model, while the corrected sign
+  runs toward `+∞`.
+* `QYM.LocalityCore`, `QYM.InvariantFeatureCore`, `QYM.AdmissibilityCore`, and
+  `QYM.StructuralSkewCore` isolate restriction compatibility, invariant-feature composition,
+  explicit admissible variations, and the precise ad-invariance needed for structural skewness.
+* `QYM.SobolevGaugeSupplierNoGo` separates typed analytic supplier implications from elementary
+  countermodels for action definedness, coercivity, cusp integration by parts, Sobolev products,
+  and density inside an admissible slice.
+* `QYM.OperatorFormCompactnessCore` proves sequential graph-completeness, representation
+  uniqueness, and compact/closed-slice implications, while refuting two unsupported density and
+  projected-closedness inferences.  It does not manufacture a Friedrichs realization.
+* `QYM.HilbertOperatorFormExtension` works with actual bounded Hilbert-space operators and proves
+  positivity-to-self-adjointness, coercivity-to-invertibility and zero-spectrum exclusion,
+  form-small lower-bound transfer, compact invariant restriction, and finite-dimensional
+  compactness.  These results do not assert an unbounded Friedrichs representation.
+* `QYM.UnboundedLinearPMapExtension` works with Mathlib's actual partial linear maps.  It proves
+  graph-closure, adjoint-domain, dense-symmetric closability, graph-norm, and self-adjoint boundary
+  lemmas, together with a bottom-domain countermodel showing that symmetry alone is insufficient.
+* `QYM.LaxMilgramFormExtension` derives an actual bounded operator, equivalence, unique weak
+  solution, quantitative estimate, and perturbation stability from Mathlib's real coercive-form
+  predicate.  It is a bounded form-domain bridge, not a fabricated Friedrichs theorem.
+* `QYM.CompactResolventLogicExtension` proves the bounded first-resolvent identity, compactness
+  transfer, and compact-embedding sublevel consequences.  It also proves that a bounded operator
+  with compact resolvent on a real normed space forces finite dimension, explicitly ruling out an
+  invalid bounded surrogate for the paper's infinite-dimensional unbounded operator.
+* `QYM.FormDomainRealizationExtension` starts from an actual bounded real form and an injective
+  dense form-space embedding.  It constructs the representable form submodule, its unique ambient
+  representing vector, and an actual `LinearPMap` with an exact graph characterization; symmetry,
+  nonnegativity, dense-domain closability, and the remaining self-adjointness boundary are proved.
+* `QYM.UnboundedResolventDataExtension` defines resolvent data for an actual `LinearPMap` by a
+  continuous inverse and two inverse equations on the genuine domain.  It proves closedness,
+  uniqueness, the first resolvent identity, compactness transfer, and the fact that a compact
+  resolvent in infinite dimension cannot arise from a bounded ambient extension of the shift.
+* `QYM.CompactSelfAdjointGapExtension` invokes Mathlib's actual compact self-adjoint spectral API,
+  proves finite multiplicity of nonzero eigenspaces and a ground-multiplicity-safe coercive gap,
+  constructs the least positive level in finite dimension, and records corrected/no-go versions
+  of the paper's ground-energy subtraction and pointwise-positivity inferences.
+* `QYM.CoerciveFormFriedrichsExtension` supplies the missing real-Hilbert representation theorem
+  constructively: a displayed positive Gårding shift is fed to actual Lax--Milgram, yielding a
+  dense self-adjoint form realization, an explicit two-sided `LinearPMap` resolvent at `-μ`, and a
+  compact resolvent whenever the form embedding itself is compact.
+* `QYM.BoundedSelfAdjointPMapPerturbationExtension` proves the genuine unbounded-operator B1
+  theorem: an everywhere-defined bounded self-adjoint perturbation preserves the exact domain,
+  self-adjointness, and closedness, with an explicit operator-norm loss in the real lower bound.
+* `QYM.FormSmallOperatorPerturbationExtension` realizes the B2/KLMN bridge for actual bounded real
+  forms and an actual form embedding.  A transparent relative bound with coefficient `a < 1`
+  constructs residual coercivity, a dense self-adjoint `LinearPMap`, genuine two-sided resolvent
+  data, and compact resolvent; the sharp `a = 1` cancellation boundary is proved by a countermodel.
+* `QYM.RCLikeCoerciveFormFriedrichsExtension` removes the real-scalar restriction.  It realifies a
+  Hermitian sesquilinear form, recovers the full `RCLike` equation by testing at `v` and `I • v`,
+  proves complex linearity by uniqueness, and constructs the dense self-adjoint realization and

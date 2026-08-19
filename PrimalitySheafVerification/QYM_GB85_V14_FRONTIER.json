@@ -1,0 +1,32 @@
+{
+  "candidate_bytes": 2945274,
+  "candidate_lf": 62261,
+  "candidate_qym_blob": "bd28d0436230a8f0bcb01806dac01787542256b8",
+  "candidate_qym_sha256": "f4c9b27a297be772cde7183526378ad42ae826053f69cf3ce521670da4f06210",
+  "error_headers": 1,
+  "first_error": {
+    "col": 0,
+    "file": "qym-gb85-v14-frontier-output/source/QYM.lean",
+    "line": 1,
+    "message": "unknown module prefix 'PrimalitySheafVerification'"
+  },
+  "forbidden": {
+    "Lean.ofReduceBool": 0,
+    "admit": 0,
+    "global_axiom": 0,
+    "maxHeartbeats_zero": 0,
+    "native_decide": 0,
+    "sorry": 0,
+    "unsafe": 0
+  },
+  "lean_exit": 1,
+  "log_sha256": "f15eb5523e7aab2f2f0b20c4537a2fc1d2692033e050c5b93c8d894fb2e3fbf1",
+  "normalized_signatures": [
+    "unknown module prefix 'PrimalitySheafVerification'"
+  ],
+  "panic_lines": 0,
+  "run_id": "32252570414",
+  "run_url": "https://github.com/leegahuyn/mathlib4/actions/runs/32252570414",
+  "source_origin": "immutable-verified-gb85",
+  "full_compile_executed": true
+}
