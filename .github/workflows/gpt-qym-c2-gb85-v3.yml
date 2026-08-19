@@ -2,7 +2,7 @@ name: GPT QYM C2 GB85 v3
 
 on:
   push:
-    branches: [gpt/qym-c2-first-producer-chat-20260819]
+    branches: [gpt/qym-c2-gb85-v3-20260819]
     paths:
       - .github/workflows/gpt-qym-c2-gb85-v3.yml
       - .github/qym_patch_c2_gb85_v3.py
