@@ -1,0 +1,211 @@
+name: GPT QYM GB79 V11 staged repair
+
+on:
+  push:
+    branches:
+      - gpt/qym-gb79-v11-staged-repair-20260820
+    paths:
+      - .github/qym_gb79_v11_driver.py
+      - .github/workflows/gpt-qym-gb79-v11-staged-repair.yml
+      - .github/qym-gb79-v11-trigger.txt
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: gpt-qym-gb79-v11-staged-repair
+  cancel-in-progress: false
+
+env:
+  QYM: PrimalitySheafVerification/QYM.lean
+  OLEAN: .lake/build/lib/lean/PrimalitySheafVerification
+  BRANCH: gpt/qym-gb79-v11-staged-repair-20260820
+
+jobs:
+  prepare-v12:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - name: Verify committed 79-error authority and prepare later-stage candidates
+        shell: bash
+        env:
+          OUT: /tmp/qym-gb79-v12-prep-authority
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF_NAME" = "$BRANCH"
+          test "$(tr -d '\r\n' < lean-toolchain)" = leanprover/lean4:v4.33.0-rc1
+          python3 -B .github/qym_gb79_v11_driver.py prepare \
+            --prepare-out /tmp/qym-gb79-v12-prep
+          test -s /tmp/qym-gb79-v12-prep/PREPARED.json
+
+      - name: Upload V12 preparation evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-gb79-v12-preparation-${{ github.sha }}-attempt${{ github.run_attempt }}
+          path: |
+            /tmp/qym-gb79-v12-prep
+            /tmp/qym-gb79-v12-prep-authority
+          if-no-files-found: warn
+          retention-days: 30
+
+  repair-v11:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    env:
+      OUT: /tmp/qym-gb79-v11
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Gate branch, toolchain, and exact 79-error source/result identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF_NAME" = "$BRANCH"
+          test "$(tr -d '\r\n' < lean-toolchain)" = leanprover/lean4:v4.33.0-rc1
+          python3 -B .github/qym_gb79_v11_driver.py prepare \
+            --prepare-out "$OUT/bootstrap-prepared"
+          test -s "$OUT/AUTHORITY.json"
+          test "$(jq -r '.result.error_headers' "$OUT/AUTHORITY.json")" -eq 79
+          test "$(jq -r '.result.panic_lines' "$OUT/AUTHORITY.json")" -eq 0
+          test "$(jq -r '.verified_conditions.source_sha_match' "$OUT/AUTHORITY.json")" = true
+
+      - name: Install pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT" "$OLEAN"
+          curl --retry 8 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none > "$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          tc="$(tr -d '\r\n' < lean-toolchain)"
+          for a in 1 2 3 4 5; do
+            elan toolchain install "$tc" >> "$OUT/toolchain.log" 2>&1 && break
+            sleep $((a * 5))
+          done
+          lean --version | tee "$OUT/lean-version.txt"
+          lake --version | tee "$OUT/lake-version.txt"
+          for a in 1 2 3 4 5; do
+            lake exe cache get >> "$OUT/mathlib-cache.log" 2>&1 && break
+            sleep $((a * 5))
+          done
+
+      - name: Restore QYM dependency objects
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: |
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.ilean
+          key: qym-deps-v5-${{ runner.os }}-${{ hashFiles('lean-toolchain','lake-manifest.json','lakefile.lean','PrimalitySheafVerification/Mock2.lean','PrimalitySheafVerification/Mock2_Advanced.lean','PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean','PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean') }}
+          restore-keys: |
+            qym-deps-v4-${{ runner.os }}-
+            qym-deps-v3-${{ runner.os }}-
+            qym-probe4-deps-v1-${{ runner.os }}-
+
+      - name: Ensure completed dependency objects only
+        shell: bash
+        run: |
+          set -euo pipefail
+          for s in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated; do
+            if [[ ! -s "$OLEAN/$s.olean" || ! -s "$OLEAN/$s.ilean" ]]; then
+              cap=1
+              if [[ "$s" = Mock2_FunctionalAnalysis || "$s" = Mock2_FunctionalAnalysis_Integrated ]]; then
+                cap=2000
+              fi
+              rm -f "$OLEAN/$s.olean" "$OLEAN/$s.ilean"
+              lake env lean "-DmaxErrors=$cap" -DwarningAsError=false \
+                -o "$OLEAN/$s.olean" -i "$OLEAN/$s.ilean" \
+                "PrimalitySheafVerification/$s.lean" > "$OUT/$s.log" 2>&1
+            fi
+            test -s "$OLEAN/$s.olean"
+            test -s "$OLEAN/$s.ilean"
+          done
+
+      - name: Run V11→V15 monotonic direct-Lean repair pipeline
+        id: tournament
+        shell: bash
+        run: |
+          set +e
+          python3 -B .github/qym_gb79_v11_driver.py run
+          rc=$?
+          echo "$rc" > "$OUT/driver.exit"
+          echo "driver_exit=$rc" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Promote only an actual full-QYM strict improvement
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ ! -s "$OUT/FINAL_RESULT.json" || ! -s "$OUT/QYM.best.lean" ]]; then
+            echo "No strict full-QYM improvement was produced; branch source remains unchanged."
+            exit 0
+          fi
+          errors="$(jq -r '.error_headers' "$OUT/FINAL_RESULT.json")"
+          panic="$(jq -r '.panic_lines' "$OUT/FINAL_RESULT.json")"
+          strict="$(jq -r '.strict_improvement' "$OUT/FINAL_RESULT.json")"
+          semantic="$(jq -r '.semantic_pass' "$OUT/FINAL_RESULT.json")"
+          test "$panic" -eq 0
+          test "$strict" = true
+          if [[ "$semantic" != true ]]; then
+            test "$errors" -lt 79
+          else
+            test "$errors" -eq 0
+            test "$(jq -r '.olean_exists' "$OUT/FINAL_RESULT.json")" = true
+            test "$(jq -r '.ilean_exists' "$OUT/FINAL_RESULT.json")" = true
+          fi
+          source_sha="$(sha256sum "$OUT/QYM.best.lean" | awk '{print $1}')"
+          result_sha="$(jq -r '.candidate_qym_sha256' "$OUT/FINAL_RESULT.json")"
+          test "$source_sha" = "$result_sha"
+
+          cp "$OUT/QYM.best.lean" "$QYM"
+          mkdir -p .github/qym-frontier
+          cp "$OUT/QYM.best.lean" .github/qym-frontier/QYM_GB79_V11_BEST.lean
+          cp "$OUT/FINAL_RESULT.json" .github/qym-frontier/GB79_V11_RESULT.json
+          cp "$OUT/SELECTION.json" .github/qym-frontier/GB79_V11_SELECTION.json
+          printf 'run_id=%s\nerrors=%s\nsource_sha256=%s\n' \
+            "$GITHUB_RUN_ID" "$errors" "$source_sha" \
+            > .github/qym-frontier/GB79_V11_RUN_IDENTITY.txt
+
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "$QYM" \
+            .github/qym-frontier/QYM_GB79_V11_BEST.lean \
+            .github/qym-frontier/GB79_V11_RESULT.json \
+            .github/qym-frontier/GB79_V11_SELECTION.json \
+            .github/qym-frontier/GB79_V11_RUN_IDENTITY.txt
+          if git diff --cached --quiet; then
+            echo "Verified source already committed."
+            exit 0
+          fi
+          git commit -m "QYM V11: promote verified ${errors}-error frontier"
+          git push origin "HEAD:$BRANCH"
+
+      - name: Upload immutable V11 evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-gb79-v11-${{ github.sha }}-attempt${{ github.run_attempt }}
+          path: /tmp/qym-gb79-v11
+          if-no-files-found: error
+          retention-days: 30
