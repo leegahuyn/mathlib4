@@ -1,0 +1,84 @@
+name: GPT QYM Probe44 observer
+
+on:
+  push:
+    branches:
+      - gpt/qym-probe43-observer-20260819
+    paths:
+      - .github/workflows/gpt-qym-probe44-observer.yml
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: write
+
+jobs:
+  locate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: leegahuyn/mathlib4
+      OBSERVER_BRANCH: gpt/qym-probe43-observer-20260819
+      TARGET_BRANCH: gpt/qym-fastlane-verified88-20260819
+      TARGET_SHA: e2e489a5beb548c0ff6270a906f41fa8554d8d38
+      TARGET_PATH: .github/workflows/gpt-qym-probe44-gamma-chain.yml
+      TARGET_NAME: GPT QYM Probe44 gamma chain
+
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - name: Locate exact Probe44 run
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .github/qym-probe43-observer
+          run_id=''
+          status=''
+          conclusion=''
+          path=''
+          name=''
+          created_at=''
+          for _ in $(seq 1 180); do
+            payload="$(gh api -H 'Accept: application/vnd.github+json' \
+              "repos/$REPO/actions/runs?branch=$TARGET_BRANCH&event=push&per_page=100")"
+            row="$(jq -c \
+              --arg sha "$TARGET_SHA" \
+              --arg target_path "$TARGET_PATH" \
+              --arg target_name "$TARGET_NAME" \
+              '[.workflow_runs[]
+                | select(.head_sha == $sha)
+                | select((.path // "") == $target_path or (.name // "") == $target_name)]
+               | sort_by(.created_at)
+               | last // empty' <<<"$payload")"
+            if [[ -n "$row" ]]; then
+              run_id="$(jq -r '.id' <<<"$row")"
+              status="$(jq -r '.status' <<<"$row")"
+              conclusion="$(jq -r '.conclusion // ""' <<<"$row")"
+              path="$(jq -r '.path // ""' <<<"$row")"
+              name="$(jq -r '.name // ""' <<<"$row")"
+              created_at="$(jq -r '.created_at // ""' <<<"$row")"
+              break
+            fi
+            sleep 5
+          done
+          test -n "$run_id"
+          jq -n \
+            --argjson run_id "$run_id" \
+            --arg target_sha "$TARGET_SHA" \
+            --arg status "$status" \
+            --arg conclusion "$conclusion" \
+            --arg path "$path" \
+            --arg name "$name" \
+            --arg created_at "$created_at" \
+            --arg observed_at "$(date -u +%FT%TZ)" \
+            '{run_id:$run_id,target_sha:$target_sha,status:$status,conclusion:$conclusion,path:$path,name:$name,created_at:$created_at,observed_at:$observed_at}' \
+            > .github/qym-probe43-observer/PROBE44_RUN_IDENTITY.json
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .github/qym-probe43-observer/PROBE44_RUN_IDENTITY.json
+          git commit -m "QYM Probe44 observer: locate run $run_id"
+          git push origin "HEAD:$OBSERVER_BRANCH"
