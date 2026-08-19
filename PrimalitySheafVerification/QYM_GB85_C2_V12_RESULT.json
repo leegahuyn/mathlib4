@@ -1,0 +1,14 @@
+{
+  "actual_zero_error": false,
+  "baseline_error_headers": 85,
+  "baseline_first_error_line": 41515,
+  "candidates": [],
+  "full_compile_executed": false,
+  "local_only_diagnostics": [],
+  "schema": "qym-gb85-c2-v12-parallel-selection",
+  "strict_improvement": false,
+  "winner": null,
+  "run_id": "32252359789",
+  "run_url": "https://github.com/leegahuyn/mathlib4/actions/runs/32252359789",
+  "promoted": false
+}
