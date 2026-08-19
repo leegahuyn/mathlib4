@@ -1,0 +1,40 @@
+{
+  "forbidden_zero": true,
+  "counts": [
+    [
+      "\\bsorry\\b",
+      0,
+      0
+    ],
+    [
+      "\\badmit\\b",
+      0,
+      0
+    ],
+    [
+      "\\bunsafe\\b",
+      0,
+      0
+    ],
+    [
+      "\\bnative_decide\\b",
+      0,
+      0
+    ],
+    [
+      "\\bLean\\.ofReduceBool\\b",
+      0,
+      0
+    ],
+    [
+      "(?m)^\\s*(?:public\\s+|private\\s+)?axiom\\b",
+      0,
+      0
+    ],
+    [
+      "\\bmaxHeartbeats\\s*(?::=|=)\\s*0\\b",
+      0,
+      0
+    ]
+  ]
+}

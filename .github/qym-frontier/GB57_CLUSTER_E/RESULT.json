@@ -1,0 +1,21 @@
+{
+  "schema": "qym-gb57-cluster-e-v1",
+  "authority": "actual full-QYM direct Lean",
+  "run_id": 32302683651,
+  "trigger_sha": "24d4754c9a6bb7c4ecb57c61139cb16cf0adc3d4",
+  "branch": "gpt/qym-gb57-cluster-e-probe-20260820",
+  "variant": "simp",
+  "previous_error_headers": 57,
+  "exit": 1,
+  "error_headers": 48,
+  "warning_headers": 373,
+  "panic_lines": 0,
+  "elapsed_seconds": 529,
+  "first_error": "PrimalitySheafVerification/QYM.lean:45539:34: error(lean.unknownIdentifier): Unknown identifier `hSmooth`",
+  "source_sha256": "f7743a8e061c88d8c4cbec03621d8b782c67fcb01276a8c94a3a7b546cc589ce",
+  "source_blob": "d65aef7a386d68d5b8de64690b8beb41c9806d6d",
+  "log_sha256": "315baf07e5818d4453aa87819795d4c86f21de97441f9458cc562fab6c7dd32e",
+  "forbidden_zero": true,
+  "strict_improvement": true,
+  "pass": false
+}
