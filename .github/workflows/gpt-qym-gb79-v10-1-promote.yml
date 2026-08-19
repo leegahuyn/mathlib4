@@ -1,0 +1,124 @@
+name: GPT QYM GB79 V10.1 exact promotion
+
+on:
+  push:
+    branches:
+      - gpt/qym-gb79-v10-1-promoted-20260819
+    paths:
+      - .github/workflows/gpt-qym-gb79-v10-1-promote.yml
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: gpt-qym-gb79-v10-1-exact-promotion
+  cancel-in-progress: false
+
+jobs:
+  promote:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      BRANCH: gpt/qym-gb79-v10-1-promoted-20260819
+      QYM: PrimalitySheafVerification/QYM.lean
+      SOURCE_RUN_ID: '32256493063'
+      SOURCE_JOB_ID: '96079286207'
+      ARTIFACT_ID: '9367407419'
+      ARTIFACT_NAME: qym-gb83-v10-1-chartbridge-ed40d8ebdc5a53d266cc5ece5baaa6f7e4059145-attempt1
+      BASE_SHA256: ea7c26fd104104e852a6c678017b1fb0c76abb062edd758228c4bbe506dbe8d1
+      CANDIDATE_SHA256: 790b40c05a8f3735dd171a135eda65de92ab68b247d13e7e2ffe2968e3798421
+      CANDIDATE_BLOB: 33e4fab1130e4c17ea5d212fe2691c3e0c0eb8d3
+      FULL_LOG_SHA256: df6fe61475943191f543933121fe4392ea6b1d832cf60c9f513d801b288a8367
+      EXPECTED_ERRORS: '79'
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Gate exact promotion branch and untouched GB83 source
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF_NAME" = "$BRANCH"
+          test "$(sha256sum "$QYM" | awk '{print $1}')" = "$BASE_SHA256"
+          test -z "$(git status --porcelain=v1 --untracked-files=all)"
+
+      - name: Download exact V10.1 immutable evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/v10_1
+          mkdir -p /tmp/v10_1
+          gh run download "$SOURCE_RUN_ID" \
+            --repo "$GITHUB_REPOSITORY" \
+            --name "$ARTIFACT_NAME" \
+            --dir /tmp/v10_1
+          test -s /tmp/v10_1/QYM.best.lean
+          test -s /tmp/v10_1/BEST_RESULT.json
+          test -s /tmp/v10_1/SELECTION.json
+          test -s /tmp/v10_1/rw_det_coe.full.log
+
+      - name: Verify source, blob, direct-Lean metric and log digests
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(sha256sum /tmp/v10_1/QYM.best.lean | awk '{print $1}')" = "$CANDIDATE_SHA256"
+          test "$(git hash-object /tmp/v10_1/QYM.best.lean)" = "$CANDIDATE_BLOB"
+          test "$(sha256sum /tmp/v10_1/rw_det_coe.full.log | awk '{print $1}')" = "$FULL_LOG_SHA256"
+          test "$(jq -r '.variant' /tmp/v10_1/BEST_RESULT.json)" = rw_det_coe
+          test "$(jq -r '.run_id' /tmp/v10_1/BEST_RESULT.json)" = "$SOURCE_RUN_ID"
+          test "$(jq -r '.trigger_sha' /tmp/v10_1/BEST_RESULT.json)" = ed40d8ebdc5a53d266cc5ece5baaa6f7e4059145
+          test "$(jq -r '.baseline_error_headers' /tmp/v10_1/BEST_RESULT.json)" -eq 83
+          test "$(jq -r '.error_headers' /tmp/v10_1/BEST_RESULT.json)" -eq "$EXPECTED_ERRORS"
+          test "$(jq -r '.panic_lines' /tmp/v10_1/BEST_RESULT.json)" -eq 0
+          test "$(jq -r '.strict_improvement' /tmp/v10_1/BEST_RESULT.json)" = true
+          test "$(jq -r '.candidate_qym_sha256' /tmp/v10_1/BEST_RESULT.json)" = "$CANDIDATE_SHA256"
+          test "$(jq -r '.candidate_qym_blob' /tmp/v10_1/BEST_RESULT.json)" = "$CANDIDATE_BLOB"
+          test "$(jq -r '.log_sha256' /tmp/v10_1/BEST_RESULT.json)" = "$FULL_LOG_SHA256"
+          test "$(grep -cE ':[0-9]+:[0-9]+: error(\([^)]*\))?:' /tmp/v10_1/rw_det_coe.full.log)" -eq "$EXPECTED_ERRORS"
+          test "$(grep -ciE 'internal error|uncaught exception|panic(!|:|[[:space:]])' /tmp/v10_1/rw_det_coe.full.log || true)" -eq 0
+
+      - name: Promote exact verified GB79 source and evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp /tmp/v10_1/QYM.best.lean "$QYM"
+          mkdir -p .github/qym-frontier
+          cp /tmp/v10_1/BEST_RESULT.json .github/qym-frontier/GB79_V10_1_RESULT.json
+          cp /tmp/v10_1/SELECTION.json .github/qym-frontier/GB79_V10_1_SELECTION.json
+          jq '.promotion_status = "PROMOTED" |
+              .promotion_branch = "'"$BRANCH"'" |
+              .source_run_id = ('"$SOURCE_RUN_ID"' | tonumber) |
+              .source_job_id = ('"$SOURCE_JOB_ID"' | tonumber) |
+              .verified_qym_sha256 = "'"$CANDIDATE_SHA256"'" |
+              .verified_qym_blob = "'"$CANDIDATE_BLOB"'"' \
+            .github/qym-frontier/GB79_PROMOTION_BASE.json \
+            > .github/qym-frontier/GB79_PROMOTION_STATUS.json
+          test "$(sha256sum "$QYM" | awk '{print $1}')" = "$CANDIDATE_SHA256"
+          test "$(git hash-object "$QYM")" = "$CANDIDATE_BLOB"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "$QYM" .github/qym-frontier/GB79_V10_1_RESULT.json \
+            .github/qym-frontier/GB79_V10_1_SELECTION.json \
+            .github/qym-frontier/GB79_PROMOTION_STATUS.json
+          git commit -m 'QYM V10.1: promote verified 79-error frontier'
+          promotion_sha="$(git rev-parse HEAD)"
+          printf '%s\n' "$promotion_sha" | tee /tmp/GB79_PROMOTION_COMMIT.txt
+          git push origin "HEAD:$BRANCH"
+
+      - name: Upload promotion receipt
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-gb79-v10-1-promotion-${{ github.sha }}-attempt${{ github.run_attempt }}
+          path: |
+            /tmp/GB79_PROMOTION_COMMIT.txt
+            .github/qym-frontier/GB79_PROMOTION_BASE.json
+            .github/qym-frontier/GB79_PROMOTION_STATUS.json
+          if-no-files-found: warn
+          retention-days: 30
