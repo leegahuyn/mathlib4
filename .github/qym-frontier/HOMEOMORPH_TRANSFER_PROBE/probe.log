@@ -6,3 +6,74 @@ The difference between `let` and `letI` is that `letI` inlines the value.
 But this is not relevant for proofs because of proof irrelevance.
 
 Note: This linter can be disabled with `set_option linter.style.haveILetI false`
+.github/qym-probes/qym_homeomorph_transfer_probe.lean:55:45: error: unexpected identifier; expected ')'
+.github/qym-probes/qym_homeomorph_transfer_probe.lean:61:2: warning: Try this: 
+  letI̵
+
+The goal is a proposition, so `let` is preferred over `letI`.
+The difference between `let` and `letI` is that `letI` inlines the value.
+But this is not relevant for proofs because of proof irrelevance.
+
+Note: This linter can be disabled with `set_option linter.style.haveILetI false`
+.github/qym-probes/qym_homeomorph_transfer_probe.lean:66:2: error: unsolved goals
+H : Type u
+M : Type v
+M' : Type w
+inst✝⁶ : TopologicalSpace H
+inst✝⁵ : TopologicalSpace M
+inst✝⁴ : TopologicalSpace M'
+inst✝³ : ChartedSpace H M
+𝕜 : Type u_1
+inst✝² : NontriviallyNormedField 𝕜
+E : Type u_2
+inst✝¹ : NormedAddCommGroup E
+inst✝ : NormedSpace 𝕜 E
+I : ModelWithCorners 𝕜 E H
+n : ℕ∞
+F : M' ≃ₜ M
+this : ChartedSpace H M' := F.pullbackChartedSpace
+x : M'
+z : E
+hz : z ∈ (extChartAt I x).target
+⊢ ↑I (↑(chartAt H (F x)) (F (↑(chartAt H x).symm (↑I.symm z)))) = z
+.github/qym-probes/qym_homeomorph_transfer_probe.lean:68:2: error: unsolved goals
+case hx
+H : Type u
+M : Type v
+M' : Type w
+inst✝⁶ : TopologicalSpace H
+inst✝⁵ : TopologicalSpace M
+inst✝⁴ : TopologicalSpace M'
+inst✝³ : ChartedSpace H M
+𝕜 : Type u_1
+inst✝² : NontriviallyNormedField 𝕜
+E : Type u_2
+inst✝¹ : NormedAddCommGroup E
+inst✝ : NormedSpace 𝕜 E
+I : ModelWithCorners 𝕜 E H
+n : ℕ∞
+F : M' ≃ₜ M
+this : ChartedSpace H M' := F.pullbackChartedSpace
+x : M'
+⊢ ↑I (↑(chartAt H (F x)) (F x)) = ↑I (↑(chartAt H x) x)
+.github/qym-probes/qym_homeomorph_transfer_probe.lean:67:10: warning: This simp argument is unused:
+  pullbackChartedSpace
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [extChartAt, Function.comp_def, hz]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+.github/qym-probes/qym_homeomorph_transfer_probe.lean:67:63: warning: This simp argument is unused:
+  hz
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [pullbackChartedSpace, extChartAt, Function.comp_def]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+.github/qym-probes/qym_homeomorph_transfer_probe.lean:68:10: warning: This simp argument is unused:
+  pullbackChartedSpace
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [extChartAt]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
