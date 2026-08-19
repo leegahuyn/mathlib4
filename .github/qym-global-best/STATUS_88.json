@@ -1,0 +1,36 @@
+{
+  "schema": "qym-global-best-v1",
+  "cluster_completed": "C01",
+  "run_id": 32215528216,
+  "artifact_id": 9352528413,
+  "artifact_name": "qym-c1-e2093e4ed307ab9e621cb832673d6a3ed0b4c7f4-attempt1",
+  "source_filename": "QYM.candidate-c1.lean",
+  "source_sha256": "830563b33d873354809594d9e9dce962c1253052f8e70bd4d1513226f7598217",
+  "source_git_blob": "e796aa6ae9f01965116902a9345ed69f81bcfc42",
+  "bytes": 2945299,
+  "lf": 62264,
+  "direct_lean_exit": 1,
+  "error_headers": 88,
+  "warning_headers": 356,
+  "panic_lines": 0,
+  "first_error": {
+    "line": 41515,
+    "column": 6,
+    "producer": "actualFixedPhaseCuspHorocyclePoint_coe_contDiff",
+    "message": "rewrite pattern not found"
+  },
+  "last_error": {
+    "line": 59178,
+    "column": 78
+  },
+  "log_sha256": "01f52be20eb6e5f57890f463bc9cb506757466e485f14747ce847a92ae5fdb56",
+  "forbidden_tokens": {
+    "sorry": 0,
+    "admit": 0,
+    "global_axiom": 0,
+    "unsafe": 0,
+    "native_decide": 0,
+    "Lean.ofReduceBool": 0,
+    "maxHeartbeats_zero": 0
+  }
+}
