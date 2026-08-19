@@ -1,0 +1,44 @@
+name: GPT QYM c2-c3 observer
+
+on:
+  push:
+    branches:
+      - gpt/qym-probe43-observer-20260819
+    paths:
+      - .github/workflows/gpt-qym-c2-c3-observer.yml
+permissions:
+  actions: read
+  contents: write
+jobs:
+  locate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: leegahuyn/mathlib4
+      TARGET_BRANCH: gpt/qym-fastlane-verified88-20260819
+      TARGET_SHA: 18c8f32db37a855b9644328ca5d355d98967c1f5
+      TARGET_PATH: .github/workflows/gpt-qym-c2-c3-cusp-contdiff-strict.yml
+      OBSERVER_BRANCH: gpt/qym-probe43-observer-20260819
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .github/qym-probe43-observer
+          row=''
+          for _ in $(seq 1 240); do
+            payload="$(gh api -H 'Accept: application/vnd.github+json' "repos/$REPO/actions/runs?branch=$TARGET_BRANCH&event=push&per_page=100")"
+            row="$(jq -c --arg sha "$TARGET_SHA" --arg path "$TARGET_PATH" '[.workflow_runs[]|select(.head_sha==$sha and .path==$path)]|sort_by(.created_at)|last//empty' <<<"$payload")"
+            [[ -n "$row" ]] && break
+            sleep 5
+          done
+          test -n "$row"
+          jq -n --argjson run_id "$(jq -r '.id'<<<"$row")" --arg status "$(jq -r '.status'<<<"$row")" --arg conclusion "$(jq -r '.conclusion//""'<<<"$row")" --arg target_sha "$TARGET_SHA" --arg observed_at "$(date -u +%FT%TZ)" '{run_id:$run_id,status:$status,conclusion:$conclusion,target_sha:$target_sha,observed_at:$observed_at}' > .github/qym-probe43-observer/C2_C3_RUN_IDENTITY.json
+          git config user.name 'github-actions[bot]';git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .github/qym-probe43-observer/C2_C3_RUN_IDENTITY.json
+          git commit -m "QYM c2-c3 observer: locate run $(jq -r '.run_id' .github/qym-probe43-observer/C2_C3_RUN_IDENTITY.json)"
+          git push origin HEAD:$OBSERVER_BRANCH
