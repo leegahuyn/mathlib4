@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   actions: read
 
 concurrency:
@@ -43,8 +43,8 @@ jobs:
 
           {
             echo '# Exact source identity'
-            printf 'branch=%s\ncommit=%s\nqym_sha256=%s\nqym_blob=%s\n' \
-              "$GITHUB_REF_NAME" "$GITHUB_SHA" \
+            printf 'branch=%s\ncommit=%s\nrun_id=%s\nqym_sha256=%s\nqym_blob=%s\n' \
+              "$GITHUB_REF_NAME" "$GITHUB_SHA" "$GITHUB_RUN_ID" \
               "$(sha256sum "$QYM" | awk '{print $1}')" \
               "$(git hash-object "$QYM")"
           } > /tmp/qym-gb76-probe/IDENTITY.txt
@@ -82,6 +82,28 @@ jobs:
           } > /tmp/qym-gb76-probe/QYM_CROSS_TYPE_CONTEXT.txt
 
           wc -l /tmp/qym-gb76-probe/*.txt | tee /tmp/qym-gb76-probe/LINE_COUNTS.txt
+
+      - name: Persist immutable probe evidence on the working branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          dest=.github/qym-frontier/GB76_GLOBAL_BATCH_SOURCE_PROBE
+          rm -rf "$dest"
+          mkdir -p "$dest"
+          cp /tmp/qym-gb76-probe/*.txt "$dest"/
+          jq -n \
+            --arg branch "$BRANCH" \
+            --arg trigger_sha "$GITHUB_SHA" \
+            --argjson run_id "$GITHUB_RUN_ID" \
+            --arg qym_sha "$GB76_SHA256" \
+            --arg qym_blob "$GB76_BLOB" \
+            '{schema:"qym-gb76-global-batch-source-probe-v1",branch:$branch,trigger_sha:$trigger_sha,run_id:$run_id,qym_sha256:$qym_sha,qym_blob:$qym_blob,status:"COMPLETE"}' \
+            > "$dest/STATUS.json"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "$dest"
+          git commit -m "QYM GB76 global batch: persist quotient bridge probe ${GITHUB_RUN_ID} [skip ci]"
+          git push origin "HEAD:$BRANCH"
 
       - name: Upload source probe
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
