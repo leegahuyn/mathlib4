@@ -1,0 +1,11 @@
+/tmp/qym-gb76-probe/BRIDGE_DECLARATION_CONTEXTS.txt 258479 bytes
+/tmp/qym-gb76-probe/FILE_MANIFEST.txt 0 bytes
+/tmp/qym-gb76-probe/IDENTITY.json 219 bytes
+/tmp/qym-gb76-probe/QYM_CROSS_TYPE_CONTEXT.txt 91784 bytes
+/tmp/qym-gb76-probe/TOKEN_CONTEXTS.txt 430181 bytes
+/tmp/qym-gb76-probe/TOKEN_COUNTS.json 1742 bytes
+/tmp/qym-gb76-probe/sources/Mock2.lean 1119419 bytes
+/tmp/qym-gb76-probe/sources/Mock2_Advanced.lean 1390059 bytes
+/tmp/qym-gb76-probe/sources/Mock2_FunctionalAnalysis.lean 2821792 bytes
+/tmp/qym-gb76-probe/sources/Mock2_FunctionalAnalysis_Integrated.lean 575 bytes
+/tmp/qym-gb76-probe/sources/QYM.lean 2948900 bytes
