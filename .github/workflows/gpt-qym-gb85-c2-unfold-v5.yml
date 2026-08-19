@@ -1,0 +1,208 @@
+name: GPT QYM GB85 C2 definition-guided tournament v5
+
+on:
+  push:
+    branches: [gpt/qym-gb85-c2-explicit-20260819]
+    paths:
+      - .github/workflows/gpt-qym-gb85-c2-unfold-v5.yml
+      - .github/qym_patch_gb85_c2_unfold_horizontal_v5.py
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: gpt-qym-gb85-c2-unfold-v5
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    name: C2 v5 ${{ matrix.variant }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      max-parallel: 16
+      matrix:
+        variant:
+          - simp_funprop_div_simpa
+          - simp_funprop_div_change
+          - simp_funprop_mul_inv_simpa
+          - simp_funprop_mul_inv_change
+          - unfold_funprop_div_simpa
+          - unfold_funprop_div_change
+          - unfold_funprop_mul_inv_simpa
+          - unfold_funprop_mul_inv_change
+          - ofreal_add_div_simpa
+          - ofreal_add_div_change
+          - ofreal_add_mul_inv_simpa
+          - ofreal_add_mul_inv_change
+          - ofreal_add_funprop_div_simpa
+          - ofreal_add_funprop_div_change
+          - ofreal_add_funprop_mul_inv_simpa
+          - ofreal_add_funprop_mul_inv_change
+          - funprop_with_have_div_simpa
+          - funprop_with_have_div_change
+          - funprop_with_have_mul_inv_simpa
+          - funprop_with_have_mul_inv_change
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: leegahuyn/mathlib4
+      QYM: PrimalitySheafVerification/QYM.lean
+      OLEAN: .lake/build/lib/lean/PrimalitySheafVerification
+      OUT: /tmp/qym-gb85-c2-v5-${{ matrix.variant }}
+      BASE: /tmp/qym-gb85-c2-v5-base
+      ARTIFACT_ID: "9354072137"
+      BASE_SHA256: f4c9b27a297be772cde7183526378ad42ae826053f69cf3ce521670da4f06210
+      BASE_BLOB: bd28d0436230a8f0bcb01806dac01787542256b8
+      BASE_ERRORS: "85"
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Recover exact GB85 and patch
+        id: patch
+        shell: bash
+        run: |
+          set -euo pipefail;rm -rf "$OUT" "$BASE";mkdir -p "$OUT" "$BASE" "$OLEAN";echo 'patched=false' >> "$GITHUB_OUTPUT"
+          gh api -H 'Accept: application/vnd.github+json' "repos/$REPO/actions/artifacts/$ARTIFACT_ID/zip" > "$OUT/base.zip";unzip -q -o "$OUT/base.zip" -d "$BASE"
+          python3 - "$BASE" "$QYM" "$BASE_SHA256" "$BASE_BLOB" <<'PY'
+          from pathlib import Path
+          import hashlib,shutil,sys
+          root,qym,sha,gb=Path(sys.argv[1]),Path(sys.argv[2]),sys.argv[3],sys.argv[4]
+          def blob(b):return hashlib.sha1(b'blob '+str(len(b)).encode()+b'\0'+b).hexdigest()
+          ms=[p for p in root.rglob('*.lean') if hashlib.sha256(p.read_bytes()).hexdigest()==sha and blob(p.read_bytes())==gb]
+          if len(ms)!=1:raise SystemExit(f'GB85 source count={len(ms)}')
+          shutil.copy2(ms[0],qym)
+          PY
+          cp "$QYM" "$OUT/QYM.baseline.lean"
+          set +e;python3 -B .github/qym_patch_gb85_c2_unfold_horizontal_v5.py "${{ matrix.variant }}" "$QYM" > "$OUT/patch.stdout" 2> "$OUT/patch.stderr";rc=$?;set -e
+          if [[ "$rc" -ne 0 ]];then jq -n --arg variant "${{ matrix.variant }}" --rawfile stderr "$OUT/patch.stderr" '{patched:false,variant:$variant,stderr:$stderr}' > "$OUT/PATCH_RESULT.json";cp "$OUT/QYM.baseline.lean" "$QYM";exit 0;fi
+          cp "$OUT/patch.stdout" "$OUT/PATCH_RESULT.json";cp "$QYM" "$OUT/QYM.candidate.lean";test "$(jq '[.forbidden[]]|add' "$OUT/PATCH_RESULT.json")" -eq 0;echo 'patched=true' >> "$GITHUB_OUTPUT"
+      - name: Install Lean and cache
+        if: steps.patch.outputs.patched == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail;curl --retry 8 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh;sh /tmp/elan.sh -y --default-toolchain none > "$OUT/elan.log" 2>&1;export PATH="$HOME/.elan/bin:$PATH";echo "$HOME/.elan/bin" >> "$GITHUB_PATH";tc="$(tr -d '\r\n' < lean-toolchain)";for a in 1 2 3 4 5;do elan toolchain install "$tc" >> "$OUT/toolchain.log" 2>&1 && break || sleep $((a*5));done;lean --version > "$OUT/lean-version.txt";lake --version > "$OUT/lake-version.txt";for a in 1 2 3 4 5;do lake exe cache get >> "$OUT/mathlib-cache.log" 2>&1 && break || sleep $((a*5));done
+      - name: Restore dependency objects
+        if: steps.patch.outputs.patched == 'true'
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: |
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.ilean
+          key: qym-deps-v3-${{ runner.os }}-${{ hashFiles('lean-toolchain','lake-manifest.json','lakefile.lean','PrimalitySheafVerification/Mock2.lean','PrimalitySheafVerification/Mock2_Advanced.lean','PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean','PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean') }}
+          restore-keys: qym-probe4-deps-v1-${{ runner.os }}-
+      - name: Ensure dependency objects
+        if: steps.patch.outputs.patched == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail;for s in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated;do if [[ ! -s "$OLEAN/$s.olean" || ! -s "$OLEAN/$s.ilean" ]];then cap=1;[[ "$s" = Mock2_FunctionalAnalysis || "$s" = Mock2_FunctionalAnalysis_Integrated ]] && cap=2000;lake env lean "-DmaxErrors=$cap" -DwarningAsError=false -o "$OLEAN/$s.olean" -i "$OLEAN/$s.ilean" "PrimalitySheafVerification/$s.lean" > "$OUT/$s.log" 2>&1;fi;test -s "$OLEAN/$s.olean" && test -s "$OLEAN/$s.ilean";done
+      - name: Local C2 gate
+        if: steps.patch.outputs.patched == 'true'
+        id: local
+        shell: bash
+        run: |
+          set +e;/usr/bin/time -v -o "$OUT/local.time" lake env lean -DmaxErrors=1 -DwarningAsError=false -o "$RUNNER_TEMP/local.olean" -i "$RUNNER_TEMP/local.ilean" "$QYM" > "$OUT/local.log" 2>&1;rc=$?;set -e;echo "$rc" > "$OUT/local.exit"
+          python3 - "$OUT" "$GITHUB_OUTPUT" <<'PY'
+          from pathlib import Path
+          import json,re,sys
+          out,go=Path(sys.argv[1]),Path(sys.argv[2]);t=(out/'local.log').read_text(errors='replace');p=json.loads((out/'PATCH_RESULT.json').read_text());m=re.search(r'^.*?\.lean:(\d+):(\d+): error(?:\([^)]*\))?:\s*(.*)$',t,re.M);first=None if m is None else {'line':int(m.group(1)),'column':int(m.group(2)),'message':m.group(3)};panic=bool(re.search(r'(?im)internal error|uncaught exception|panic(?:!|:|\s)',t));gate=int(p['gate_line']);fixed=not panic and (first is None or first['line']>=gate);r={'variant':p['variant'],'gate_line':gate,'first_error':first,'panic':panic,'c2_fixed':fixed};(out/'LOCAL_RESULT.json').write_text(json.dumps(r,indent=2,sort_keys=True)+'\n');print(json.dumps(r,indent=2,sort_keys=True));go.open('a').write('fixed='+('true' if fixed else 'false')+'\n')
+          PY
+      - name: Full direct Lean compile
+        if: steps.local.outputs.fixed == 'true'
+        shell: bash
+        run: |
+          set +e;/usr/bin/time -v -o "$OUT/full.time" lake env lean -DmaxErrors=10000 -DwarningAsError=false -o "$RUNNER_TEMP/QYM.olean" -i "$RUNNER_TEMP/QYM.ilean" "$QYM" > "$OUT/full.log" 2>&1;rc=$?;set -e;echo "$rc" > "$OUT/full.exit";if [[ "$rc" -eq 0 ]];then cp "$RUNNER_TEMP/QYM.olean" "$OUT/QYM.olean";cp "$RUNNER_TEMP/QYM.ilean" "$OUT/QYM.ilean";fi
+      - name: Parse strict evidence
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - "$OUT" "$BASE_ERRORS" <<'PY'
+          from pathlib import Path
+          import collections,hashlib,json,os,re,sys
+          out,base=Path(sys.argv[1]),int(sys.argv[2]);p=json.loads((out/'PATCH_RESULT.json').read_text());executed=(out/'full.log').is_file() and (out/'full.exit').is_file() and (out/'full.log').stat().st_size>0;raw=(out/'full.log').read_bytes() if executed else b'';text=raw.decode(errors='replace');pat=re.compile(r'^(?P<file>.*?\.lean):(?P<line>\d+):(?P<column>\d+): (?P<severity>error|warning)(?:\((?P<code>[^)]*)\))?:\s*(?P<message>.*)$',re.M);rows=[]
+          for m in pat.finditer(text):r=m.groupdict();r['line']=int(r['line']);r['column']=int(r['column']);rows.append(r)
+          errs=[r for r in rows if r['severity']=='error'];warn=[r for r in rows if r['severity']=='warning'];panics=re.findall(r'(?im)^.*(?:internal error|uncaught exception|panic(?:!|:|\s)).*$',text);rc=int((out/'full.exit').read_text()) if executed else None;semantic=executed and rc==0 and not errs and not panics;strict=executed and (semantic or (not panics and len(errs)<base));result={'schema':'qym-gb85-c2-v5-result','run_id':int(os.environ['GITHUB_RUN_ID']),'trigger_sha':os.environ['GITHUB_SHA'],'variant':p.get('variant'),'baseline_qym_sha256':os.environ['BASE_SHA256'],'baseline_qym_blob':os.environ['BASE_BLOB'],'baseline_error_headers':base,'candidate_qym_sha256':p.get('candidate_sha256'),'candidate_qym_blob':p.get('candidate_blob'),'forbidden':p.get('forbidden'),'full_compile_executed':executed,'exit':rc,'error_headers':len(errs) if executed else None,'warning_headers':len(warn) if executed else None,'panic_lines':len(panics) if executed else None,'first_error':errs[0] if errs else None,'last_error':errs[-1] if errs else None,'error_codes':dict(collections.Counter(r['code'] or 'uncoded' for r in errs)) if executed else {},'log_sha256':hashlib.sha256(raw).hexdigest() if executed else None,'semantic_pass':semantic,'strict_improvement':strict};(out/'RESULT.json').write_text(json.dumps(result,indent=2,sort_keys=True)+'\n');(out/'diagnostics.jsonl').write_text(''.join(json.dumps(r,sort_keys=True)+'\n' for r in rows));(out/'error-headers.txt').write_text(''.join(f"{r['file']}:{r['line']}:{r['column']}: error: {r['message']}\n" for r in errs));print(json.dumps(result,indent=2,sort_keys=True))
+          PY
+      - name: Restore canonical
+        if: always()
+        shell: bash
+        run: git checkout -- "$QYM" || true
+      - name: Upload candidate evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-gb85-c2-v5-${{ strategy.job-index }}-${{ github.sha }}-attempt${{ github.run_attempt }}
+          path: ${{ env.OUT }}
+          if-no-files-found: error
+          retention-days: 30
+
+  promote:
+    needs: verify
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: leegahuyn/mathlib4
+      BRANCH: gpt/qym-gb85-c2-explicit-20260819
+      BASE_SHA256: f4c9b27a297be772cde7183526378ad42ae826053f69cf3ce521670da4f06210
+      BASE_BLOB: bd28d0436230a8f0bcb01806dac01787542256b8
+      BASE_ERRORS: "85"
+      OUT: /tmp/qym-gb85-c2-v5-promote
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: true
+      - name: Download and select strict best
+        shell: bash
+        run: |
+          set -euo pipefail;mkdir -p "$OUT/artifacts" .github/qym-frontier;a="$(gh api -H 'Accept: application/vnd.github+json' "repos/$REPO/actions/runs/$GITHUB_RUN_ID/artifacts?per_page=100")";jq '[.artifacts[]|select(.expired==false)|select(.name|startswith("qym-gb85-c2-v5-"))]' <<<"$a" > "$OUT/ARTIFACTS.json";while IFS=$'\t' read -r id name;do zip="$OUT/$name.zip";dir="$OUT/artifacts/$name";gh api -H 'Accept: application/vnd.github+json' "repos/$REPO/actions/artifacts/$id/zip" > "$zip";mkdir -p "$dir";unzip -q -o "$zip" -d "$dir";done < <(jq -r '.[]|[.id,.name]|@tsv' "$OUT/ARTIFACTS.json")
+          python3 - "$OUT" "$BASE_ERRORS" "$BASE_SHA256" "$BASE_BLOB" <<'PY'
+          from pathlib import Path
+          import hashlib,json,shutil,sys,os
+          out,base,bsha,bblob=Path(sys.argv[1]),int(sys.argv[2]),sys.argv[3],sys.argv[4];front=Path('.github/qym-frontier');valid=[];rejected=[]
+          def blob(raw):return hashlib.sha1(b'blob '+str(len(raw)).encode()+b'\0'+raw).hexdigest()
+          for rp in out.glob('artifacts/**/RESULT.json'):
+              ad=rp.parent;r=json.loads(rp.read_text());srcs=list(ad.glob('QYM.candidate.lean'))
+              if not r.get('full_compile_executed') or r.get('exit') is None or len(srcs)!=1:rejected.append({'variant':r.get('variant'),'reason':'no-full-or-source'});continue
+              raw=srcs[0].read_bytes()
+              if hashlib.sha256(raw).hexdigest()!=r.get('candidate_qym_sha256') or blob(raw)!=r.get('candidate_qym_blob'):rejected.append({'variant':r.get('variant'),'reason':'identity'});continue
+              if r.get('baseline_qym_sha256')!=bsha or r.get('baseline_qym_blob')!=bblob or int(r.get('baseline_error_headers',-1))!=base:rejected.append({'variant':r.get('variant'),'reason':'baseline'});continue
+              if any((r.get('forbidden') or {}).values()):rejected.append({'variant':r.get('variant'),'reason':'forbidden'});continue
+              errors=int(r['error_headers']);panics=int(r['panic_lines']);strict=bool(r.get('semantic_pass')) or (panics==0 and errors<base)
+              if strict:rr=dict(r);rr['_src']=str(srcs[0]);rr['_ad']=str(ad);valid.append(rr)
+              else:rejected.append({'variant':r.get('variant'),'reason':'not-strict','errors':errors,'panic_lines':panics})
+          valid.sort(key=lambda r:(0 if r.get('semantic_pass') else 1,int(r['error_headers']),int(r['panic_lines']),-int((r.get('first_error') or {}).get('line') or 0),int(r.get('warning_headers',10**9)),r['variant']));public=[{k:v for k,v in r.items() if not k.startswith('_')} for r in valid];decision={'schema':'qym-gb85-c2-v5-selection','run_id':int(os.environ['GITHUB_RUN_ID']),'baseline':{'sha256':bsha,'blob':bblob,'error_headers':base},'promoted':bool(valid),'best':public[0] if public else None,'valid':public,'rejected':rejected};(front/'GB85_C2_V5_SELECTION.json').write_text(json.dumps(decision,indent=2,sort_keys=True)+'\n')
+          if valid:
+              best=valid[0];src=Path(best['_src']);ad=Path(best['_ad']);shutil.copy2(src,front/'QYM_GB85_C2_V5_BEST.lean');(front/'GB85_C2_V5_RESULT.json').write_text(json.dumps(public[0],indent=2,sort_keys=True)+'\n')
+              for a,b in [('error-headers.txt','GB85_C2_V5_error-headers.txt'),('diagnostics.jsonl','GB85_C2_V5_diagnostics.jsonl'),('full.time','GB85_C2_V5_time.txt')]:
+                  p=ad/a
+                  if p.exists():shutil.copy2(p,front/b)
+          print(json.dumps(decision,indent=2,sort_keys=True))
+          PY
+      - name: Commit selection
+        shell: bash
+        run: |
+          set -euo pipefail;git fetch origin "$BRANCH";git rebase "origin/$BRANCH";git config user.name 'github-actions[bot]';git config user.email '41898282+github-actions[bot]@users.noreply.github.com';git add .github/qym-frontier;if git diff --cached --quiet;then exit 0;fi;if [[ "$(jq -r '.promoted' .github/qym-frontier/GB85_C2_V5_SELECTION.json)" = true ]];then errors="$(jq -r '.best.error_headers' .github/qym-frontier/GB85_C2_V5_SELECTION.json)";variant="$(jq -r '.best.variant' .github/qym-frontier/GB85_C2_V5_SELECTION.json)";git commit -m "QYM C2 v5: promote verified ${errors}-error ${variant} [skip ci]";else git commit -m 'QYM C2 v5: record non-improving tournament [skip ci]';fi;git push origin "HEAD:$BRANCH"
+      - name: Upload promotion evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-gb85-c2-v5-promotion-${{ github.sha }}-attempt${{ github.run_attempt }}
+          path: ${{ env.OUT }}
+          if-no-files-found: error
+          retention-days: 30
