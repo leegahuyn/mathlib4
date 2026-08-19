@@ -1,0 +1,5 @@
+target_workflow=gpt-qym-c01-cycle.yml
+target_sha=a4b9396b1541042ecea15ca5a3bf6d3efdf55366
+baseline_sha256=313c076645a51976237738bd10c7f22b54f2a483499e60b57fa0d69be007cc1e
+baseline_errors=89
+triggered_at=2026-08-19T04:30:00Z
