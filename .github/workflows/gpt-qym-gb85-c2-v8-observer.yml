@@ -1,4 +1,5 @@
 name: GPT QYM GB85 C2 v8 observer
+# trigger: locate-v8-run-1
 
 on:
   push:
