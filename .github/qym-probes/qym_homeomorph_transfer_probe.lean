@@ -85,7 +85,7 @@ theorem pullback_symm_contMDiff (F : M' ≃ₜ M) :
   · filter_upwards [extChartAt_target_mem_nhdsWithin x] with z hz
     have hr := PartialEquiv.right_inv (extChartAt I x) hz
     simpa only [Function.comp_apply, pullback_extChartAt_apply,
-      F.apply_symm_apply] using hr
+      F.apply_symm_apply, id_eq] using hr
   · have hx : (extChartAt I x).symm (extChartAt I x x) = x :=
       PartialEquiv.left_inv (extChartAt I x) (by simp)
     simp only [Function.comp_apply, hx, id_eq,
