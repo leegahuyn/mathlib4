@@ -1,0 +1,75 @@
+name: GPT QYM GB78 authority V12 observer
+
+on:
+  push:
+    branches:
+      - gpt/qym-gb78-authority-v12-20260820
+    paths:
+      - .github/workflows/gpt-qym-gb78-authority-v12-observer.yml
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: gpt-qym-gb78-authority-v12-observer
+  cancel-in-progress: true
+
+env:
+  BRANCH: gpt/qym-gb78-authority-v12-20260820
+  TARGET_NAME: GPT QYM GB78 authority V12 normal repair
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ env.BRANCH }}
+          fetch-depth: 0
+
+      - name: Resolve exact target run and persist snapshot
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .github/qym-frontier
+          gh api -X GET "repos/$GITHUB_REPOSITORY/actions/runs" \
+            -f branch="$BRANCH" -f per_page=100 > /tmp/runs.json
+          jq --arg target "$TARGET_NAME" --arg branch "$BRANCH" '
+            [.workflow_runs[]
+              | select(.name == $target and .head_branch == $branch)]
+            | sort_by(.created_at) | reverse
+            | if length == 0 then error("target workflow run not found") else .[0] end
+            | {
+                schema: "qym-gb78-v12-run-observer-v1",
+                id,
+                name,
+                event,
+                status,
+                conclusion,
+                run_number,
+                run_attempt,
+                created_at,
+                updated_at,
+                run_started_at,
+                head_branch,
+                head_sha,
+                html_url,
+                jobs_url,
+                artifacts_url,
+                workflow_id,
+                observed_by_run_id: (env.GITHUB_RUN_ID | tonumber),
+                observed_at: (now | todateiso8601)
+              }
+          ' /tmp/runs.json > .github/qym-frontier/QYM_GB78_V12_RUN_STATUS.json
+          cat .github/qym-frontier/QYM_GB78_V12_RUN_STATUS.json
+
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add .github/qym-frontier/QYM_GB78_V12_RUN_STATUS.json
+          git commit -m 'QYM V12: persist exact Actions run snapshot [skip ci]'
+          git push origin "HEAD:$BRANCH"
