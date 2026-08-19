@@ -1,4 +1,4 @@
-import Mathlib.Geometry.Manifold.IsManifold.Basic
+import Mathlib.Geometry.Manifold.ContMDiff.Defs
 
 noncomputable section
 
@@ -47,5 +47,26 @@ theorem pullback_hasGroupoid (F : M' ≃ₜ M) (G : StructureGroupoid H)
           (OpenPartialHomeomorph.symm_trans_self f)
           (Setoid.refl _))
     _ = a.symm.trans b := by simp [f]
+
+section Smooth
+
+variable {𝕜 : Type*} [NontriviallyNormedField 𝕜]
+variable {E : Type*} [NormedAddCommGroup E] [NormedSpace 𝕜 E]
+variable (I : ModelWithCorners 𝕜 E H) (n : ℕ∞ω)
+
+/-- The defining homeomorphism is smooth for its pulled-back source atlas. -/
+theorem pullback_contMDiff (F : M' ≃ₜ M) :
+    letI : ChartedSpace H M' := F.pullbackChartedSpace (H := H)
+    ContMDiff I I n F := by
+  letI : ChartedSpace H M' := F.pullbackChartedSpace (H := H)
+  intro x
+  rw [contMDiffAt_iff]
+  refine ⟨F.continuous.continuousAt, ?_⟩
+  apply contDiffWithinAt_id.congr_of_eventuallyEq
+  · filter_upwards [extChartAt_target_mem_nhdsWithin x] with z hz
+    simp [pullbackChartedSpace, extChartAt, Function.comp_def, hz]
+  · simp [pullbackChartedSpace, extChartAt]
+
+end Smooth
 
 end Homeomorph
