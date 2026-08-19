@@ -1,0 +1,204 @@
+name: GPT QYM GB85 C2 corrected mul-inverse v7
+
+on:
+  push:
+    branches:
+      - gpt/qym-gb85-c2-v7-mulinv-20260819
+    paths:
+      - .github/workflows/gpt-qym-gb85-c2-mulinv-v7.yml
+      - .github/qym_c2_v7_driver.py
+      - .github/qym_patch_gb85_c2_mulinv_v6.py
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: gpt-qym-gb85-c2-mulinv-v7
+  cancel-in-progress: false
+
+jobs:
+  repair:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: leegahuyn/mathlib4
+      BRANCH: gpt/qym-gb85-c2-v7-mulinv-20260819
+      QYM: PrimalitySheafVerification/QYM.lean
+      OLEAN: .lake/build/lib/lean/PrimalitySheafVerification
+      OUT: /tmp/qym-gb85-c2-mulinv-v7
+      BASE: /tmp/qym-gb85-c2-mulinv-v7-base
+      ARTIFACT_ID: "9354072137"
+      BASE_SHA256: f4c9b27a297be772cde7183526378ad42ae826053f69cf3ce521670da4f06210
+      BASE_BLOB: bd28d0436230a8f0bcb01806dac01787542256b8
+      BASE_ERRORS: "85"
+      DEP_CACHE_KEY: qym-deps-v3-${{ runner.os }}-${{ hashFiles('lean-toolchain','lake-manifest.json','lakefile.lean','PrimalitySheafVerification/Mock2.lean','PrimalitySheafVerification/Mock2_Advanced.lean','PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean','PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean') }}
+
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Gate exact branch and pinned environment
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF_NAME" = "$BRANCH"
+          test "$(tr -d '\r\n' < lean-toolchain)" = leanprover/lean4:v4.33.0-rc1
+          test -s .github/qym_patch_gb85_c2_mulinv_v6.py
+          test -s .github/qym_c2_v7_driver.py
+          python3 -m py_compile .github/qym_patch_gb85_c2_mulinv_v6.py
+          python3 -m py_compile .github/qym_c2_v7_driver.py
+          test -z "$(git status --porcelain=v1 --untracked-files=all)"
+          mkdir -p "$OUT" "$BASE" "$OLEAN"
+
+      - name: Recover immutable verified 85-error source
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api -H 'Accept: application/vnd.github+json' \
+            "repos/$REPO/actions/artifacts/$ARTIFACT_ID/zip" \
+            > "$OUT/gb85.zip"
+          unzip -q -o "$OUT/gb85.zip" -d "$BASE"
+          python3 -B .github/qym_c2_v7_driver.py recover \
+            "$BASE" "$OUT/QYM.GB85.lean" \
+            "$BASE_SHA256" "$BASE_BLOB" "$BASE_ERRORS"
+          test "$(sha256sum "$OUT/QYM.GB85.lean" | awk '{print $1}')" = "$BASE_SHA256"
+
+      - name: Install pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 8 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none > "$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          tc="$(tr -d '\r\n' < lean-toolchain)"
+          for attempt in 1 2 3 4 5; do
+            elan toolchain install "$tc" >> "$OUT/toolchain.log" 2>&1 && break
+            sleep $((attempt * 5))
+          done
+          lean --version | tee "$OUT/lean-version.txt"
+          lake --version | tee "$OUT/lake-version.txt"
+          for attempt in 1 2 3 4 5; do
+            lake exe cache get >> "$OUT/mathlib-cache.log" 2>&1 && break
+            sleep $((attempt * 5))
+          done
+
+      - name: Restore and save dependency objects
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: |
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.ilean
+          key: ${{ env.DEP_CACHE_KEY }}
+          restore-keys: |
+            qym-probe4-deps-v1-${{ runner.os }}-
+
+      - name: Ensure completed dependency objects
+        shell: bash
+        run: |
+          set -euo pipefail
+          for source in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated; do
+            if [[ ! -s "$OLEAN/$source.olean" || ! -s "$OLEAN/$source.ilean" ]]; then
+              cap=1
+              if [[ "$source" = Mock2_FunctionalAnalysis || "$source" = Mock2_FunctionalAnalysis_Integrated ]]; then
+                cap=2000
+              fi
+              rm -f "$OLEAN/$source.olean" "$OLEAN/$source.ilean"
+              lake env lean "-DmaxErrors=$cap" -DwarningAsError=false \
+                -o "$OLEAN/$source.olean" \
+                -i "$OLEAN/$source.ilean" \
+                "PrimalitySheafVerification/$source.lean" \
+                > "$OUT/$source.log" 2>&1
+            fi
+            test -s "$OLEAN/$source.olean"
+            test -s "$OLEAN/$source.ilean"
+          done
+
+      - name: Run corrected C2 local and full direct Lean tournament
+        shell: bash
+        run: |
+          set -euo pipefail
+          set +e
+          python3 -B .github/qym_c2_v7_driver.py tournament \
+            "$QYM" "$OUT/QYM.GB85.lean" \
+            .github/qym_patch_gb85_c2_mulinv_v6.py \
+            "$OUT" "$BASE_ERRORS" "$RUNNER_TEMP" \
+            | tee "$OUT/tournament.stdout"
+          rc=${PIPESTATUS[0]}
+          set -e
+          echo "$rc" > "$OUT/tournament.exit"
+          test -z "$(git status --porcelain=v1 --untracked-files=all)"
+          exit "$rc"
+
+      - name: Promote verified strict C2 frontier to branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s "$OUT/QYM.C2.V7.BEST.lean"
+          test -s "$OUT/C2_V7_RESULT.json"
+          candidate_sha="$(jq -r '.candidate_qym_sha256' "$OUT/C2_V7_RESULT.json")"
+          test "$(sha256sum "$OUT/QYM.C2.V7.BEST.lean" | awk '{print $1}')" = "$candidate_sha"
+          test "$(jq -r '.strict_improvement' "$OUT/C2_V7_RESULT.json")" = true
+          test "$(jq -r '.panic_lines' "$OUT/C2_V7_RESULT.json")" -eq 0
+          errors="$(jq -r '.error_headers' "$OUT/C2_V7_RESULT.json")"
+          test "$errors" -lt "$BASE_ERRORS"
+
+          if [[ "$(jq -r '.semantic_pass' "$OUT/C2_V7_RESULT.json")" = true ]]; then
+            test "$errors" -eq 0
+            test -s "$OUT/QYM.olean"
+            test -s "$OUT/QYM.ilean"
+            test "$(sha256sum "$OUT/QYM.olean" | awk '{print $1}')" = \
+              "$(jq -r '.qym_olean_sha256' "$OUT/C2_V7_RESULT.json")"
+            test "$(sha256sum "$OUT/QYM.ilean" | awk '{print $1}')" = \
+              "$(jq -r '.qym_ilean_sha256' "$OUT/C2_V7_RESULT.json")"
+          fi
+
+          git fetch origin "$BRANCH"
+          test "$(git rev-parse "origin/$BRANCH")" = "$GITHUB_SHA"
+          git checkout -B "$BRANCH" "$GITHUB_SHA"
+          mkdir -p .github/qym-frontier
+          cp "$OUT/QYM.C2.V7.BEST.lean" .github/qym-frontier/QYM_C2_V7_BEST.lean
+          cp "$OUT/C2_V7_RESULT.json" .github/qym-frontier/C2_V7_RESULT.json
+          cp "$OUT/SELECTION.json" .github/qym-frontier/C2_V7_SELECTION.json
+          cp "$OUT/QYM.C2.V7.BEST.lean" "$QYM"
+
+          if [[ -s "$OUT/QYM.olean" && -s "$OUT/QYM.ilean" ]]; then
+            cp "$OUT/QYM.olean" .github/qym-frontier/QYM_C2_V7.olean
+            cp "$OUT/QYM.ilean" .github/qym-frontier/QYM_C2_V7.ilean
+          fi
+
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "$QYM" \
+            .github/qym-frontier/QYM_C2_V7_BEST.lean \
+            .github/qym-frontier/C2_V7_RESULT.json \
+            .github/qym-frontier/C2_V7_SELECTION.json
+          if [[ -s .github/qym-frontier/QYM_C2_V7.olean ]]; then
+            git add .github/qym-frontier/QYM_C2_V7.olean \
+              .github/qym-frontier/QYM_C2_V7.ilean
+          fi
+          git commit -m "QYM C2 v7: promote verified ${errors}-error frontier"
+          git push origin "HEAD:$BRANCH"
+
+      - name: Upload immutable v7 evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-gb85-c2-mulinv-v7-${{ github.sha }}-attempt${{ github.run_attempt }}
+          path: /tmp/qym-gb85-c2-mulinv-v7
+          if-no-files-found: error
+          retention-days: 30
