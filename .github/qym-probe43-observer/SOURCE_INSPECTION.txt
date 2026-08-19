@@ -1,0 +1,28 @@
+
+===== PATTERN: def upperLift =====
+
+===== PATTERN: theorem upperLift =====
+
+===== PATTERN: lemma upperLift =====
+
+===== PATTERN: structure SmoothQuotientCompactFunction =====
+
+===== PATTERN: def SmoothQuotientCompactFunction =====
+
+===== PATTERN: InverseEtaFixedPhaseCore =====
+
+===== PATTERN: inductive GammaTwoCusp =====
+
+===== PATTERN: def gammaTwoCuspScaling =====
+
+===== PATTERN: gammaTwoCuspScaling_atInfinity =====
+
+===== PATTERN: gammaTwoCuspScaling_zero =====
+
+===== PATTERN: gammaTwoCuspScaling_one =====
+
+===== PATTERN: coe_smul_of_det_pos =====
+
+===== PATTERN: coe_specialLinearGroup_apply =====
+
+===== FILE INVENTORY HITS =====
