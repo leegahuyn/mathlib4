@@ -1,0 +1,321 @@
+name: GPT QYM discover verified 78-error frontier
+
+on:
+  push:
+    branches:
+      - gpt/qym-gb78-discovery-observer-20260819
+    paths:
+      - .github/workflows/gpt-qym-gb78-discovery-observer.yml
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: gpt-qym-gb78-discovery-observer
+  cancel-in-progress: false
+
+jobs:
+  discover:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    env:
+      OUT: /tmp/qym-gb78-discovery
+      TARGET_ERRORS: '78'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Scan recent QYM run artifacts for verified 78-error full results
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT/downloads" .github/qym-frontier
+          cat > "$OUT/discover.py" <<'PY'
+          from __future__ import annotations
+
+          import hashlib
+          import json
+          import os
+          import re
+          import shutil
+          import subprocess
+          import sys
+          import urllib.request
+          import zipfile
+          from datetime import datetime, timezone, timedelta
+          from pathlib import Path
+          from typing import Any
+
+          REPO = os.environ['GITHUB_REPOSITORY']
+          TOKEN = os.environ['GH_TOKEN']
+          OUT = Path(os.environ['OUT'])
+          TARGET = int(os.environ.get('TARGET_ERRORS', '78'))
+          API = 'https://api.github.com'
+          CUTOFF = datetime.now(timezone.utc) - timedelta(hours=10)
+
+          def api_json(path: str) -> Any:
+              req = urllib.request.Request(
+                  API + path,
+                  headers={
+                      'Authorization': f'Bearer {TOKEN}',
+                      'Accept': 'application/vnd.github+json',
+                      'X-GitHub-Api-Version': '2022-11-28',
+                      'User-Agent': 'qym-gb78-discovery-observer',
+                  },
+              )
+              with urllib.request.urlopen(req, timeout=60) as resp:
+                  return json.load(resp)
+
+          def download_artifact(artifact_id: int, dest: Path) -> None:
+              url = f'{API}/repos/{REPO}/actions/artifacts/{artifact_id}/zip'
+              subprocess.run([
+                  'curl', '-L', '--fail', '--retry', '5', '--retry-all-errors',
+                  '-H', f'Authorization: Bearer {TOKEN}',
+                  '-H', 'Accept: application/vnd.github+json',
+                  '-H', 'X-GitHub-Api-Version: 2022-11-28',
+                  '-o', str(dest), url,
+              ], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+          def sha256(data: bytes) -> str:
+              return hashlib.sha256(data).hexdigest()
+
+          def git_blob(data: bytes) -> str:
+              return hashlib.sha1(b'blob ' + str(len(data)).encode() + b'\0' + data).hexdigest()
+
+          def candidate_sha(obj: dict[str, Any]) -> str | None:
+              for key in (
+                  'candidate_qym_sha256', 'candidate_sha256', 'qym_sha256',
+                  'verified_qym_sha256', 'source_sha256', 'source_raw_sha256',
+              ):
+                  value = obj.get(key)
+                  if isinstance(value, str) and re.fullmatch(r'[0-9a-f]{64}', value):
+                      return value
+              return None
+
+          def is_full_result(member: str, obj: dict[str, Any]) -> bool:
+              phase = str(obj.get('phase') or '').lower()
+              name = Path(member).name.upper()
+              if phase == 'local':
+                  return False
+              if phase == 'full':
+                  return True
+              return any(tag in name for tag in ('FULL_RESULT', 'BEST_RESULT', 'GLOBAL_BEST_RESULT', 'RESULT')) \
+                  and 'LOCAL' not in name and 'PATCH' not in name
+
+          runs_payload = api_json(f'/repos/{REPO}/actions/runs?per_page=100')
+          runs = []
+          for run in runs_payload.get('workflow_runs', []):
+              branch = run.get('head_branch') or ''
+              if not branch.startswith('gpt/qym'):
+                  continue
+              created = datetime.fromisoformat(run['created_at'].replace('Z', '+00:00'))
+              if created < CUTOFF:
+                  continue
+              runs.append({
+                  'id': int(run['id']),
+                  'name': run.get('name'),
+                  'display_title': run.get('display_title'),
+                  'status': run.get('status'),
+                  'conclusion': run.get('conclusion'),
+                  'event': run.get('event'),
+                  'head_branch': branch,
+                  'head_sha': run.get('head_sha'),
+                  'created_at': run.get('created_at'),
+                  'updated_at': run.get('updated_at'),
+                  'html_url': run.get('html_url'),
+              })
+
+          # Newest first, excluding this observer itself. Limit artifact downloads.
+          runs.sort(key=lambda x: x['created_at'], reverse=True)
+          scan_runs = [r for r in runs if r['head_branch'] != os.environ.get('GITHUB_REF_NAME')]
+          completed = [r for r in scan_runs if r['status'] == 'completed'][:45]
+
+          matches: list[dict[str, Any]] = []
+          scanned_artifacts: list[dict[str, Any]] = []
+          errors: list[dict[str, Any]] = []
+
+          for run in completed:
+              try:
+                  payload = api_json(f"/repos/{REPO}/actions/runs/{run['id']}/artifacts?per_page=100")
+              except Exception as exc:
+                  errors.append({'run_id': run['id'], 'stage': 'list_artifacts', 'error': repr(exc)})
+                  continue
+              artifacts = payload.get('artifacts', [])
+              for art in artifacts:
+                  name = art.get('name') or ''
+                  size = int(art.get('size_in_bytes') or 0)
+                  if 'qym' not in name.lower() or size <= 0 or size > 12_000_000:
+                      continue
+                  aid = int(art['id'])
+                  rec = {
+                      'run_id': run['id'], 'run_name': run['name'],
+                      'head_branch': run['head_branch'], 'head_sha': run['head_sha'],
+                      'artifact_id': aid, 'artifact_name': name, 'size_in_bytes': size,
+                  }
+                  scanned_artifacts.append(rec)
+                  zpath = OUT / 'downloads' / f'{run["id"]}-{aid}.zip'
+                  try:
+                      download_artifact(aid, zpath)
+                      with zipfile.ZipFile(zpath) as zf:
+                          members = zf.namelist()
+                          lean_blobs: dict[str, list[tuple[str, bytes]]] = {}
+                          for member in members:
+                              if member.lower().endswith('.lean'):
+                                  data = zf.read(member)
+                                  lean_blobs.setdefault(sha256(data), []).append((member, data))
+
+                          for member in members:
+                              if not member.lower().endswith('.json'):
+                                  continue
+                              try:
+                                  obj = json.loads(zf.read(member).decode('utf-8', errors='replace'))
+                              except Exception:
+                                  continue
+                              if not isinstance(obj, dict):
+                                  continue
+                              if obj.get('error_headers') != TARGET:
+                                  continue
+                              if int(obj.get('panic_lines') or 0) != 0:
+                                  continue
+                              if not is_full_result(member, obj):
+                                  continue
+                              csha = candidate_sha(obj)
+                              source_member = None
+                              source_data = None
+                              if csha and csha in lean_blobs:
+                                  source_member, source_data = lean_blobs[csha][0]
+                              elif (zf_member := next((m for m in members if Path(m).name in ('QYM.best.lean', 'QYM_GLOBAL_BEST.lean', 'QYM.lean')), None)):
+                                  data = zf.read(zf_member)
+                                  if csha is None or sha256(data) == csha:
+                                      source_member, source_data = zf_member, data
+                                      csha = sha256(data)
+                              match = {
+                                  **run,
+                                  'artifact_id': aid,
+                                  'artifact_name': name,
+                                  'result_member': member,
+                                  'result': obj,
+                                  'candidate_qym_sha256': csha,
+                                  'source_member': source_member,
+                                  'source_found': source_data is not None,
+                                  'source_git_blob': git_blob(source_data) if source_data is not None else None,
+                              }
+                              if source_data is not None:
+                                  source_out = OUT / f'candidate-{run["id"]}-{aid}-{len(matches)}.lean'
+                                  source_out.write_bytes(source_data)
+                                  match['source_path'] = str(source_out)
+                              result_out = OUT / f'result-{run["id"]}-{aid}-{len(matches)}.json'
+                              result_out.write_text(json.dumps(obj, indent=2, sort_keys=True) + '\n', encoding='utf-8')
+                              match['result_path'] = str(result_out)
+                              matches.append(match)
+                  except Exception as exc:
+                      errors.append({'run_id': run['id'], 'artifact_id': aid, 'stage': 'download_or_parse', 'error': repr(exc)})
+                  finally:
+                      zpath.unlink(missing_ok=True)
+
+          def rank(m: dict[str, Any]) -> tuple:
+              obj = m['result']
+              phase = str(obj.get('phase') or '').lower()
+              strict = bool(obj.get('strict_improvement'))
+              semantic = bool(obj.get('semantic_pass'))
+              source = bool(m.get('source_found'))
+              first_line = int((obj.get('first_error') or {}).get('line') or 0)
+              return (
+                  0 if source else 1,
+                  0 if phase == 'full' else 1,
+                  0 if strict else 1,
+                  0 if semantic else 1,
+                  -first_line,
+                  m['created_at'],
+              )
+
+          matches.sort(key=rank)
+          selected = matches[0] if matches else None
+          report = {
+              'schema': 'qym-gb78-discovery-v1',
+              'observed_at': datetime.now(timezone.utc).isoformat(),
+              'repository': REPO,
+              'target_error_headers': TARGET,
+              'cutoff': CUTOFF.isoformat(),
+              'recent_qym_runs': runs,
+              'completed_runs_scanned': len(completed),
+              'artifacts_scanned': scanned_artifacts,
+              'matches': matches,
+              'selected': selected,
+              'errors': errors,
+          }
+          (OUT / 'QYM_GB78_DISCOVERY.json').write_text(
+              json.dumps(report, indent=2, sort_keys=True) + '\n', encoding='utf-8')
+
+          summary_lines = [
+              '# QYM verified 78-error discovery', '',
+              f'- observed_at: {report["observed_at"]}',
+              f'- recent QYM runs indexed: {len(runs)}',
+              f'- completed runs scanned: {len(completed)}',
+              f'- artifacts scanned: {len(scanned_artifacts)}',
+              f'- verified 78/panic-0 full-result matches: {len(matches)}',
+          ]
+          if selected:
+              summary_lines += [
+                  f'- selected run: {selected["id"]}',
+                  f'- selected branch: `{selected["head_branch"]}`',
+                  f'- selected artifact: {selected["artifact_id"]}',
+                  f'- candidate SHA256: `{selected.get("candidate_qym_sha256")}`',
+                  f'- candidate blob: `{selected.get("source_git_blob")}`',
+                  f'- source found: {selected.get("source_found")}',
+                  f'- first error: `{json.dumps(selected["result"].get("first_error"), ensure_ascii=False)}`',
+              ]
+              if selected.get('source_found'):
+                  shutil.copy2(selected['source_path'], OUT / 'QYM_GB78_DISCOVERED.lean')
+                  shutil.copy2(selected['result_path'], OUT / 'QYM_GB78_RESULT.json')
+          else:
+              summary_lines.append('- selected: NONE')
+          (OUT / 'QYM_GB78_DISCOVERY.md').write_text('\n'.join(summary_lines) + '\n', encoding='utf-8')
+
+          print(json.dumps({
+              'matches': len(matches),
+              'selected_run': selected.get('id') if selected else None,
+              'selected_branch': selected.get('head_branch') if selected else None,
+              'selected_sha256': selected.get('candidate_qym_sha256') if selected else None,
+              'source_found': selected.get('source_found') if selected else False,
+          }, indent=2))
+          PY
+          python3 -B "$OUT/discover.py"
+
+      - name: Commit discovery index and exact 78 source when found
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s "$OUT/QYM_GB78_DISCOVERY.json"
+          cp "$OUT/QYM_GB78_DISCOVERY.json" .github/qym-frontier/QYM_GB78_DISCOVERY.json
+          cp "$OUT/QYM_GB78_DISCOVERY.md" .github/qym-frontier/QYM_GB78_DISCOVERY.md
+          if [[ -s "$OUT/QYM_GB78_DISCOVERED.lean" && -s "$OUT/QYM_GB78_RESULT.json" ]]; then
+            cp "$OUT/QYM_GB78_DISCOVERED.lean" .github/qym-frontier/QYM_GB78_DISCOVERED.lean
+            cp "$OUT/QYM_GB78_RESULT.json" .github/qym-frontier/QYM_GB78_RESULT.json
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .github/qym-frontier/QYM_GB78_DISCOVERY.json \
+            .github/qym-frontier/QYM_GB78_DISCOVERY.md
+          [[ ! -f .github/qym-frontier/QYM_GB78_DISCOVERED.lean ]] || \
+            git add .github/qym-frontier/QYM_GB78_DISCOVERED.lean \
+              .github/qym-frontier/QYM_GB78_RESULT.json
+          git commit -m 'QYM: index recent runs and freeze verified 78-error source' || true
+          git push origin "HEAD:${GITHUB_REF_NAME}"
+
+      - name: Upload discovery evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-gb78-discovery-${{ github.sha }}-attempt${{ github.run_attempt }}
+          path: /tmp/qym-gb78-discovery
+          if-no-files-found: error
+          retention-days: 30
