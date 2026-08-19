@@ -1,0 +1,160 @@
+name: GPT QYM Probe40b stabilizer plus horocycle integrated
+
+on:
+  push:
+    branches: [gpt/fa-qym-clean-final-20260816]
+    paths:
+      - .github/workflows/gpt-qym-probe40b-stabilizer-horocycle.yml
+      - .github/qym_probe40_full_stabilizer_patch.py
+      - .github/qym_probe40b_horocycle_patch.py
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+
+concurrency:
+  group: qym-probe40b-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  direct:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+    env:
+      QYM: PrimalitySheafVerification/QYM.lean
+      OLEAN: .lake/build/lib/lean/PrimalitySheafVerification
+      OUT: /tmp/qym-probe40b
+      AUTH_ARTIFACT: qym-probe35-flat_named-da2958a421605d9b267afdce59990ec19c1be10f-attempt1
+      AUTH_SHA: 00f2c8ba7fc0329b04ae67c5a67b5814f8118b14222a7831a0401c9d3d374e53
+      AUTH_BLOB: ee2faeaf281215b0e9b304a96ccdce3e8cdc0ffb
+      CANDIDATE_SHA: f1f82104eafe6cce42fc6c0db4d16a0f293f70891302a4453ba14aa8453dfcb0
+      CANDIDATE_BLOB: 0b20e890c0a62ae0b7b2d43f841ccfe570758ddb
+
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Download and gate exact 89-error authority
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: ${{ env.AUTH_ARTIFACT }}
+          path: ${{ runner.temp }}/authority
+          github-token: ${{ github.token }}
+          repository: leegahuyn/mathlib4
+          run-id: 32095253829
+
+      - name: Gate authority and install pinned environment
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT"
+          A="$RUNNER_TEMP/authority"
+          for f in QYM.candidate-probe35-flat_named.lean QYM.exit QYM.error-headers.txt QYM.panic-lines.txt PROBE_RESULT.json; do test -f "$A/$f"; done
+          test "$(sha256sum "$A/QYM.candidate-probe35-flat_named.lean" | awk '{print $1}')" = "$AUTH_SHA"
+          test "$(git hash-object --no-filters "$A/QYM.candidate-probe35-flat_named.lean")" = "$AUTH_BLOB"
+          test "$(cat "$A/QYM.exit")" = 1
+          test "$(wc -l < "$A/QYM.error-headers.txt")" -eq 89
+          test ! -s "$A/QYM.panic-lines.txt"
+          cp "$A/QYM.candidate-probe35-flat_named.lean" "$OUT/QYM.authority.lean"
+          cp "$QYM" "$OUT/QYM.canonical.lean"
+          sha256sum "$QYM" > "$OUT/canonical-before.sha256"
+          git hash-object --no-filters "$QYM" > "$OUT/canonical-before.blob"
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none > "$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" > "$OUT/toolchain.log" 2>&1
+          lake exe cache get > "$OUT/mathlib-cache.log" 2>&1
+          lean --version | tee "$OUT/lean-version.txt"
+
+      - name: Restore verified project dependency objects
+        id: deps
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: |
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.ilean
+          key: qym-probe4-deps-v1-${{ runner.os }}-${{ hashFiles('lean-toolchain', 'lake-manifest.json', 'lakefile.lean', 'PrimalitySheafVerification/Mock2.lean', 'PrimalitySheafVerification/Mock2_Advanced.lean', 'PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean', 'PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean') }}
+
+      - name: Ensure project dependency objects
+        shell: bash
+        env:
+          HIT: ${{ steps.deps.outputs.cache-hit }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$OLEAN"
+          if [[ "$HIT" != true ]]; then
+            for stem in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated; do
+              cap=1
+              [[ "$stem" = Mock2_FunctionalAnalysis || "$stem" = Mock2_FunctionalAnalysis_Integrated ]] && cap=2000
+              lake env lean "-DmaxErrors=$cap" -DwarningAsError=false -o "$OLEAN/$stem.olean" -i "$OLEAN/$stem.ilean" "PrimalitySheafVerification/$stem.lean" > "$OUT/$stem.log" 2>&1
+            done
+          fi
+          for stem in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated; do test -s "$OLEAN/$stem.olean" && test -s "$OLEAN/$stem.ilean"; done
+
+      - name: Materialize and full-compile exact candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp "$OUT/QYM.authority.lean" "$QYM"
+          python3 -B .github/qym_probe40_full_stabilizer_patch.py "$QYM" "$OUT/STABILIZER_PATCH_RESULT.json"
+          python3 -B .github/qym_probe40b_horocycle_patch.py "$QYM" "$OUT/PATCH_RESULT.json"
+          test "$(sha256sum "$QYM" | awk '{print $1}')" = "$CANDIDATE_SHA"
+          test "$(git hash-object --no-filters "$QYM")" = "$CANDIDATE_BLOB"
+          cp "$QYM" "$OUT/QYM.candidate.lean"
+          set +e
+          /usr/bin/time -v -o "$OUT/QYM.time" lake env lean -DmaxErrors=10000 -DwarningAsError=false -o "$RUNNER_TEMP/QYM.olean" -i "$RUNNER_TEMP/QYM.ilean" "$QYM" > "$OUT/QYM.log" 2>&1
+          rc=$?
+          set -e
+          echo "$rc" > "$OUT/QYM.exit"
+          if [[ "$rc" -eq 0 ]]; then
+            cp "$RUNNER_TEMP/QYM.olean" "$OUT/QYM.olean"
+            cp "$RUNNER_TEMP/QYM.ilean" "$OUT/QYM.ilean"
+            sha256sum "$OUT/QYM.olean" "$OUT/QYM.ilean" > "$OUT/QYM.outputs.sha256"
+          fi
+          exit 0
+
+      - name: Restore canonical and summarize
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp "$OUT/QYM.canonical.lean" "$QYM"
+          python3 -B .github/qym_probe_summarize.py "$OUT" qym-probe40b-stabilizer-horocycle-v1 "$CANDIDATE_SHA" "$CANDIDATE_BLOB" "$AUTH_SHA"
+          test "$(sha256sum "$QYM" | awk '{print $1}')" = "$(awk '{print $1}' "$OUT/canonical-before.sha256")"
+          test "$(git hash-object --no-filters "$QYM")" = "$(cat "$OUT/canonical-before.blob")"
+          test -z "$(git status --porcelain=v1 --untracked-files=all)"
+
+      - name: Upload immutable full-QYM evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-probe40b-${{ github.sha }}-attempt${{ github.run_attempt }}
+          path: /tmp/qym-probe40b/**
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Require strict improvement or TRUE PASS
+        if: always()
+        shell: bash
+        run: |
+          python3 - "$OUT/PROBE_RESULT.json" <<'PY'
+          import json, os, sys
+          r=json.load(open(sys.argv[1],encoding='utf-8'))
+          assert r['candidate_qym_sha256']==os.environ['CANDIDATE_SHA']
+          assert r['candidate_qym_blob']==os.environ['CANDIDATE_BLOB']
+          assert r['panic_lines']==0
+          if r['semantic_pass']:
+              raise SystemExit(0)
+          if r['error_headers'] >= 89:
+              raise SystemExit(1)
+          PY
