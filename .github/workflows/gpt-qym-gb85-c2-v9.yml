@@ -1,4 +1,5 @@
 name: GPT QYM GB85 C2 v9 preserve trace
+# trigger: exact-trace-direct-lean-1
 
 on:
   push:
