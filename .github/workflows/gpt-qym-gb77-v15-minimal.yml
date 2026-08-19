@@ -1,0 +1,158 @@
+name: GPT QYM GB77 V15 minimal direct matrix
+
+on:
+  push:
+    branches:
+      - gpt/qym-gb77-v15-cumulative-groupoid-20260820
+    paths:
+      - .github/workflows/gpt-qym-gb77-v15-minimal.yml
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: gpt-qym-gb77-v15-minimal
+  cancel-in-progress: true
+
+env:
+  BRANCH: gpt/qym-gb77-v15-cumulative-groupoid-20260820
+  QYM: PrimalitySheafVerification/QYM.lean
+  OLEAN: .lake/build/lib/lean/PrimalitySheafVerification
+  BASE_SHA256: b6f0126c27dfc08b5f81c306a7140f9531fcc3d6ca6b75dd8abbd71101d458fd
+  BASE_BLOB: c6e8883353b350f22b7f48d955fc5cfa4e61f88f
+
+jobs:
+  heartbeat:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - name: Record exact GB77 run identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF_NAME" = "$BRANCH"
+          test "$(sha256sum "$QYM" | awk '{print $1}')" = "$BASE_SHA256"
+          test "$(git hash-object "$QYM")" = "$BASE_BLOB"
+          test "$(sha256sum .github/qym-frontier/QYM_GB77_BEST.lean | awk '{print $1}')" = "$BASE_SHA256"
+          test "$(git hash-object .github/qym-frontier/QYM_GB77_BEST.lean)" = "$BASE_BLOB"
+          cmp -s "$QYM" .github/qym-frontier/QYM_GB77_BEST.lean
+          mkdir -p .github/qym-frontier
+          printf '%s\n' \
+            '{' \
+            '  "schema": "qym-gb77-v15-minimal-live-v1",' \
+            '  "source_baseline": "GB77",' \
+            '  "source_errors": 77,' \
+            '  "source_sha256": "b6f0126c27dfc08b5f81c306a7140f9531fcc3d6ca6b75dd8abbd71101d458fd",' \
+            '  "source_blob": "c6e8883353b350f22b7f48d955fc5cfa4e61f88f",' \
+            '  "known_descendant_errors": 76,' \
+            "  \"run_id\": ${GITHUB_RUN_ID}," \
+            "  \"trigger_sha\": \"${GITHUB_SHA}\"," \
+            '  "phase": "RUNNING",' \
+            '  "immutable_gb77_preserved": true' \
+            '}' > .github/qym-frontier/V15_MINIMAL_LIVE_STATUS.json
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .github/qym-frontier/V15_MINIMAL_LIVE_STATUS.json
+          git commit -m "QYM GB77 V15 minimal: publish run ${GITHUB_RUN_ID} [skip ci]"
+          git push origin "HEAD:$BRANCH"
+
+  candidate:
+    needs: heartbeat
+    name: V15-min-${{ matrix.variant }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        variant:
+          - explicit_helpers
+          - fact_instances
+          - inline_duplicate
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - name: Gate exact GB77
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF_NAME" = "$BRANCH"
+          test "$(sha256sum "$QYM" | awk '{print $1}')" = "$BASE_SHA256"
+          test "$(git hash-object "$QYM")" = "$BASE_BLOB"
+          test "$(sha256sum .github/qym-frontier/QYM_GB77_BEST.lean | awk '{print $1}')" = "$BASE_SHA256"
+          test "$(git hash-object .github/qym-frontier/QYM_GB77_BEST.lean)" = "$BASE_BLOB"
+          cmp -s "$QYM" .github/qym-frontier/QYM_GB77_BEST.lean
+          python3 -m py_compile \
+            .github/qym_patch_gb77_v14_right_normal_im.py \
+            .github/qym_gb77_v15_cumulative_driver.py
+          mkdir -p "$OLEAN" "/tmp/qym-gb77-v15/${{ matrix.variant }}"
+      - name: Install Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT="/tmp/qym-gb77-v15/${{ matrix.variant }}"
+          curl --retry 8 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none > "$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          tc="$(tr -d '\r\n' < lean-toolchain)"
+          elan toolchain install "$tc" >> "$OUT/toolchain.log" 2>&1
+          lean --version | tee "$OUT/lean-version.txt"
+          lake --version | tee "$OUT/lake-version.txt"
+          lake exe cache get >> "$OUT/mathlib-cache.log" 2>&1
+      - name: Restore dependency objects
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: |
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.ilean
+          key: qym-deps-v4-${{ runner.os }}-${{ hashFiles('lean-toolchain','lake-manifest.json','lakefile.lean','PrimalitySheafVerification/Mock2.lean','PrimalitySheafVerification/Mock2_Advanced.lean','PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean','PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean') }}
+          restore-keys: |
+            qym-deps-v3-${{ runner.os }}-
+            qym-probe4-deps-v1-${{ runner.os }}-
+      - name: Ensure dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT="/tmp/qym-gb77-v15/${{ matrix.variant }}"
+          for source in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated; do
+            if [[ ! -s "$OLEAN/$source.olean" || ! -s "$OLEAN/$source.ilean" ]]; then
+              max_errors=1
+              if [[ "$source" = Mock2_FunctionalAnalysis || "$source" = Mock2_FunctionalAnalysis_Integrated ]]; then
+                max_errors=2000
+              fi
+              rm -f "$OLEAN/$source.olean" "$OLEAN/$source.ilean"
+              lake env lean "-DmaxErrors=$max_errors" -DwarningAsError=false \
+                -o "$OLEAN/$source.olean" -i "$OLEAN/$source.ilean" \
+                "PrimalitySheafVerification/$source.lean" > "$OUT/$source.log" 2>&1
+            fi
+            test -s "$OLEAN/$source.olean"
+            test -s "$OLEAN/$source.ilean"
+          done
+      - name: Run cumulative exact-GB77 direct Lean
+        shell: bash
+        env:
+          OUT_ROOT: /tmp/qym-gb77-v15
+        run: python3 -B .github/qym_gb77_v15_cumulative_driver.py candidate '${{ matrix.variant }}'
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-gb77-v15-min-${{ matrix.variant }}-${{ github.run_id }}
+          path: /tmp/qym-gb77-v15/${{ matrix.variant }}
+          if-no-files-found: error
+          retention-days: 30
