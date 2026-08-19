@@ -1,0 +1,106 @@
+name: GPT QYM GB85 chained frontier v9
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - gpt/qym-gb85-c2-v8-20260819
+    paths:
+      - .github/workflows/gpt-qym-gb85-v9-frontier.yml
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: qym-gb85-c2-v8
+  cancel-in-progress: false
+
+env:
+  BASE_ARTIFACT_ID: "9354072137"
+  BASE_SHA256: "f4c9b27a297be772cde7183526378ad42ae826053f69cf3ce521670da4f06210"
+  BASE_BLOB: "bd28d0436230a8f0bcb01806dac01787542256b8"
+  BASE_ERRORS: "85"
+  QYM_PATH: PrimalitySheafVerification/QYM.lean
+  OUT: qym-gb85-v9-frontier-output
+
+jobs:
+  capture-next-verified-frontier:
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    steps:
+      - name: Checkout latest serial frontier
+        uses: actions/checkout@v4
+        with:
+          ref: gpt/qym-gb85-c2-v8-20260819
+          fetch-depth: 0
+
+      - name: Select promoted source or recover immutable GB85
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          rm -rf "$OUT"
+          mkdir -p "$OUT/artifact" "$OUT/source"
+          promoted=false
+          if [ -f PrimalitySheafVerification/QYM_GB85_C2_V8_RESULT.json ]; then
+            promoted="$(jq -r '.promoted // false' PrimalitySheafVerification/QYM_GB85_C2_V8_RESULT.json)"
+          fi
+          if [ "$promoted" = "true" ]; then
+            cp "$QYM_PATH" "$OUT/source/QYM.lean"
+            printf '%s\n' promoted > "$OUT/source_origin.txt"
+          else
+            gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/$BASE_ARTIFACT_ID/zip" > "$OUT/gb85.zip"
+            unzip -q "$OUT/gb85.zip" -d "$OUT/artifact"
+            python3 .github/qym_gb85_v8_recover.py "$OUT/artifact" "$OUT/source/QYM.lean" "$BASE_SHA256" "$BASE_BLOB" "$BASE_ERRORS" > "$OUT/recovery.json"
+            printf '%s\n' immutable-gb85 > "$OUT/source_origin.txt"
+          fi
+
+      - name: Install pinned Lean and Mathlib cache
+        run: |
+          set -euo pipefail
+          curl -sSfL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          export PATH="$HOME/.elan/bin:$PATH"
+          elan toolchain install "$(cat lean-toolchain)"
+          lake exe cache get
+
+      - name: Directly compile prerequisites and selected QYM
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          export LEAN_ABORT_ON_PANIC=1
+          timeout 5400 lake env lean -DmaxErrors=2000 PrimalitySheafVerification/Mock2.lean > "$OUT/Mock2.log" 2>&1
+          timeout 5400 lake env lean -DmaxErrors=2000 PrimalitySheafVerification/Mock2_Advanced.lean > "$OUT/Mock2_Advanced.log" 2>&1
+          timeout 10800 lake env lean -DmaxErrors=2000 PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean > "$OUT/Mock2_FunctionalAnalysis.log" 2>&1
+          set +e
+          timeout 10800 lake env lean -DmaxErrors=2000 "$OUT/source/QYM.lean" > "$OUT/QYM.full.log" 2>&1
+          qym_exit=$?
+          set -e
+          python3 .github/qym_gb85_v8_metrics.py parse "$OUT/QYM.full.log" "$qym_exit" "$OUT/FRONTIER.json" "$OUT/source/QYM.lean"
+          line="$(jq -r '.first_error.line // 1' "$OUT/FRONTIER.json")"
+          start=$(( line > 80 ? line - 80 : 1 ))
+          end=$(( line + 160 ))
+          sed -n "${start},${end}p" "$OUT/source/QYM.lean" > "$OUT/FIRST_ERROR_CONTEXT.lean.txt"
+          printf '%s\n' "$start" > "$OUT/context_start_line.txt"
+          printf '%s\n' "$end" > "$OUT/context_end_line.txt"
+
+      - name: Commit compact verified frontier card
+        run: |
+          set -euo pipefail
+          jq --arg run_id "$GITHUB_RUN_ID" --arg run_url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" --arg origin "$(cat "$OUT/source_origin.txt")" '. + {run_id:$run_id,run_url:$run_url,source_origin:$origin,full_compile_executed:true}' "$OUT/FRONTIER.json" > PrimalitySheafVerification/QYM_GB85_V9_FRONTIER.json
+          cp "$OUT/FIRST_ERROR_CONTEXT.lean.txt" PrimalitySheafVerification/QYM_GB85_V9_FIRST_ERROR_CONTEXT.txt
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add PrimalitySheafVerification/QYM_GB85_V9_FRONTIER.json PrimalitySheafVerification/QYM_GB85_V9_FIRST_ERROR_CONTEXT.txt
+          git commit -m "QYM: record chained verified v9 frontier"
+          git push origin HEAD:gpt/qym-gb85-c2-v8-20260819
+
+      - name: Upload complete frontier evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qym-gb85-v9-frontier-${{ github.run_id }}
+          path: qym-gb85-v9-frontier-output
+          if-no-files-found: warn
+          retention-days: 30
