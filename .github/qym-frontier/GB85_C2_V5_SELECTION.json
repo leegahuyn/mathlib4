@@ -1,0 +1,94 @@
+{
+  "baseline": {
+    "blob": "bd28d0436230a8f0bcb01806dac01787542256b8",
+    "error_headers": 85,
+    "sha256": "f4c9b27a297be772cde7183526378ad42ae826053f69cf3ce521670da4f06210"
+  },
+  "best": null,
+  "promoted": false,
+  "rejected": [
+    {
+      "reason": "no-full-or-source",
+      "variant": "simp_funprop_div_change"
+    },
+    {
+      "reason": "no-full-or-source",
+      "variant": "ofreal_add_mul_inv_simpa"
+    },
+    {
+      "reason": "no-full-or-source",
+      "variant": "ofreal_add_div_change"
+    },
+    {
+      "reason": "no-full-or-source",
+      "variant": "simp_funprop_div_simpa"
+    },
+    {
+      "reason": "no-full-or-source",
+      "variant": "funprop_with_have_mul_inv_change"
+    },
+    {
+      "reason": "no-full-or-source",
+      "variant": "ofreal_add_mul_inv_change"
+    },
+    {
+      "reason": "no-full-or-source",
+      "variant": "funprop_with_have_mul_inv_simpa"
+    },
+    {
+      "reason": "no-full-or-source",
+      "variant": "unfold_funprop_div_simpa"
+    },
+    {
+      "reason": "no-full-or-source",
+      "variant": "ofreal_add_div_simpa"
+    },
+    {
+      "reason": "no-full-or-source",
+      "variant": "funprop_with_have_div_simpa"
+    },
+    {
+      "reason": "no-full-or-source",
+      "variant": "ofreal_add_funprop_div_simpa"
+    },
+    {
+      "reason": "no-full-or-source",
+      "variant": "simp_funprop_mul_inv_simpa"
+    },
+    {
+      "reason": "no-full-or-source",
+      "variant": "simp_funprop_mul_inv_change"
+    },
+    {
+      "reason": "no-full-or-source",
+      "variant": "ofreal_add_funprop_mul_inv_simpa"
+    },
+    {
+      "reason": "no-full-or-source",
+      "variant": "unfold_funprop_mul_inv_change"
+    },
+    {
+      "reason": "no-full-or-source",
+      "variant": "ofreal_add_funprop_mul_inv_change"
+    },
+    {
+      "reason": "no-full-or-source",
+      "variant": "unfold_funprop_div_change"
+    },
+    {
+      "reason": "no-full-or-source",
+      "variant": "ofreal_add_funprop_div_change"
+    },
+    {
+      "reason": "no-full-or-source",
+      "variant": "unfold_funprop_mul_inv_simpa"
+    },
+    {
+      "reason": "no-full-or-source",
+      "variant": "funprop_with_have_div_change"
+    }
+  ],
+  "run_id": 32232018328,
+  "schema": "qym-gb85-c2-v5-selection",
+  "valid": []
+}
