@@ -1,0 +1,8 @@
+{
+  "schema": "qym-gb85-v13-skip",
+  "strict_improvement": false,
+  "reason": "C2 v12 result missing",
+  "run_id": "32252520035",
+  "run_url": "https://github.com/leegahuyn/mathlib4/actions/runs/32252520035",
+  "promoted": false
+}
