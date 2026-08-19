@@ -1,0 +1,134 @@
+name: GPT QYM GB85 C2 heredoc-free v8
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - gpt/qym-gb85-c2-v8-20260819
+    paths:
+      - .github/workflows/gpt-qym-gb85-c2-v8.yml
+      - .github/qym_gb85_v8_recover.py
+      - .github/qym_gb85_v8_patch.py
+      - .github/qym_gb85_v8_metrics.py
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: qym-gb85-c2-v8
+  cancel-in-progress: false
+
+env:
+  BASE_ARTIFACT_ID: "9354072137"
+  BASE_SHA256: "f4c9b27a297be772cde7183526378ad42ae826053f69cf3ce521670da4f06210"
+  BASE_BLOB: "bd28d0436230a8f0bcb01806dac01787542256b8"
+  BASE_ERRORS: "85"
+  QYM_PATH: PrimalitySheafVerification/QYM.lean
+  OUT: qym-gb85-c2-v8-output
+
+jobs:
+  c2-direct-lean:
+    runs-on: ubuntu-latest
+    timeout-minutes: 355
+    steps:
+      - name: Checkout exact repair branch
+        uses: actions/checkout@v4
+        with:
+          ref: gpt/qym-gb85-c2-v8-20260819
+          fetch-depth: 0
+
+      - name: Recover immutable verified 85-error source
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          rm -rf "$OUT"
+          mkdir -p "$OUT/artifact" "$OUT/baseline"
+          gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/$BASE_ARTIFACT_ID/zip" > "$OUT/gb85.zip"
+          unzip -q "$OUT/gb85.zip" -d "$OUT/artifact"
+          python3 .github/qym_gb85_v8_recover.py "$OUT/artifact" "$OUT/baseline/QYM.GB85.lean" "$BASE_SHA256" "$BASE_BLOB" "$BASE_ERRORS" > "$OUT/recovery.json"
+          sha256sum "$OUT/baseline/QYM.GB85.lean"
+
+      - name: Install pinned Lean and Mathlib cache
+        run: |
+          set -euo pipefail
+          curl -sSfL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          export PATH="$HOME/.elan/bin:$PATH"
+          elan toolchain install "$(cat lean-toolchain)"
+          lake exe cache get
+          lean --version
+
+      - name: Directly compile completed prerequisites
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          export LEAN_ABORT_ON_PANIC=1
+          timeout 5400 lake env lean -DmaxErrors=2000 PrimalitySheafVerification/Mock2.lean > "$OUT/Mock2.log" 2>&1
+          timeout 5400 lake env lean -DmaxErrors=2000 PrimalitySheafVerification/Mock2_Advanced.lean > "$OUT/Mock2_Advanced.log" 2>&1
+          timeout 10800 lake env lean -DmaxErrors=2000 PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean > "$OUT/Mock2_FunctionalAnalysis.log" 2>&1
+
+      - name: Generate and directly test C2 proof families
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          export LEAN_ABORT_ON_PANIC=1
+          variants=(mulinv_simpa mulinv_rw mulinv_change direct_div cases_funprop)
+          dirs=()
+          for variant in "${variants[@]}"; do
+            dir="$OUT/$variant"
+            dirs+=("$dir")
+            mkdir -p "$dir"
+            python3 .github/qym_gb85_v8_patch.py "$variant" "$OUT/baseline/QYM.GB85.lean" "$dir/QYM.lean" > "$dir/patch.json"
+            set +e
+            timeout 3600 lake env lean -DmaxErrors=1 "$dir/QYM.lean" > "$dir/local.log" 2>&1
+            local_exit=$?
+            set -e
+            python3 .github/qym_gb85_v8_metrics.py parse "$dir/local.log" "$local_exit" "$dir/local.json" "$dir/QYM.lean"
+            gate="$(python3 .github/qym_gb85_v8_metrics.py gate "$dir/local.json" "$dir/patch.json")"
+            printf '%s\n' "$gate" > "$dir/c2_gate.txt"
+            if [ "$gate" = "true" ]; then
+              set +e
+              timeout 10800 lake env lean -DmaxErrors=2000 "$dir/QYM.lean" > "$dir/full.log" 2>&1
+              full_exit=$?
+              set -e
+              python3 .github/qym_gb85_v8_metrics.py parse "$dir/full.log" "$full_exit" "$dir/full.json" "$dir/QYM.lean"
+            fi
+          done
+          python3 .github/qym_gb85_v8_metrics.py select "$OUT/SELECTION.json" "$OUT/WINNER_PATH.txt" "${dirs[@]}"
+
+      - name: Promote only a verified strict improvement
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          if jq -e '.strict_improvement == true' "$OUT/SELECTION.json" >/dev/null; then
+            winner="$(cat "$OUT/WINNER_PATH.txt")"
+            cp "$winner" "$QYM_PATH"
+            cp "$OUT/SELECTION.json" PrimalitySheafVerification/QYM_GB85_C2_V8_RESULT.json
+            jq --arg run_id "$GITHUB_RUN_ID" --arg run_url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" '. + {run_id:$run_id,run_url:$run_url,promoted:true}' PrimalitySheafVerification/QYM_GB85_C2_V8_RESULT.json > "$OUT/result.tmp"
+            mv "$OUT/result.tmp" PrimalitySheafVerification/QYM_GB85_C2_V8_RESULT.json
+            git config user.name github-actions[bot]
+            git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+            git add "$QYM_PATH" PrimalitySheafVerification/QYM_GB85_C2_V8_RESULT.json
+            git commit -m "QYM: promote verified GB85 C2 v8 improvement"
+            git push origin HEAD:gpt/qym-gb85-c2-v8-20260819
+          else
+            cp "$OUT/SELECTION.json" PrimalitySheafVerification/QYM_GB85_C2_V8_RESULT.json
+            jq --arg run_id "$GITHUB_RUN_ID" --arg run_url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" '. + {run_id:$run_id,run_url:$run_url,promoted:false}' PrimalitySheafVerification/QYM_GB85_C2_V8_RESULT.json > "$OUT/result.tmp"
+            mv "$OUT/result.tmp" PrimalitySheafVerification/QYM_GB85_C2_V8_RESULT.json
+            git config user.name github-actions[bot]
+            git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+            git add PrimalitySheafVerification/QYM_GB85_C2_V8_RESULT.json
+            git commit -m "QYM: record GB85 C2 v8 direct Lean diagnostics"
+            git push origin HEAD:gpt/qym-gb85-c2-v8-20260819
+          fi
+
+      - name: Upload all direct Lean evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qym-gb85-c2-v8-${{ github.run_id }}
+          path: qym-gb85-c2-v8-output
+          if-no-files-found: warn
+          retention-days: 30
