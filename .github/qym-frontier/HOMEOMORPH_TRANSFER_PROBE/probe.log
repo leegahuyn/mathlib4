@@ -14,9 +14,3 @@ The difference between `let` and `letI` is that `letI` inlines the value.
 But this is not relevant for proofs because of proof irrelevance.
 
 Note: This linter can be disabled with `set_option linter.style.haveILetI false`
-.github/qym-probes/qym_homeomorph_transfer_probe.lean:77:4: error: Type mismatch
-  Eq.symm (pullback_extChartAt_apply I F x x)
-has type
-  ↑(extChartAt I (F x)) (F x) = ↑(extChartAt I x) x
-but is expected to have type
-  (↑(extChartAt I (F x)) ∘ ⇑F ∘ ↑(extChartAt I x).symm) (↑(extChartAt I x) x) = id (↑(extChartAt I x) x)
