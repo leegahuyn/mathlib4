@@ -1,0 +1,4 @@
+baseline_artifact=9326706450
+baseline_errors=89
+variants=direct_div,mul_inv_using_bang,direct_div_cases
+triggered_at=2026-08-19T04:47:00Z
