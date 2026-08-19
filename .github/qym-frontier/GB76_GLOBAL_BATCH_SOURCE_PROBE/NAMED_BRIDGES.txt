@@ -1,0 +1,1 @@
+# Names specifically suggesting equivalences or coercion bridges
