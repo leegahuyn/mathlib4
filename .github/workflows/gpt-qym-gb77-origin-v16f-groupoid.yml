@@ -1,4 +1,4 @@
-# registration retry
+# observable candidate-run retry
 name: GPT QYM GB77-origin V16f groupoid matrix
 
 on:
@@ -11,7 +11,7 @@ on:
 
 permissions:
   actions: read
-  contents: read
+  contents: write
 
 concurrency:
   group: gpt-qym-gb77-origin-v16f-groupoid
@@ -44,6 +44,13 @@ jobs:
         with:
           ref: ${{ github.sha }}
           fetch-depth: 0
+
+      - name: Publish unique candidate run branch
+        continue-on-error: true
+        shell: bash
+        run: |
+          status_branch="gpt/qym-v16f-${{ matrix.variant }}-run-${GITHUB_RUN_ID}"
+          git push origin "${GITHUB_SHA}:refs/heads/${status_branch}"
 
       - name: Gate immutable GB77 origin and deterministic scripts
         shell: bash
