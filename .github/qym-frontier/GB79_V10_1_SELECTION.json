@@ -1,0 +1,275 @@
+{
+  "baseline": {
+    "error_headers": 83,
+    "job_id": 96044280200,
+    "qym_blob": "43aee9530d6c665fbc5e082b3a5b3ef3367f069b",
+    "qym_sha256": "ea7c26fd104104e852a6c678017b1fb0c76abb062edd758228c4bbe506dbe8d1",
+    "run_id": 32245256779
+  },
+  "best": {
+    "baseline_error_headers": 83,
+    "baseline_qym_blob": "43aee9530d6c665fbc5e082b3a5b3ef3367f069b",
+    "baseline_qym_sha256": "ea7c26fd104104e852a6c678017b1fb0c76abb062edd758228c4bbe506dbe8d1",
+    "candidate_qym_blob": "33e4fab1130e4c17ea5d212fe2691c3e0c0eb8d3",
+    "candidate_qym_sha256": "790b40c05a8f3735dd171a135eda65de92ab68b247d13e7e2ffe2968e3798421",
+    "error_codes": {
+      "lean.synthInstanceFailed": 8,
+      "uncoded": 71
+    },
+    "error_headers": 79,
+    "exit": 1,
+    "first_error": {
+      "code": null,
+      "column": 2,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 44233,
+      "message": "Type mismatch: After simplification, term",
+      "severity": "error"
+    },
+    "ilean_exists": false,
+    "ilean_sha256": null,
+    "last_error": {
+      "code": null,
+      "column": 78,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 59256,
+      "message": "unsolved goals",
+      "severity": "error"
+    },
+    "log_sha256": "df6fe61475943191f543933121fe4392ea6b1d832cf60c9f513d801b288a8367",
+    "olean_exists": false,
+    "olean_sha256": null,
+    "panic_lines": 0,
+    "phase": "full",
+    "run_id": "32256493063",
+    "semantic_pass": false,
+    "strict_improvement": true,
+    "trigger_sha": "ed40d8ebdc5a53d266cc5ece5baaa6f7e4059145",
+    "variant": "rw_det_coe",
+    "warning_headers": 358
+  },
+  "best_variant": "rw_det_coe",
+  "candidates": [
+    {
+      "candidate": "/tmp/qym-gb83-v10-1-chartbridge/QYM.candidate-rw_det_coe.lean",
+      "full": {
+        "baseline_error_headers": 83,
+        "baseline_qym_blob": "43aee9530d6c665fbc5e082b3a5b3ef3367f069b",
+        "baseline_qym_sha256": "ea7c26fd104104e852a6c678017b1fb0c76abb062edd758228c4bbe506dbe8d1",
+        "candidate_qym_blob": "33e4fab1130e4c17ea5d212fe2691c3e0c0eb8d3",
+        "candidate_qym_sha256": "790b40c05a8f3735dd171a135eda65de92ab68b247d13e7e2ffe2968e3798421",
+        "error_codes": {
+          "lean.synthInstanceFailed": 8,
+          "uncoded": 71
+        },
+        "error_headers": 79,
+        "exit": 1,
+        "first_error": {
+          "code": null,
+          "column": 2,
+          "file": "PrimalitySheafVerification/QYM.lean",
+          "line": 44233,
+          "message": "Type mismatch: After simplification, term",
+          "severity": "error"
+        },
+        "ilean_exists": false,
+        "ilean_sha256": null,
+        "last_error": {
+          "code": null,
+          "column": 78,
+          "file": "PrimalitySheafVerification/QYM.lean",
+          "line": 59256,
+          "message": "unsolved goals",
+          "severity": "error"
+        },
+        "log_sha256": "df6fe61475943191f543933121fe4392ea6b1d832cf60c9f513d801b288a8367",
+        "olean_exists": false,
+        "olean_sha256": null,
+        "panic_lines": 0,
+        "phase": "full",
+        "run_id": "32256493063",
+        "semantic_pass": false,
+        "strict_improvement": true,
+        "trigger_sha": "ed40d8ebdc5a53d266cc5ece5baaa6f7e4059145",
+        "variant": "rw_det_coe",
+        "warning_headers": 358
+      },
+      "local": {
+        "error_codes": {
+          "uncoded": 2
+        },
+        "error_headers": 2,
+        "exit": 1,
+        "first_error": {
+          "code": null,
+          "column": 2,
+          "file": "PrimalitySheafVerification/QYM.lean",
+          "line": 44233,
+          "message": "Type mismatch: After simplification, term",
+          "severity": "error"
+        },
+        "gate_line": 44229,
+        "ilean_exists": false,
+        "ilean_sha256": null,
+        "last_error": {
+          "code": null,
+          "column": 61,
+          "file": "PrimalitySheafVerification/QYM.lean",
+          "line": 44747,
+          "message": "maximum number of errors (1; from option `maxErrors`) reached, exiting",
+          "severity": "error"
+        },
+        "log_sha256": "ad1451dfab605723e92901a1a314087cff8f8862e04b5f064aeb450b75dacf12",
+        "normalize4_fixed": true,
+        "olean_exists": false,
+        "olean_sha256": null,
+        "panic_lines": 0,
+        "phase": "local",
+        "variant": "rw_det_coe",
+        "warning_headers": 222
+      },
+      "local_gate_pass": true,
+      "patch": {
+        "bytes": 2948384,
+        "candidate_blob": "33e4fab1130e4c17ea5d212fe2691c3e0c0eb8d3",
+        "candidate_sha256": "790b40c05a8f3735dd171a135eda65de92ab68b247d13e7e2ffe2968e3798421",
+        "forbidden": {
+          "Lean.ofReduceBool": 0,
+          "admit": 0,
+          "global_axiom": 0,
+          "maxHeartbeats_zero": 0,
+          "native_decide": 0,
+          "sorry": 0,
+          "unsafe": 0
+        },
+        "gate_line": 44229,
+        "input_blob": "43aee9530d6c665fbc5e082b3a5b3ef3367f069b",
+        "input_sha256": "ea7c26fd104104e852a6c678017b1fb0c76abb062edd758228c4bbe506dbe8d1",
+        "lf": 62342,
+        "schema": "qym-gb83-v10-1-chartbridge-patch-v1",
+        "variant": "rw_det_coe"
+      },
+      "variant": "rw_det_coe"
+    },
+    {
+      "candidate": "/tmp/qym-gb83-v10-1-chartbridge/QYM.candidate-congr_det_gl.lean",
+      "local": {
+        "error_codes": {
+          "uncoded": 2
+        },
+        "error_headers": 2,
+        "exit": 1,
+        "first_error": {
+          "code": null,
+          "column": 2,
+          "file": "PrimalitySheafVerification/QYM.lean",
+          "line": 44231,
+          "message": "Type mismatch: After simplification, term",
+          "severity": "error"
+        },
+        "gate_line": 44227,
+        "ilean_exists": false,
+        "ilean_sha256": null,
+        "last_error": {
+          "code": null,
+          "column": 61,
+          "file": "PrimalitySheafVerification/QYM.lean",
+          "line": 44745,
+          "message": "maximum number of errors (1; from option `maxErrors`) reached, exiting",
+          "severity": "error"
+        },
+        "log_sha256": "6db6dba0f52148a35dc94c4dcad8f2ba8c2ad99829f8bb926f8637663766a102",
+        "normalize4_fixed": true,
+        "olean_exists": false,
+        "olean_sha256": null,
+        "panic_lines": 0,
+        "phase": "local",
+        "variant": "congr_det_gl",
+        "warning_headers": 222
+      },
+      "local_gate_pass": true,
+      "patch": {
+        "bytes": 2948352,
+        "candidate_blob": "ef4ea6caf1413559522dc944352445444715c2ce",
+        "candidate_sha256": "eab64e31abc2ad0d6a8dcfc59c37a6b5601e69abf87b0b4f1efa19f8dcc4d561",
+        "forbidden": {
+          "Lean.ofReduceBool": 0,
+          "admit": 0,
+          "global_axiom": 0,
+          "maxHeartbeats_zero": 0,
+          "native_decide": 0,
+          "sorry": 0,
+          "unsafe": 0
+        },
+        "gate_line": 44227,
+        "input_blob": "43aee9530d6c665fbc5e082b3a5b3ef3367f069b",
+        "input_sha256": "ea7c26fd104104e852a6c678017b1fb0c76abb062edd758228c4bbe506dbe8d1",
+        "lf": 62340,
+        "schema": "qym-gb83-v10-1-chartbridge-patch-v1",
+        "variant": "congr_det_gl"
+      },
+      "variant": "congr_det_gl"
+    },
+    {
+      "candidate": "/tmp/qym-gb83-v10-1-chartbridge/QYM.candidate-rw_det_change.lean",
+      "local": {
+        "error_codes": {
+          "uncoded": 2
+        },
+        "error_headers": 2,
+        "exit": 1,
+        "first_error": {
+          "code": null,
+          "column": 2,
+          "file": "PrimalitySheafVerification/QYM.lean",
+          "line": 44231,
+          "message": "Type mismatch: After simplification, term",
+          "severity": "error"
+        },
+        "gate_line": 44227,
+        "ilean_exists": false,
+        "ilean_sha256": null,
+        "last_error": {
+          "code": null,
+          "column": 61,
+          "file": "PrimalitySheafVerification/QYM.lean",
+          "line": 44745,
+          "message": "maximum number of errors (1; from option `maxErrors`) reached, exiting",
+          "severity": "error"
+        },
+        "log_sha256": "6db6dba0f52148a35dc94c4dcad8f2ba8c2ad99829f8bb926f8637663766a102",
+        "normalize4_fixed": true,
+        "olean_exists": false,
+        "olean_sha256": null,
+        "panic_lines": 0,
+        "phase": "local",
+        "variant": "rw_det_change",
+        "warning_headers": 222
+      },
+      "local_gate_pass": true,
+      "patch": {
+        "bytes": 2948274,
+        "candidate_blob": "b492c33159e4193e45b8976fe035c1c78696475c",
+        "candidate_sha256": "d8051ae52b25485f9246dc0fd31a651fd36838257226a2e0a1aed5afe6198600",
+        "forbidden": {
+          "Lean.ofReduceBool": 0,
+          "admit": 0,
+          "global_axiom": 0,
+          "maxHeartbeats_zero": 0,
+          "native_decide": 0,
+          "sorry": 0,
+          "unsafe": 0
+        },
+        "gate_line": 44227,
+        "input_blob": "43aee9530d6c665fbc5e082b3a5b3ef3367f069b",
+        "input_sha256": "ea7c26fd104104e852a6c678017b1fb0c76abb062edd758228c4bbe506dbe8d1",
+        "lf": 62340,
+        "schema": "qym-gb83-v10-1-chartbridge-patch-v1",
+        "variant": "rw_det_change"
+      },
+      "variant": "rw_det_change"
+    }
+  ],
+  "schema": "qym-gb83-v10-normalize4-selection-v1",
+  "strict_improvement_found": true
+}

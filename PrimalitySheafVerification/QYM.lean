@@ -43904,6 +43904,7 @@ theorem baseEdgeCoordinate_hasDerivAt
     (ht : t ∈ QYM.FullCertification.P2NormalGreenExtension.regularEdgeParameterSet e) :
     HasDerivAt (baseEdgeCoordinate e.2)
       (baseEdgeVelocity e.2 t) t := by
+  letI : AddCommGroup ℂ := Complex.addCommGroup
   rcases e with ⟨q, k⟩
   cases k with
   | circularArc =>
@@ -43917,37 +43918,58 @@ theorem baseEdgeCoordinate_hasDerivAt
               ((Real.sqrt (1 - (s / 2) ^ 2) : ℝ) : ℂ))
             ((-t / (4 * Real.sqrt (1 - (t / 2) ^ 2)) : ℝ) : ℂ) t :=
         (hasDerivAt_circularHeight ht).ofReal_comp
+      have h0 := hx.add (hy.mul_const Complex.I)
+      have hfun :
+          ((fun s : ℝ => ((s / 2 : ℝ) : ℂ)) +
+            fun s : ℝ =>
+              ((Real.sqrt (1 - (s / 2) ^ 2) : ℝ) : ℂ) * Complex.I) =
+            (fun s : ℝ =>
+              Complex.mk (s / 2) (Real.sqrt (1 - (s / 2) ^ 2))) := by
+        funext s
+        apply Complex.ext <;> simp
       change HasDerivAt
         (fun s : ℝ =>
           Complex.mk (s / 2) (Real.sqrt (1 - (s / 2) ^ 2)))
         (Complex.mk ((1 : ℝ) / 2)
           (-t / (4 * Real.sqrt (1 - (t / 2) ^ 2)))) t
-      simpa [Complex.mk_eq_add_mul_I] using
-        hx.add (hy.mul_const Complex.I)
+      rw [← hfun]
+      simpa [Complex.mk_eq_add_mul_I] using h0
   | leftVerticalSegment =>
-      have h :=
-        ((((hasDerivAt_id (t : ℂ)).const_mul Complex.I).comp_ofReal).const_add
-            ((-((1 : ℝ) / 2) : ℂ) +
-              ((Real.sqrt 3 / 2 : ℝ) : ℂ) * Complex.I))
+      let c : ℂ :=
+        Complex.mk (-((1 : ℝ) / 2)) (Real.sqrt 3 / 2)
+      have hs : HasDerivAt (fun s : ℝ => (s : ℂ)) (1 : ℂ) t :=
+        (hasDerivAt_id t).ofReal_comp
+      have h0 := (hasDerivAt_const t c).add (hs.mul_const Complex.I)
+      have hfun :
+          ((fun _ : ℝ => c) + fun s : ℝ => (s : ℂ) * Complex.I) =
+            (fun s : ℝ =>
+              Complex.mk (-((1 : ℝ) / 2)) (Real.sqrt 3 / 2 + s)) := by
+        funext s
+        apply Complex.ext <;> simp [c]
       change HasDerivAt
         (fun s : ℝ =>
           Complex.mk (-((1 : ℝ) / 2)) (Real.sqrt 3 / 2 + s))
         Complex.I t
-      simpa [baseEdgeCoordinate, baseEdgeVelocity,
-        Complex.mk_eq_add_mul_I, add_mul,
-        mul_comm, mul_left_comm, mul_assoc] using h
+      rw [← hfun]
+      simpa using h0
   | rightVerticalSegment =>
-      have h :=
-        ((((hasDerivAt_id (t : ℂ)).const_mul Complex.I).comp_ofReal).const_add
-            ((((1 : ℝ) / 2 : ℝ) : ℂ) +
-              ((Real.sqrt 3 / 2 : ℝ) : ℂ) * Complex.I))
+      let c : ℂ :=
+        Complex.mk ((1 : ℝ) / 2) (Real.sqrt 3 / 2)
+      have hs : HasDerivAt (fun s : ℝ => (s : ℂ)) (1 : ℂ) t :=
+        (hasDerivAt_id t).ofReal_comp
+      have h0 := (hasDerivAt_const t c).add (hs.mul_const Complex.I)
+      have hfun :
+          ((fun _ : ℝ => c) + fun s : ℝ => (s : ℂ) * Complex.I) =
+            (fun s : ℝ =>
+              Complex.mk ((1 : ℝ) / 2) (Real.sqrt 3 / 2 + s)) := by
+        funext s
+        apply Complex.ext <;> simp [c]
       change HasDerivAt
         (fun s : ℝ =>
           Complex.mk ((1 : ℝ) / 2) (Real.sqrt 3 / 2 + s))
         Complex.I t
-      simpa [baseEdgeCoordinate, baseEdgeVelocity,
-        Complex.mk_eq_add_mul_I, add_mul,
-        mul_comm, mul_left_comm, mul_assoc] using h
+      rw [← hfun]
+      simpa using h0
 
 /-! ## 4. Transport through the selected coset representative -/
 
@@ -43977,17 +43999,31 @@ theorem selectedRepresentativeChart_hasStrictDerivAt
     (q : Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.GammaTwoRightCoset) (z : ℍ) :
     HasStrictDerivAt (selectedRepresentativeChart q)
       (1 / selectedRepresentativeDenom q (z : ℂ) ^ 2) (z : ℂ) := by
-  simpa [selectedRepresentativeChart, selectedRepresentativeCoordinate,
-    selectedRepresentativeDenom, selectedRepresentativeRealMatrix,
-    one_div] using
-      (UpperHalfPlane.hasStrictDerivAt_smul
-        (g := selectedRepresentativeRealMatrix q) (by
-          change 0 <
-            (((Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.gammaTwoCosetRep q :
-              SL(2, ℤ)) : GL (Fin 2) ℝ)).val.det
-          exact
-            Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseIntrinsicAdjointCutoff.integralMoebius_det_pos
-              (Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.gammaTwoCosetRep q)) z)
+  letI : AddCommGroup ℂ := Complex.addCommGroup
+  have hdet : (selectedRepresentativeRealMatrix q).val.det = 1 := by
+    simpa [selectedRepresentativeRealMatrix] using
+      (Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.gammaTwoCosetRep q :
+        SL(2, ℝ)).det_coe
+  have hpos : 0 < (selectedRepresentativeRealMatrix q).val.det := by
+    rw [hdet]
+    norm_num
+  have hraw :=
+    UpperHalfPlane.hasStrictDerivAt_smul
+      (g := selectedRepresentativeRealMatrix q) hpos z
+  have hchart :
+      selectedRepresentativeChart q =
+        (fun w : ℂ =>
+          ((selectedRepresentativeRealMatrix q • UpperHalfPlane.ofComplex w : ℍ) : ℂ)) := by
+    funext w
+    change
+      ((Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.gammaTwoCosetRep q •
+          UpperHalfPlane.ofComplex w : ℍ) : ℂ) =
+        ((selectedRepresentativeRealMatrix q • UpperHalfPlane.ofComplex w : ℍ) : ℂ)
+    rw [MulAction.compHom_smul_def]
+    rfl
+  rw [hchart]
+  rw [hdet] at hraw
+  simpa [selectedRepresentativeDenom] using hraw
 
 /-- Fully explicit complex coordinate of an actual selected polygon edge. -/
 def explicitActualEdgeCoordinate (e : QYM.FullCertification.PolygonTraceExtension.PolygonEdge) (t : ℝ) : ℂ :=
