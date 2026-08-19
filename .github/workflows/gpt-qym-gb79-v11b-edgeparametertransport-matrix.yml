@@ -1,0 +1,462 @@
+name: GPT QYM GB79 V11B edgeParameterTransport matrix
+
+on:
+  push:
+    branches:
+      - gpt/qym-gb79-v11b-edgeparametertransport-matrix-20260819
+    paths:
+      - .github/workflows/gpt-qym-gb79-v11b-edgeparametertransport-matrix.yml
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: gpt-qym-gb79-v11b-edgeparametertransport-matrix
+  cancel-in-progress: false
+
+env:
+  BRANCH: gpt/qym-gb79-v11b-edgeparametertransport-matrix-20260819
+  QYM: PrimalitySheafVerification/QYM.lean
+  OLEAN: .lake/build/lib/lean/PrimalitySheafVerification
+  BASE_ERRORS: '79'
+  BASE_SHA256: 790b40c05a8f3735dd171a135eda65de92ab68b247d13e7e2ffe2968e3798421
+  BASE_BLOB: 33e4fab1130e4c17ea5d212fe2691c3e0c0eb8d3
+  BASE_RUN_ID: '32256493063'
+  BASE_JOB_ID: '96079286207'
+  BASE_ARTIFACT_ID: '9367407419'
+
+jobs:
+  candidate:
+    name: V11B-${{ matrix.variant }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      max-parallel: 12
+      matrix:
+        variant:
+          - change_const_mul
+          - change_const_mul_exact
+          - change_mul
+          - change_mul_convert
+          - change_fun_prop
+          - unfold_fun_prop
+          - letI_mul
+          - letI_change_const_mul
+          - cases_fun_prop
+          - cases_deriv
+          - transparent_change
+          - transparent_mul
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - name: Gate exact authoritative GB79 source
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF_NAME" = "$BRANCH"
+          test "$(tr -d '\r\n' < lean-toolchain)" = leanprover/lean4:v4.33.0-rc1
+          test "$(sha256sum "$QYM" | awk '{print $1}')" = "$BASE_SHA256"
+          test "$(git hash-object "$QYM")" = "$BASE_BLOB"
+          test -z "$(git status --porcelain=v1 --untracked-files=all)"
+
+      - name: Install pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT="$RUNNER_TEMP/qym-v11b-${{ matrix.variant }}"
+          mkdir -p "$OUT" "$OLEAN"
+          echo "OUT=$OUT" >> "$GITHUB_ENV"
+          curl --retry 8 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none > "$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          tc="$(tr -d '\r\n' < lean-toolchain)"
+          for a in 1 2 3 4 5; do
+            elan toolchain install "$tc" >> "$OUT/toolchain.log" 2>&1 && break || sleep $((a * 5))
+          done
+          lean --version | tee "$OUT/lean-version.txt"
+          lake --version | tee "$OUT/lake-version.txt"
+          for a in 1 2 3 4 5; do
+            lake exe cache get >> "$OUT/mathlib-cache.log" 2>&1 && break || sleep $((a * 5))
+          done
+
+      - name: Restore completed dependency objects
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: |
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.ilean
+          key: qym-deps-v3-${{ runner.os }}-${{ hashFiles('lean-toolchain','lake-manifest.json','lakefile.lean','PrimalitySheafVerification/Mock2.lean','PrimalitySheafVerification/Mock2_Advanced.lean','PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean','PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean') }}
+          restore-keys: |
+            qym-probe4-deps-v1-${{ runner.os }}-
+
+      - name: Ensure dependency objects are complete
+        shell: bash
+        run: |
+          set -euo pipefail
+          for s in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated; do
+            if [[ ! -s "$OLEAN/$s.olean" || ! -s "$OLEAN/$s.ilean" ]]; then
+              cap=1
+              if [[ "$s" = Mock2_FunctionalAnalysis || "$s" = Mock2_FunctionalAnalysis_Integrated ]]; then cap=2000; fi
+              rm -f "$OLEAN/$s.olean" "$OLEAN/$s.ilean"
+              lake env lean "-DmaxErrors=$cap" -DwarningAsError=false \
+                -o "$OLEAN/$s.olean" -i "$OLEAN/$s.ilean" \
+                "PrimalitySheafVerification/$s.lean" > "$OUT/$s.log" 2>&1
+            fi
+            test -s "$OLEAN/$s.olean"
+            test -s "$OLEAN/$s.ilean"
+          done
+
+      - name: Generate exact-source candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp "$QYM" "$OUT/QYM.authority.lean"
+          python3 -B .github/qym_patch_gb79_v11b_edgeparametertransport.py \
+            '${{ matrix.variant }}' "$QYM" > "$OUT/PATCH_RESULT.json"
+          test "$(jq -r '.input_sha256' "$OUT/PATCH_RESULT.json")" = "$BASE_SHA256"
+          test "$(jq -r '.input_blob' "$OUT/PATCH_RESULT.json")" = "$BASE_BLOB"
+          test "$(sha256sum "$QYM" | awk '{print $1}')" = \
+            "$(jq -r '.candidate_sha256' "$OUT/PATCH_RESULT.json")"
+          cp "$QYM" "$OUT/QYM.lean"
+
+      - name: Direct full-QYM compile
+        shell: bash
+        run: |
+          set +e
+          /usr/bin/time -v -o "$OUT/direct.time" \
+            lake env lean -DmaxErrors=10000 -DwarningAsError=false \
+              -o "$OUT/QYM.olean" -i "$OUT/QYM.ilean" "$QYM" \
+              > "$OUT/direct.log" 2>&1
+          rc=$?
+          set -e
+          printf '%s\n' "$rc" > "$OUT/direct.exit"
+
+      - name: Parse authoritative candidate evidence
+        shell: bash
+        env:
+          VARIANT: ${{ matrix.variant }}
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import collections, hashlib, json, os, re
+
+          out = Path(os.environ['OUT'])
+          qym = Path(os.environ['QYM'])
+          patch = json.loads((out / 'PATCH_RESULT.json').read_text())
+          text = (out / 'direct.log').read_text(errors='replace')
+          diag = re.compile(
+              r'^(?P<file>.*?\.lean):(?P<line>\d+):(?P<column>\d+): '
+              r'(?P<severity>error|warning)(?:\((?P<code>[^)]*)\))?:\s*(?P<message>.*)$',
+              re.M,
+          )
+          rows = []
+          for match in diag.finditer(text):
+              row = match.groupdict()
+              row['line'] = int(row['line'])
+              row['column'] = int(row['column'])
+              rows.append(row)
+          errors = [row for row in rows if row['severity'] == 'error']
+          warnings = [row for row in rows if row['severity'] == 'warning']
+          panic_lines = len(re.findall(
+              r'(?im)^.*(?:internal error|uncaught exception|panic(?:!|:|\s)).*$', text
+          ))
+          exit_code = int((out / 'direct.exit').read_text())
+          sha = hashlib.sha256(qym.read_bytes()).hexdigest()
+          blob = hashlib.sha1(
+              b'blob ' + str(qym.stat().st_size).encode() + b'\0' + qym.read_bytes()
+          ).hexdigest()
+          semantic_pass = (
+              exit_code == 0 and len(errors) == 0 and panic_lines == 0
+              and (out / 'QYM.olean').is_file() and (out / 'QYM.ilean').is_file()
+          )
+          result = {
+              'schema': 'qym-gb79-v11b-result-v1',
+              'variant': os.environ['VARIANT'],
+              'baseline_error_headers': int(os.environ['BASE_ERRORS']),
+              'baseline_qym_sha256': os.environ['BASE_SHA256'],
+              'baseline_qym_blob': os.environ['BASE_BLOB'],
+              'baseline_run_id': int(os.environ['BASE_RUN_ID']),
+              'baseline_job_id': int(os.environ['BASE_JOB_ID']),
+              'baseline_artifact_id': int(os.environ['BASE_ARTIFACT_ID']),
+              'candidate_qym_sha256': sha,
+              'candidate_qym_blob': blob,
+              'patch_candidate_sha256': patch['candidate_sha256'],
+              'patch_candidate_blob': patch['candidate_blob'],
+              'exit': exit_code,
+              'error_headers': len(errors),
+              'warning_headers': len(warnings),
+              'panic_lines': panic_lines,
+              'first_error': errors[0] if errors else None,
+              'last_error': errors[-1] if errors else None,
+              'error_codes': dict(sorted(collections.Counter(
+                  str(row.get('code') or 'uncoded') for row in errors
+              ).items())),
+              'semantic_pass': semantic_pass,
+              'strict_improvement': semantic_pass or (
+                  panic_lines == 0 and len(errors) < int(os.environ['BASE_ERRORS'])
+              ),
+              'gate_line': int(patch['gate_line']),
+              'first_blocker_advanced': (
+                  panic_lines == 0 and (
+                      not errors or int(errors[0]['line']) >= int(patch['gate_line'])
+                  )
+              ),
+              'log_sha256': hashlib.sha256((out / 'direct.log').read_bytes()).hexdigest(),
+              'run_id': int(os.environ['GITHUB_RUN_ID']),
+              'head_sha': os.environ['GITHUB_SHA'],
+          }
+          if sha != patch['candidate_sha256'] or blob != patch['candidate_blob']:
+              raise SystemExit('candidate digest mismatch after compile')
+          (out / 'RESULT.json').write_text(json.dumps(result, indent=2, sort_keys=True) + '\n')
+          print(json.dumps(result, indent=2, sort_keys=True))
+          PY
+
+      - name: Upload immutable V11B candidate evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-gb79-v11b-${{ matrix.variant }}-${{ github.run_id }}
+          path: ${{ env.OUT }}
+          if-no-files-found: error
+          retention-days: 30
+
+  select:
+    needs: candidate
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: true
+
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          pattern: qym-gb79-v11b-*-${{ github.run_id }}
+          path: /tmp/qym-v11b-results
+
+      - name: Select one strict candidate by direct-Lean evidence
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib, json, shutil
+
+          root = Path('/tmp/qym-v11b-results')
+          rows = []
+          for result_path in root.rglob('RESULT.json'):
+              result = json.loads(result_path.read_text())
+              result['_directory'] = str(result_path.parent)
+              rows.append(result)
+          Path('/tmp/V11B_ALL_RESULTS.json').write_text(
+              json.dumps(rows, indent=2, sort_keys=True) + '\n'
+          )
+          viable = [
+              row for row in rows
+              if row.get('strict_improvement') is True
+              and int(row.get('panic_lines', 1)) == 0
+              and int(row.get('error_headers', 10**9)) < 79
+          ]
+          if not viable:
+              selection = {
+                  'schema': 'qym-gb79-v11b-selection-v1',
+                  'strict_improvement_found': False,
+                  'baseline_error_headers': 79,
+                  'candidate_count': len(rows),
+                  'minimum_error_headers': min(
+                      (int(row.get('error_headers', 10**9)) for row in rows),
+                      default=None,
+                  ),
+                  'advanced_variants': [
+                      row.get('variant') for row in rows
+                      if row.get('first_blocker_advanced') is True
+                  ],
+                  'results': rows,
+              }
+              Path('/tmp/V11B_SELECTION.json').write_text(
+                  json.dumps(selection, indent=2, sort_keys=True) + '\n'
+              )
+              raise SystemExit(0)
+          viable.sort(key=lambda row: (
+              int(row['error_headers']),
+              0 if row.get('semantic_pass') else 1,
+              -int((row.get('first_error') or {}).get('line') or 10**9),
+              str(row['variant']),
+          ))
+          best = viable[0]
+          directory = Path(best['_directory'])
+          source = directory / 'QYM.lean'
+          if not source.is_file():
+              raise SystemExit(f'missing selected QYM source: {source}')
+          actual_sha = hashlib.sha256(source.read_bytes()).hexdigest()
+          if actual_sha != best['candidate_qym_sha256']:
+              raise SystemExit('selected artifact SHA mismatch')
+          shutil.copy2(source, 'PrimalitySheafVerification/QYM.lean')
+          selection = {
+              'schema': 'qym-gb79-v11b-selection-v1',
+              'strict_improvement_found': True,
+              'baseline_error_headers': 79,
+              'best': best,
+              'results': rows,
+          }
+          Path('/tmp/V11B_SELECTION.json').write_text(
+              json.dumps(selection, indent=2, sort_keys=True) + '\n'
+          )
+          Path('/tmp/V11B_HAS_WINNER').write_text('yes\n')
+          PY
+
+      - name: Install pinned Lean and Mathlib cache for independent replay
+        if: ${{ hashFiles('/tmp/V11B_HAS_WINNER') != '' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT=/tmp/qym-v11b-selected
+          mkdir -p "$OUT" "$OLEAN"
+          echo "SELECTED_OUT=$OUT" >> "$GITHUB_ENV"
+          curl --retry 8 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none > "$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          tc="$(tr -d '\r\n' < lean-toolchain)"
+          for a in 1 2 3 4 5; do
+            elan toolchain install "$tc" >> "$OUT/toolchain.log" 2>&1 && break || sleep $((a * 5))
+          done
+          lake exe cache get >> "$OUT/mathlib-cache.log" 2>&1
+
+      - name: Restore dependency objects for independent replay
+        if: ${{ hashFiles('/tmp/V11B_HAS_WINNER') != '' }}
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: |
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.ilean
+          key: qym-deps-v3-${{ runner.os }}-${{ hashFiles('lean-toolchain','lake-manifest.json','lakefile.lean','PrimalitySheafVerification/Mock2.lean','PrimalitySheafVerification/Mock2_Advanced.lean','PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean','PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean') }}
+          restore-keys: |
+            qym-probe4-deps-v1-${{ runner.os }}-
+
+      - name: Ensure dependencies and independently compile selected source
+        if: ${{ hashFiles('/tmp/V11B_HAS_WINNER') != '' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          for s in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated; do
+            if [[ ! -s "$OLEAN/$s.olean" || ! -s "$OLEAN/$s.ilean" ]]; then
+              cap=1
+              if [[ "$s" = Mock2_FunctionalAnalysis || "$s" = Mock2_FunctionalAnalysis_Integrated ]]; then cap=2000; fi
+              rm -f "$OLEAN/$s.olean" "$OLEAN/$s.ilean"
+              lake env lean "-DmaxErrors=$cap" -DwarningAsError=false \
+                -o "$OLEAN/$s.olean" -i "$OLEAN/$s.ilean" \
+                "PrimalitySheafVerification/$s.lean" > "$SELECTED_OUT/$s.log" 2>&1
+            fi
+            test -s "$OLEAN/$s.olean"
+            test -s "$OLEAN/$s.ilean"
+          done
+          set +e
+          lake env lean -DmaxErrors=10000 -DwarningAsError=false \
+            -o "$SELECTED_OUT/QYM.olean" -i "$SELECTED_OUT/QYM.ilean" "$QYM" \
+            > "$SELECTED_OUT/direct.log" 2>&1
+          rc=$?
+          set -e
+          printf '%s\n' "$rc" > "$SELECTED_OUT/direct.exit"
+
+      - name: Verify replay metrics and promote
+        if: ${{ hashFiles('/tmp/V11B_HAS_WINNER') != '' }}
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib, json, os, re
+
+          selection = json.loads(Path('/tmp/V11B_SELECTION.json').read_text())
+          best = selection['best']
+          source = Path(os.environ['QYM'])
+          out = Path(os.environ['SELECTED_OUT'])
+          log = (out / 'direct.log').read_text(errors='replace')
+          errors = list(re.finditer(r'^.*?\.lean:\d+:\d+: error(?:\([^)]*\))?:', log, re.M))
+          panic = len(re.findall(
+              r'(?im)^.*(?:internal error|uncaught exception|panic(?:!|:|\s)).*$', log
+          ))
+          exit_code = int((out / 'direct.exit').read_text())
+          sha = hashlib.sha256(source.read_bytes()).hexdigest()
+          true_pass = exit_code == 0 and len(errors) == 0 and panic == 0
+          verified = (
+              len(errors) == int(best['error_headers'])
+              and sha == best['candidate_qym_sha256']
+              and len(errors) < 79
+              and panic == 0
+              and (not best.get('semantic_pass') or true_pass)
+          )
+          result = {
+              'schema': 'qym-gb79-v11b-independent-verification-v1',
+              'verified': verified,
+              'variant': best['variant'],
+              'baseline_error_headers': 79,
+              'error_headers': len(errors),
+              'lean_exit': exit_code,
+              'panic_lines': panic,
+              'true_pass': true_pass,
+              'qym_sha256': sha,
+              'candidate_qym_blob': best['candidate_qym_blob'],
+              'source_run_id': best['run_id'],
+              'selector_run_id': int(os.environ['GITHUB_RUN_ID']),
+          }
+          Path('/tmp/V11B_VERIFIED.json').write_text(
+              json.dumps(result, indent=2, sort_keys=True) + '\n'
+          )
+          if not verified:
+              raise SystemExit(f'independent verification mismatch: {result}')
+          PY
+          mkdir -p .github/qym-frontier
+          cp /tmp/V11B_SELECTION.json .github/qym-frontier/V11B_SELECTION.json
+          cp /tmp/V11B_VERIFIED.json .github/qym-frontier/V11B_VERIFIED.json
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          errors="$(jq -r '.error_headers' /tmp/V11B_VERIFIED.json)"
+          git add "$QYM" .github/qym-frontier/V11B_SELECTION.json \
+            .github/qym-frontier/V11B_VERIFIED.json
+          git commit -m "QYM V11B: promote verified ${errors}-error frontier"
+          git push origin "HEAD:$BRANCH"
+
+      - name: Upload selector evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-gb79-v11b-selector-${{ github.run_id }}
+          path: |
+            /tmp/V11B_ALL_RESULTS.json
+            /tmp/V11B_SELECTION.json
+            /tmp/V11B_VERIFIED.json
+            /tmp/qym-v11b-selected
+            PrimalitySheafVerification/QYM.lean
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Fail visibly only after preserving a no-winner selection
+        if: ${{ hashFiles('/tmp/V11B_HAS_WINNER') == '' }}
+        shell: bash
+        run: |
+          cat /tmp/V11B_SELECTION.json
+          exit 1
