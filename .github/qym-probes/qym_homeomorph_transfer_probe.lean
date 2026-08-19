@@ -3,7 +3,7 @@ import Mathlib.Geometry.Manifold.ContMDiff.Defs
 noncomputable section
 
 open Set Topology Manifold
-open scoped Manifold
+open scoped Manifold ContDiff
 
 universe u v w
 
@@ -54,6 +54,13 @@ variable {𝕜 : Type*} [NontriviallyNormedField 𝕜]
 variable {E : Type*} [NormedAddCommGroup E] [NormedSpace 𝕜 E]
 variable (I : ModelWithCorners 𝕜 E H) (n : ℕ∞ω)
 
+/-- In the pulled-back atlas, the source extended chart is literally the
+target extended chart after applying the defining homeomorphism. -/
+@[simp] theorem pullback_extChartAt_apply (F : M' ≃ₜ M) (x y : M') :
+    letI : ChartedSpace H M' := F.pullbackChartedSpace (H := H)
+    extChartAt I x y = extChartAt I (F x) (F y) := by
+  rfl
+
 /-- The defining homeomorphism is smooth for its pulled-back source atlas. -/
 theorem pullback_contMDiff (F : M' ≃ₜ M) :
     letI : ChartedSpace H M' := F.pullbackChartedSpace (H := H)
@@ -64,8 +71,10 @@ theorem pullback_contMDiff (F : M' ≃ₜ M) :
   refine ⟨F.continuous.continuousAt, ?_⟩
   apply contDiffWithinAt_id.congr_of_eventuallyEq
   · filter_upwards [extChartAt_target_mem_nhdsWithin x] with z hz
-    simp [pullbackChartedSpace, extChartAt, Function.comp_def, hz]
-  · simp [pullbackChartedSpace, extChartAt]
+    have hr := PartialEquiv.right_inv (extChartAt I x) hz
+    rw [pullback_extChartAt_apply (F := F) (I := I)] at hr
+    exact hr
+  · exact (pullback_extChartAt_apply (F := F) (I := I) x x).symm
 
 end Smooth
 
