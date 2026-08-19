@@ -1,0 +1,48 @@
+name: GPT QYM V10.1 observer
+
+on:
+  push:
+    branches:
+      - gpt/qym-gb83-v10-1-chartbridge-20260819
+    paths:
+      - .github/workflows/gpt-qym-v10-1-observer.yml
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: write
+
+jobs:
+  observe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: leegahuyn/mathlib4
+      BRANCH: gpt/qym-gb83-v10-1-chartbridge-20260819
+      TARGET: gpt-qym-gb83-v10-1-chartbridge.yml
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: true
+      - name: Record exact V10.1 run state
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .github/qym-frontier
+          gh api "repos/$REPO/actions/workflows/$TARGET/runs?branch=$BRANCH&per_page=5" \
+            | jq '{observed_at:(now|todateiso8601), branch:"'"$BRANCH"'", workflow:"'"$TARGET"'", runs:[.workflow_runs[]|{id,run_number,run_attempt,status,conclusion,event,head_sha,created_at,updated_at,html_url}]}' \
+            > .github/qym-frontier/V10_1_LIVE_STATUS.json
+          cat .github/qym-frontier/V10_1_LIVE_STATUS.json
+      - name: Commit observer snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .github/qym-frontier/V10_1_LIVE_STATUS.json
+          git diff --cached --quiet && exit 0
+          git commit -m 'QYM V10.1: record live workflow status'
+          git push origin "HEAD:$BRANCH"
