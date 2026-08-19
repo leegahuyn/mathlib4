@@ -114,3 +114,5 @@ def main():
       "candidate_sha256":hashlib.sha256(out).hexdigest(),"bytes":len(out),"forbidden":after},indent=2,sort_keys=True))
 
 if __name__=="__main__": main()
+
+# retrigger 2026-08-19: workflow already registered; keep QYM source baseline immutable.
