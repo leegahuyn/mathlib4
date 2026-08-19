@@ -1,0 +1,225 @@
+name: GPT QYM GB85 parallel C2 v12
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - gpt/qym-gb85-c2-v8-20260819
+    paths:
+      - .github/workflows/gpt-qym-gb85-c2-v12-parallel.yml
+      - .github/qym_gb85_v12_select.py
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: qym-gb85-c2-v12-parallel
+  cancel-in-progress: false
+
+env:
+  BRANCH: gpt/qym-gb85-c2-v8-20260819
+  BASE_ARTIFACT_ID: "9354072137"
+  BASE_SHA256: "f4c9b27a297be772cde7183526378ad42ae826053f69cf3ce521670da4f06210"
+  BASE_BLOB: "bd28d0436230a8f0bcb01806dac01787542256b8"
+  BASE_ERRORS: "85"
+  QYM_PATH: PrimalitySheafVerification/QYM.lean
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    steps:
+      - name: Checkout latest repair branch
+        uses: actions/checkout@v4
+        with:
+          ref: gpt/qym-gb85-c2-v8-20260819
+          fetch-depth: 0
+
+      - name: Recover immutable verified 85-error source
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          rm -rf qym-v12-prepare
+          mkdir -p qym-v12-prepare/artifact qym-v12-prepare/baseline
+          gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/$BASE_ARTIFACT_ID/zip" > qym-v12-prepare/gb85.zip
+          unzip -q qym-v12-prepare/gb85.zip -d qym-v12-prepare/artifact
+          python3 .github/qym_gb85_v8_recover.py qym-v12-prepare/artifact qym-v12-prepare/baseline/QYM.GB85.lean "$BASE_SHA256" "$BASE_BLOB" "$BASE_ERRORS" > qym-v12-prepare/recovery.json
+
+      - name: Install pinned Lean and Mathlib cache
+        run: |
+          set -euo pipefail
+          curl -sSfL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          export PATH="$HOME/.elan/bin:$PATH"
+          elan toolchain install "$(cat lean-toolchain)"
+          lake exe cache get
+          lean --version
+
+      - name: Directly compile completed prerequisites once
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          export LEAN_ABORT_ON_PANIC=1
+          timeout 5400 lake env lean -DmaxErrors=2000 PrimalitySheafVerification/Mock2.lean > qym-v12-prepare/Mock2.log 2>&1
+          timeout 5400 lake env lean -DmaxErrors=2000 PrimalitySheafVerification/Mock2_Advanced.lean > qym-v12-prepare/Mock2_Advanced.log 2>&1
+          timeout 10800 lake env lean -DmaxErrors=2000 PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean > qym-v12-prepare/Mock2_FunctionalAnalysis.log 2>&1
+          tar -czf qym-v12-prepare/repo-olean-cache.tgz .lake/build/lib/lean/PrimalitySheafVerification
+
+      - name: Upload shared verified preparation
+        uses: actions/upload-artifact@v4
+        with:
+          name: qym-gb85-v12-preparation
+          path: qym-v12-prepare
+          if-no-files-found: error
+          retention-days: 7
+
+  candidate:
+    needs: prepare
+    strategy:
+      fail-fast: false
+      max-parallel: 8
+      matrix:
+        variant:
+          - v8_mulinv_simpa
+          - v8_mulinv_rw
+          - v8_mulinv_change
+          - v8_direct_div
+          - v8_cases_funprop
+          - v11_function_eq
+          - v11_convert
+          - v11_unfold_action
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    steps:
+      - name: Checkout repair tools
+        uses: actions/checkout@v4
+        with:
+          ref: gpt/qym-gb85-c2-v8-20260819
+          fetch-depth: 0
+
+      - name: Download shared preparation
+        uses: actions/download-artifact@v4
+        with:
+          name: qym-gb85-v12-preparation
+          path: qym-v12-prepare
+
+      - name: Install pinned Lean and restore caches
+        run: |
+          set -euo pipefail
+          curl -sSfL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          export PATH="$HOME/.elan/bin:$PATH"
+          elan toolchain install "$(cat lean-toolchain)"
+          lake exe cache get
+          tar -xzf qym-v12-prepare/repo-olean-cache.tgz
+
+      - name: Generate exact C2 candidate
+        env:
+          VARIANT: ${{ matrix.variant }}
+        run: |
+          set -euo pipefail
+          dir="qym-v12-candidate/$VARIANT"
+          mkdir -p "$dir"
+          printf '%s\n' "$VARIANT" > "$dir/variant.txt"
+          if [[ "$VARIANT" == v8_* ]]; then
+            proof_variant="${VARIANT#v8_}"
+            python3 .github/qym_gb85_v8_patch.py "$proof_variant" qym-v12-prepare/baseline/QYM.GB85.lean "$dir/QYM.lean" > "$dir/patch.json"
+          else
+            proof_variant="${VARIANT#v11_}"
+            python3 .github/qym_gb85_c2_v11_fallback.py "$proof_variant" qym-v12-prepare/baseline/QYM.GB85.lean "$dir/QYM.lean" > "$dir/patch.json"
+          fi
+
+      - name: Direct Lean C2 gate and full compile
+        env:
+          VARIANT: ${{ matrix.variant }}
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          export LEAN_ABORT_ON_PANIC=1
+          dir="qym-v12-candidate/$VARIANT"
+          set +e
+          timeout 5400 lake env lean -DmaxErrors=1 "$dir/QYM.lean" > "$dir/local.log" 2>&1
+          local_exit=$?
+          set -e
+          python3 .github/qym_gb85_v8_metrics.py parse "$dir/local.log" "$local_exit" "$dir/local.json" "$dir/QYM.lean"
+          gate="$(python3 .github/qym_gb85_v8_metrics.py gate "$dir/local.json" "$dir/patch.json")"
+          printf '%s\n' "$gate" > "$dir/c2_gate.txt"
+          if [ "$gate" = "true" ]; then
+            set +e
+            timeout 10800 lake env lean -DmaxErrors=2000 "$dir/QYM.lean" > "$dir/full.log" 2>&1
+            full_exit=$?
+            set -e
+            python3 .github/qym_gb85_v8_metrics.py parse "$dir/full.log" "$full_exit" "$dir/full.json" "$dir/QYM.lean"
+          fi
+
+      - name: Upload candidate direct-Lean evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qym-gb85-v12-${{ matrix.variant }}
+          path: qym-v12-candidate/${{ matrix.variant }}
+          if-no-files-found: warn
+          retention-days: 30
+
+  select-and-promote:
+    needs: candidate
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout selector
+        uses: actions/checkout@v4
+        with:
+          ref: gpt/qym-gb85-c2-v8-20260819
+          fetch-depth: 0
+
+      - name: Download every candidate artifact
+        uses: actions/download-artifact@v4
+        with:
+          pattern: qym-gb85-v12-v*
+          path: qym-v12-downloads
+          merge-multiple: false
+
+      - name: Select only verified strict improvement
+        run: |
+          set -euo pipefail
+          mkdir -p qym-v12-selection
+          python3 .github/qym_gb85_v12_select.py qym-v12-downloads qym-v12-selection/RESULT.json qym-v12-selection/QYM.winner.lean qym-v12-selection/WINNER_PATH.txt
+          jq --arg run_id "$GITHUB_RUN_ID" --arg run_url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" '. + {run_id:$run_id,run_url:$run_url,promoted:(.strict_improvement == true)}' qym-v12-selection/RESULT.json > qym-v12-selection/RESULT.with-run.json
+          mv qym-v12-selection/RESULT.with-run.json qym-v12-selection/RESULT.json
+
+      - name: Rebase result on latest branch and commit
+        run: |
+          set -euo pipefail
+          cp qym-v12-selection/RESULT.json /tmp/QYM_GB85_C2_V12_RESULT.json
+          improvement="$(jq -r '.strict_improvement' /tmp/QYM_GB85_C2_V12_RESULT.json)"
+          if [ "$improvement" = "true" ]; then
+            cp qym-v12-selection/QYM.winner.lean /tmp/QYM.v12.winner.lean
+          fi
+          git fetch origin "$BRANCH"
+          git reset --hard "origin/$BRANCH"
+          cp /tmp/QYM_GB85_C2_V12_RESULT.json PrimalitySheafVerification/QYM_GB85_C2_V12_RESULT.json
+          if [ "$improvement" = "true" ]; then
+            cp /tmp/QYM.v12.winner.lean "$QYM_PATH"
+          fi
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add PrimalitySheafVerification/QYM_GB85_C2_V12_RESULT.json
+          if [ "$improvement" = "true" ]; then
+            git add "$QYM_PATH"
+            git commit -m "QYM: promote verified parallel C2 v12 improvement"
+          else
+            git commit -m "QYM: record parallel C2 v12 diagnostics"
+          fi
+          git push origin HEAD:"$BRANCH"
+
+      - name: Upload selector evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qym-gb85-v12-selection-${{ github.run_id }}
+          path: qym-v12-selection
+          if-no-files-found: warn
+          retention-days: 30
