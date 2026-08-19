@@ -14,7 +14,7 @@ permissions:
 
 concurrency:
   group: gpt-qym-gb77-v15-cumulative-groupoid
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 env:
   BRANCH: gpt/qym-gb77-v15-cumulative-groupoid-20260820
@@ -26,8 +26,48 @@ env:
   KNOWN_BEST_ERRORS: '76'
 
 jobs:
+  heartbeat:
+    name: Publish exact-GB77 V15 run identity
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - name: Gate immutable GB77 and publish live status
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF_NAME" = "$BRANCH"
+          test "$(tr -d '\r\n' < lean-toolchain)" = leanprover/lean4:v4.33.0-rc1
+          test "$(sha256sum "$QYM" | awk '{print $1}')" = "$BASE_SHA256"
+          test "$(git hash-object "$QYM")" = "$BASE_BLOB"
+          test "$(sha256sum .github/qym-frontier/QYM_GB77_BEST.lean | awk '{print $1}')" = "$BASE_SHA256"
+          test "$(git hash-object .github/qym-frontier/QYM_GB77_BEST.lean)" = "$BASE_BLOB"
+          cmp -s "$QYM" .github/qym-frontier/QYM_GB77_BEST.lean
+          python3 -m py_compile \
+            .github/qym_patch_gb77_v14_right_normal_im.py \
+            .github/qym_gb77_v15_cumulative_driver.py
+          mkdir -p .github/qym-frontier
+          jq -n \
+            --arg branch "$BRANCH" \
+            --argjson run_id "$GITHUB_RUN_ID" \
+            --arg trigger_sha "$GITHUB_SHA" \
+            --arg source_sha "$BASE_SHA256" \
+            --arg source_blob "$BASE_BLOB" \
+            '{schema:"qym-gb77-v15-live-status-v1",source_baseline:"GB77",source_baseline_error_headers:77,source_sha256:$source_sha,source_blob:$source_blob,known_verified_descendant_errors:76,branch:$branch,run_id:$run_id,trigger_sha:$trigger_sha,phase:"CANDIDATE_MATRIX_RUNNING",immutable_gb77_preserved:true,canonical_qym_replaced:false}' \
+            > .github/qym-frontier/V15_LIVE_STATUS.json
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .github/qym-frontier/V15_LIVE_STATUS.json
+          git commit -m "QYM GB77 V15: publish run ${GITHUB_RUN_ID} heartbeat [skip ci]"
+          git push origin "HEAD:$BRANCH"
+
   candidate:
     name: V15-${{ matrix.variant }}
+    needs: heartbeat
     runs-on: ubuntu-24.04
     timeout-minutes: 360
     strategy:
@@ -203,13 +243,15 @@ jobs:
             --arg trigger_sha "$GITHUB_SHA" \
             '{schema:"qym-gb77-v15-descendant-v1",source_baseline:"GB77",source_baseline_errors:77,source_baseline_sha256:"b6f0126c27dfc08b5f81c306a7140f9531fcc3d6ca6b75dd8abbd71101d458fd",source_baseline_blob:"c6e8883353b350f22b7f48d955fc5cfa4e61f88f",known_best_before:76,branch:$branch,run_id:$run_id,trigger_sha:$trigger_sha,variant:$variant,error_headers:$errors,warning_headers:$warnings,panic_lines:0,candidate_sha256:$qym_sha,candidate_blob:$qym_blob,immutable_gb77_preserved:true,canonical_qym_replaced:false,status:"VERIFIED_DESCENDANT_FROM_GB77"}' \
             > ".github/qym-frontier/GB${errors}_V15_STATUS.json"
+          cp ".github/qym-frontier/GB${errors}_V15_STATUS.json" .github/qym-frontier/V15_LIVE_STATUS.json
 
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add ".github/qym-frontier/QYM_GB${errors}_CUMULATIVE_FROM_GB77_BEST.lean" \
             ".github/qym-frontier/GB${errors}_V15_RESULT_${GITHUB_RUN_ID}.json" \
             ".github/qym-frontier/GB${errors}_V15_SELECTION_${GITHUB_RUN_ID}.json" \
-            ".github/qym-frontier/GB${errors}_V15_STATUS.json"
+            ".github/qym-frontier/GB${errors}_V15_STATUS.json" \
+            .github/qym-frontier/V15_LIVE_STATUS.json
           git commit -m "QYM GB77 V15: preserve verified ${errors}-error cumulative descendant (${variant})"
           git push origin "HEAD:$BRANCH"
 
@@ -225,12 +267,14 @@ jobs:
             --arg branch "$BRANCH" \
             --argjson run_id "$GITHUB_RUN_ID" \
             --arg trigger_sha "$GITHUB_SHA" \
-            '{schema:"qym-gb77-v15-no-improvement-v1",source_baseline:"GB77",source_baseline_errors:77,known_best_before:76,branch:$branch,run_id:$run_id,trigger_sha:$trigger_sha,immutable_gb77_preserved:true,status:"NO_VERIFIED_RESULT_BELOW_76"}' \
+            '{schema:"qym-gb77-v15-no-improvement-v1",source_baseline:"GB77",source_baseline_errors:77,known_best_before:76,branch:$branch,run_id:$run_id,trigger_sha:$trigger_sha,immutable_gb77_preserved:true,canonical_qym_replaced:false,status:"NO_VERIFIED_RESULT_BELOW_76"}' \
             > .github/qym-frontier/GB77_V15_STATUS.json
+          cp .github/qym-frontier/GB77_V15_STATUS.json .github/qym-frontier/V15_LIVE_STATUS.json
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add ".github/qym-frontier/GB77_V15_NO_IMPROVEMENT_${GITHUB_RUN_ID}.json" \
-            .github/qym-frontier/GB77_V15_STATUS.json
+            .github/qym-frontier/GB77_V15_STATUS.json \
+            .github/qym-frontier/V15_LIVE_STATUS.json
           git commit -m "QYM GB77 V15: preserve no-improvement evidence"
           git push origin "HEAD:$BRANCH"
 
