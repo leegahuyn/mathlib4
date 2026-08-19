@@ -1,0 +1,341 @@
+name: GPT QYM GB79 V11.2 edgeParameterTransport normalization
+
+on:
+  push:
+    branches:
+      - gpt/qym-gb79-v11-2-edgeparametertransport-20260819
+    paths:
+      - .github/workflows/gpt-qym-gb79-v11-2-edgeparametertransport.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: gpt-qym-gb79-v11-2-edgeparametertransport
+  cancel-in-progress: false
+
+jobs:
+  repair:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    env:
+      BRANCH: gpt/qym-gb79-v11-2-edgeparametertransport-20260819
+      QYM: PrimalitySheafVerification/QYM.lean
+      OLEAN: .lake/build/lib/lean/PrimalitySheafVerification
+      OUT: /tmp/qym-gb79-v11-2
+      BASE_SHA256: 790b40c05a8f3735dd171a135eda65de92ab68b247d13e7e2ffe2968e3798421
+      BASE_BLOB: 33e4fab1130e4c17ea5d212fe2691c3e0c0eb8d3
+      BASE_ERRORS: '79'
+
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Gate exact authoritative GB79 source
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF_NAME" = "$BRANCH"
+          test "$(tr -d '\r\n' < lean-toolchain)" = leanprover/lean4:v4.33.0-rc1
+          test "$(sha256sum "$QYM" | awk '{print $1}')" = "$BASE_SHA256"
+          test "$(git hash-object "$QYM")" = "$BASE_BLOB"
+          mkdir -p "$OUT" "$OLEAN"
+
+      - name: Install pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 8 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none > "$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          tc="$(tr -d '\r\n' < lean-toolchain)"
+          for a in 1 2 3 4 5; do
+            elan toolchain install "$tc" >> "$OUT/toolchain.log" 2>&1 && break || sleep $((a * 5))
+          done
+          lean --version | tee "$OUT/lean-version.txt"
+          lake --version | tee "$OUT/lake-version.txt"
+          for a in 1 2 3 4 5; do
+            lake exe cache get >> "$OUT/mathlib-cache.log" 2>&1 && break || sleep $((a * 5))
+          done
+
+      - name: Restore QYM dependency objects
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: |
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.ilean
+          key: qym-deps-v4-${{ runner.os }}-${{ hashFiles('lean-toolchain','lake-manifest.json','lakefile.lean','PrimalitySheafVerification/Mock2.lean','PrimalitySheafVerification/Mock2_Advanced.lean','PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean','PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean') }}
+          restore-keys: |
+            qym-deps-v3-${{ runner.os }}-
+            qym-probe4-deps-v1-${{ runner.os }}-
+
+      - name: Ensure completed dependencies only
+        shell: bash
+        run: |
+          set -euo pipefail
+          for s in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated; do
+            if [[ ! -s "$OLEAN/$s.olean" || ! -s "$OLEAN/$s.ilean" ]]; then
+              cap=1
+              if [[ "$s" = Mock2_FunctionalAnalysis || "$s" = Mock2_FunctionalAnalysis_Integrated ]]; then cap=2000; fi
+              rm -f "$OLEAN/$s.olean" "$OLEAN/$s.ilean"
+              lake env lean "-DmaxErrors=$cap" -DwarningAsError=false \
+                -o "$OLEAN/$s.olean" -i "$OLEAN/$s.ilean" \
+                "PrimalitySheafVerification/$s.lean" > "$OUT/$s.log" 2>&1
+            fi
+            test -s "$OLEAN/$s.olean"
+            test -s "$OLEAN/$s.ilean"
+          done
+
+      - name: Run V11.2 local funnel and authoritative full-QYM comparison
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > "$OUT/driver.py" <<'PY'
+          from __future__ import annotations
+          from pathlib import Path
+          import collections, hashlib, json, os, re, shutil, subprocess
+
+          QYM = Path(os.environ['QYM'])
+          OUT = Path(os.environ['OUT'])
+          BASE_SHA = os.environ['BASE_SHA256']
+          BASE_BLOB = os.environ['BASE_BLOB']
+          BASE_ERRORS = int(os.environ['BASE_ERRORS'])
+
+          OLD = '''/-- The real parameter transport has the declared constant derivative. -/
+          theorem edgeParameterTransport_hasDerivAt
+              (e : QYM.FullCertification.PolygonTraceExtension.PolygonEdge) (t : ℝ) :
+              HasDerivAt (QYM.FullCertification.P2NormalGreenExtension.edgeParameterTransport e)
+                (e.2.parameterSign : ℝ) t := by
+            simpa [QYM.FullCertification.P2NormalGreenExtension.edgeParameterTransport] using
+              (hasDerivAt_id t).const_mul (e.2.parameterSign : ℝ)
+          '''
+
+          HEAD = '''/-- The real parameter transport has the declared constant derivative. -/
+          theorem edgeParameterTransport_hasDerivAt
+              (e : QYM.FullCertification.PolygonTraceExtension.PolygonEdge) (t : ℝ) :
+              HasDerivAt (QYM.FullCertification.P2NormalGreenExtension.edgeParameterTransport e)
+                (e.2.parameterSign : ℝ) t := by
+            letI : AddCommGroup ℝ := Real.instAddCommGroup
+            letI : Module ℝ ℝ := Semiring.toModule
+            change HasDerivAt (fun x : ℝ => (e.2.parameterSign : ℝ) * x)
+              (e.2.parameterSign : ℝ) t
+          '''
+
+          VARIANTS = {
+            'simp_id_eq': HEAD + '''  simpa only [id_eq, mul_one] using
+              (hasDerivAt_id t).const_mul (e.2.parameterSign : ℝ)
+          ''',
+            'simp_function_id': HEAD + '''  simpa only [Function.id_def, mul_one] using
+              (hasDerivAt_id t).const_mul (e.2.parameterSign : ℝ)
+          ''',
+            'convert_simp': HEAD + '''  convert (hasDerivAt_id t).const_mul (e.2.parameterSign : ℝ) using 1 <;> simp
+          ''',
+            'const_mul_have': HEAD + '''  have h := (hasDerivAt_id t).const_mul (e.2.parameterSign : ℝ)
+            simpa only [id_eq, mul_one] using h
+          ''',
+          }
+
+          DIAG = re.compile(r'^(?P<file>.*?\.lean):(?P<line>\d+):(?P<column>\d+): (?P<severity>error|warning)(?:\((?P<code>[^)]*)\))?:\s*(?P<message>.*)$', re.M)
+          PANIC = re.compile(r'(?im)^.*(?:internal error|uncaught exception|panic(?:!|:|\s)).*$')
+
+          def sha(data: bytes) -> str:
+              return hashlib.sha256(data).hexdigest()
+
+          def blob(data: bytes) -> str:
+              return hashlib.sha1(b'blob ' + str(len(data)).encode() + b'\0' + data).hexdigest()
+
+          def dump(path: Path, value) -> None:
+              path.write_text(json.dumps(value, indent=2, sort_keys=True) + '\n', encoding='utf-8')
+
+          def audit(text: str):
+              return {
+                'sorry': len(re.findall(r'\bsorry\b', text)),
+                'admit': len(re.findall(r'\badmit\b', text)),
+                'native_decide': len(re.findall(r'\bnative_decide\b', text)),
+                'Lean.ofReduceBool': text.count('Lean.ofReduceBool'),
+                'global_axiom': len(re.findall(r'(?m)^\s*axiom\s+', text)),
+                'unsafe': len(re.findall(r'(?m)^\s*unsafe\s+', text)),
+                'maxHeartbeats_zero': len(re.findall(r'set_option\s+maxHeartbeats\s+0\b', text)),
+              }
+
+          def compile_candidate(candidate: Path, variant: str, phase: str, max_errors: int):
+              shutil.copy2(candidate, QYM)
+              log = OUT / f'{variant}.{phase}.log'
+              olean = OUT / f'{variant}.{phase}.olean'
+              ilean = OUT / f'{variant}.{phase}.ilean'
+              cmd = ['lake', 'env', 'lean', f'-DmaxErrors={max_errors}', '-DwarningAsError=false',
+                     '-o', str(olean), '-i', str(ilean), str(QYM)]
+              with log.open('wb') as handle:
+                  proc = subprocess.run(cmd, stdout=handle, stderr=subprocess.STDOUT)
+              text = log.read_text(errors='replace')
+              rows = []
+              for match in DIAG.finditer(text):
+                  row = match.groupdict()
+                  row['line'] = int(row['line'])
+                  row['column'] = int(row['column'])
+                  rows.append(row)
+              errors = [row for row in rows if row['severity'] == 'error']
+              warnings = [row for row in rows if row['severity'] == 'warning']
+              result = {
+                'variant': variant,
+                'phase': phase,
+                'exit': proc.returncode,
+                'error_headers': len(errors),
+                'warning_headers': len(warnings),
+                'panic_lines': len(PANIC.findall(text)),
+                'first_error': errors[0] if errors else None,
+                'last_error': errors[-1] if errors else None,
+                'error_codes': dict(sorted(collections.Counter((row.get('code') or 'uncoded') for row in errors).items())),
+                'log_sha256': sha(log.read_bytes()),
+                'candidate_qym_sha256': sha(candidate.read_bytes()),
+                'candidate_qym_blob': blob(candidate.read_bytes()),
+                'olean_exists': olean.is_file() and olean.stat().st_size > 0,
+                'ilean_exists': ilean.is_file() and ilean.stat().st_size > 0,
+              }
+              dump(OUT / f'{variant}.{phase}.json', result)
+              return result
+
+          original = OUT / 'QYM.GB79.lean'
+          shutil.copy2(QYM, original)
+          raw = original.read_bytes()
+          baseline = {
+            'sha256': sha(raw), 'blob': blob(raw), 'errors': BASE_ERRORS,
+            'sha_ok': sha(raw) == BASE_SHA, 'blob_ok': blob(raw) == BASE_BLOB,
+          }
+          dump(OUT / 'BASELINE_CHECK.json', baseline)
+          if not baseline['sha_ok'] or not baseline['blob_ok']:
+              raise SystemExit(f'authority mismatch: {baseline}')
+
+          source = raw.decode('utf-8')
+          if source.count(OLD) != 1:
+              raise SystemExit(f'expected one theorem block, found {source.count(OLD)}')
+          before_audit = audit(source)
+          rows = []
+          try:
+              for variant, replacement in VARIANTS.items():
+                  text = source.replace(OLD, replacement, 1)
+                  after_audit = audit(text)
+                  if after_audit != before_audit:
+                      raise SystemExit(f'{variant}: forbidden-token delta {before_audit} -> {after_audit}')
+                  candidate = OUT / f'QYM.candidate-{variant}.lean'
+                  candidate.write_text(text, encoding='utf-8')
+                  marker = '/-- Exact derivative of the transported target curve. -/'
+                  gate_line = text.count('\n', 0, text.index(marker)) + 1
+                  local = compile_candidate(candidate, variant, 'local', 5)
+                  first = local.get('first_error') or {}
+                  first_line = int(first.get('line') or 10**9)
+                  local_pass = int(local['panic_lines']) == 0 and first_line >= gate_line
+                  row = {
+                    'variant': variant,
+                    'candidate': str(candidate),
+                    'gate_line': gate_line,
+                    'local_gate_pass': local_pass,
+                    'local': local,
+                  }
+                  rows.append(row)
+                  if not local_pass:
+                      continue
+                  full = compile_candidate(candidate, variant, 'full', 10000)
+                  semantic = (int(full['exit']) == 0 and int(full['error_headers']) == 0 and
+                              int(full['panic_lines']) == 0 and bool(full['olean_exists']) and bool(full['ilean_exists']))
+                  strict = semantic or (int(full['panic_lines']) == 0 and int(full['error_headers']) < BASE_ERRORS)
+                  full.update({
+                    'semantic_pass': semantic,
+                    'strict_improvement': strict,
+                    'baseline_error_headers': BASE_ERRORS,
+                    'baseline_qym_sha256': BASE_SHA,
+                    'baseline_qym_blob': BASE_BLOB,
+                    'run_id': os.environ.get('GITHUB_RUN_ID'),
+                    'trigger_sha': os.environ.get('GITHUB_SHA'),
+                  })
+                  dump(OUT / f'{variant}.FULL_RESULT.json', full)
+                  row['full'] = full
+
+              improved = [row for row in rows if (row.get('full') or {}).get('strict_improvement')]
+              selection = {
+                'schema': 'qym-gb79-v11-2-edgeparametertransport-selection-v1',
+                'baseline': baseline,
+                'candidates': rows,
+                'strict_improvement_found': bool(improved),
+              }
+              if improved:
+                  improved.sort(key=lambda row: (
+                    int(row['full']['error_headers']),
+                    int(row['full']['panic_lines']),
+                    -int(((row['full'].get('first_error') or {}).get('line') or 0)),
+                    row['variant'],
+                  ))
+                  best = improved[0]
+                  selection['best_variant'] = best['variant']
+                  selection['best'] = best['full']
+                  shutil.copy2(Path(best['candidate']), OUT / 'QYM.best.lean')
+                  dump(OUT / 'BEST_RESULT.json', best['full'])
+              dump(OUT / 'SELECTION.json', selection)
+              raise SystemExit(0 if improved else 2)
+          finally:
+              shutil.copy2(original, QYM)
+          PY
+          python3 -B "$OUT/driver.py"
+
+      - name: Promote verified strict V11.2 frontier
+        if: success()
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s "$OUT/QYM.best.lean"
+          test -s "$OUT/BEST_RESULT.json"
+          test "$(jq -r '.strict_improvement' "$OUT/BEST_RESULT.json")" = true
+          test "$(jq -r '.panic_lines' "$OUT/BEST_RESULT.json")" -eq 0
+          errors="$(jq -r '.error_headers' "$OUT/BEST_RESULT.json")"
+          test "$errors" -lt "$BASE_ERRORS"
+          candidate_sha="$(jq -r '.candidate_qym_sha256' "$OUT/BEST_RESULT.json")"
+          candidate_blob="$(jq -r '.candidate_qym_blob' "$OUT/BEST_RESULT.json")"
+          test "$(sha256sum "$OUT/QYM.best.lean" | awk '{print $1}')" = "$candidate_sha"
+          test "$(git hash-object "$OUT/QYM.best.lean")" = "$candidate_blob"
+          cp "$OUT/QYM.best.lean" "$QYM"
+          mkdir -p .github/qym-frontier
+          cp "$OUT/BEST_RESULT.json" .github/qym-frontier/GB79_V11_2_RESULT.json
+          cp "$OUT/SELECTION.json" .github/qym-frontier/GB79_V11_2_SELECTION.json
+          jq -n \
+            --arg branch "$BRANCH" \
+            --arg qym_sha "$candidate_sha" \
+            --arg qym_blob "$candidate_blob" \
+            --argjson errors "$errors" \
+            --argjson run_id "$GITHUB_RUN_ID" \
+            --arg trigger_sha "$GITHUB_SHA" \
+            '{schema:"qym-v11-2-promotion-v1",branch:$branch,run_id:$run_id,trigger_sha:$trigger_sha,error_headers:$errors,panic_lines:0,qym_sha256:$qym_sha,qym_blob:$qym_blob,status:"PROMOTED_FROM_GB79"}' \
+            > .github/qym-frontier/GB79_V11_2_PROMOTION_STATUS.json
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "$QYM" .github/qym-frontier/GB79_V11_2_RESULT.json \
+            .github/qym-frontier/GB79_V11_2_SELECTION.json \
+            .github/qym-frontier/GB79_V11_2_PROMOTION_STATUS.json
+          git commit -m "QYM V11.2: promote verified ${errors}-error frontier"
+          git push origin "HEAD:$BRANCH"
+
+      - name: Restore source after non-promotion
+        if: always()
+        shell: bash
+        run: git checkout -- "$QYM" || true
+
+      - name: Upload immutable V11.2 evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-gb79-v11-2-${{ github.sha }}-attempt${{ github.run_attempt }}
+          path: /tmp/qym-gb79-v11-2
+          if-no-files-found: error
+          retention-days: 30
