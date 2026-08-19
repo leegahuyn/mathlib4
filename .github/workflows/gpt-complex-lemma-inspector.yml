@@ -1,0 +1,34 @@
+name: GPT complex lemma inspector
+
+on:
+  push:
+    branches:
+      - gpt/qym-probe43-observer-20260819
+    paths:
+      - .github/workflows/gpt-complex-lemma-inspector.yml
+
+permissions:
+  contents: write
+
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - shell: bash
+        run: |
+          set -euo pipefail
+          out=.github/qym-probe43-observer/COMPLEX_LEMMAS.txt
+          : > "$out"
+          for p in 'sq_norm' 'normSq_apply' 'conj_mul' 'mul_conj' 'star_mul_self' 'normSq_eq'; do
+            echo "===== $p =====" >> "$out"
+            grep -R -n -C 3 --include='*.lean' "$p" Mathlib/Data/Complex Mathlib/Analysis/Complex 2>/dev/null | head -n 200 >> "$out" || true
+          done
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "$out"
+          git commit -m 'Inspect complex norm/conjugation lemmas'
+          git push origin HEAD:gpt/qym-probe43-observer-20260819
