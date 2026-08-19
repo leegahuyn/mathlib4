@@ -1,4 +1,4 @@
-.github/qym-probes/qym_homeomorph_transfer_probe.lean:29:2: warning: Try this: 
+.github/qym-probes/qym_homeomorph_transfer_probe.lean:27:2: warning: Try this: 
   letI̵
 
 The goal is a proposition, so `let` is preferred over `letI`.
@@ -6,7 +6,7 @@ The difference between `let` and `letI` is that `letI` inlines the value.
 But this is not relevant for proofs because of proof irrelevance.
 
 Note: This linter can be disabled with `set_option linter.style.haveILetI false`
-.github/qym-probes/qym_homeomorph_transfer_probe.lean:68:2: warning: Try this: 
+.github/qym-probes/qym_homeomorph_transfer_probe.lean:63:2: warning: Try this: 
   letI̵
 
 The goal is a proposition, so `let` is preferred over `letI`.
@@ -14,3 +14,17 @@ The difference between `let` and `letI` is that `letI` inlines the value.
 But this is not relevant for proofs because of proof irrelevance.
 
 Note: This linter can be disabled with `set_option linter.style.haveILetI false`
+.github/qym-probes/qym_homeomorph_transfer_probe.lean:80:2: warning: Try this: 
+  letI̵
+
+The goal is a proposition, so `let` is preferred over `letI`.
+The difference between `let` and `letI` is that `letI` inlines the value.
+But this is not relevant for proofs because of proof irrelevance.
+
+Note: This linter can be disabled with `set_option linter.style.haveILetI false`
+.github/qym-probes/qym_homeomorph_transfer_probe.lean:87:4: error: Type mismatch: After simplification, term
+  hr
+ has type
+  @Eq E (↑(extChartAt I x) (↑(extChartAt I x).symm z)) z
+but is expected to have type
+  @Eq E (↑(extChartAt I x) (↑(extChartAt I x).symm z)) (id z)
