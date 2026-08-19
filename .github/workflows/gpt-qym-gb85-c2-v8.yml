@@ -1,5 +1,5 @@
 name: GPT QYM GB85 C2 v8 verified driver
-# trigger: v8-direct-lean-1
+# trigger: v10-trace-function-equality-1
 
 on:
   push:
