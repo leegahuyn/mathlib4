@@ -1,0 +1,19 @@
+{
+  "schema": "qym-original-effective-quotient-bridge-probe-v1",
+  "authority": "actual direct Lean",
+  "branch": "gpt/qym-gb76-global-batch-repair-20260820",
+  "trigger_sha": "a5c61d319a7695cfd24520ed8177c594d09ea6d5",
+  "run_id": 32296220700,
+  "exit": 1,
+  "error_headers": 13,
+  "warning_headers": 1,
+  "panic_lines": 0,
+  "elapsed_seconds": 2,
+  "first_error": ".github/qym-probes/GammaTwoQuotientBridge.lean:9:35: error(lean.unknownIdentifier): Unknown identifier `Mock2.Definition15Geometry.X`",
+  "source_sha256": "3d5d427a6d94acd21d737eddf5dc74950637a4f181930af314acc40f499755da",
+  "source_blob": "26fa4d0202f267bc9252f9e5e8974fe1e1116fc8",
+  "log_sha256": "9db77f8ce0e42de5c343a71a77b8ef7866e20ef02bd8a631e9fd8afb5626899c",
+  "olean_exists": false,
+  "ilean_exists": false,
+  "pass": false
+}
