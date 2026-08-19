@@ -1,0 +1,103 @@
+name: GPT QYM verified C2 to monotone autofix bridge v1
+
+on:
+  push:
+    branches:
+      - gpt/qym-gb85-c2-explicit-20260819
+    paths:
+      - .github/qym-frontier/QYM_GB85_C2_BEST.lean
+      - .github/qym-frontier/GB85_C2_RESULT.json
+      - .github/qym-frontier/QYM_GB85_C2_V3_BEST.lean
+      - .github/qym-frontier/GB85_C2_V3_RESULT.json
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: gpt-qym-c2-to-autofix-bridge-v1
+  cancel-in-progress: false
+
+jobs:
+  bridge:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      TARGET_BRANCH: gpt/qym-gb85-autofix-20260819
+      OUT: /tmp/qym-c2-bridge
+
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Select the lowest verified C2 frontier
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT"
+          python3 - "$OUT" <<'PY'
+          from pathlib import Path
+          import hashlib,json,shutil,sys
+          out=Path(sys.argv[1])
+          root=Path('.github/qym-frontier')
+          pairs=[
+              (root/'QYM_GB85_C2_BEST.lean',root/'GB85_C2_RESULT.json','v2'),
+              (root/'QYM_GB85_C2_V3_BEST.lean',root/'GB85_C2_V3_RESULT.json','v3'),
+          ]
+          def blob(raw):return hashlib.sha1(b'blob '+str(len(raw)).encode()+b'\0'+raw).hexdigest()
+          rows=[]
+          for source,result,label in pairs:
+              if not source.is_file() or not result.is_file():continue
+              r=json.loads(result.read_text());raw=source.read_bytes();sha=hashlib.sha256(raw).hexdigest();gb=blob(raw)
+              if sha!=r.get('candidate_qym_sha256') or gb!=r.get('candidate_qym_blob'):raise SystemExit(f'{label} identity mismatch')
+              if int(r.get('panic_lines',1))!=0 or int(r.get('error_headers',10**9))>=85:raise SystemExit(f'{label} is not a strict GB85 improvement')
+              if any((r.get('forbidden') or {}).values()):raise SystemExit(f'{label} forbidden audit')
+              rows.append((int(r['error_headers']),0 if r.get('semantic_pass') else 1,-int((r.get('first_error') or {}).get('line') or 0),label,source,result,r))
+          if not rows:raise SystemExit('no verified C2 promotion available')
+          rows.sort();best=rows[0]
+          shutil.copy2(best[4],out/'QYM_C2_BRIDGE_BEST.lean')
+          shutil.copy2(best[5],out/'C2_BRIDGE_RESULT.json')
+          (out/'C2_BRIDGE_SELECTION.json').write_text(json.dumps({'label':best[3],'result':best[6]},indent=2,sort_keys=True)+'\n')
+          print(json.dumps({'label':best[3],'errors':best[0],'sha256':best[6]['candidate_qym_sha256']},indent=2))
+          PY
+
+      - name: Transfer only a strictly better source to autofix branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin "$TARGET_BRANCH"
+          git worktree add "$OUT/target" "origin/$TARGET_BRANCH"
+          mkdir -p "$OUT/target/.github/qym-frontier"
+          incoming_errors="$(jq -r '.error_headers' "$OUT/C2_BRIDGE_RESULT.json")"
+          current_errors=999999
+          if [[ -s "$OUT/target/.github/qym-frontier/AUTOFIX_RESULT.json" ]]; then
+            current_errors="$(jq -r '.error_headers' "$OUT/target/.github/qym-frontier/AUTOFIX_RESULT.json")"
+          fi
+          if (( incoming_errors >= current_errors )); then
+            jq -n --argjson incoming "$incoming_errors" --argjson current "$current_errors" \
+              '{transferred:false,incoming_errors:$incoming,current_errors:$current}' > "$OUT/TRANSFER.json"
+            exit 0
+          fi
+          cp "$OUT/QYM_C2_BRIDGE_BEST.lean" "$OUT/target/.github/qym-frontier/QYM_AUTOFIX_BEST.lean"
+          cp "$OUT/C2_BRIDGE_RESULT.json" "$OUT/target/.github/qym-frontier/AUTOFIX_RESULT.json"
+          cp "$OUT/C2_BRIDGE_SELECTION.json" "$OUT/target/.github/qym-frontier/C2_BRIDGE_SELECTION.json"
+          cd "$OUT/target"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .github/qym-frontier
+          git commit -m "QYM bridge: seed monotone autofix with verified ${incoming_errors}-error C2 frontier"
+          git push origin "HEAD:$TARGET_BRANCH"
+          jq -n --argjson incoming "$incoming_errors" --argjson current "$current_errors" \
+            '{transferred:true,incoming_errors:$incoming,previous_errors:$current}' > "$OUT/TRANSFER.json"
+
+      - name: Upload bridge evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-c2-autofix-bridge-${{ github.sha }}-attempt${{ github.run_attempt }}
+          path: ${{ env.OUT }}
+          if-no-files-found: error
+          retention-days: 30
