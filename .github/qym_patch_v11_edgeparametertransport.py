@@ -26,14 +26,13 @@ VARIANTS = {
     (e.2.parameterSign : ℝ) t
   exact (hasDerivAt_id t).const_mul (e.2.parameterSign : ℝ)
 ''',
-    "letI_cases": THEOREM_HEAD + r'''  letI : AddCommGroup ℝ := Real.instAddCommGroup
-  letI : Module ℝ ℝ := Semiring.toModule
-  rcases e with ⟨q, k⟩
-  cases k <;>
-    simpa [QYM.FullCertification.P2NormalGreenExtension.edgeParameterTransport,
-      Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.GammaTwoModularTileEdge.parameterSign] using
-      (hasDerivAt_id t).const_mul
-        ((k.parameterSign : ℤ) : ℝ)
+    "transparent_simpa": r'''set_option backward.isDefEq.respectTransparency false in
+theorem edgeParameterTransport_hasDerivAt
+    (e : QYM.FullCertification.PolygonTraceExtension.PolygonEdge) (t : ℝ) :
+    HasDerivAt (QYM.FullCertification.P2NormalGreenExtension.edgeParameterTransport e)
+      (e.2.parameterSign : ℝ) t := by
+  simpa [QYM.FullCertification.P2NormalGreenExtension.edgeParameterTransport] using
+    (hasDerivAt_id t).const_mul (e.2.parameterSign : ℝ)
 ''',
 }
 
