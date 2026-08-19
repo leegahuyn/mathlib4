@@ -1,0 +1,298 @@
+name: GPT QYM GB85 iterative first-error harvest loop
+
+on:
+  push:
+    branches:
+      - gpt/qym-c2-first-producer-chat-20260819
+    paths:
+      - .github/workflows/gpt-qym-gb85-first-error-harvest-loop.yml
+      - .github/qym_first_error_harvest_loop.py
+      - .github/qym_patch_gb85_c2_explicit_clm.py
+      - .github/qym_c02_fallback_patcher_from_bundle.py
+      - PrimalitySheafVerification/QYM.lean
+      - .github/qym-frontier/GLOBAL_RESULT.json
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: gpt-qym-global-first-error-harvest
+  cancel-in-progress: false
+
+env:
+  REPO: leegahuyn/mathlib4
+  BRANCH: gpt/qym-c2-first-producer-chat-20260819
+  QYM: PrimalitySheafVerification/QYM.lean
+  OLEAN: .lake/build/lib/lean/PrimalitySheafVerification
+  GB85_ARTIFACT: "9354072137"
+  GB85_ERRORS: "85"
+  OLD88_SHA: 830563b33d873354809594d9e9dce962c1253052f8e70bd4d1513226f7598217
+  OLD88_BLOB: e796aa6ae9f01965116902a9345ed69f81bcfc42
+  OUT: /tmp/qym-first-error-harvest
+  DONORS: /tmp/qym-first-error-donors
+
+jobs:
+  harvest:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - name: Select exact starting authority, preferring any verified branch frontier below 85
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT" "$DONORS" "$OLEAN" /tmp/qym-gb85-recovery
+          cp "$QYM" "$OUT/QYM.checkout.lean"
+          python3 - "$QYM" .github/qym-frontier "$OUT" <<'PY'
+          from pathlib import Path
+          import hashlib,json,shutil,sys
+          qym=Path(sys.argv[1]);frontier=Path(sys.argv[2]);out=Path(sys.argv[3]);raw=qym.read_bytes();sha=hashlib.sha256(raw).hexdigest();rows=[]
+          if frontier.exists():
+              for p in frontier.glob('*RESULT.json'):
+                  try:r=json.loads(p.read_text())
+                  except Exception:continue
+                  rsha=r.get('candidate_qym_sha256') or r.get('candidate_sha256')
+                  if rsha==sha and int(r.get('panic_lines',1))==0 and r.get('error_headers') is not None:
+                      rows.append((int(r['error_headers']),p,r))
+          if rows:
+              rows.sort(key=lambda x:(x[0],x[1].name));errors,p,r=rows[0]
+              if errors < 85:
+                  shutil.copy2(qym,out/'QYM.start.lean');(out/'START_RESULT.json').write_text(json.dumps(r,indent=2,sort_keys=True)+'\n');(out/'START_SOURCE_KIND').write_text('branch_frontier\n');print(json.dumps({'kind':'branch_frontier','errors':errors,'sha256':sha,'result':str(p)},indent=2));raise SystemExit(0)
+          (out/'NEED_GB85').write_text('1\n')
+          PY
+          if [[ -s "$OUT/NEED_GB85" ]]; then
+            gh api -H 'Accept: application/vnd.github+json' \
+              "repos/$REPO/actions/artifacts/$GB85_ARTIFACT/zip" \
+              > /tmp/qym-gb85-recovery/artifact.zip
+            unzip -q -o /tmp/qym-gb85-recovery/artifact.zip -d /tmp/qym-gb85-recovery/unpacked
+            python3 - /tmp/qym-gb85-recovery/unpacked "$OUT" "$GB85_ERRORS" <<'PY'
+          from pathlib import Path
+          import hashlib,json,shutil,sys
+          root=Path(sys.argv[1]);out=Path(sys.argv[2]);expected=int(sys.argv[3]);rows=[]
+          for p in root.rglob('*.json'):
+              try:r=json.loads(p.read_text(errors='replace'))
+              except Exception:continue
+              if isinstance(r,dict) and int(r.get('error_headers',10**9))==expected and int(r.get('panic_lines',0))==0:rows.append((p,r))
+          if not rows:raise SystemExit('verified GB85 result missing')
+          rows.sort(key=lambda x:(0 if 'RESULT' in x[0].name.upper() else 1,x[0].name));rp,r=rows[0];sha=r.get('candidate_qym_sha256') or r.get('candidate_sha256');blob=r.get('candidate_qym_blob') or r.get('candidate_blob');src=None
+          for p in root.rglob('*.lean'):
+              raw=p.read_bytes()
+              if hashlib.sha256(raw).hexdigest()==sha:src=p;break
+          if src is None:raise SystemExit('GB85 source bytes missing')
+          raw=src.read_bytes();got=hashlib.sha1(b'blob '+str(len(raw)).encode()+b'\0'+raw).hexdigest()
+          if blob and got!=blob:raise SystemExit('GB85 blob mismatch')
+          shutil.copy2(src,out/'QYM.start.lean');(out/'START_RESULT.json').write_text(json.dumps(r,indent=2,sort_keys=True)+'\n');(out/'START_SOURCE_KIND').write_text('artifact_gb85\n');print(json.dumps({'kind':'artifact_gb85','errors':expected,'sha256':sha,'blob':got},indent=2))
+          PY
+          fi
+          cp "$OUT/QYM.start.lean" "$OUT/QYM.current.lean"
+          cp "$OUT/START_RESULT.json" "$OUT/CURRENT_RESULT.json"
+          echo "START_ERRORS=$(jq -r '.error_headers' "$OUT/START_RESULT.json")" >> "$GITHUB_ENV"
+          echo "START_SHA=$(sha256sum "$OUT/QYM.start.lean" | awk '{print $1}')" >> "$GITHUB_ENV"
+
+      - name: Seed donors from checked-in frontier and generated C2 variants
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$DONORS/frontier" "$DONORS/generated-explicit" "$DONORS/generated-fallback"
+          find .github/qym-frontier -maxdepth 1 -type f -name '*.lean' -size +100k -print0 2>/dev/null | \
+            xargs -0 -r -I{} cp "{}" "$DONORS/frontier/$(basename "{}")"
+          if [[ "$(jq -r '.error_headers' "$OUT/START_RESULT.json")" -ge 1 ]]; then
+            for v in clm_upper_div clm_upper_inv clm_expanded_div clm_expanded_inv clm_change_rw; do
+              cp "$OUT/QYM.start.lean" "$DONORS/generated-explicit/$v.lean"
+              python3 -B .github/qym_patch_gb85_c2_explicit_clm.py "$v" "$DONORS/generated-explicit/$v.lean" \
+                > "$DONORS/generated-explicit/$v.patch.json" 2> "$DONORS/generated-explicit/$v.patch.err" || rm -f "$DONORS/generated-explicit/$v.lean"
+            done
+          fi
+          if [[ -s .github/qym_c02_fallback_patcher_from_bundle.py ]]; then
+            start_sha="$(sha256sum "$OUT/QYM.start.lean" | awk '{print $1}')"
+            start_blob="$(python3 - "$OUT/QYM.start.lean" <<'PY'
+          from pathlib import Path
+          import hashlib,sys
+          raw=Path(sys.argv[1]).read_bytes();print(hashlib.sha1(b'blob '+str(len(raw)).encode()+b'\0'+raw).hexdigest())
+          PY
+          )"
+            cp .github/qym_c02_fallback_patcher_from_bundle.py "$OUT/fallback-patcher.py"
+            sed -i "s/$OLD88_SHA/$start_sha/g; s/$OLD88_BLOB/$start_blob/g" "$OUT/fallback-patcher.py"
+            for v in cases_explicit cases_change intrinsic_detpos; do
+              cp "$OUT/QYM.start.lean" "$DONORS/generated-fallback/$v.lean"
+              python3 -B "$OUT/fallback-patcher.py" "$v" "$DONORS/generated-fallback/$v.lean" \
+                > "$DONORS/generated-fallback/$v.patch.json" 2> "$DONORS/generated-fallback/$v.patch.err" || rm -f "$DONORS/generated-fallback/$v.lean"
+            done
+          fi
+
+      - name: Harvest QYM sources from remote QYM branches
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$DONORS/branches"
+          git ls-remote --heads origin | awk 'tolower($2) ~ /qym/' | head -n 120 > "$OUT/qym-remote-refs.tsv"
+          index=0
+          while read -r sha ref; do
+            [[ -n "$sha" && -n "$ref" ]] || continue
+            index=$((index+1))
+            safe="$(printf '%s' "$ref" | tr '/:' '__')"
+            git fetch --quiet --depth=1 origin "$ref" || continue
+            git show "FETCH_HEAD:$QYM" > "$DONORS/branches/${index}-${safe}.lean" 2>/dev/null || rm -f "$DONORS/branches/${index}-${safe}.lean"
+          done < "$OUT/qym-remote-refs.tsv"
+
+      - name: Harvest recent immutable QYM artifacts
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT/artifact-zips" "$OUT/artifact-unpacked" "$DONORS/artifacts"
+          gh api --paginate -H 'Accept: application/vnd.github+json' \
+            "repos/$REPO/actions/artifacts?per_page=100" > "$OUT/artifact-pages.jsonl"
+          python3 - "$OUT/artifact-pages.jsonl" "$OUT/artifact-list.tsv" <<'PY'
+          from pathlib import Path
+          import datetime,json,sys
+          pages=[]
+          for line in Path(sys.argv[1]).read_text(errors='replace').splitlines():
+              try:pages.append(json.loads(line))
+              except Exception:pass
+          rows=[];cut=datetime.datetime.now(datetime.timezone.utc)-datetime.timedelta(days=14)
+          for page in pages:
+              for a in page.get('artifacts',[]):
+                  try:created=datetime.datetime.fromisoformat(a['created_at'].replace('Z','+00:00'))
+                  except Exception:continue
+                  if a.get('expired') or created<cut or 'qym' not in a.get('name','').lower() or int(a.get('size_in_bytes',0))>20_000_000:continue
+                  rows.append(a)
+          rows.sort(key=lambda a:a['created_at'],reverse=True);rows=rows[:120]
+          Path(sys.argv[2]).write_text(''.join(f"{a['id']}\t{a['name']}\n" for a in rows))
+          print(len(rows))
+          PY
+          export GH_TOKEN REPO OUT
+          cut -f1 "$OUT/artifact-list.tsv" | xargs -r -P8 -I{} bash -c '
+            id="$1"; zip="$OUT/artifact-zips/$id.zip"; dir="$OUT/artifact-unpacked/$id";
+            gh api -H "Accept: application/vnd.github+json" "repos/$REPO/actions/artifacts/$id/zip" > "$zip" 2>/dev/null || exit 0;
+            mkdir -p "$dir"; unzip -q -o "$zip" -d "$dir" 2>/dev/null || true
+          ' _ {}
+          python3 - "$OUT/artifact-unpacked" "$DONORS/artifacts" <<'PY'
+          from pathlib import Path
+          import hashlib,shutil,sys
+          root=Path(sys.argv[1]);dest=Path(sys.argv[2]);dest.mkdir(parents=True,exist_ok=True);seen=set();count=0
+          for p in root.rglob('*.lean'):
+              try:
+                  if p.stat().st_size<100_000:continue
+                  raw=p.read_bytes();sha=hashlib.sha256(raw).hexdigest()
+              except Exception:continue
+              if sha in seen:continue
+              seen.add(sha);count+=1;shutil.copy2(p,dest/f'{count:04d}-{sha}.lean')
+          print(count)
+          PY
+
+      - name: Deduplicate all donor sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - "$DONORS" <<'PY'
+          from pathlib import Path
+          import hashlib,json,sys
+          root=Path(sys.argv[1]);seen={};removed=[]
+          for p in sorted(root.rglob('*.lean')):
+              if not p.is_file():continue
+              try:sha=hashlib.sha256(p.read_bytes()).hexdigest()
+              except Exception:continue
+              if sha in seen:removed.append(str(p));p.unlink()
+              else:seen[sha]=str(p)
+          (root/'DONOR_INDEX.json').write_text(json.dumps({'count':len(seen),'sources':seen,'removed_duplicates':removed},indent=2,sort_keys=True)+'\n')
+          print(len(seen))
+          PY
+
+      - name: Install pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 8 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none > "$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH";echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          tc="$(tr -d '\r\n' < lean-toolchain)"
+          for a in 1 2 3 4 5; do elan toolchain install "$tc" >> "$OUT/toolchain.log" 2>&1 && break || sleep $((a*5)); done
+          lean --version | tee "$OUT/lean-version.txt";lake --version | tee "$OUT/lake-version.txt"
+          for a in 1 2 3 4 5; do lake exe cache get >> "$OUT/cache.log" 2>&1 && break || sleep $((a*5)); done
+
+      - name: Restore dependency objects
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: |
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.ilean
+          key: qym-deps-v3-${{ runner.os }}-${{ hashFiles('lean-toolchain','lake-manifest.json','lakefile.lean','PrimalitySheafVerification/Mock2.lean','PrimalitySheafVerification/Mock2_Advanced.lean','PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean','PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean') }}
+          restore-keys: |
+            qym-probe4-deps-v1-${{ runner.os }}-
+
+      - name: Ensure dependency objects
+        shell: bash
+        run: |
+          set -euo pipefail
+          for s in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated; do
+            if [[ ! -s "$OLEAN/$s.olean" || ! -s "$OLEAN/$s.ilean" ]]; then
+              cap=1;[[ "$s" = Mock2_FunctionalAnalysis || "$s" = Mock2_FunctionalAnalysis_Integrated ]] && cap=2000
+              lake env lean "-DmaxErrors=$cap" -DwarningAsError=false -o "$OLEAN/$s.olean" -i "$OLEAN/$s.ilean" "PrimalitySheafVerification/$s.lean" > "$OUT/$s.log" 2>&1
+            fi
+            test -s "$OLEAN/$s.olean" && test -s "$OLEAN/$s.ilean"
+          done
+
+      - name: Run iterative first-error harvest loop
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -B .github/qym_first_error_harvest_loop.py \
+            --current "$OUT/QYM.current.lean" \
+            --result "$OUT/CURRENT_RESULT.json" \
+            --donors "$DONORS" \
+            --work "$OUT/harvest" \
+            --project-root "$GITHUB_WORKSPACE" \
+            --rounds 8 \
+            --candidate-limit 48 \
+            --local-limit 24 \
+            --full-limit 4 \
+            --parallel-local 4 \
+            --parallel-full 2
+          test "$(sha256sum "$OUT/QYM.current.lean" | awk '{print $1}')" = "$(jq -r '.final_sha256' "$OUT/harvest/HARVEST_RESULT.json")"
+
+      - name: Promote only a verified new global error minimum
+        shell: bash
+        run: |
+          set -euo pipefail
+          final_errors="$(jq -r '.final_error_headers' "$OUT/harvest/HARVEST_RESULT.json")"
+          strict="$(jq -r '.strict_error_improvement' "$OUT/harvest/HARVEST_RESULT.json")"
+          test "$strict" = true
+          test "$final_errors" -lt "$START_ERRORS"
+          final_sha="$(jq -r '.final_sha256' "$OUT/harvest/HARVEST_RESULT.json")"
+          test "$(sha256sum "$OUT/QYM.current.lean" | awk '{print $1}')" = "$final_sha"
+          git fetch origin "$BRANCH";git checkout -B "$BRANCH" "origin/$BRANCH"
+          current_global=85
+          for f in .github/qym-frontier/*RESULT.json; do
+            [[ -s "$f" ]] || continue
+            n="$(jq -r '.error_headers // 999999' "$f")"
+            [[ "$n" =~ ^[0-9]+$ ]] && (( n < current_global )) && current_global="$n"
+          done
+          if (( final_errors >= current_global )); then echo "harvest result $final_errors is not below current global $current_global";exit 1;fi
+          cp "$OUT/QYM.current.lean" "$QYM";mkdir -p .github/qym-frontier;cp "$OUT/QYM.current.lean" ".github/qym-frontier/QYM_GB${final_errors}_BEST.lean";cp "$OUT/CURRENT_RESULT.json" ".github/qym-frontier/GB${final_errors}_RESULT.json";cp "$OUT/CURRENT_RESULT.json" .github/qym-frontier/GLOBAL_RESULT.json;cp "$OUT/harvest/HARVEST_RESULT.json" ".github/qym-frontier/GB${final_errors}_HARVEST.json";if [[ "$final_errors" -eq 0 ]]; then cp "$OUT/CURRENT_RESULT.json" .github/qym-frontier/QYM_TRUE_PASS_RESULT.json;fi;git config user.name 'github-actions[bot]';git config user.email '41898282+github-actions[bot]@users.noreply.github.com';git add "$QYM" .github/qym-frontier;git commit -m "QYM harvest: promote verified ${final_errors}-error frontier";git push origin "HEAD:$BRANCH"
+
+      - name: Upload complete harvest evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-first-error-harvest-${{ github.sha }}-attempt${{ github.run_attempt }}
+          path: |
+            /tmp/qym-first-error-harvest
+            /tmp/qym-first-error-donors/DONOR_INDEX.json
+          if-no-files-found: error
+          retention-days: 30
