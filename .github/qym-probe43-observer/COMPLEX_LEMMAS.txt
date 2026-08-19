@@ -1,0 +1,518 @@
+===== sq_norm =====
+Mathlib/Analysis/Complex/BorelCaratheodory.lean-57-`z ↦ z / (2M - z)` has numerator smaller than denominator when the real part is bounded by M -/
+Mathlib/Analysis/Complex/BorelCaratheodory.lean-58-lemma norm_le_norm_two_mul_sub (_ : 0 < M) (_ : z.re ≤ M) : ‖z‖ ≤ ‖2 * M - z‖ := by
+Mathlib/Analysis/Complex/BorelCaratheodory.lean-59-  rw [← sq_le_sq₀ (by positivity) (by positivity)]
+Mathlib/Analysis/Complex/BorelCaratheodory.lean:60:  suffices z.re * z.re ≤ (2 * M - z.re) * (2 * M - z.re) by simpa [Complex.sq_norm, normSq_apply]
+Mathlib/Analysis/Complex/BorelCaratheodory.lean-61-  nlinarith
+Mathlib/Analysis/Complex/BorelCaratheodory.lean-62-
+Mathlib/Analysis/Complex/BorelCaratheodory.lean-63-/-- Application of the Schwarz lemma to the transformed function. If `f` is differentiable on
+--
+Mathlib/Analysis/Complex/UpperHalfPlane/Metric.lean-50-    cosh (dist z w / 2) = dist (z : ℂ) (conj (w : ℂ)) / (2 * √(z.im * w.im)) := by
+Mathlib/Analysis/Complex/UpperHalfPlane/Metric.lean-51-  rw [← sq_eq_sq₀, cosh_sq', sinh_half_dist, div_pow, div_pow, one_add_div, mul_pow, sq_sqrt]
+Mathlib/Analysis/Complex/UpperHalfPlane/Metric.lean-52-  · congr 1
+Mathlib/Analysis/Complex/UpperHalfPlane/Metric.lean:53:    simp only [Complex.dist_eq, Complex.sq_norm, Complex.normSq_sub, Complex.normSq_conj,
+Mathlib/Analysis/Complex/UpperHalfPlane/Metric.lean-54-      Complex.conj_conj, Complex.mul_re, Complex.conj_re, Complex.conj_im, coe_im]
+Mathlib/Analysis/Complex/UpperHalfPlane/Metric.lean-55-    ring
+Mathlib/Analysis/Complex/UpperHalfPlane/Metric.lean-56-  all_goals positivity
+--
+Mathlib/Analysis/Complex/UpperHalfPlane/Metric.lean-122-
+Mathlib/Analysis/Complex/UpperHalfPlane/Metric.lean-123-theorem cosh_dist' (z w : ℍ) :
+Mathlib/Analysis/Complex/UpperHalfPlane/Metric.lean-124-    Real.cosh (dist z w) = ((z.re - w.re) ^ 2 + z.im ^ 2 + w.im ^ 2) / (2 * z.im * w.im) := by
+Mathlib/Analysis/Complex/UpperHalfPlane/Metric.lean:125:  simp [field, cosh_dist, Complex.dist_eq, Complex.sq_norm, normSq_apply]
+Mathlib/Analysis/Complex/UpperHalfPlane/Metric.lean-126-  ring
+Mathlib/Analysis/Complex/UpperHalfPlane/Metric.lean-127-
+Mathlib/Analysis/Complex/UpperHalfPlane/Metric.lean-128-/-- Euclidean center of the circle with center `z` and radius `r` in the hyperbolic metric. -/
+--
+Mathlib/Analysis/Complex/UpperHalfPlane/Metric.lean-144-theorem dist_coe_center_sq (z w : ℍ) (r : ℝ) : dist (z : ℂ) (w.center r) ^ 2 =
+Mathlib/Analysis/Complex/UpperHalfPlane/Metric.lean-145-    2 * z.im * w.im * (Real.cosh (dist z w) - Real.cosh r) + (w.im * Real.sinh r) ^ 2 := by
+Mathlib/Analysis/Complex/UpperHalfPlane/Metric.lean-146-  have H : 2 * z.im * w.im ≠ 0 := by positivity
+Mathlib/Analysis/Complex/UpperHalfPlane/Metric.lean:147:  simp only [Complex.dist_eq, Complex.sq_norm, normSq_apply, coe_re, coe_im, center_re, center_im,
+Mathlib/Analysis/Complex/UpperHalfPlane/Metric.lean-148-    cosh_dist', mul_div_cancel₀ _ H, sub_sq z.im, mul_pow, Real.cosh_sq, sub_re, sub_im, mul_sub, ←
+Mathlib/Analysis/Complex/UpperHalfPlane/Metric.lean-149-    sq]
+Mathlib/Analysis/Complex/UpperHalfPlane/Metric.lean-150-  ring
+--
+Mathlib/Analysis/Complex/UpperHalfPlane/Basic.lean-137-lemma eq_of_re_of_norm {τ τ' : ℍ} (hre : τ.re = τ'.re) (hnorm : ‖(τ : ℂ)‖ = ‖(τ' : ℂ)‖) :
+Mathlib/Analysis/Complex/UpperHalfPlane/Basic.lean-138-    τ = τ' := by
+Mathlib/Analysis/Complex/UpperHalfPlane/Basic.lean-139-  apply_fun (· ^ 2) at hnorm
+Mathlib/Analysis/Complex/UpperHalfPlane/Basic.lean:140:  simpa [UpperHalfPlane.ext_iff, Complex.ext_iff, hre, Complex.normSq, Complex.sq_norm,
+Mathlib/Analysis/Complex/UpperHalfPlane/Basic.lean-141-    ← pow_two, pow_left_inj₀ τ.im_pos.le τ'.im_pos.le two_ne_zero] using hnorm
+Mathlib/Analysis/Complex/UpperHalfPlane/Basic.lean-142-
+Mathlib/Analysis/Complex/UpperHalfPlane/Basic.lean-143-end UpperHalfPlane
+--
+Mathlib/Analysis/Complex/Norm.lean-147-lemma normSq_eq_norm_sq (z : ℂ) : normSq z = ‖z‖ ^ 2 := by
+Mathlib/Analysis/Complex/Norm.lean-148-  simp [norm_def, sq, Real.mul_self_sqrt (normSq_nonneg _)]
+Mathlib/Analysis/Complex/Norm.lean-149-
+Mathlib/Analysis/Complex/Norm.lean:150:protected theorem sq_norm (z : ℂ) : ‖z‖ ^ 2 = normSq z := (normSq_eq_norm_sq z).symm
+Mathlib/Analysis/Complex/Norm.lean-151-
+Mathlib/Analysis/Complex/Norm.lean-152-lemma one_lt_normSq_iff {x : ℂ} : 1 < normSq x ↔ 1 < ‖x‖ := by
+Mathlib/Analysis/Complex/Norm.lean-153-  rw [← one_lt_sq_iff₀ (norm_nonneg _), normSq_eq_norm_sq]
+--
+Mathlib/Analysis/Complex/Norm.lean-156-  rw [← one_le_sq_iff₀ (norm_nonneg _), normSq_eq_norm_sq]
+Mathlib/Analysis/Complex/Norm.lean-157-
+Mathlib/Analysis/Complex/Norm.lean-158-@[simp]
+Mathlib/Analysis/Complex/Norm.lean:159:theorem sq_norm_sub_sq_re (z : ℂ) : ‖z‖ ^ 2 - z.re ^ 2 = z.im ^ 2 := by
+Mathlib/Analysis/Complex/Norm.lean:160:  rw [Complex.sq_norm, normSq_apply, ← sq, ← sq, add_sub_cancel_left]
+Mathlib/Analysis/Complex/Norm.lean-161-
+Mathlib/Analysis/Complex/Norm.lean-162-@[simp]
+Mathlib/Analysis/Complex/Norm.lean:163:theorem sq_norm_sub_sq_im (z : ℂ) : ‖z‖ ^ 2 - z.im ^ 2 = z.re ^ 2 := by
+Mathlib/Analysis/Complex/Norm.lean:164:  rw [← sq_norm_sub_sq_re, sub_sub_cancel]
+Mathlib/Analysis/Complex/Norm.lean-165-
+Mathlib/Analysis/Complex/Norm.lean-166-lemma norm_add_mul_I (x y : ℝ) : ‖x + y * I‖ = √(x ^ 2 + y ^ 2) := by
+Mathlib/Analysis/Complex/Norm.lean-167-  rw [← normSq_add_mul_I]; rfl
+--
+Mathlib/Analysis/Complex/Norm.lean-368-    ‖z - 1‖ ^ 2 = 2 * (1 - z.re) := by
+Mathlib/Analysis/Complex/Norm.lean-369-  have : z.im * z.im = 1 - z.re * z.re := by
+Mathlib/Analysis/Complex/Norm.lean-370-    replace hz := sq_eq_one_iff.mpr (.inl hz)
+Mathlib/Analysis/Complex/Norm.lean:371:    rw [Complex.sq_norm, normSq_apply] at hz
+Mathlib/Analysis/Complex/Norm.lean-372-    linarith
+Mathlib/Analysis/Complex/Norm.lean:373:  simp [Complex.sq_norm, normSq_apply, this]
+Mathlib/Analysis/Complex/Norm.lean-374-  ring
+Mathlib/Analysis/Complex/Norm.lean-375-
+Mathlib/Analysis/Complex/Norm.lean-376-lemma norm_sub_one_sq_eqOn_sphere :
+--
+Mathlib/Analysis/Complex/UnitDisc/Basic.lean-76-theorem norm_ne_one (z : 𝔻) : ‖(z : ℂ)‖ ≠ 1 :=
+Mathlib/Analysis/Complex/UnitDisc/Basic.lean-77-  z.norm_lt_one.ne
+Mathlib/Analysis/Complex/UnitDisc/Basic.lean-78-
+Mathlib/Analysis/Complex/UnitDisc/Basic.lean:79:theorem sq_norm_lt_one (z : 𝔻) : ‖(z : ℂ)‖ ^ 2 < 1 := by
+Mathlib/Analysis/Complex/UnitDisc/Basic.lean-80-  rw [sq_lt_one_iff_abs_lt_one, abs_norm]
+Mathlib/Analysis/Complex/UnitDisc/Basic.lean-81-  exact z.norm_lt_one
+Mathlib/Analysis/Complex/UnitDisc/Basic.lean-82-
+Mathlib/Analysis/Complex/UnitDisc/Basic.lean-83-theorem normSq_lt_one (z : 𝔻) : normSq z < 1 := by
+Mathlib/Analysis/Complex/UnitDisc/Basic.lean-84-  rw [← Complex.norm_mul_self_eq_normSq, ← sq]
+Mathlib/Analysis/Complex/UnitDisc/Basic.lean:85:  exact z.sq_norm_lt_one
+Mathlib/Analysis/Complex/UnitDisc/Basic.lean-86-
+Mathlib/Analysis/Complex/UnitDisc/Basic.lean-87-theorem coe_ne_one (z : 𝔻) : (z : ℂ) ≠ 1 :=
+Mathlib/Analysis/Complex/UnitDisc/Basic.lean-88-  ne_of_apply_ne (‖·‖) <| by simp [z.norm_ne_one]
+--
+Mathlib/Analysis/Complex/UnitDisc/Basic.lean-311-theorem norm_le_one (z : 𝕔𝔻) : ‖(z : ℂ)‖ ≤ 1 :=
+Mathlib/Analysis/Complex/UnitDisc/Basic.lean-312-  mem_closedBall_zero_iff.1 z.2
+Mathlib/Analysis/Complex/UnitDisc/Basic.lean-313-
+Mathlib/Analysis/Complex/UnitDisc/Basic.lean:314:theorem sq_norm_lt_one (z : 𝕔𝔻) : ‖(z : ℂ)‖ ^ 2 ≤ 1 := by
+Mathlib/Analysis/Complex/UnitDisc/Basic.lean-315-  rw [sq_le_one_iff_abs_le_one, abs_norm]
+Mathlib/Analysis/Complex/UnitDisc/Basic.lean-316-  exact z.norm_le_one
+Mathlib/Analysis/Complex/UnitDisc/Basic.lean-317-
+Mathlib/Analysis/Complex/UnitDisc/Basic.lean-318-theorem normSq_lt_one (z : 𝕔𝔻) : normSq z ≤ 1 := by
+Mathlib/Analysis/Complex/UnitDisc/Basic.lean-319-  rw [← Complex.norm_mul_self_eq_normSq, ← sq]
+Mathlib/Analysis/Complex/UnitDisc/Basic.lean:320:  exact z.sq_norm_lt_one
+Mathlib/Analysis/Complex/UnitDisc/Basic.lean-321-
+Mathlib/Analysis/Complex/UnitDisc/Basic.lean-322-@[simp, norm_cast]
+Mathlib/Analysis/Complex/UnitDisc/Basic.lean-323-theorem coe_mul (z w : 𝕔𝔻) : ↑(z * w) = (z * w : ℂ) :=
+===== normSq_apply =====
+Mathlib/Data/Complex/Basic.lean-514-    simp only [mul_re, mul_im]
+Mathlib/Data/Complex/Basic.lean-515-    ring
+Mathlib/Data/Complex/Basic.lean-516-
+Mathlib/Data/Complex/Basic.lean:517:theorem normSq_apply (z : ℂ) : normSq z = z.re * z.re + z.im * z.im :=
+Mathlib/Data/Complex/Basic.lean-518-  rfl
+Mathlib/Data/Complex/Basic.lean-519-
+Mathlib/Data/Complex/Basic.lean-520-@[simp]
+--
+Mathlib/Analysis/Complex/Basic.lean-417-  map_smul' _ _ := by simp [RCLike.smul_re, RCLike.smul_im, ofReal_mul]; ring
+Mathlib/Analysis/Complex/Basic.lean-418-  norm_map' _ := by
+Mathlib/Analysis/Complex/Basic.lean-419-    rw [← sq_eq_sq₀ (by positivity) (by positivity), ← normSq_eq_norm_sq, ← RCLike.normSq_eq_def',
+Mathlib/Analysis/Complex/Basic.lean:420:      RCLike.normSq_apply]
+Mathlib/Analysis/Complex/Basic.lean-421-    simp [normSq_add]
+Mathlib/Analysis/Complex/Basic.lean-422-  __ := RCLike.complexRingEquiv h
+Mathlib/Analysis/Complex/Basic.lean-423-
+--
+Mathlib/Analysis/Complex/BorelCaratheodory.lean-57-`z ↦ z / (2M - z)` has numerator smaller than denominator when the real part is bounded by M -/
+Mathlib/Analysis/Complex/BorelCaratheodory.lean-58-lemma norm_le_norm_two_mul_sub (_ : 0 < M) (_ : z.re ≤ M) : ‖z‖ ≤ ‖2 * M - z‖ := by
+Mathlib/Analysis/Complex/BorelCaratheodory.lean-59-  rw [← sq_le_sq₀ (by positivity) (by positivity)]
+Mathlib/Analysis/Complex/BorelCaratheodory.lean:60:  suffices z.re * z.re ≤ (2 * M - z.re) * (2 * M - z.re) by simpa [Complex.sq_norm, normSq_apply]
+Mathlib/Analysis/Complex/BorelCaratheodory.lean-61-  nlinarith
+Mathlib/Analysis/Complex/BorelCaratheodory.lean-62-
+Mathlib/Analysis/Complex/BorelCaratheodory.lean-63-/-- Application of the Schwarz lemma to the transformed function. If `f` is differentiable on
+--
+Mathlib/Analysis/Complex/Poisson.lean-65-    _ = ((a.re * a.re + a.im * a.im) - (b.re * b.re + b.im * b.im)) / ‖a - b‖ ^ 2 := by
+Mathlib/Analysis/Complex/Poisson.lean-66-      congr! 1; ring
+Mathlib/Analysis/Complex/Poisson.lean-67-    _ = (‖a‖ ^ 2 - ‖b‖ ^ 2) / ‖a - b‖ ^ 2 := by
+Mathlib/Analysis/Complex/Poisson.lean:68:      simp [← normSq_apply, normSq_eq_norm_sq]
+Mathlib/Analysis/Complex/Poisson.lean-69-
+Mathlib/Analysis/Complex/Poisson.lean-70-/--
+Mathlib/Analysis/Complex/Poisson.lean-71-Companion theorem to the Poisson Integral Formula: The real part of the Herglotz–Riesz kernel and
+--
+Mathlib/Analysis/Complex/Poisson.lean-180-      / (r * exp (θ * I) - R * exp (φ * I))
+Mathlib/Analysis/Complex/Poisson.lean-181-      = ((R * exp (θ * I) + r * exp (φ * I)) / (R * exp (θ * I) - r * exp (φ * I))).re := by
+Mathlib/Analysis/Complex/Poisson.lean-182-  simp only [Complex.ext_iff, exp_ofReal_mul_I, add_re, sub_re, mul_re, div_re, ofReal_re,
+Mathlib/Analysis/Complex/Poisson.lean:183:    I_re, I_im, add_im, sub_im, mul_im, div_im, ofReal_im, normSq_apply]
+Mathlib/Analysis/Complex/Poisson.lean-184-  grind [Real.sin_sq]
+Mathlib/Analysis/Complex/Poisson.lean-185-
+Mathlib/Analysis/Complex/Poisson.lean-186--- Version of `DiffContOnCl.circleAverage_re_smul` in case where the center of the ball is zero.
+--
+Mathlib/Analysis/Complex/UpperHalfPlane/Metric.lean-122-
+Mathlib/Analysis/Complex/UpperHalfPlane/Metric.lean-123-theorem cosh_dist' (z w : ℍ) :
+Mathlib/Analysis/Complex/UpperHalfPlane/Metric.lean-124-    Real.cosh (dist z w) = ((z.re - w.re) ^ 2 + z.im ^ 2 + w.im ^ 2) / (2 * z.im * w.im) := by
+Mathlib/Analysis/Complex/UpperHalfPlane/Metric.lean:125:  simp [field, cosh_dist, Complex.dist_eq, Complex.sq_norm, normSq_apply]
+Mathlib/Analysis/Complex/UpperHalfPlane/Metric.lean-126-  ring
+Mathlib/Analysis/Complex/UpperHalfPlane/Metric.lean-127-
+Mathlib/Analysis/Complex/UpperHalfPlane/Metric.lean-128-/-- Euclidean center of the circle with center `z` and radius `r` in the hyperbolic metric. -/
+--
+Mathlib/Analysis/Complex/UpperHalfPlane/Metric.lean-144-theorem dist_coe_center_sq (z w : ℍ) (r : ℝ) : dist (z : ℂ) (w.center r) ^ 2 =
+Mathlib/Analysis/Complex/UpperHalfPlane/Metric.lean-145-    2 * z.im * w.im * (Real.cosh (dist z w) - Real.cosh r) + (w.im * Real.sinh r) ^ 2 := by
+Mathlib/Analysis/Complex/UpperHalfPlane/Metric.lean-146-  have H : 2 * z.im * w.im ≠ 0 := by positivity
+Mathlib/Analysis/Complex/UpperHalfPlane/Metric.lean:147:  simp only [Complex.dist_eq, Complex.sq_norm, normSq_apply, coe_re, coe_im, center_re, center_im,
+Mathlib/Analysis/Complex/UpperHalfPlane/Metric.lean-148-    cosh_dist', mul_div_cancel₀ _ H, sub_sq z.im, mul_pow, Real.cosh_sq, sub_re, sub_im, mul_sub, ←
+Mathlib/Analysis/Complex/UpperHalfPlane/Metric.lean-149-    sq]
+Mathlib/Analysis/Complex/UpperHalfPlane/Metric.lean-150-  ring
+--
+Mathlib/Analysis/Complex/UpperHalfPlane/FixedPoints.lean-68-    (hc : g 1 0 ≠ 0) :
+Mathlib/Analysis/Complex/UpperHalfPlane/FixedPoints.lean-69-    g • z = z ↔ dist (z : ℂ) (-g 1 1 / g 1 0) ^ 2 = (-g.val.det) / g 1 0 ^ 2 := by
+Mathlib/Analysis/Complex/UpperHalfPlane/FixedPoints.lean-70-  rw [Matrix.trace_fin_two, ← eq_neg_iff_add_eq_zero] at htrace
+Mathlib/Analysis/Complex/UpperHalfPlane/FixedPoints.lean:71:  rw [eq_div_iff (by positivity), dist_eq_norm, ← Complex.normSq_eq_norm_sq, Complex.normSq_apply,
+Mathlib/Analysis/Complex/UpperHalfPlane/FixedPoints.lean-72-    gl_smul_eq_iff_num_eq, σ, g.val_det_apply, if_neg h.not_gt]
+Mathlib/Analysis/Complex/UpperHalfPlane/FixedPoints.lean-73-  simp [num, denom, Complex.ext_iff, htrace, Matrix.det_fin_two, field]
+Mathlib/Analysis/Complex/UpperHalfPlane/FixedPoints.lean-74-  grind
+--
+Mathlib/Analysis/Complex/UpperHalfPlane/FixedPoints.lean-97-      simp [gl_smul_eq_self_iff_re_eq, *]
+Mathlib/Analysis/Complex/UpperHalfPlane/FixedPoints.lean-98-    · use ⟨⟨-g 1 1 / g 1 0, √(-g.val.det) / |g 1 0|⟩, by simp [*]⟩
+Mathlib/Analysis/Complex/UpperHalfPlane/FixedPoints.lean-99-      simp [gl_smul_eq_self_iff_dist_sq_eq, *, dist_eq_norm, ← Complex.normSq_eq_norm_sq,
+Mathlib/Analysis/Complex/UpperHalfPlane/FixedPoints.lean:100:        Complex.normSq_apply, ← pow_two, div_pow, h.le]
+Mathlib/Analysis/Complex/UpperHalfPlane/FixedPoints.lean-101-
+Mathlib/Analysis/Complex/UpperHalfPlane/FixedPoints.lean-102-/-- If `g` is an orientation-preserving map,
+Mathlib/Analysis/Complex/UpperHalfPlane/FixedPoints.lean-103-then the fixed points of its action on the upper half-plane
+--
+Mathlib/Analysis/Complex/Isometry.lean-98-    (h₂ : ∀ z, (f z).re = z.re) (z : ℂ) : (f z).im = z.im ∨ (f z).im = -z.im := by
+Mathlib/Analysis/Complex/Isometry.lean-99-  have h₁ := f.norm_map z
+Mathlib/Analysis/Complex/Isometry.lean-100-  simp only [norm_def] at h₁
+Mathlib/Analysis/Complex/Isometry.lean:101:  rwa [Real.sqrt_inj (normSq_nonneg _) (normSq_nonneg _), normSq_apply (f z), normSq_apply z,
+Mathlib/Analysis/Complex/Isometry.lean-102-    h₂, add_left_cancel_iff, mul_self_eq_mul_self_iff] at h₁
+Mathlib/Analysis/Complex/Isometry.lean-103-
+Mathlib/Analysis/Complex/Isometry.lean-104-theorem LinearIsometry.im_apply_eq_im {f : ℂ →ₗᵢ[ℝ] ℂ} (h : f 1 = 1) (z : ℂ) :
+--
+Mathlib/Analysis/Complex/Isometry.lean-141-`!![re a, -im a; im a, re a]`. -/
+Mathlib/Analysis/Complex/Isometry.lean-142-theorem toMatrix_rotation (a : Circle) :
+Mathlib/Analysis/Complex/Isometry.lean-143-    LinearMap.toMatrix basisOneI basisOneI (rotation a).toLinearEquiv =
+Mathlib/Analysis/Complex/Isometry.lean:144:      Matrix.planeConformalMatrix (re a) (im a) (by simp [pow_two, ← normSq_apply]) := by
+Mathlib/Analysis/Complex/Isometry.lean-145-  ext i j
+Mathlib/Analysis/Complex/Isometry.lean-146-  simp only [LinearMap.toMatrix_apply, coe_basisOneI, LinearEquiv.coe_coe,
+Mathlib/Analysis/Complex/Isometry.lean-147-    LinearIsometryEquiv.coe_toLinearEquiv, rotation_apply, coe_basisOneI_repr, mul_re, mul_im,
+--
+Mathlib/Analysis/Complex/Isometry.lean-153-@[simp]
+Mathlib/Analysis/Complex/Isometry.lean-154-theorem det_rotation (a : Circle) : LinearMap.det ((rotation a).toLinearEquiv : ℂ →ₗ[ℝ] ℂ) = 1 := by
+Mathlib/Analysis/Complex/Isometry.lean-155-  rw [← LinearMap.det_toMatrix basisOneI, toMatrix_rotation, Matrix.det_fin_two]
+Mathlib/Analysis/Complex/Isometry.lean:156:  simp [← normSq_apply]
+Mathlib/Analysis/Complex/Isometry.lean-157-
+Mathlib/Analysis/Complex/Isometry.lean-158-/-- The determinant of `rotation` (as a linear equiv) is equal to `1`. -/
+Mathlib/Analysis/Complex/Isometry.lean-159-@[simp]
+--
+Mathlib/Analysis/Complex/Norm.lean-157-
+Mathlib/Analysis/Complex/Norm.lean-158-@[simp]
+Mathlib/Analysis/Complex/Norm.lean-159-theorem sq_norm_sub_sq_re (z : ℂ) : ‖z‖ ^ 2 - z.re ^ 2 = z.im ^ 2 := by
+Mathlib/Analysis/Complex/Norm.lean:160:  rw [Complex.sq_norm, normSq_apply, ← sq, ← sq, add_sub_cancel_left]
+Mathlib/Analysis/Complex/Norm.lean-161-
+Mathlib/Analysis/Complex/Norm.lean-162-@[simp]
+Mathlib/Analysis/Complex/Norm.lean-163-theorem sq_norm_sub_sq_im (z : ℂ) : ‖z‖ ^ 2 - z.im ^ 2 = z.re ^ 2 := by
+--
+Mathlib/Analysis/Complex/Norm.lean-167-  rw [← normSq_add_mul_I]; rfl
+Mathlib/Analysis/Complex/Norm.lean-168-
+Mathlib/Analysis/Complex/Norm.lean-169-lemma norm_eq_sqrt_sq_add_sq (z : ℂ) : ‖z‖ = √(z.re ^ 2 + z.im ^ 2) := by
+Mathlib/Analysis/Complex/Norm.lean:170:  rw [norm_def, normSq_apply, sq, sq]
+Mathlib/Analysis/Complex/Norm.lean-171-
+Mathlib/Analysis/Complex/Norm.lean-172-@[simp 1100]
+Mathlib/Analysis/Complex/Norm.lean-173-protected theorem range_norm : range (‖·‖ : ℂ → ℝ) = Set.Ici 0 :=
+--
+Mathlib/Analysis/Complex/Norm.lean-184-@[bound]
+Mathlib/Analysis/Complex/Norm.lean-185-theorem abs_im_le_norm (z : ℂ) : |z.im| ≤ ‖z‖ :=
+Mathlib/Analysis/Complex/Norm.lean-186-  Real.abs_le_sqrt <| by
+Mathlib/Analysis/Complex/Norm.lean:187:    rw [normSq_apply, ← sq, ← sq]
+Mathlib/Analysis/Complex/Norm.lean-188-    exact le_add_of_nonneg_left (sq_nonneg _)
+Mathlib/Analysis/Complex/Norm.lean-189-
+Mathlib/Analysis/Complex/Norm.lean-190-theorem im_le_norm (z : ℂ) : z.im ≤ ‖z‖ :=
+--
+Mathlib/Analysis/Complex/Norm.lean-192-
+Mathlib/Analysis/Complex/Norm.lean-193-@[simp]
+Mathlib/Analysis/Complex/Norm.lean-194-theorem abs_re_lt_norm {z : ℂ} : |z.re| < ‖z‖ ↔ z.im ≠ 0 := by
+Mathlib/Analysis/Complex/Norm.lean:195:  rw [norm_def, Real.lt_sqrt (abs_nonneg _), normSq_apply, sq_abs, ← sq, lt_add_iff_pos_right,
+Mathlib/Analysis/Complex/Norm.lean-196-    mul_self_pos]
+Mathlib/Analysis/Complex/Norm.lean-197-
+Mathlib/Analysis/Complex/Norm.lean-198-@[simp]
+--
+Mathlib/Analysis/Complex/Norm.lean-368-    ‖z - 1‖ ^ 2 = 2 * (1 - z.re) := by
+Mathlib/Analysis/Complex/Norm.lean-369-  have : z.im * z.im = 1 - z.re * z.re := by
+Mathlib/Analysis/Complex/Norm.lean-370-    replace hz := sq_eq_one_iff.mpr (.inl hz)
+Mathlib/Analysis/Complex/Norm.lean:371:    rw [Complex.sq_norm, normSq_apply] at hz
+Mathlib/Analysis/Complex/Norm.lean-372-    linarith
+Mathlib/Analysis/Complex/Norm.lean:373:  simp [Complex.sq_norm, normSq_apply, this]
+Mathlib/Analysis/Complex/Norm.lean-374-  ring
+Mathlib/Analysis/Complex/Norm.lean-375-
+Mathlib/Analysis/Complex/Norm.lean-376-lemma norm_sub_one_sq_eqOn_sphere :
+===== conj_mul =====
+Mathlib/Data/Complex/Basic.lean-542-theorem normSq_add_mul_I (x y : ℝ) : normSq (x + y * I) = x ^ 2 + y ^ 2 := by
+Mathlib/Data/Complex/Basic.lean-543-  rw [← mk_eq_add_mul_I, normSq_mk, sq, sq]
+Mathlib/Data/Complex/Basic.lean-544-
+Mathlib/Data/Complex/Basic.lean:545:theorem normSq_eq_conj_mul_self {z : ℂ} : (normSq z : ℂ) = conj z * z := by
+Mathlib/Data/Complex/Basic.lean-546-  ext <;> simp [normSq, mul_comm, ofReal]
+Mathlib/Data/Complex/Basic.lean-547-
+Mathlib/Data/Complex/Basic.lean-548-theorem normSq_zero : normSq 0 = 0 := by simp
+--
+Mathlib/Analysis/Complex/Basic.lean-356-
+Mathlib/Analysis/Complex/Basic.lean-357-theorem _root_.RCLike.ofReal_eq_complex_ofReal : (RCLike.ofReal : ℝ → ℂ) = Complex.ofReal := rfl
+Mathlib/Analysis/Complex/Basic.lean-358-
+Mathlib/Analysis/Complex/Basic.lean:359:-- TODO: Replace `mul_conj` and `conj_mul` once `norm` has replaced `abs`
+Mathlib/Analysis/Complex/Basic.lean-360-lemma mul_conj' (z : ℂ) : z * conj z = ‖z‖ ^ 2 := RCLike.mul_conj z
+Mathlib/Analysis/Complex/Basic.lean:361:lemma conj_mul' (z : ℂ) : conj z * z = ‖z‖ ^ 2 := RCLike.conj_mul z
+Mathlib/Analysis/Complex/Basic.lean-362-
+Mathlib/Analysis/Complex/Basic.lean-363-lemma inv_eq_conj (hz : ‖z‖ = 1) : z⁻¹ = conj z := RCLike.inv_eq_conj hz
+Mathlib/Analysis/Complex/Basic.lean-364-
+--
+Mathlib/Analysis/Complex/Polynomial/GaussLucas.lean-81-        rw [sub_ne_zero]
+Mathlib/Analysis/Complex/Polynomial/GaussLucas.lean-82-        rintro rfl
+Mathlib/Analysis/Complex/Polynomial/GaussLucas.lean-83-        simp_all [s]
+Mathlib/Analysis/Complex/Polynomial/GaussLucas.lean:84:      simp [← Complex.conj_mul', field]
+Mathlib/Analysis/Complex/Polynomial/GaussLucas.lean-85-    _ = conj (P.roots.map fun x ↦ 1 / (z - x)).sum := by
+Mathlib/Analysis/Complex/Polynomial/GaussLucas.lean-86-      simp only [Finset.sum_multiset_map_count, P.count_roots, s]
+Mathlib/Analysis/Complex/Polynomial/GaussLucas.lean-87-    _ = 0 := by
+--
+Mathlib/Analysis/Complex/UnitDisc/Basic.lean-275-  star_mul z w := coe_injective <| by simp [mul_comm]
+Mathlib/Analysis/Complex/UnitDisc/Basic.lean-276-
+Mathlib/Analysis/Complex/UnitDisc/Basic.lean-277-@[deprecated star_mul' (since := "2026-01-06")]
+Mathlib/Analysis/Complex/UnitDisc/Basic.lean:278:theorem conj_mul (z w : 𝔻) : star (z * w) = star z * star w :=
+Mathlib/Analysis/Complex/UnitDisc/Basic.lean-279-  star_mul' z w
+Mathlib/Analysis/Complex/UnitDisc/Basic.lean-280-
+Mathlib/Analysis/Complex/UnitDisc/Basic.lean-281-end UnitDisc
+--
+Mathlib/Analysis/Complex/CanonicalDecomposition.lean-102-    refine (MeromorphicNFAt.meromorphicOrderAt_eq_zero_iff ?_).2 ?_
+Mathlib/Analysis/Complex/CanonicalDecomposition.lean-103-    · apply AnalyticAt.meromorphicNFAt
+Mathlib/Analysis/Complex/CanonicalDecomposition.lean-104-      fun_prop
+Mathlib/Analysis/Complex/CanonicalDecomposition.lean:105:    · rw [← normSq_eq_conj_mul_self, normSq_eq_norm_sq w, sub_ne_zero, ne_eq, ← ofReal_pow,
+Mathlib/Analysis/Complex/CanonicalDecomposition.lean-106-        ofReal_inj, sq_eq_sq₀ (pos_of_mem_ball h).le (norm_nonneg w)]
+Mathlib/Analysis/Complex/CanonicalDecomposition.lean-107-      rw [mem_ball_iff_norm, sub_zero] at h
+Mathlib/Analysis/Complex/CanonicalDecomposition.lean-108-      grind
+--
+Mathlib/Analysis/Complex/CanonicalDecomposition.lean-163-    grind [mem_ball_zero_iff, norm_nonneg, mem_sphere_zero_iff_norm]
+Mathlib/Analysis/Complex/CanonicalDecomposition.lean-164-  rw [canonicalFactor, norm_div, div_eq_iff (by rw [ne_eq, norm_eq_zero]; positivity), one_mul]
+Mathlib/Analysis/Complex/CanonicalDecomposition.lean-165-  obtain rfl := by simpa [mem_sphere_zero_iff_norm] using hz
+Mathlib/Analysis/Complex/CanonicalDecomposition.lean:166:  rw [← ofReal_pow, ← normSq_eq_norm_sq, normSq_eq_conj_mul_self, ← sub_mul, mul_comm _ z]
+Mathlib/Analysis/Complex/CanonicalDecomposition.lean-167-  simp [← map_sub]
+Mathlib/Analysis/Complex/CanonicalDecomposition.lean-168-
+Mathlib/Analysis/Complex/CanonicalDecomposition.lean-169-/-!
+===== mul_conj =====
+Mathlib/Data/Complex/Basic.lean-583-theorem im_sq_le_normSq (z : ℂ) : z.im * z.im ≤ normSq z :=
+Mathlib/Data/Complex/Basic.lean-584-  le_add_of_nonneg_left (mul_self_nonneg _)
+Mathlib/Data/Complex/Basic.lean-585-
+Mathlib/Data/Complex/Basic.lean:586:theorem mul_conj (z : ℂ) : z * conj z = normSq z :=
+Mathlib/Data/Complex/Basic.lean-587-  Complex.ext_iff.2 <| by simp [normSq, mul_comm, sub_eq_neg_add, add_comm, ofReal]
+Mathlib/Data/Complex/Basic.lean-588-
+Mathlib/Data/Complex/Basic.lean-589-theorem add_conj (z : ℂ) : z + conj z = (2 * z.re : ℝ) :=
+--
+Mathlib/Data/Complex/Basic.lean-697-  rw [← ofReal_zero, ← ofReal_inv, inv_zero]
+Mathlib/Data/Complex/Basic.lean-698-
+Mathlib/Data/Complex/Basic.lean-699-protected theorem mul_inv_cancel {z : ℂ} (h : z ≠ 0) : z * z⁻¹ = 1 := by
+Mathlib/Data/Complex/Basic.lean:700:  rw [inv_def, ← mul_assoc, mul_conj, ← ofReal_mul, mul_inv_cancel₀ (mt normSq_eq_zero.1 h),
+Mathlib/Data/Complex/Basic.lean-701-    ofReal_one]
+Mathlib/Data/Complex/Basic.lean-702-
+Mathlib/Data/Complex/Basic.lean-703-noncomputable instance instDivInvMonoid : DivInvMonoid ℂ where
+--
+Mathlib/Analysis/Complex/Basic.lean-356-
+Mathlib/Analysis/Complex/Basic.lean-357-theorem _root_.RCLike.ofReal_eq_complex_ofReal : (RCLike.ofReal : ℝ → ℂ) = Complex.ofReal := rfl
+Mathlib/Analysis/Complex/Basic.lean-358-
+Mathlib/Analysis/Complex/Basic.lean:359:-- TODO: Replace `mul_conj` and `conj_mul` once `norm` has replaced `abs`
+Mathlib/Analysis/Complex/Basic.lean:360:lemma mul_conj' (z : ℂ) : z * conj z = ‖z‖ ^ 2 := RCLike.mul_conj z
+Mathlib/Analysis/Complex/Basic.lean-361-lemma conj_mul' (z : ℂ) : conj z * z = ‖z‖ ^ 2 := RCLike.conj_mul z
+Mathlib/Analysis/Complex/Basic.lean-362-
+Mathlib/Analysis/Complex/Basic.lean-363-lemma inv_eq_conj (hz : ‖z‖ = 1) : z⁻¹ = conj z := RCLike.inv_eq_conj hz
+--
+Mathlib/Analysis/Complex/Polynomial/Basic.lean-191-    map (algebraMap ℝ ℂ) (X ^ 2 - C (2 * z.re) * X + C (‖z‖ ^ 2))
+Mathlib/Analysis/Complex/Polynomial/Basic.lean-192-    _ = X ^ 2 - C (↑(2 * z.re) : ℂ) * X + C (‖z‖ ^ 2 : ℂ) := by simp
+Mathlib/Analysis/Complex/Polynomial/Basic.lean-193-    _ = (X - C (conj z)) * (X - C z) := by
+Mathlib/Analysis/Complex/Polynomial/Basic.lean:194:      rw [← add_conj, map_add, ← mul_conj', map_mul]
+Mathlib/Analysis/Complex/Polynomial/Basic.lean-195-      ring
+Mathlib/Analysis/Complex/Polynomial/Basic.lean-196-
+Mathlib/Analysis/Complex/Polynomial/Basic.lean-197-/-- An irreducible real polynomial has natural degree at most two. -/
+===== star_mul_self =====
+===== normSq_eq =====
+Mathlib/Data/Complex/Basic.lean-542-theorem normSq_add_mul_I (x y : ℝ) : normSq (x + y * I) = x ^ 2 + y ^ 2 := by
+Mathlib/Data/Complex/Basic.lean-543-  rw [← mk_eq_add_mul_I, normSq_mk, sq, sq]
+Mathlib/Data/Complex/Basic.lean-544-
+Mathlib/Data/Complex/Basic.lean:545:theorem normSq_eq_conj_mul_self {z : ℂ} : (normSq z : ℂ) = conj z * z := by
+Mathlib/Data/Complex/Basic.lean-546-  ext <;> simp [normSq, mul_comm, ofReal]
+Mathlib/Data/Complex/Basic.lean-547-
+Mathlib/Data/Complex/Basic.lean-548-theorem normSq_zero : normSq 0 = 0 := by simp
+--
+Mathlib/Data/Complex/Basic.lean-555-theorem normSq_nonneg (z : ℂ) : 0 ≤ normSq z :=
+Mathlib/Data/Complex/Basic.lean-556-  add_nonneg (mul_self_nonneg _) (mul_self_nonneg _)
+Mathlib/Data/Complex/Basic.lean-557-
+Mathlib/Data/Complex/Basic.lean:558:theorem normSq_eq_zero {z : ℂ} : normSq z = 0 ↔ z = 0 :=
+Mathlib/Data/Complex/Basic.lean-559-  ⟨fun h =>
+Mathlib/Data/Complex/Basic.lean-560-    ext (eq_zero_of_mul_self_add_mul_self_eq_zero h)
+Mathlib/Data/Complex/Basic.lean-561-      (eq_zero_of_mul_self_add_mul_self_eq_zero <| (add_comm _ _).trans h),
+--
+Mathlib/Data/Complex/Basic.lean-563-
+Mathlib/Data/Complex/Basic.lean-564-@[simp]
+Mathlib/Data/Complex/Basic.lean-565-theorem normSq_pos {z : ℂ} : 0 < normSq z ↔ z ≠ 0 :=
+Mathlib/Data/Complex/Basic.lean:566:  (normSq_nonneg z).lt_iff_ne.trans <| not_congr (eq_comm.trans normSq_eq_zero)
+Mathlib/Data/Complex/Basic.lean-567-
+Mathlib/Data/Complex/Basic.lean-568-@[simp]
+Mathlib/Data/Complex/Basic.lean-569-theorem normSq_neg (z : ℂ) : normSq (-z) = normSq z := by simp [normSq]
+--
+Mathlib/Data/Complex/Basic.lean-697-  rw [← ofReal_zero, ← ofReal_inv, inv_zero]
+Mathlib/Data/Complex/Basic.lean-698-
+Mathlib/Data/Complex/Basic.lean-699-protected theorem mul_inv_cancel {z : ℂ} (h : z ≠ 0) : z * z⁻¹ = 1 := by
+Mathlib/Data/Complex/Basic.lean:700:  rw [inv_def, ← mul_assoc, mul_conj, ← ofReal_mul, mul_inv_cancel₀ (mt normSq_eq_zero.1 h),
+Mathlib/Data/Complex/Basic.lean-701-    ofReal_one]
+Mathlib/Data/Complex/Basic.lean-702-
+Mathlib/Data/Complex/Basic.lean-703-noncomputable instance instDivInvMonoid : DivInvMonoid ℂ where
+--
+Mathlib/Analysis/Complex/Angle.lean-41-lemma angle_eq_abs_arg (hx : x ≠ 0) (hy : y ≠ 0) : angle x y = |(x / y).arg| := by
+Mathlib/Analysis/Complex/Angle.lean-42-  refine Real.arccos_eq_of_eq_cos (abs_nonneg _) (abs_arg_le_pi _) ?_
+Mathlib/Analysis/Complex/Angle.lean-43-  rw [Real.cos_abs, Complex.cos_arg (div_ne_zero hx hy)]
+Mathlib/Analysis/Complex/Angle.lean:44:  simp [div_eq_mul_inv, Complex.normSq_eq_norm_sq]
+Mathlib/Analysis/Complex/Angle.lean-45-  field
+Mathlib/Analysis/Complex/Angle.lean-46-
+Mathlib/Analysis/Complex/Angle.lean-47-lemma angle_one_left (hy : y ≠ 0) : angle 1 y = |y.arg| := by simp [angle_eq_abs_arg, hy]
+--
+Mathlib/Analysis/Complex/Basic.lean-93-
+Mathlib/Analysis/Complex/Basic.lean-94-@[continuity, fun_prop]
+Mathlib/Analysis/Complex/Basic.lean-95-theorem continuous_normSq : Continuous normSq := by
+Mathlib/Analysis/Complex/Basic.lean:96:  simpa [← Complex.normSq_eq_norm_sq] using continuous_norm (E := ℂ).fun_pow 2
+Mathlib/Analysis/Complex/Basic.lean-97-
+Mathlib/Analysis/Complex/Basic.lean-98-theorem nnnorm_eq_one_of_pow_eq_one {ζ : ℂ} {n : ℕ} (h : ζ ^ n = 1) (hn : n ≠ 0) : ‖ζ‖₊ = 1 :=
+Mathlib/Analysis/Complex/Basic.lean-99-  (pow_left_inj₀ zero_le zero_le hn).1 <| by rw [← nnnorm_pow, h, nnnorm_one, one_pow]
+--
+Mathlib/Analysis/Complex/Basic.lean-343-  conj_re_ax _ := rfl
+Mathlib/Analysis/Complex/Basic.lean-344-  conj_im_ax _ := rfl
+Mathlib/Analysis/Complex/Basic.lean-345-  conj_I_ax := conj_I
+Mathlib/Analysis/Complex/Basic.lean:346:  norm_sq_eq_def_ax z := (normSq_eq_norm_sq z).symm
+Mathlib/Analysis/Complex/Basic.lean-347-  mul_im_I_ax _ := mul_one _
+Mathlib/Analysis/Complex/Basic.lean-348-  toPartialOrder := Complex.partialOrder
+Mathlib/Analysis/Complex/Basic.lean-349-  le_iff_re_im := Iff.rfl
+--
+Mathlib/Analysis/Complex/Basic.lean-416-    (h : RCLike.im (RCLike.I : 𝕜) = 1) : 𝕜 ≃ₗᵢ[ℝ] ℂ where
+Mathlib/Analysis/Complex/Basic.lean-417-  map_smul' _ _ := by simp [RCLike.smul_re, RCLike.smul_im, ofReal_mul]; ring
+Mathlib/Analysis/Complex/Basic.lean-418-  norm_map' _ := by
+Mathlib/Analysis/Complex/Basic.lean:419:    rw [← sq_eq_sq₀ (by positivity) (by positivity), ← normSq_eq_norm_sq, ← RCLike.normSq_eq_def',
+Mathlib/Analysis/Complex/Basic.lean-420-      RCLike.normSq_apply]
+Mathlib/Analysis/Complex/Basic.lean-421-    simp [normSq_add]
+Mathlib/Analysis/Complex/Basic.lean-422-  __ := RCLike.complexRingEquiv h
+--
+Mathlib/Analysis/Complex/Poisson.lean-60-
+Mathlib/Analysis/Complex/Poisson.lean-61-private lemma poissonKernel_eq_re_herglotzRieszKernel_aux {a b : ℂ} :
+Mathlib/Analysis/Complex/Poisson.lean-62-    ((a + b) / (a - b)).re = (‖a‖ ^ 2 - ‖b‖ ^ 2) / ‖a - b‖ ^ 2 := by
+Mathlib/Analysis/Complex/Poisson.lean:63:  rw [div_re, normSq_eq_norm_sq (a - b), ← add_div, add_re, sub_re, add_im, sub_im]
+Mathlib/Analysis/Complex/Poisson.lean-64-  calc ((a.re + b.re) * (a.re - b.re) + (a.im + b.im) * (a.im - b.im)) / ‖a - b‖ ^ 2
+Mathlib/Analysis/Complex/Poisson.lean-65-    _ = ((a.re * a.re + a.im * a.im) - (b.re * b.re + b.im * b.im)) / ‖a - b‖ ^ 2 := by
+Mathlib/Analysis/Complex/Poisson.lean-66-      congr! 1; ring
+Mathlib/Analysis/Complex/Poisson.lean-67-    _ = (‖a‖ ^ 2 - ‖b‖ ^ 2) / ‖a - b‖ ^ 2 := by
+Mathlib/Analysis/Complex/Poisson.lean:68:      simp [← normSq_apply, normSq_eq_norm_sq]
+Mathlib/Analysis/Complex/Poisson.lean-69-
+Mathlib/Analysis/Complex/Poisson.lean-70-/--
+Mathlib/Analysis/Complex/Poisson.lean-71-Companion theorem to the Poisson Integral Formula: The real part of the Herglotz–Riesz kernel and
+--
+Mathlib/Analysis/Complex/Poisson.lean-91-  suffices (R * R * normSq (cexp (θ * I)) + r * r * normSq (cexp (φ * I)) -
+Mathlib/Analysis/Complex/Poisson.lean-92-      2 * (R * Real.cos θ * (r * Real.cos φ) + R * Real.sin θ * (r * Real.sin φ))) =
+Mathlib/Analysis/Complex/Poisson.lean-93-      (R ^ 2 + r ^ 2 - 2 * R * r * Real.cos (θ - φ)) by
+Mathlib/Analysis/Complex/Poisson.lean:94:    rw [← this]; simp [← normSq_eq_norm_sq, Complex.normSq_sub]
+Mathlib/Analysis/Complex/Poisson.lean:95:  simp [normSq_eq_norm_sq, Real.cos_sub]
+Mathlib/Analysis/Complex/Poisson.lean-96-  ring
+Mathlib/Analysis/Complex/Poisson.lean-97-
+Mathlib/Analysis/Complex/Poisson.lean-98-/--
+--
+Mathlib/Analysis/Complex/Poisson.lean-116-    sq_sub_sq]
+Mathlib/Analysis/Complex/Poisson.lean-117-  field_simp [sub_pos.mpr h₂]
+Mathlib/Analysis/Complex/Poisson.lean-118-  simp only [mul_comm I] -- make sure exponents are in the form `?angle * I` for the simplification
+Mathlib/Analysis/Complex/Poisson.lean:119:  rw [div_le_div_iff₀ (by positivity [h₁.trans h₂]) ?hpos, ← normSq_eq_norm_sq, normSq_sub,
+Mathlib/Analysis/Complex/Poisson.lean:120:    normSq_eq_norm_sq, normSq_eq_norm_sq]
+Mathlib/Analysis/Complex/Poisson.lean-121-  case hpos => simpa [sq_pos_iff, sub_eq_zero] using
+Mathlib/Analysis/Complex/Poisson.lean-122-    (mt <| congr_arg (‖·‖)) <| by simpa [abs_of_pos, h₁, h₁.trans h₂] using h₂.ne'
+Mathlib/Analysis/Complex/Poisson.lean-123-  have key := calc
+--
+Mathlib/Analysis/Complex/UpperHalfPlane/Manifold.lean-240-  simp only [smulFDeriv, σ]
+Mathlib/Analysis/Complex/UpperHalfPlane/Manifold.lean-241-  rcases g.det_ne_zero.lt_or_gt with h | h
+Mathlib/Analysis/Complex/UpperHalfPlane/Manifold.lean-242-  · simp [h.not_gt, ContinuousLinearMap.det, LinearMap.det_restrictScalars,
+Mathlib/Analysis/Complex/UpperHalfPlane/Manifold.lean:243:      Algebra.norm_complex_eq, Complex.normSq_eq_norm_sq, ← pow_mul, sign_neg h, neg_div]
+Mathlib/Analysis/Complex/UpperHalfPlane/Manifold.lean-244-  · simp [ContinuousLinearMap.det, h, LinearMap.det_restrictScalars,
+Mathlib/Analysis/Complex/UpperHalfPlane/Manifold.lean:245:      Algebra.norm_complex_eq, Complex.normSq_eq_norm_sq, ← pow_mul]
+Mathlib/Analysis/Complex/UpperHalfPlane/Manifold.lean-246-
+Mathlib/Analysis/Complex/UpperHalfPlane/Manifold.lean-247-lemma hasStrictFDerivAt_smul (g : GL (Fin 2) ℝ) (τ : ℍ) :
+Mathlib/Analysis/Complex/UpperHalfPlane/Manifold.lean-248-    HasStrictFDerivAt (fun z ↦ ↑(g • ofComplex z) : ℂ → ℂ) (smulFDeriv g τ) τ := by
+--
+Mathlib/Analysis/Complex/UpperHalfPlane/Measure.lean-111-    have := denom_ne_zero g τ
+Mathlib/Analysis/Complex/UpperHalfPlane/Measure.lean-112-    norm_cast
+Mathlib/Analysis/Complex/UpperHalfPlane/Measure.lean-113-    ext
+Mathlib/Analysis/Complex/UpperHalfPlane/Measure.lean:114:    simp [det_smulFDeriv, *, im_smul_eq_div_normSq, Complex.normSq_eq_norm_sq, field]
+Mathlib/Analysis/Complex/UpperHalfPlane/Measure.lean-115-
+Mathlib/Analysis/Complex/UpperHalfPlane/Measure.lean-116-end UpperHalfPlane
+Mathlib/Analysis/Complex/UpperHalfPlane/Measure.lean-117-
+--
+Mathlib/Analysis/Complex/UpperHalfPlane/FixedPoints.lean-68-    (hc : g 1 0 ≠ 0) :
+Mathlib/Analysis/Complex/UpperHalfPlane/FixedPoints.lean-69-    g • z = z ↔ dist (z : ℂ) (-g 1 1 / g 1 0) ^ 2 = (-g.val.det) / g 1 0 ^ 2 := by
+Mathlib/Analysis/Complex/UpperHalfPlane/FixedPoints.lean-70-  rw [Matrix.trace_fin_two, ← eq_neg_iff_add_eq_zero] at htrace
+Mathlib/Analysis/Complex/UpperHalfPlane/FixedPoints.lean:71:  rw [eq_div_iff (by positivity), dist_eq_norm, ← Complex.normSq_eq_norm_sq, Complex.normSq_apply,
+Mathlib/Analysis/Complex/UpperHalfPlane/FixedPoints.lean-72-    gl_smul_eq_iff_num_eq, σ, g.val_det_apply, if_neg h.not_gt]
+Mathlib/Analysis/Complex/UpperHalfPlane/FixedPoints.lean-73-  simp [num, denom, Complex.ext_iff, htrace, Matrix.det_fin_two, field]
+Mathlib/Analysis/Complex/UpperHalfPlane/FixedPoints.lean-74-  grind
+--
+Mathlib/Analysis/Complex/UpperHalfPlane/FixedPoints.lean-96-    · use ⟨⟨g 0 1 / (2 * g 1 1), 1⟩, one_pos⟩
+Mathlib/Analysis/Complex/UpperHalfPlane/FixedPoints.lean-97-      simp [gl_smul_eq_self_iff_re_eq, *]
+Mathlib/Analysis/Complex/UpperHalfPlane/FixedPoints.lean-98-    · use ⟨⟨-g 1 1 / g 1 0, √(-g.val.det) / |g 1 0|⟩, by simp [*]⟩
+Mathlib/Analysis/Complex/UpperHalfPlane/FixedPoints.lean:99:      simp [gl_smul_eq_self_iff_dist_sq_eq, *, dist_eq_norm, ← Complex.normSq_eq_norm_sq,
+Mathlib/Analysis/Complex/UpperHalfPlane/FixedPoints.lean-100-        Complex.normSq_apply, ← pow_two, div_pow, h.le]
+Mathlib/Analysis/Complex/UpperHalfPlane/FixedPoints.lean-101-
+Mathlib/Analysis/Complex/UpperHalfPlane/FixedPoints.lean-102-/-- If `g` is an orientation-preserving map,
+--
+Mathlib/Analysis/Complex/Isometry.lean-104-theorem LinearIsometry.im_apply_eq_im {f : ℂ →ₗᵢ[ℝ] ℂ} (h : f 1 = 1) (z : ℂ) :
+Mathlib/Analysis/Complex/Isometry.lean-105-    z + conj z = f z + conj (f z) := by
+Mathlib/Analysis/Complex/Isometry.lean-106-  have hsq : ‖f z - 1‖ ^ 2 = ‖z - 1‖ ^ 2 := by simpa [h] using f.norm_map (z - 1)
+Mathlib/Analysis/Complex/Isometry.lean:107:  simp_rw [← normSq_eq_norm_sq, Complex.normSq_sub] at hsq
+Mathlib/Analysis/Complex/Isometry.lean:108:  simpa [normSq_eq_norm_sq, Complex.add_conj, LinearIsometry.norm_map] using hsq.symm
+Mathlib/Analysis/Complex/Isometry.lean-109-
+Mathlib/Analysis/Complex/Isometry.lean-110-theorem LinearIsometry.re_apply_eq_re {f : ℂ →ₗᵢ[ℝ] ℂ} (h : f 1 = 1) (z : ℂ) : (f z).re = z.re := by
+Mathlib/Analysis/Complex/Isometry.lean-111-  apply LinearIsometry.re_apply_eq_re_of_add_conj_eq
+--
+Mathlib/Analysis/Complex/Norm.lean-53-    exact re_le_norm (z * conj w)
+Mathlib/Analysis/Complex/Norm.lean-54-
+Mathlib/Analysis/Complex/Norm.lean-55-protected theorem norm_eq_zero_iff {z : ℂ} : ‖z‖ = 0 ↔ z = 0 :=
+Mathlib/Analysis/Complex/Norm.lean:56:  (Real.sqrt_eq_zero <| normSq_nonneg _).trans normSq_eq_zero
+Mathlib/Analysis/Complex/Norm.lean-57-
+Mathlib/Analysis/Complex/Norm.lean-58-protected theorem norm_map_zero' : ‖(0 : ℂ)‖ = 0 :=
+Mathlib/Analysis/Complex/Norm.lean-59-  Complex.norm_eq_zero_iff.mpr rfl
+--
+Mathlib/Analysis/Complex/Norm.lean-144-@[simp 1100, norm_cast]
+Mathlib/Analysis/Complex/Norm.lean-145-lemma nnnorm_nnratCast (q : ℚ≥0) : ‖(q : ℂ)‖₊ = q := by simp [nnnorm]; rfl
+Mathlib/Analysis/Complex/Norm.lean-146-
+Mathlib/Analysis/Complex/Norm.lean:147:lemma normSq_eq_norm_sq (z : ℂ) : normSq z = ‖z‖ ^ 2 := by
+Mathlib/Analysis/Complex/Norm.lean-148-  simp [norm_def, sq, Real.mul_self_sqrt (normSq_nonneg _)]
+Mathlib/Analysis/Complex/Norm.lean-149-
+Mathlib/Analysis/Complex/Norm.lean:150:protected theorem sq_norm (z : ℂ) : ‖z‖ ^ 2 = normSq z := (normSq_eq_norm_sq z).symm
+Mathlib/Analysis/Complex/Norm.lean-151-
+Mathlib/Analysis/Complex/Norm.lean-152-lemma one_lt_normSq_iff {x : ℂ} : 1 < normSq x ↔ 1 < ‖x‖ := by
+Mathlib/Analysis/Complex/Norm.lean:153:  rw [← one_lt_sq_iff₀ (norm_nonneg _), normSq_eq_norm_sq]
+Mathlib/Analysis/Complex/Norm.lean-154-
+Mathlib/Analysis/Complex/Norm.lean-155-lemma one_le_normSq_iff {x : ℂ} : 1 ≤ normSq x ↔ 1 ≤ ‖x‖ := by
+Mathlib/Analysis/Complex/Norm.lean:156:  rw [← one_le_sq_iff₀ (norm_nonneg _), normSq_eq_norm_sq]
+Mathlib/Analysis/Complex/Norm.lean-157-
+Mathlib/Analysis/Complex/Norm.lean-158-@[simp]
+Mathlib/Analysis/Complex/Norm.lean-159-theorem sq_norm_sub_sq_re (z : ℂ) : ‖z‖ ^ 2 - z.re ^ 2 = z.im ^ 2 := by
+--
+Mathlib/Analysis/Complex/JensenFormula.lean-71-    sqrt (r₀ / R) * ‖circleMap 0 R θ - ρ‖ ≤ ‖circleMap 0 r θ - ρ‖ := by
+Mathlib/Analysis/Complex/JensenFormula.lean-72-  have h_cos_law (r₁ : ℝ) :
+Mathlib/Analysis/Complex/JensenFormula.lean-73-      ‖circleMap 0 r₁ θ - ρ‖ ^ 2 = r₁ ^ 2 + R ^ 2 - 2 * r₁ * R * Real.cos (θ - Complex.arg ρ) := by
+Mathlib/Analysis/Complex/JensenFormula.lean:74:    rw [← ofReal_inj, ← normSq_eq_norm_sq, normSq_sub ]
+Mathlib/Analysis/Complex/JensenFormula.lean-75-    suffices (circleMap 0 r₁ θ * (conj) ρ).re = r₁ * ‖ρ‖ * Real.cos (θ - ρ.arg) by
+Mathlib/Analysis/Complex/JensenFormula.lean:76:      simp [normSq_eq_norm_sq, hρ, -mul_re, this, mul_assoc]
+Mathlib/Analysis/Complex/JensenFormula.lean-77-    conv_lhs => rw [← norm_mul_exp_arg_mul_I ρ, ← circleMap_zero, conj_circleMap_zero,
+Mathlib/Analysis/Complex/JensenFormula.lean-78-      circleMap_zero_mul, circleMap_zero_re, ← sub_eq_add_neg]
+Mathlib/Analysis/Complex/JensenFormula.lean-79-  have : (r₀ / R) * ‖circleMap 0 R θ - ρ‖ ^ 2 ≤ ‖circleMap 0 r θ - ρ‖ ^ 2 := by
+--
+Mathlib/Analysis/Complex/Circle.lean-70-lemma norm_coe (z : Circle) : ‖(z : ℂ)‖ = 1 := mem_sphere_zero_iff_norm.1 z.2
+Mathlib/Analysis/Complex/Circle.lean-71-
+Mathlib/Analysis/Complex/Circle.lean-72-set_option backward.isDefEq.respectTransparency false in
+Mathlib/Analysis/Complex/Circle.lean:73:@[simp] lemma normSq_coe (z : Circle) : normSq z = 1 := by simp [normSq_eq_norm_sq]
+Mathlib/Analysis/Complex/Circle.lean-74-@[simp] lemma coe_ne_zero (z : Circle) : (z : ℂ) ≠ 0 := ne_zero_of_mem_unit_sphere z
+Mathlib/Analysis/Complex/Circle.lean-75-@[simp, norm_cast] lemma coe_one : ↑(1 : Circle) = (1 : ℂ) := rfl
+Mathlib/Analysis/Complex/Circle.lean-76--- Not simp because `OneMemClass.coe_eq_one` already proves it
+--
+Mathlib/Analysis/Complex/CanonicalDecomposition.lean-102-    refine (MeromorphicNFAt.meromorphicOrderAt_eq_zero_iff ?_).2 ?_
+Mathlib/Analysis/Complex/CanonicalDecomposition.lean-103-    · apply AnalyticAt.meromorphicNFAt
+Mathlib/Analysis/Complex/CanonicalDecomposition.lean-104-      fun_prop
+Mathlib/Analysis/Complex/CanonicalDecomposition.lean:105:    · rw [← normSq_eq_conj_mul_self, normSq_eq_norm_sq w, sub_ne_zero, ne_eq, ← ofReal_pow,
+Mathlib/Analysis/Complex/CanonicalDecomposition.lean-106-        ofReal_inj, sq_eq_sq₀ (pos_of_mem_ball h).le (norm_nonneg w)]
+Mathlib/Analysis/Complex/CanonicalDecomposition.lean-107-      rw [mem_ball_iff_norm, sub_zero] at h
+Mathlib/Analysis/Complex/CanonicalDecomposition.lean-108-      grind
+--
+Mathlib/Analysis/Complex/CanonicalDecomposition.lean-163-    grind [mem_ball_zero_iff, norm_nonneg, mem_sphere_zero_iff_norm]
+Mathlib/Analysis/Complex/CanonicalDecomposition.lean-164-  rw [canonicalFactor, norm_div, div_eq_iff (by rw [ne_eq, norm_eq_zero]; positivity), one_mul]
+Mathlib/Analysis/Complex/CanonicalDecomposition.lean-165-  obtain rfl := by simpa [mem_sphere_zero_iff_norm] using hz
+Mathlib/Analysis/Complex/CanonicalDecomposition.lean:166:  rw [← ofReal_pow, ← normSq_eq_norm_sq, normSq_eq_conj_mul_self, ← sub_mul, mul_comm _ z]
+Mathlib/Analysis/Complex/CanonicalDecomposition.lean-167-  simp [← map_sub]
+Mathlib/Analysis/Complex/CanonicalDecomposition.lean-168-
+Mathlib/Analysis/Complex/CanonicalDecomposition.lean-169-/-!
