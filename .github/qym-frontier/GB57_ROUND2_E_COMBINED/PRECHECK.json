@@ -1,0 +1,15 @@
+{
+  "pass": true,
+  "duplicate_doc_comments": [],
+  "comment_balance": 0,
+  "forbidden_counts": {
+    "sorry": 0,
+    "admit": 0,
+    "unsafe": 0,
+    "native_decide": 0,
+    "Lean.ofReduceBool": 0,
+    "axiom": 0,
+    "maxHeartbeats_zero": 0
+  },
+  "missing_required_markers": []
+}

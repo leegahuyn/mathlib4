@@ -1,0 +1,152 @@
+{
+  "schema": "qym-gb57-round2-e-combined-v1",
+  "authority": "actual full-QYM direct Lean",
+  "run_id": 32303926874,
+  "trigger_sha": "003bfce8f9a04c98490a5c997b8a578123a28594",
+  "branch": "gpt/qym-gb57-round2-e-combined-20260820",
+  "e_variant": "simp",
+  "exit": 1,
+  "error_headers": 18,
+  "warning_headers": 353,
+  "panic_lines": 0,
+  "parser_error_lines": 0,
+  "elapsed_seconds": 539,
+  "first_error": "PrimalitySheafVerification/QYM.lean:48452:4: error: Type mismatch: After simplification, term",
+  "source_sha256": "27772eeca8e33cf1afd5aead87d177d31cdd41b166cf5fb333bb39458dcdff42",
+  "source_blob": "cb9377c3c2a58395a335eb84e34b5f86fd6d7bb0",
+  "log_sha256": "6b4ae5933579b8144cdaf9dc69e34ae2fb6e5b63ddec2693eccf730ace717810",
+  "precheck_pass": true,
+  "olean_exists": false,
+  "ilean_exists": false,
+  "errors": [
+    {
+      "line": 48452,
+      "column": 4,
+      "code": null,
+      "message": "Type mismatch: After simplification, term",
+      "declaration": "inverseEtaFibreOfCoordinate_continuous"
+    },
+    {
+      "line": 50768,
+      "column": 4,
+      "code": null,
+      "message": "Type mismatch: After simplification, term",
+      "declaration": "actualStageFibreValue_eq_iff"
+    },
+    {
+      "line": 50830,
+      "column": 2,
+      "code": null,
+      "message": "'change' tactic failed, pattern",
+      "declaration": "actualStagePeterssonInner_self_re_eq_zero_iff"
+    },
+    {
+      "line": 50963,
+      "column": 2,
+      "code": null,
+      "message": "Type mismatch",
+      "declaration": "quotientSectionToActualStageL2_bundleValue_ae"
+    },
+    {
+      "line": 51842,
+      "column": 2,
+      "code": null,
+      "message": "Type mismatch: After simplification, term",
+      "declaration": "inverseEtaBase_hasGroupoidH"
+    },
+    {
+      "line": 51960,
+      "column": 2,
+      "code": null,
+      "message": "`simp` made no progress",
+      "declaration": "inverseEtaTotalTransported_extChartAt_target"
+    },
+    {
+      "line": 52043,
+      "column": 6,
+      "code": null,
+      "message": "Type mismatch: After simplification, term",
+      "declaration": "inverseEtaTotalTrivialization_contMDiff"
+    },
+    {
+      "line": 52082,
+      "column": 6,
+      "code": null,
+      "message": "Type mismatch: After simplification, term",
+      "declaration": "inverseEtaTotalTrivialization_symm_contMDiff"
+    },
+    {
+      "line": 53510,
+      "column": 91,
+      "code": "lean.unknownIdentifier",
+      "message": "Unknown identifier `actualStageBasePoint`",
+      "declaration": "actualStageDiscriminantPotential_pos"
+    },
+    {
+      "line": 57768,
+      "column": 8,
+      "code": null,
+      "message": "Tactic `rewrite` failed: Did not find an occurrence of the pattern",
+      "declaration": "globalStageProjection_add"
+    },
+    {
+      "line": 57773,
+      "column": 8,
+      "code": null,
+      "message": "Tactic `rewrite` failed: Did not find an occurrence of the pattern",
+      "declaration": "globalStageProjection_add"
+    },
+    {
+      "line": 57793,
+      "column": 8,
+      "code": null,
+      "message": "Tactic `rewrite` failed: Did not find an occurrence of the pattern",
+      "declaration": "globalStageProjection_smul"
+    },
+    {
+      "line": 57797,
+      "column": 8,
+      "code": null,
+      "message": "Tactic `rewrite` failed: Did not find an occurrence of the pattern",
+      "declaration": "globalStageProjection_smul"
+    },
+    {
+      "line": 58125,
+      "column": 43,
+      "code": null,
+      "message": "Tactic `rewrite` failed: Did not find an occurrence of the pattern",
+      "declaration": "globalStageProjectionErrorDensity_le"
+    },
+    {
+      "line": 58130,
+      "column": 43,
+      "code": null,
+      "message": "Tactic `rewrite` failed: Did not find an occurrence of the pattern",
+      "declaration": "globalStageProjectionErrorDensity_le"
+    },
+    {
+      "line": 58156,
+      "column": 41,
+      "code": null,
+      "message": "Tactic `rewrite` failed: Did not find an occurrence of the pattern",
+      "declaration": "globalStageProjectionErrorDensity_eventually_zero"
+    },
+    {
+      "line": 58172,
+      "column": 41,
+      "code": null,
+      "message": "Tactic `rewrite` failed: Did not find an occurrence of the pattern",
+      "declaration": "globalStageProjectionErrorDensity_tendsto_pointwise"
+    },
+    {
+      "line": 59557,
+      "column": 2,
+      "code": null,
+      "message": "'change' tactic failed, pattern",
+      "declaration": "coordinateHamiltonianForm_re_self"
+    }
+  ],
+  "parser_clean": true,
+  "valid_partial": true,
+  "pass": false
+}
