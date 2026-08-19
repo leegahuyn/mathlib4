@@ -1,0 +1,510 @@
+name: GPT QYM exact GB76 global V16-V17 cumulative repair
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - gpt/qym-gb77-v14-right-normal-im-20260820
+    paths:
+      - .github/workflows/gpt-qym-gb76-global-batch-v16-v17.yml
+      - .github/qym-gb76-global-batch-trigger.txt
+
+permissions:
+  contents: write
+
+env:
+  QYM_PATH: PrimalitySheafVerification/QYM.lean
+  BASELINE_SHA256: fada22264b6618467f89d436ddacff27453db1242769717d5e7a386682d4efb3
+  BASELINE_BLOB: 29d446743036dccd5d9ad8757c351b39d526cfa9
+  BASELINE_ERRORS: "76"
+
+concurrency:
+  group: qym-gb76-global-v16-v17-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  baseline-control:
+    name: Authoritative exact-GB76 control
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Gate exact promoted GB76 source
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(sha256sum "$QYM_PATH" | awk '{print $1}')" = "$BASELINE_SHA256"
+          test "$(git hash-object "$QYM_PATH")" = "$BASELINE_BLOB"
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          p = Path("PrimalitySheafVerification/QYM.lean")
+          s = p.read_text(encoding="utf-8")
+          forbidden = {
+              "sorry": len(re.findall(r"\bsorry\b", s)),
+              "admit": len(re.findall(r"\badmit\b", s)),
+              "native_decide": len(re.findall(r"\bnative_decide\b", s)),
+              "Lean.ofReduceBool": s.count("Lean.ofReduceBool"),
+              "global_axiom": len(re.findall(r"(?m)^\s*axiom\s+", s)),
+              "unsafe": len(re.findall(r"(?m)^\s*unsafe\s+", s)),
+              "maxHeartbeats_zero": len(re.findall(r"set_option\s+maxHeartbeats\s+0\b", s)),
+          }
+          if any(forbidden.values()):
+              raise SystemExit(f"forbidden baseline tokens: {forbidden}")
+          print(forbidden)
+          PY
+
+      - name: Install pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          export PATH="$HOME/.elan/bin:$PATH"
+          lake exe cache get
+
+      - name: Build project imports required by QYM
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          python3 - <<'PY'
+          from pathlib import Path
+          import subprocess
+          src = Path("PrimalitySheafVerification/QYM.lean").read_text(encoding="utf-8")
+          modules = []
+          for raw in src.splitlines():
+              line = raw.strip()
+              if not line.startswith("import "):
+                  continue
+              for mod in line.split()[1:]:
+                  if mod.startswith("PrimalitySheafVerification.") and mod not in modules:
+                      modules.append(mod)
+          print("project imports:", modules)
+          for mod in modules:
+              subprocess.run(["lake", "build", mod], check=True)
+          PY
+
+      - name: Run authoritative full-QYM direct Lean control
+        id: lean
+        shell: bash
+        run: |
+          set +e
+          export PATH="$HOME/.elan/bin:$PATH"
+          start=$(date +%s)
+          timeout 9000s lake env lean "$QYM_PATH" > baseline.log 2>&1
+          code=$?
+          end=$(date +%s)
+          echo "$code" > baseline.exit
+          echo "$((end-start))" > baseline.elapsed
+          exit 0
+
+      - name: Summarize and enforce exact 76-error control
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib, json, re
+          log = Path("baseline.log").read_text(encoding="utf-8", errors="replace")
+          src = Path("PrimalitySheafVerification/QYM.lean").read_bytes()
+          err = re.findall(r"(?m)^.*?\.lean:(\d+):(\d+): error:", log)
+          warn = re.findall(r"(?m)^.*?\.lean:(\d+):(\d+): warning:", log)
+          first = int(err[0][0]) if err else None
+          code = int(Path("baseline.exit").read_text().strip())
+          elapsed = int(Path("baseline.elapsed").read_text().strip())
+          invalid_markers = [
+              "unknown module prefix", "object file '" , "does not exist",
+              "failed to create process", "No such file or directory"
+          ]
+          infrastructure_clean = not any(x in log for x in invalid_markers)
+          result = {
+              "schema": "qym-gb76-global-control-v1",
+              "run_id": int("${{ github.run_id }}"),
+              "source_sha256": hashlib.sha256(src).hexdigest(),
+              "source_blob": "${{ env.BASELINE_BLOB }}",
+              "exit_code": code,
+              "elapsed_seconds": elapsed,
+              "error_headers": len(err),
+              "warning_headers": len(warn),
+              "first_error_line": first,
+              "panic_lines": sum(1 for x in log.splitlines() if "panic" in x.lower()),
+              "infrastructure_clean": infrastructure_clean,
+              "authoritative_control": infrastructure_clean and len(err) == 76,
+          }
+          Path("baseline-result.json").write_text(json.dumps(result, indent=2, sort_keys=True)+"\n")
+          print(json.dumps(result, indent=2, sort_keys=True))
+          if not result["authoritative_control"]:
+              raise SystemExit("exact GB76 control did not reproduce 76 errors")
+          PY
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: qym-gb76-control-${{ github.run_id }}
+          path: |
+            baseline.log
+            baseline-result.json
+          if-no-files-found: error
+          retention-days: 30
+
+  candidates:
+    name: V16-V17 ${{ matrix.groupoid }} + ${{ matrix.inverse_eta }}
+    needs: baseline-control
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      max-parallel: 12
+      matrix:
+        groupoid:
+          - none
+          - explicit_helpers
+          - fact_bridge
+          - inline_duplicate
+        inverse_eta:
+          - none
+          - explicit_simpa
+          - explicit_cases
+          - opaque_instance_simpa
+          - opaque_instance_cases
+        exclude:
+          - groupoid: none
+            inverse_eta: none
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Gate exact promoted GB76 source and patch assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(sha256sum "$QYM_PATH" | awk '{print $1}')" = "$BASELINE_SHA256"
+          test "$(git hash-object "$QYM_PATH")" = "$BASELINE_BLOB"
+          test -f .github/qym_patch_gb77_fixedorigin_v16_groupoid.py
+          test -f .github/qym_patch_gb77_fixedorigin_v17_inverse_eta.py
+
+      - name: Install pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          export PATH="$HOME/.elan/bin:$PATH"
+          lake exe cache get
+
+      - name: Build project imports required by QYM
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          python3 - <<'PY'
+          from pathlib import Path
+          import subprocess
+          src = Path("PrimalitySheafVerification/QYM.lean").read_text(encoding="utf-8")
+          modules = []
+          for raw in src.splitlines():
+              line = raw.strip()
+              if not line.startswith("import "):
+                  continue
+              for mod in line.split()[1:]:
+                  if mod.startswith("PrimalitySheafVerification.") and mod not in modules:
+                      modules.append(mod)
+          for mod in modules:
+              subprocess.run(["lake", "build", mod], check=True)
+          PY
+
+      - name: Generate cumulative candidate from exact GB76
+        id: generate
+        shell: bash
+        env:
+          GROUP_VARIANT: ${{ matrix.groupoid }}
+          INVERSE_VARIANT: ${{ matrix.inverse_eta }}
+        run: |
+          set +e
+          cp "$QYM_PATH" QYM.candidate.lean
+          : > patch.log
+          patch_ok=1
+          if [ "$GROUP_VARIANT" != "none" ]; then
+            python3 .github/qym_patch_gb77_fixedorigin_v16_groupoid.py \
+              "$GROUP_VARIANT" QYM.candidate.lean QYM.groupoid.lean >> patch.log 2>&1
+            code=$?
+            if [ $code -ne 0 ]; then patch_ok=0; else mv QYM.groupoid.lean QYM.candidate.lean; fi
+          fi
+          if [ $patch_ok -eq 1 ] && [ "$INVERSE_VARIANT" != "none" ]; then
+            python3 .github/qym_patch_gb77_fixedorigin_v17_inverse_eta.py \
+              "$INVERSE_VARIANT" QYM.candidate.lean QYM.inverse.lean >> patch.log 2>&1
+            code=$?
+            if [ $code -ne 0 ]; then patch_ok=0; else mv QYM.inverse.lean QYM.candidate.lean; fi
+          fi
+          echo "$patch_ok" > patch.ok
+          exit 0
+
+      - name: Independently audit candidate bytes
+        shell: bash
+        env:
+          GROUP_VARIANT: ${{ matrix.groupoid }}
+          INVERSE_VARIANT: ${{ matrix.inverse_eta }}
+        run: |
+          set +e
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib, json, re, subprocess, os
+          p = Path("QYM.candidate.lean")
+          patch_ok = Path("patch.ok").read_text().strip() == "1" and p.exists()
+          data = p.read_bytes() if p.exists() else b""
+          text = data.decode("utf-8", errors="replace")
+          forbidden = {
+              "sorry": len(re.findall(r"\bsorry\b", text)),
+              "admit": len(re.findall(r"\badmit\b", text)),
+              "native_decide": len(re.findall(r"\bnative_decide\b", text)),
+              "Lean.ofReduceBool": text.count("Lean.ofReduceBool"),
+              "global_axiom": len(re.findall(r"(?m)^\s*axiom\s+", text)),
+              "unsafe": len(re.findall(r"(?m)^\s*unsafe\s+", text)),
+              "maxHeartbeats_zero": len(re.findall(r"set_option\s+maxHeartbeats\s+0\b", text)),
+          }
+          blob = subprocess.check_output(["git", "hash-object", str(p)]).decode().strip() if p.exists() else None
+          audit = {
+              "groupoid": os.environ["GROUP_VARIANT"],
+              "inverse_eta": os.environ["INVERSE_VARIANT"],
+              "patch_ok": patch_ok,
+              "sha256": hashlib.sha256(data).hexdigest() if data else None,
+              "blob": blob,
+              "bytes": len(data),
+              "lines": data.count(b"\n"),
+              "forbidden": forbidden,
+              "audit_ok": patch_ok and not any(forbidden.values()) and hashlib.sha256(data).hexdigest() != os.environ["BASELINE_SHA256"],
+          }
+          Path("candidate-audit.json").write_text(json.dumps(audit, indent=2, sort_keys=True)+"\n")
+          print(json.dumps(audit, indent=2, sort_keys=True))
+          PY
+          exit 0
+
+      - name: Run authoritative full-QYM direct Lean candidate
+        shell: bash
+        run: |
+          set +e
+          if ! python3 -c 'import json; raise SystemExit(0 if json.load(open("candidate-audit.json"))["audit_ok"] else 1)'; then
+            echo 125 > candidate.exit
+            echo 0 > candidate.elapsed
+            echo "candidate generation/audit invalid" > candidate.log
+            exit 0
+          fi
+          cp QYM.candidate.lean PrimalitySheafVerification/QYM.global_candidate.lean
+          export PATH="$HOME/.elan/bin:$PATH"
+          start=$(date +%s)
+          timeout 9000s lake env lean PrimalitySheafVerification/QYM.global_candidate.lean > candidate.log 2>&1
+          code=$?
+          end=$(date +%s)
+          echo "$code" > candidate.exit
+          echo "$((end-start))" > candidate.elapsed
+          exit 0
+
+      - name: Summarize candidate metrics
+        shell: bash
+        env:
+          GROUP_VARIANT: ${{ matrix.groupoid }}
+          INVERSE_VARIANT: ${{ matrix.inverse_eta }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import json, os, re
+          audit = json.loads(Path("candidate-audit.json").read_text())
+          log = Path("candidate.log").read_text(encoding="utf-8", errors="replace")
+          err = re.findall(r"(?m)^.*?\.lean:(\d+):(\d+): error:", log)
+          warn = re.findall(r"(?m)^.*?\.lean:(\d+):(\d+): warning:", log)
+          code = int(Path("candidate.exit").read_text().strip())
+          elapsed = int(Path("candidate.elapsed").read_text().strip())
+          invalid_markers = [
+              "unknown module prefix", "object file '", "failed to create process",
+              "No such file or directory", "candidate generation/audit invalid"
+          ]
+          infrastructure_clean = not any(x in log for x in invalid_markers)
+          valid = audit["audit_ok"] and infrastructure_clean and code not in (124, 125, 126, 127, 137)
+          result = {
+              "schema": "qym-gb76-global-candidate-v1",
+              "run_id": int("${{ github.run_id }}"),
+              "groupoid": os.environ["GROUP_VARIANT"],
+              "inverse_eta": os.environ["INVERSE_VARIANT"],
+              "candidate_name": f'{os.environ["GROUP_VARIANT"]}__{os.environ["INVERSE_VARIANT"]}',
+              "source_sha256": audit["sha256"],
+              "source_blob": audit["blob"],
+              "bytes": audit["bytes"],
+              "exit_code": code,
+              "elapsed_seconds": elapsed,
+              "error_headers": len(err) if valid else 1000000,
+              "warning_headers": len(warn) if valid else 1000000,
+              "first_error_line": int(err[0][0]) if err and valid else None,
+              "panic_lines": sum(1 for x in log.splitlines() if "panic" in x.lower()),
+              "infrastructure_clean": infrastructure_clean,
+              "valid": valid,
+              "strict_improvement": valid and len(err) < 76,
+              "forbidden": audit["forbidden"],
+          }
+          Path("candidate-result.json").write_text(json.dumps(result, indent=2, sort_keys=True)+"\n")
+          print(json.dumps(result, indent=2, sort_keys=True))
+          PY
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: qym-gb76-candidate-${{ matrix.groupoid }}-${{ matrix.inverse_eta }}-${{ github.run_id }}
+          path: |
+            QYM.candidate.lean
+            patch.log
+            candidate-audit.json
+            candidate.log
+            candidate-result.json
+          if-no-files-found: warn
+          retention-days: 30
+
+  select-and-promote:
+    name: Select strict full-QYM improvement and promote dedicated branch
+    needs:
+      - baseline-control
+      - candidates
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: qym-gb76-*-${{ github.run_id }}
+          path: downloaded
+
+      - name: Select only a verified strict improvement
+        id: select
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib, json, os, re, shutil, subprocess
+          root = Path("downloaded")
+          controls = list(root.rglob("baseline-result.json"))
+          if len(controls) != 1:
+              raise SystemExit(f"control result count={len(controls)}")
+          control = json.loads(controls[0].read_text())
+          if not control.get("authoritative_control") or control.get("error_headers") != 76:
+              raise SystemExit(f"invalid control: {control}")
+          rows = []
+          for rp in root.rglob("candidate-result.json"):
+              row = json.loads(rp.read_text())
+              row["result_path"] = str(rp)
+              q = rp.parent / "QYM.candidate.lean"
+              row["candidate_path"] = str(q)
+              if row.get("valid") and q.exists():
+                  data = q.read_bytes()
+                  if hashlib.sha256(data).hexdigest() != row.get("source_sha256"):
+                      row["valid"] = False
+                      row["hash_recheck_failed"] = True
+              rows.append(row)
+          def key(r):
+              first = r.get("first_error_line")
+              return (
+                  r.get("error_headers", 1000000),
+                  r.get("warning_headers", 1000000),
+                  -(first if first is not None else -1),
+                  r.get("bytes", 10**18),
+                  r.get("elapsed_seconds", 10**18),
+                  r.get("candidate_name", ""),
+              )
+          valid = [r for r in rows if r.get("valid")]
+          strict = [r for r in valid if r.get("error_headers", 1000000) < 76]
+          strict.sort(key=key)
+          selection = {
+              "schema": "qym-gb76-global-v16-v17-selection-v1",
+              "authority": "actual full-QYM direct Lean with exact 76-error control",
+              "run_id": int(os.environ["GITHUB_RUN_ID"]),
+              "baseline": control,
+              "candidate_count": len(rows),
+              "valid_candidate_count": len(valid),
+              "strict_improvement_count": len(strict),
+              "results": sorted(rows, key=key),
+              "winner": strict[0] if strict else None,
+          }
+          out = Path(f'.github/qym-frontier/GB76_GLOBAL_V16_V17_SELECTION_{os.environ["GITHUB_RUN_ID"]}.json')
+          out.parent.mkdir(parents=True, exist_ok=True)
+          out.write_text(json.dumps(selection, indent=2, sort_keys=True)+"\n")
+          if strict:
+              winner = strict[0]
+              shutil.copy2(winner["candidate_path"], "PrimalitySheafVerification/QYM.lean")
+              data = Path("PrimalitySheafVerification/QYM.lean").read_bytes()
+              text = data.decode("utf-8")
+              forbidden = {
+                  "sorry": len(re.findall(r"\bsorry\b", text)),
+                  "admit": len(re.findall(r"\badmit\b", text)),
+                  "native_decide": len(re.findall(r"\bnative_decide\b", text)),
+                  "Lean.ofReduceBool": text.count("Lean.ofReduceBool"),
+                  "global_axiom": len(re.findall(r"(?m)^\s*axiom\s+", text)),
+                  "unsafe": len(re.findall(r"(?m)^\s*unsafe\s+", text)),
+                  "maxHeartbeats_zero": len(re.findall(r"set_option\s+maxHeartbeats\s+0\b", text)),
+              }
+              if any(forbidden.values()):
+                  raise SystemExit(f"winner forbidden audit failed: {forbidden}")
+              if hashlib.sha256(data).hexdigest() != winner["source_sha256"]:
+                  raise SystemExit("winner final hash mismatch")
+              Path(".github/qym-frontier/GB76_GLOBAL_V16_V17_WINNER.json").write_text(
+                  json.dumps({
+                      "schema": "qym-gb76-global-winner-v1",
+                      "run_id": int(os.environ["GITHUB_RUN_ID"]),
+                      "parent_errors": 76,
+                      "winner": winner,
+                      "forbidden": forbidden,
+                      "canonical_candidate_sha256": hashlib.sha256(data).hexdigest(),
+                      "canonical_candidate_blob": subprocess.check_output(
+                          ["git", "hash-object", "PrimalitySheafVerification/QYM.lean"]
+                      ).decode().strip(),
+                  }, indent=2, sort_keys=True)+"\n"
+              )
+              Path("promotion.flag").write_text("winner\n")
+          else:
+              Path("promotion.flag").write_text("no-improvement\n")
+              Path(".github/qym-frontier/GB76_GLOBAL_V16_V17_NO_IMPROVEMENT.json").write_text(
+                  json.dumps({
+                      "schema": "qym-gb76-global-no-improvement-v1",
+                      "run_id": int(os.environ["GITHUB_RUN_ID"]),
+                      "baseline_errors": 76,
+                      "candidate_count": len(rows),
+                      "valid_candidate_count": len(valid),
+                  }, indent=2, sort_keys=True)+"\n"
+              )
+          print(json.dumps(selection, indent=2, sort_keys=True))
+          PY
+
+      - name: Commit immutable evidence and winner to dedicated repair branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -C gpt/qym-gb76-global-batch-repair-20260820
+          git add PrimalitySheafVerification/QYM.lean .github/qym-frontier/
+          if git diff --cached --quiet; then
+            echo "No repository delta to commit"
+            exit 0
+          fi
+          flag=$(cat promotion.flag)
+          git commit -m "QYM: GB76 global V16/V17 tournament ${flag} (run $GITHUB_RUN_ID)"
+          git push --force origin HEAD:refs/heads/gpt/qym-gb76-global-batch-repair-20260820
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: qym-gb76-global-selector-${{ github.run_id }}
+          path: |
+            .github/qym-frontier/GB76_GLOBAL_V16_V17_SELECTION_${{ github.run_id }}.json
+            .github/qym-frontier/GB76_GLOBAL_V16_V17_WINNER.json
+            .github/qym-frontier/GB76_GLOBAL_V16_V17_NO_IMPROVEMENT.json
+            promotion.flag
+          if-no-files-found: warn
+          retention-days: 30
