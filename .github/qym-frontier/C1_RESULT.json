@@ -1,0 +1,47 @@
+{
+  "baseline_error_headers": 89,
+  "baseline_qym_sha256": "313c076645a51976237738bd10c7f22b54f2a483499e60b57fa0d69be007cc1e",
+  "bytes": 2945299,
+  "candidate_qym_blob": "e796aa6ae9f01965116902a9345ed69f81bcfc42",
+  "candidate_qym_sha256": "830563b33d873354809594d9e9dce962c1253052f8e70bd4d1513226f7598217",
+  "error_codes": {
+    "lean.synthInstanceFailed": 8,
+    "uncoded": 80
+  },
+  "error_headers": 88,
+  "exit": 1,
+  "first_error": {
+    "code": null,
+    "column": 6,
+    "file": "PrimalitySheafVerification/QYM.lean",
+    "line": 41515,
+    "message": "Tactic `rewrite` failed: Did not find an occurrence of the pattern",
+    "severity": "error"
+  },
+  "forbidden": {
+    "Lean.ofReduceBool": 0,
+    "admit": 0,
+    "global_axiom": 0,
+    "maxHeartbeats_zero": 0,
+    "native_decide": 0,
+    "sorry": 0,
+    "unsafe": 0
+  },
+  "last_error": {
+    "code": null,
+    "column": 78,
+    "file": "PrimalitySheafVerification/QYM.lean",
+    "line": 59178,
+    "message": "unsolved goals",
+    "severity": "error"
+  },
+  "lf": 62264,
+  "log_sha256": "01f52be20eb6e5f57890f463bc9cb506757466e485f14747ce847a92ae5fdb56",
+  "panic_lines": 0,
+  "run_id": 32215528216,
+  "schema": "qym-c1-v1",
+  "semantic_pass": false,
+  "strict_improvement": true,
+  "trigger_sha": "e2093e4ed307ab9e621cb832673d6a3ed0b4c7f4",
+  "warning_headers": 356
+}

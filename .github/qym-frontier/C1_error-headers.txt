@@ -1,0 +1,88 @@
+PrimalitySheafVerification/QYM.lean:41515:6: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+PrimalitySheafVerification/QYM.lean:41537:2: error: 'change' tactic failed, pattern
+PrimalitySheafVerification/QYM.lean:43880:6: error: Type mismatch: After simplification, term
+PrimalitySheafVerification/QYM.lean:43891:6: error: Type mismatch: After simplification, term
+PrimalitySheafVerification/QYM.lean:43903:6: error: Type mismatch: After simplification, term
+PrimalitySheafVerification/QYM.lean:43935:2: error: Type mismatch: After simplification, term
+PrimalitySheafVerification/QYM.lean:44152:2: error: Type mismatch: After simplification, term
+PrimalitySheafVerification/QYM.lean:44350:8: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+PrimalitySheafVerification/QYM.lean:44378:8: error: Tactic `apply` failed: could not unify the conclusion of `@funext`
+PrimalitySheafVerification/QYM.lean:44383:8: error: Tactic `apply` failed: could not unify the conclusion of `@funext`
+PrimalitySheafVerification/QYM.lean:44669:61: error: unsolved goals
+PrimalitySheafVerification/QYM.lean:44677:18: error: unsolved goals
+PrimalitySheafVerification/QYM.lean:45435:0: error: This instance has 1 argument that cannot be inferred using typeclass synthesis. Specifically
+PrimalitySheafVerification/QYM.lean:45448:8: error: failed to synthesize instance of type class
+PrimalitySheafVerification/QYM.lean:45447:62: error: unsolved goals
+PrimalitySheafVerification/QYM.lean:48306:6: error: Tactic `rewrite` failed: motive is not type correct:
+PrimalitySheafVerification/QYM.lean:48320:4: error: failed to synthesize instance of type class
+PrimalitySheafVerification/QYM.lean:48325:4: error: failed to synthesize instance of type class
+PrimalitySheafVerification/QYM.lean:48328:4: error: Type mismatch: After simplification, term
+PrimalitySheafVerification/QYM.lean:48332:14: error: Type mismatch
+PrimalitySheafVerification/QYM.lean:48337:27: error: failed to synthesize instance of type class
+PrimalitySheafVerification/QYM.lean:48378:2: error: Type mismatch: After simplification, term
+PrimalitySheafVerification/QYM.lean:48395:57: error: unsolved goals
+PrimalitySheafVerification/QYM.lean:48404:2: error: `simp` made no progress
+PrimalitySheafVerification/QYM.lean:48412:2: error: `simp` made no progress
+PrimalitySheafVerification/QYM.lean:48455:42: error: unsolved goals
+PrimalitySheafVerification/QYM.lean:48473:6: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+PrimalitySheafVerification/QYM.lean:48558:24: error: Application type mismatch: The argument
+PrimalitySheafVerification/QYM.lean:48571:2: error: 'change' tactic failed, pattern
+PrimalitySheafVerification/QYM.lean:48597:2: error: Tactic `rfl` failed: The left-hand side
+PrimalitySheafVerification/QYM.lean:48606:4: error: Tactic `rfl` failed: The left-hand side
+PrimalitySheafVerification/QYM.lean:48613:2: error: Tactic `rfl` failed: The left-hand side
+PrimalitySheafVerification/QYM.lean:48650:2: error: 'change' tactic failed, pattern
+PrimalitySheafVerification/QYM.lean:48667:2: error: 'change' tactic failed, pattern
+PrimalitySheafVerification/QYM.lean:48716:2: error: Tactic `rfl` failed: The left-hand side
+PrimalitySheafVerification/QYM.lean:48725:2: error: 'change' tactic failed, pattern
+PrimalitySheafVerification/QYM.lean:49411:2: error: (deterministic) timeout at `whnf`, maximum number of heartbeats (2000000) has been reached
+PrimalitySheafVerification/QYM.lean:50439:78: error: Application type mismatch: The argument
+PrimalitySheafVerification/QYM.lean:50454:8: error: failed to synthesize instance of type class
+PrimalitySheafVerification/QYM.lean:50460:6: error: Type mismatch
+PrimalitySheafVerification/QYM.lean:50457:2: error: Cannot add `simp` attribute to `actualStageBundleValue_projection`: It is not a proposition nor a definition (to unfold)
+PrimalitySheafVerification/QYM.lean:50466:78: error: Application type mismatch: The argument
+PrimalitySheafVerification/QYM.lean:50489:6: error: Application type mismatch: The argument
+PrimalitySheafVerification/QYM.lean:50552:2: error: `simp` made no progress
+PrimalitySheafVerification/QYM.lean:50561:97: error: Application type mismatch: The argument
+PrimalitySheafVerification/QYM.lean:50573:48: error: Application type mismatch: The argument
+PrimalitySheafVerification/QYM.lean:50574:108: error: Application type mismatch: The argument
+PrimalitySheafVerification/QYM.lean:50580:43: error: Application type mismatch: The argument
+PrimalitySheafVerification/QYM.lean:50581:82: error: Application type mismatch: The argument
+PrimalitySheafVerification/QYM.lean:50583:43: error: Application type mismatch: The argument
+PrimalitySheafVerification/QYM.lean:50586:52: error: Application type mismatch: The argument
+PrimalitySheafVerification/QYM.lean:50588:52: error: Application type mismatch: The argument
+PrimalitySheafVerification/QYM.lean:50590:84: error: Application type mismatch: The argument
+PrimalitySheafVerification/QYM.lean:50590:91: error: unsolved goals
+PrimalitySheafVerification/QYM.lean:50599:180: error: Application type mismatch: The argument
+PrimalitySheafVerification/QYM.lean:50597:63: error: unsolved goals
+PrimalitySheafVerification/QYM.lean:50607:2: error: failed to synthesize instance of type class
+PrimalitySheafVerification/QYM.lean:50623:8: error: failed to synthesize instance of type class
+PrimalitySheafVerification/QYM.lean:50677:84: error: Application type mismatch: The argument
+PrimalitySheafVerification/QYM.lean:50681:27: error: Application type mismatch: The argument
+PrimalitySheafVerification/QYM.lean:50677:180: error: unsolved goals
+PrimalitySheafVerification/QYM.lean:50737:10: error: Application type mismatch: The argument
+PrimalitySheafVerification/QYM.lean:50810:10: error: Type mismatch
+PrimalitySheafVerification/QYM.lean:50806:8: error: (kernel) unknown constant 'QYM.FullCertification.P3ActualStageL2SectionsExtension.actualStageBundleValue_projection'
+PrimalitySheafVerification/QYM.lean:50844:12: error: Application type mismatch: The argument
+PrimalitySheafVerification/QYM.lean:51514:2: error: Type mismatch
+PrimalitySheafVerification/QYM.lean:51529:6: error: Type mismatch
+PrimalitySheafVerification/QYM.lean:51535:2: error: Type mismatch
+PrimalitySheafVerification/QYM.lean:51543:6: error: Type mismatch
+PrimalitySheafVerification/QYM.lean:51548:2: error: Type mismatch
+PrimalitySheafVerification/QYM.lean:51613:6: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+PrimalitySheafVerification/QYM.lean:51696:58: error: unsolved goals
+PrimalitySheafVerification/QYM.lean:51730:4: error: Type mismatch: After simplification, term
+PrimalitySheafVerification/QYM.lean:51733:50: error: unsolved goals
+PrimalitySheafVerification/QYM.lean:51736:4: error: Type mismatch: After simplification, term
+PrimalitySheafVerification/QYM.lean:51758:27: error: failed to synthesize instance of type class
+PrimalitySheafVerification/QYM.lean:51777:2: error: Type mismatch: After simplification, term
+PrimalitySheafVerification/QYM.lean:51827:2: error: Type mismatch: After simplification, term
+PrimalitySheafVerification/QYM.lean:52253:84: error: Application type mismatch: The argument
+PrimalitySheafVerification/QYM.lean:57411:2: error: unsolved goals
+PrimalitySheafVerification/QYM.lean:57413:2: error: unsolved goals
+PrimalitySheafVerification/QYM.lean:57430:2: error: unsolved goals
+PrimalitySheafVerification/QYM.lean:57432:2: error: unsolved goals
+PrimalitySheafVerification/QYM.lean:57756:2: error: unsolved goals
+PrimalitySheafVerification/QYM.lean:57759:2: error: unsolved goals
+PrimalitySheafVerification/QYM.lean:57781:66: error: unsolved goals
+PrimalitySheafVerification/QYM.lean:57790:21: error: unsolved goals
+PrimalitySheafVerification/QYM.lean:59178:78: error: unsolved goals
