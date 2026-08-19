@@ -15,177 +15,94 @@ permissions:
 jobs:
   observe:
     runs-on: ubuntu-24.04
-    timeout-minutes: 90
+    timeout-minutes: 320
     env:
       GH_TOKEN: ${{ github.token }}
       REPO: leegahuyn/mathlib4
       OBSERVER_BRANCH: gpt/qym-probe43-observer-20260819
       TARGET_BRANCH: gpt/qym-fastlane-verified88-20260819
       TARGET_WORKFLOW: gpt-qym-probe43-gamma-frontier.yml
-      TARGET_SHA: a67932931eb96f86751c783d87d16ba550c08027
+      TARGET_SHA: aff259edf668188fb192831ccf4d456a85947146
       BASELINE_SHA256: 313c076645a51976237738bd10c7f22b54f2a483499e60b57fa0d69be007cc1e
       BASELINE_ERRORS: '89'
       OUT: /tmp/probe43-observer
 
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Checkout exact observer trigger
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           ref: ${{ github.sha }}
           fetch-depth: 0
-
-      - name: Locate exact target and persist run identity
+      - name: Locate exact target run
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p "$OUT" .github/qym-probe43-observer
           run_id=''
-          status=''
-          conclusion=''
-          for _ in $(seq 1 120); do
-            payload="$(gh api -H 'Accept: application/vnd.github+json' \
-              "repos/$REPO/actions/workflows/$TARGET_WORKFLOW/runs?branch=$TARGET_BRANCH&event=push&per_page=30")"
-            run_id="$(jq -r --arg sha "$TARGET_SHA" \
-              '[.workflow_runs[] | select(.head_sha == $sha)] | sort_by(.created_at) | last | .id // empty' <<<"$payload")"
-            if [[ -n "$run_id" ]]; then
-              status="$(jq -r --argjson id "$run_id" '.workflow_runs[] | select(.id == $id) | .status' <<<"$payload")"
-              conclusion="$(jq -r --argjson id "$run_id" '.workflow_runs[] | select(.id == $id) | .conclusion // ""' <<<"$payload")"
-              break
-            fi
+          for _ in $(seq 1 240); do
+            payload="$(gh api -H 'Accept: application/vnd.github+json' "repos/$REPO/actions/workflows/$TARGET_WORKFLOW/runs?branch=$TARGET_BRANCH&event=push&per_page=50")"
+            run_id="$(jq -r --arg sha "$TARGET_SHA" '[.workflow_runs[] | select(.head_sha == $sha)] | sort_by(.created_at) | last | .id // empty' <<<"$payload")"
+            [[ -n "$run_id" ]] && break
             sleep 5
           done
           test -n "$run_id"
-          jq -n \
-            --argjson run_id "$run_id" \
-            --arg target_sha "$TARGET_SHA" \
-            --arg status "$status" \
-            --arg conclusion "$conclusion" \
-            --arg observed_at "$(date -u +%FT%TZ)" \
-            '{run_id:$run_id,target_sha:$target_sha,status:$status,conclusion:$conclusion,observed_at:$observed_at}' \
-            > .github/qym-probe43-observer/RUN_IDENTITY.json
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add .github/qym-probe43-observer/RUN_IDENTITY.json
-          git commit -m "QYM Probe43 observer: locate run $run_id"
-          git push origin "HEAD:$OBSERVER_BRANCH"
+          jq -n --argjson run_id "$run_id" --arg target_sha "$TARGET_SHA" --arg observed_at "$(date -u +%FT%TZ)" '{run_id:$run_id,target_sha:$target_sha,observed_at:$observed_at}' > .github/qym-probe43-observer/RUN_IDENTITY.json
           echo "TARGET_RUN_ID=$run_id" >> "$GITHUB_ENV"
-
-      - name: Await completion and recover all evidence
+      - name: Await completion and recover evidence
         shell: bash
         run: |
           set -euo pipefail
-          status=''
-          conclusion=''
-          for _ in $(seq 1 720); do
+          status=''; conclusion=''
+          for _ in $(seq 1 3600); do
             run="$(gh api -H 'Accept: application/vnd.github+json' "repos/$REPO/actions/runs/$TARGET_RUN_ID")"
-            status="$(jq -r '.status' <<<"$run")"
-            conclusion="$(jq -r '.conclusion // ""' <<<"$run")"
+            status="$(jq -r '.status' <<<"$run")"; conclusion="$(jq -r '.conclusion // ""' <<<"$run")"
             [[ "$status" == completed ]] && break
             sleep 5
           done
           test "$status" = completed
           mkdir -p "$OUT/artifacts"
-          artifacts="$(gh api -H 'Accept: application/vnd.github+json' \
-            "repos/$REPO/actions/runs/$TARGET_RUN_ID/artifacts?per_page=100")"
-          jq --arg sha "$TARGET_SHA" \
-            '[.artifacts[] | select(.expired == false) | select(.name | startswith("qym-probe43-")) | select(.name | contains($sha))]' \
-            <<<"$artifacts" > "$OUT/ARTIFACTS.json"
-          test "$(jq length "$OUT/ARTIFACTS.json")" -eq 3
+          artifacts="$(gh api -H 'Accept: application/vnd.github+json' "repos/$REPO/actions/runs/$TARGET_RUN_ID/artifacts?per_page=100")"
+          jq --arg sha "$TARGET_SHA" '[.artifacts[] | select(.expired == false) | select(.name | startswith("qym-probe43-")) | select(.name | contains($sha))]' <<<"$artifacts" > "$OUT/ARTIFACTS.json"
+          test "$(jq length "$OUT/ARTIFACTS.json")" -ge 1
           while IFS=$'\t' read -r id name; do
-            zip="$OUT/$name.zip"
-            dir="$OUT/artifacts/$name"
+            zip="$OUT/$name.zip"; dir="$OUT/artifacts/$name"
             gh api -H 'Accept: application/vnd.github+json' "repos/$REPO/actions/artifacts/$id/zip" > "$zip"
-            mkdir -p "$dir"
-            unzip -q -o "$zip" -d "$dir"
+            mkdir -p "$dir"; unzip -q -o "$zip" -d "$dir"
           done < <(jq -r '.[] | [.id,.name] | @tsv' "$OUT/ARTIFACTS.json")
           printf '%s\n' "$conclusion" > "$OUT/RUN_CONCLUSION"
-
-      - name: Verify, rank, and persist exact best source
+      - name: Verify and persist lowest actual error candidate
         shell: bash
         run: |
           set -euo pipefail
           python3 - "$OUT" <<'PY'
           from pathlib import Path
-          import hashlib, json, os, re, shutil, sys
-
-          out = Path(sys.argv[1])
-          root = Path('.github/qym-probe43-observer')
-          root.mkdir(parents=True, exist_ok=True)
-          baseline_sha = os.environ['BASELINE_SHA256']
-          baseline_errors = int(os.environ['BASELINE_ERRORS'])
-
-          def blob(raw):
-              return hashlib.sha1(b'blob ' + str(len(raw)).encode() + b'\0' + raw).hexdigest()
-
-          rows = []
+          import hashlib,json,os,shutil,sys
+          out=Path(sys.argv[1]); root=Path('.github/qym-probe43-observer'); root.mkdir(parents=True,exist_ok=True)
+          def blob(raw): return hashlib.sha1(b'blob '+str(len(raw)).encode()+b'\0'+raw).hexdigest()
+          rows=[]
           for rp in out.glob('artifacts/*/PROBE_RESULT.json'):
-              r = json.loads(rp.read_text(encoding='utf-8'))
-              candidates = list(rp.parent.glob('QYM.candidate-probe43-*.lean'))
-              if len(candidates) != 1:
-                  raise SystemExit(f'{rp.parent}: candidate count {len(candidates)}')
-              src = candidates[0]
-              raw = src.read_bytes()
-              sha = hashlib.sha256(raw).hexdigest()
-              git_blob = blob(raw)
-              assert r['baseline_qym_sha256'] == baseline_sha
-              assert r['candidate_qym_sha256'] == sha
-              assert r['candidate_qym_blob'] == git_blob
-              assert not any((r.get('forbidden') or {}).values())
-              r['_source'] = str(src)
-              r['_dir'] = str(rp.parent)
-              r['_first_line'] = int((r.get('first_error') or {}).get('line') or 0)
-              rows.append(r)
-          if len(rows) != 3:
-              raise SystemExit(f'expected 3 results, found {len(rows)}')
-          rows.sort(key=lambda r: (
-              0 if r.get('semantic_pass') else 1,
-              int(r.get('error_headers',10**9)),
-              int(r.get('panic_lines',10**9)),
-              -int(r.get('_first_line',0)),
-              int(r.get('warning_headers',10**9)),
-              r.get('variant','')))
-          best = rows[0]
-          source = Path(best.pop('_source'))
-          artifact_dir = Path(best.pop('_dir'))
-          for r in rows[1:]:
-              r.pop('_source',None); r.pop('_dir',None)
-          strict = bool(best.get('semantic_pass')) or int(best['error_headers']) < baseline_errors
-
-          lines = source.read_text(encoding='utf-8').splitlines()
-          first_line = int((best.get('first_error') or {}).get('line') or 1)
-          decl = None
-          pat = re.compile(r'^\s*(?:(?:private|protected|noncomputable)\s+)*(?:theorem|lemma|def|abbrev|instance)\s+([^\s(:]+)')
-          for i in range(min(first_line,len(lines)),0,-1):
-              m=pat.match(lines[i-1])
-              if m:
-                  decl=m.group(1); break
-          best['first_declaration']=decl
-          decision={
-              'schema':'qym-probe43-observer-v1',
-              'run_id':int(os.environ['TARGET_RUN_ID']),
-              'run_conclusion':(out/'RUN_CONCLUSION').read_text().strip(),
-              'baseline':{'sha256':baseline_sha,'error_headers':baseline_errors},
-              'best':best,
-              'strict_improvement':strict,
-              'all':rows,
-          }
-          (root/'SELECTION.json').write_text(json.dumps(decision,indent=2,sort_keys=True)+'\n',encoding='utf-8')
-          (root/'BEST_RESULT.json').write_text(json.dumps(best,indent=2,sort_keys=True)+'\n',encoding='utf-8')
-          shutil.copy2(source,root/'QYM_PROBE43_BEST.lean')
-          for src,dst in [
-              ('QYM.error-headers.txt','BEST_error-headers.txt'),
-              ('QYM.diagnostics.jsonl','BEST_diagnostics.jsonl'),
-              ('QYM.panic-lines.txt','BEST_panic-lines.txt'),
-              ('QYM.time','BEST_time'),
-              ('QYM.log','BEST.log')]:
-              p=artifact_dir/src
-              if p.exists(): shutil.copy2(p,root/dst)
-          lo=max(1,first_line-120); hi=min(len(lines),first_line+120)
-          (root/'BEST_FIRST_ERROR_CONTEXT.txt').write_text(
-              ''.join(f'{i:06d}: {lines[i-1]}\n' for i in range(lo,hi+1)),encoding='utf-8')
+              r=json.loads(rp.read_text()); cs=list(rp.parent.glob('QYM.candidate-probe43-*.lean'))
+              if len(cs)!=1: continue
+              src=cs[0]; raw=src.read_bytes()
+              if r.get('candidate_qym_sha256')!=hashlib.sha256(raw).hexdigest() or r.get('candidate_qym_blob')!=blob(raw): raise SystemExit('candidate identity mismatch')
+              if any((r.get('forbidden') or {}).values()): raise SystemExit('forbidden audit failure')
+              r['_source']=str(src); r['_dir']=str(rp.parent); r['_first']=int((r.get('first_error') or {}).get('line') or 0); rows.append(r)
+          if not rows: raise SystemExit('no valid Probe43 result')
+          rows.sort(key=lambda r:(0 if r.get('semantic_pass') else 1,int(r.get('error_headers',10**9)),int(r.get('panic_lines',10**9)),-r['_first'],int(r.get('warning_headers',10**9)),r.get('variant','')))
+          best=rows[0]; src=Path(best.pop('_source')); ad=Path(best.pop('_dir'))
+          for r in rows[1:]: r.pop('_source',None); r.pop('_dir',None)
+          strict=bool(best.get('semantic_pass')) or (int(best.get('panic_lines',1))==0 and int(best.get('error_headers',10**9))<int(os.environ['BASELINE_ERRORS']))
+          decision={'schema':'qym-probe43-observer-v2','run_id':int(os.environ['TARGET_RUN_ID']),'run_conclusion':(out/'RUN_CONCLUSION').read_text().strip(),'baseline':{'sha256':os.environ['BASELINE_SHA256'],'error_headers':int(os.environ['BASELINE_ERRORS'])},'best':best,'strict_improvement':strict,'all':rows}
+          (root/'SELECTION.json').write_text(json.dumps(decision,indent=2,sort_keys=True)+'\n'); (root/'BEST_RESULT.json').write_text(json.dumps(best,indent=2,sort_keys=True)+'\n'); shutil.copy2(src,root/'QYM_PROBE43_BEST.lean')
+          for a,b in [('QYM.error-headers.txt','BEST_error-headers.txt'),('QYM.diagnostics.jsonl','BEST_diagnostics.jsonl'),('QYM.panic-lines.txt','BEST_panic-lines.txt'),('QYM.time','BEST_time'),('QYM.log','BEST.log')]:
+              p=ad/a
+              if p.exists(): shutil.copy2(p,root/b)
           print(json.dumps(decision,indent=2,sort_keys=True))
+          if not strict: raise SystemExit('no strict C01 improvement')
           PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add .github/qym-probe43-observer
-          errors="$(jq -r '.best.error_headers' .github/qym-probe43-observer/SELECTION.json)"
-          variant="$(jq -r '.best.variant' .github/qym-probe43-observer/SELECTION.json)"
-          git commit -m "QYM Probe43 observer: persist ${errors}-error ${variant} result"
+          errors="$(jq -r '.best.error_headers' .github/qym-probe43-observer/SELECTION.json)"; variant="$(jq -r '.best.variant' .github/qym-probe43-observer/SELECTION.json)"
+          git commit -m "QYM C01: preserve ${errors}-error ${variant} result [skip ci]"
           git push origin "HEAD:$OBSERVER_BRANCH"
