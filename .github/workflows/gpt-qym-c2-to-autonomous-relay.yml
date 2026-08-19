@@ -1,0 +1,118 @@
+name: GPT QYM verified C2 frontier relay to autonomous chain
+
+on:
+  push:
+    branches:
+      - gpt/qym-gb85-c2-explicit-20260819
+    paths:
+      - .github/workflows/gpt-qym-c2-to-autonomous-relay.yml
+      - .github/qym-frontier/QYM_GB_C2_BEST.lean
+      - .github/qym-frontier/GB_C2_RESULT.json
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: gpt-qym-c2-autonomous-relay
+  cancel-in-progress: false
+
+jobs:
+  relay:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout C2 frontier branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: gpt/qym-gb85-c2-explicit-20260819
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Gate a strict verified C2 improvement
+        id: gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          src=.github/qym-frontier/QYM_GB_C2_BEST.lean
+          res=.github/qym-frontier/GB_C2_RESULT.json
+          if [[ ! -s "$src" || ! -s "$res" ]]; then
+            echo 'ready=false' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          python3 - "$src" "$res" <<'PY'
+          from pathlib import Path
+          import hashlib, json, re, sys
+          raw = Path(sys.argv[1]).read_bytes()
+          text = raw.decode('utf-8')
+          result = json.loads(Path(sys.argv[2]).read_text())
+          blob = hashlib.sha1(b'blob ' + str(len(raw)).encode() + b'\0' + raw).hexdigest()
+          assert result['candidate_qym_sha256'] == hashlib.sha256(raw).hexdigest()
+          assert result['candidate_qym_blob'] == blob
+          assert int(result['error_headers']) < 85
+          assert int(result.get('panic_lines', 1)) == 0
+          forbidden = {
+              'sorry': len(re.findall(r'\bsorry\b', text)),
+              'admit': len(re.findall(r'\badmit\b', text)),
+              'native_decide': len(re.findall(r'\bnative_decide\b', text)),
+              'Lean.ofReduceBool': text.count('Lean.ofReduceBool'),
+              'global_axiom': len(re.findall(r'(?m)^\s*axiom\s+', text)),
+              'unsafe': len(re.findall(r'(?m)^\s*unsafe\s+', text)),
+              'maxHeartbeats_zero': len(re.findall(r'set_option\s+maxHeartbeats\s+0\b', text)),
+          }
+          assert not any(forbidden.values()), forbidden
+          assert not any((result.get('forbidden') or {}).values())
+          PY
+          cp "$src" /tmp/QYM_C2_RELAY.lean
+          cp "$res" /tmp/C2_RELAY_RESULT.json
+          echo 'ready=true' >> "$GITHUB_OUTPUT"
+
+      - name: Commit C2 authority onto autonomous branch
+        if: steps.gate.outputs.ready == 'true'
+        shell: bash
+        env:
+          TARGET_BRANCH: gpt/qym-autonomous-zero-20260819
+        run: |
+          set -euo pipefail
+          git fetch origin "$TARGET_BRANCH"
+          git switch -C autonomous-relay "origin/$TARGET_BRANCH"
+          mkdir -p .github/qym-frontier
+          cp /tmp/QYM_C2_RELAY.lean .github/qym-frontier/QYM_AUTONOMOUS_BEST.lean
+          python3 - /tmp/C2_RELAY_RESULT.json <<'PY'
+          from pathlib import Path
+          import json, sys
+          source = json.loads(Path(sys.argv[1]).read_text())
+          source['tag'] = 'relayed-verified-c2-frontier'
+          Path('.github/qym-frontier/AUTONOMOUS_FRONTIER_RESULT.json').write_text(
+              json.dumps(source, indent=2, sort_keys=True) + '\n'
+          )
+          summary = {
+              'schema': 'qym-c2-autonomous-relay-v1',
+              'initial': {
+                  'error_headers': 85,
+                  'candidate_qym_sha256': source.get('baseline_qym_sha256'),
+                  'candidate_qym_blob': source.get('baseline_qym_blob'),
+                  'panic_lines': 0,
+                  'semantic_pass': False,
+              },
+              'final': source,
+              'initial_first_declaration': 'actualFixedPhaseCuspHorocyclePoint_coe_contDiff',
+              'final_first_declaration': None,
+              'strict_count_improvement': True,
+              'frontier_progress': True,
+              'rounds': [{'source': 'verified C2 relay', 'error_headers': source['error_headers']}],
+          }
+          Path('.github/qym-frontier/AUTONOMOUS_SUMMARY.json').write_text(
+              json.dumps(summary, indent=2, sort_keys=True) + '\n'
+          )
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .github/qym-frontier
+          if git diff --cached --quiet; then
+            echo 'Autonomous branch already contains this exact C2 frontier.'
+            exit 0
+          fi
+          errors="$(jq -r '.error_headers' .github/qym-frontier/AUTONOMOUS_FRONTIER_RESULT.json)"
+          git commit -m "QYM relay: import verified ${errors}-error C2 frontier"
+          git push origin "HEAD:$TARGET_BRANCH"
