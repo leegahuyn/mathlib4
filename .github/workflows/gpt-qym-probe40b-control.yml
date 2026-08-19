@@ -80,3 +80,5 @@ jobs:
           if r['error_headers'] >= 89:
               raise SystemExit(1)
           PY
+
+# trigger-registration-v2
