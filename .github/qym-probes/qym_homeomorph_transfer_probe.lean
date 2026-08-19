@@ -18,13 +18,15 @@ namespace Homeomorph
 noncomputable def pullbackChartedSpace (F : M' ≃ₜ M) : ChartedSpace H M' where
   atlas := {e | ∃ a ∈ atlas H M, e = F.toOpenPartialHomeomorph.trans a}
   chartAt x := F.toOpenPartialHomeomorph.trans (chartAt H (F x))
-  mem_chart_source x := by simp [OpenPartialHomeomorph.trans_source]
+  mem_chart_source x := by simp
   chart_mem_atlas x := ⟨chartAt H (F x), chart_mem_atlas H (F x), rfl⟩
 
 /-- Pulling back the atlas along a homeomorphism preserves any existing structure groupoid. -/
 theorem pullback_hasGroupoid (F : M' ≃ₜ M) (G : StructureGroupoid H)
     [HasGroupoid M G] :
-    @HasGroupoid H _ M' _ (F.pullbackChartedSpace (H := H)) G := by
+    letI : ChartedSpace H M' := F.pullbackChartedSpace (H := H)
+    HasGroupoid M' G := by
+  letI : ChartedSpace H M' := F.pullbackChartedSpace (H := H)
   refine { compatible := ?_ }
   intro e e' he he'
   rcases he with ⟨a, ha, rfl⟩
