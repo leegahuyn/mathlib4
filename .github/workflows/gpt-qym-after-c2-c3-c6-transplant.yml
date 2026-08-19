@@ -1,0 +1,315 @@
+name: GPT QYM after-C2 C3-C6 transplant matrix
+
+on:
+  push:
+    branches:
+      - gpt/qym-c2-first-producer-chat-20260819
+    paths:
+      - .github/workflows/gpt-qym-after-c2-c3-c6-transplant.yml
+      - .github/qym_transplant_artifact_decls.py
+      - PrimalitySheafVerification/QYM.lean
+      - .github/qym-frontier/C2_RESULT.json
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: gpt-qym-after-c2-c3-c6-transplant
+  cancel-in-progress: false
+
+env:
+  REPO: leegahuyn/mathlib4
+  BRANCH: gpt/qym-c2-first-producer-chat-20260819
+  QYM: PrimalitySheafVerification/QYM.lean
+  OLEAN: .lake/build/lib/lean/PrimalitySheafVerification
+  BASE88_ARTIFACT: "9352528413"
+
+jobs:
+  verify:
+    name: ${{ matrix.plan }} cumulative direct Lean
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - plan: c3_only
+            c3: "9353982088"
+            c5: "0"
+            c6: "0"
+          - plan: c5_normsq_only
+            c3: "0"
+            c5: "9353934515"
+            c6: "0"
+          - plan: c5_star_only
+            c3: "0"
+            c5: "9354094831"
+            c6: "0"
+          - plan: c5_coordinate_only
+            c3: "0"
+            c5: "9354228988"
+            c6: "0"
+          - plan: c6_helper_only
+            c3: "0"
+            c5: "0"
+            c6: "9354078873"
+          - plan: c6_inline_only
+            c3: "0"
+            c5: "0"
+            c6: "9354124499"
+          - plan: c3_normsq_helper
+            c3: "9353982088"
+            c5: "9353934515"
+            c6: "9354078873"
+          - plan: c3_normsq_inline
+            c3: "9353982088"
+            c5: "9353934515"
+            c6: "9354124499"
+          - plan: c3_star_helper
+            c3: "9353982088"
+            c5: "9354094831"
+            c6: "9354078873"
+          - plan: c3_star_inline
+            c3: "9353982088"
+            c5: "9354094831"
+            c6: "9354124499"
+          - plan: c3_coordinate_helper
+            c3: "9353982088"
+            c5: "9354228988"
+            c6: "9354078873"
+          - plan: c3_coordinate_inline
+            c3: "9353982088"
+            c5: "9354228988"
+            c6: "9354124499"
+    env:
+      OUT: /tmp/qym-after-c2-${{ matrix.plan }}
+      RECOVER: /tmp/qym-after-c2-recover-${{ matrix.plan }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Gate verified C2 source as current predecessor
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT" "$RECOVER" "$OLEAN"
+          test -s .github/qym-frontier/C2_RESULT.json
+          test -s .github/qym_transplant_artifact_decls.py
+          current_errors="$(jq -r '.error_headers' .github/qym-frontier/C2_RESULT.json)"
+          current_sha="$(jq -r '.candidate_qym_sha256' .github/qym-frontier/C2_RESULT.json)"
+          panic="$(jq -r '.panic_lines' .github/qym-frontier/C2_RESULT.json)"
+          test "$current_errors" -lt 85
+          test "$panic" -eq 0
+          test "$(sha256sum "$QYM" | awk '{print $1}')" = "$current_sha"
+          echo "CURRENT_ERRORS=$current_errors" >> "$GITHUB_ENV"
+          echo "CURRENT_SHA=$current_sha" >> "$GITHUB_ENV"
+          cp "$QYM" "$OUT/QYM.predecessor.lean"
+          cp "$QYM" "$OUT/QYM.canonical.lean"
+
+      - name: Recover exact 88-error comparison base and donor sources
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          C3_ARTIFACT: ${{ matrix.c3 }}
+          C5_ARTIFACT: ${{ matrix.c5 }}
+          C6_ARTIFACT: ${{ matrix.c6 }}
+        run: |
+          set -euo pipefail
+          recover_source() {
+            local id="$1" label="$2" dir="$RECOVER/$label"
+            mkdir -p "$dir"
+            gh api -H 'Accept: application/vnd.github+json' \
+              "repos/$REPO/actions/artifacts/$id/zip" > "$dir/artifact.zip"
+            unzip -q -o "$dir/artifact.zip" -d "$dir/unpacked"
+            python3 - "$dir/unpacked" "$OUT/$label.lean" "$OUT/$label-result.json" <<'PY'
+          from pathlib import Path
+          import hashlib,json,shutil,sys
+          root=Path(sys.argv[1]);target=Path(sys.argv[2]);result_target=Path(sys.argv[3]);rows=[]
+          for p in root.rglob('*.json'):
+              try:r=json.loads(p.read_text(errors='replace'))
+              except Exception:continue
+              if isinstance(r,dict) and (r.get('candidate_qym_sha256') or r.get('candidate_sha256')):
+                  rows.append((p,r))
+          if not rows:raise SystemExit(f'no candidate result in {root}')
+          rows.sort(key=lambda x:(0 if 'RESULT' in x[0].name.upper() else 1,x[0].name))
+          for rp,r in rows:
+              sha=r.get('candidate_qym_sha256') or r.get('candidate_sha256');blob=r.get('candidate_qym_blob') or r.get('candidate_blob')
+              for p in root.rglob('*.lean'):
+                  raw=p.read_bytes()
+                  if hashlib.sha256(raw).hexdigest()!=sha:continue
+                  got=hashlib.sha1(b'blob '+str(len(raw)).encode()+b'\0'+raw).hexdigest()
+                  if blob and got!=blob:continue
+                  shutil.copy2(p,target);result_target.write_text(json.dumps(r,indent=2,sort_keys=True)+'\n');print(json.dumps({'source':str(p),'sha256':sha,'blob':got},indent=2));raise SystemExit(0)
+          raise SystemExit('candidate source bytes matching result not found')
+          PY
+          }
+          recover_source "$BASE88_ARTIFACT" base88
+          [[ "$C3_ARTIFACT" = 0 ]] || recover_source "$C3_ARTIFACT" c3
+          [[ "$C5_ARTIFACT" = 0 ]] || recover_source "$C5_ARTIFACT" c5
+          [[ "$C6_ARTIFACT" = 0 ]] || recover_source "$C6_ARTIFACT" c6
+          test "$(jq -r '.error_headers' "$OUT/base88-result.json")" -eq 88
+
+      - name: Transplant selected declaration repairs cumulatively
+        shell: bash
+        env:
+          C3_ARTIFACT: ${{ matrix.c3 }}
+          C5_ARTIFACT: ${{ matrix.c5 }}
+          C6_ARTIFACT: ${{ matrix.c6 }}
+        run: |
+          set -euo pipefail
+          args=()
+          [[ "$C3_ARTIFACT" = 0 ]] || args+=(--donor "c3=$OUT/c3.lean")
+          [[ "$C5_ARTIFACT" = 0 ]] || args+=(--donor "c5=$OUT/c5.lean")
+          [[ "$C6_ARTIFACT" = 0 ]] || args+=(--donor "c6=$OUT/c6.lean")
+          python3 -B .github/qym_transplant_artifact_decls.py \
+            --base "$OUT/base88.lean" \
+            --current "$OUT/QYM.predecessor.lean" \
+            --output "$QYM" \
+            --report "$OUT/PATCH_RESULT.json" \
+            "${args[@]}"
+          cp "$QYM" "$OUT/QYM.candidate-${{ matrix.plan }}.lean"
+          test "$(jq -r '.input_sha256' "$OUT/PATCH_RESULT.json")" = "$CURRENT_SHA"
+
+      - name: Install pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 8 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none > "$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH";echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          tc="$(tr -d '\r\n' < lean-toolchain)"
+          for a in 1 2 3 4 5; do elan toolchain install "$tc" >> "$OUT/toolchain.log" 2>&1 && break || sleep $((a*5)); done
+          lean --version > "$OUT/lean-version.txt";lake --version > "$OUT/lake-version.txt"
+          for a in 1 2 3 4 5; do lake exe cache get >> "$OUT/cache.log" 2>&1 && break || sleep $((a*5)); done
+
+      - name: Restore dependency objects
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: |
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.ilean
+          key: qym-deps-v3-${{ runner.os }}-${{ hashFiles('lean-toolchain','lake-manifest.json','lakefile.lean','PrimalitySheafVerification/Mock2.lean','PrimalitySheafVerification/Mock2_Advanced.lean','PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean','PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean') }}
+          restore-keys: |
+            qym-probe4-deps-v1-${{ runner.os }}-
+
+      - name: Ensure dependency objects
+        shell: bash
+        run: |
+          set -euo pipefail
+          for s in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated; do
+            if [[ ! -s "$OLEAN/$s.olean" || ! -s "$OLEAN/$s.ilean" ]]; then
+              cap=1;[[ "$s" = Mock2_FunctionalAnalysis || "$s" = Mock2_FunctionalAnalysis_Integrated ]] && cap=2000
+              lake env lean "-DmaxErrors=$cap" -DwarningAsError=false -o "$OLEAN/$s.olean" -i "$OLEAN/$s.ilean" "PrimalitySheafVerification/$s.lean" > "$OUT/$s.log" 2>&1
+            fi
+            test -s "$OLEAN/$s.olean" && test -s "$OLEAN/$s.ilean"
+          done
+
+      - name: Full authoritative direct Lean
+        shell: bash
+        run: |
+          set +e
+          /usr/bin/time -v -o "$OUT/full.time" lake env lean -DmaxErrors=10000 -DwarningAsError=false -o "$RUNNER_TEMP/QYM.full.olean" -i "$RUNNER_TEMP/QYM.full.ilean" "$QYM" > "$OUT/full.log" 2>&1
+          rc=$?;set -e;echo "$rc" > "$OUT/full.exit"
+          if [[ "$rc" -eq 0 ]]; then cp "$RUNNER_TEMP/QYM.full.olean" "$OUT/QYM.full.olean";cp "$RUNNER_TEMP/QYM.full.ilean" "$OUT/QYM.full.ilean";fi
+
+      - name: Parse and require strict cumulative improvement
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - "$OUT" "$CURRENT_ERRORS" <<'PY'
+          from pathlib import Path
+          import collections,hashlib,json,os,re,sys
+          out=Path(sys.argv[1]);base=int(sys.argv[2]);raw=(out/'full.log').read_bytes();text=raw.decode(errors='replace');pat=re.compile(r'^(?P<file>.*?\.lean):(?P<line>\d+):(?P<column>\d+): (?P<severity>error|warning)(?:\((?P<code>[^)]*)\))?:\s*(?P<message>.*)$',re.M);rows=[]
+          for m in pat.finditer(text):r=m.groupdict();r['line']=int(r['line']);r['column']=int(r['column']);rows.append(r)
+          errors=[r for r in rows if r['severity']=='error'];warnings=[r for r in rows if r['severity']=='warning'];panics=re.findall(r'(?im)^.*(?:internal error|uncaught exception|panic(?:!|:|\s)).*$',text);patch=json.loads((out/'PATCH_RESULT.json').read_text());rc=int((out/'full.exit').read_text());semantic=rc==0 and not errors and not panics;strict=semantic or (not panics and len(errors)<base);result={'schema':'qym-after-c2-c3-c6-transplant-v1','run_id':int(os.environ['GITHUB_RUN_ID']),'trigger_sha':os.environ['GITHUB_SHA'],'plan':Path(out).name.removeprefix('qym-after-c2-'),'baseline_error_headers':base,'baseline_qym_sha256':patch['input_sha256'],'candidate_qym_sha256':patch['candidate_sha256'],'candidate_qym_blob':patch['candidate_blob'],'bytes':patch['bytes'],'lf':patch['lf'],'forbidden':patch['forbidden'],'donors':patch['donors'],'exit':rc,'error_headers':len(errors),'warning_headers':len(warnings),'panic_lines':len(panics),'first_error':errors[0] if errors else None,'last_error':errors[-1] if errors else None,'error_codes':dict(sorted(collections.Counter(r['code'] or 'uncoded' for r in errors).items())),'log_sha256':hashlib.sha256(raw).hexdigest(),'semantic_pass':semantic,'strict_improvement':strict};(out/'FULL_RESULT.json').write_text(json.dumps(result,indent=2,sort_keys=True)+'\n');(out/'diagnostics.jsonl').write_text(''.join(json.dumps(r,sort_keys=True)+'\n' for r in rows));(out/'error-headers.txt').write_text(''.join(f"{r['file']}:{r['line']}:{r['column']}: error{('('+r['code']+')') if r['code'] else ''}: {r['message']}\n" for r in errors));print(json.dumps(result,indent=2,sort_keys=True));
+          if not strict:raise SystemExit('transplant plan did not strictly improve predecessor')
+          PY
+
+      - name: Restore canonical checkout source
+        if: always()
+        shell: bash
+        run: |
+          [[ -f "$OUT/QYM.canonical.lean" ]] && cp "$OUT/QYM.canonical.lean" "$QYM" || true
+
+      - name: Upload plan evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-after-c2-${{ matrix.plan }}-${{ github.sha }}-attempt${{ github.run_attempt }}
+          path: /tmp/qym-after-c2-${{ matrix.plan }}
+          if-no-files-found: error
+          retention-days: 30
+
+  select:
+    name: Select globally best C3-C6 transplant
+    if: always()
+    needs: verify
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          pattern: qym-after-c2-*-${{ github.sha }}-attempt${{ github.run_attempt }}
+          path: /tmp/qym-after-c2-all
+      - name: Select lowest verified result
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - /tmp/qym-after-c2-all /tmp/qym-after-c2-selection <<'PY'
+          from pathlib import Path
+          import hashlib,json,shutil,sys
+          root=Path(sys.argv[1]);out=Path(sys.argv[2]);out.mkdir(parents=True,exist_ok=True);rows=[]
+          for rp in root.rglob('FULL_RESULT.json'):
+              try:r=json.loads(rp.read_text())
+              except Exception:continue
+              if not r.get('strict_improvement') or int(r.get('panic_lines',1))!=0:continue
+              cs=list(rp.parent.glob('QYM.candidate-*.lean'))
+              if len(cs)!=1:continue
+              raw=cs[0].read_bytes()
+              if hashlib.sha256(raw).hexdigest()!=r.get('candidate_qym_sha256'):continue
+              r['_source']=str(cs[0]);r['_dir']=str(rp.parent);rows.append(r)
+          if not rows:(out/'SELECTION.json').write_text(json.dumps({'promoted':False,'candidate_count':0},indent=2)+'\n');raise SystemExit('no strict transplant candidate')
+          rows.sort(key=lambda r:(0 if r.get('semantic_pass') else 1,int(r['error_headers']),int(r.get('panic_lines',0)),-int((r.get('first_error') or {}).get('line') or 0),r.get('plan','')));best=rows[0];src=Path(best.pop('_source'));d=Path(best.pop('_dir'));shutil.copy2(src,out/'QYM.BEST.lean');(out/'BEST_RESULT.json').write_text(json.dumps(best,indent=2,sort_keys=True)+'\n');
+          for a,b in [('error-headers.txt','BEST_error-headers.txt'),('diagnostics.jsonl','BEST_diagnostics.jsonl')]:
+              p=d/a
+              if p.exists():shutil.copy2(p,out/b)
+          (out/'SELECTION.json').write_text(json.dumps({'promoted':True,'candidate_count':len(rows),'best':best},indent=2,sort_keys=True)+'\n')
+          PY
+      - name: Promote only a new global minimum
+        shell: bash
+        run: |
+          set -euo pipefail
+          candidate_errors="$(jq -r '.error_headers' /tmp/qym-after-c2-selection/BEST_RESULT.json)"
+          git fetch origin "$BRANCH";git checkout -B "$BRANCH" "origin/$BRANCH"
+          current_errors=85
+          for f in .github/qym-frontier/*RESULT.json; do
+            [[ -s "$f" ]] || continue
+            n="$(jq -r '.error_headers // 999999' "$f")"
+            [[ "$n" =~ ^[0-9]+$ ]] && (( n < current_errors )) && current_errors="$n"
+          done
+          if (( candidate_errors >= current_errors )); then echo "not globally better: candidate=$candidate_errors current=$current_errors";exit 1;fi
+          sha="$(jq -r '.candidate_qym_sha256' /tmp/qym-after-c2-selection/BEST_RESULT.json)";test "$(sha256sum /tmp/qym-after-c2-selection/QYM.BEST.lean | awk '{print $1}')" = "$sha"
+          cp /tmp/qym-after-c2-selection/QYM.BEST.lean "$QYM";mkdir -p .github/qym-frontier;cp /tmp/qym-after-c2-selection/QYM.BEST.lean ".github/qym-frontier/QYM_GB${candidate_errors}_BEST.lean";cp /tmp/qym-after-c2-selection/BEST_RESULT.json ".github/qym-frontier/GB${candidate_errors}_RESULT.json";cp /tmp/qym-after-c2-selection/BEST_RESULT.json .github/qym-frontier/C3_C6_RESULT.json;cp /tmp/qym-after-c2-selection/BEST_RESULT.json .github/qym-frontier/GLOBAL_RESULT.json;cp /tmp/qym-after-c2-selection/BEST_error-headers.txt ".github/qym-frontier/GB${candidate_errors}_error-headers.txt";cp /tmp/qym-after-c2-selection/BEST_diagnostics.jsonl ".github/qym-frontier/GB${candidate_errors}_diagnostics.jsonl";git config user.name 'github-actions[bot]';git config user.email '41898282+github-actions[bot]@users.noreply.github.com';git add "$QYM" .github/qym-frontier;git commit -m "QYM C3-C6: promote verified ${candidate_errors}-error frontier";git push origin "HEAD:$BRANCH"
+      - name: Upload selection evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-after-c2-selection-${{ github.sha }}-attempt${{ github.run_attempt }}
+          path: /tmp/qym-after-c2-selection
+          if-no-files-found: warn
+          retention-days: 30
