@@ -1,0 +1,46 @@
+name: GPT QYM GB78 matrix observer
+
+on:
+  push:
+    branches:
+      - gpt/qym-gb78-matrix-observer-20260820
+    paths:
+      - .github/workflows/gpt-qym-gb78-matrix-observer.yml
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: write
+
+jobs:
+  observe:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: true
+      - name: Record V12 V13 V14 run states
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .github/qym-frontier
+          jq -n '{observed_at:(now|todateiso8601),targets:[]}' > /tmp/status.json
+          while IFS='|' read -r label workflow branch; do
+            data="$(gh api -H 'Accept: application/vnd.github+json' "/repos/${GITHUB_REPOSITORY}/actions/workflows/${workflow}/runs?branch=${branch}&per_page=5")"
+            item="$(jq -n --arg label "$label" --arg workflow "$workflow" --arg branch "$branch" --argjson data "$data" '{label:$label,workflow:$workflow,branch:$branch,runs:[$data.workflow_runs[]|{id,run_number,run_attempt,status,conclusion,event,head_sha,created_at,updated_at,html_url}]}')"
+            jq --argjson item "$item" '.targets += [$item]' /tmp/status.json > /tmp/status.next
+            mv /tmp/status.next /tmp/status.json
+          done <<'EOF'
+          V12|gpt-qym-gb78-v12-complexnormal-exact.yml|gpt/qym-gb78-v12-complexnormal-exact-20260820
+          V13|gpt-qym-gb78-v13-groupoid-exact.yml|gpt/qym-gb78-v13-groupoid-exact-20260820
+          V14|gpt-qym-gb78-v14-inverseeta-rebased.yml|gpt/qym-gb78-v14-inverseeta-rebased-20260820
+          EOF
+          cp /tmp/status.json .github/qym-frontier/GB78_MATRIX_LIVE_STATUS.json
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .github/qym-frontier/GB78_MATRIX_LIVE_STATUS.json
+          git commit -m 'QYM observer: record GB78 V12-V14 matrix status'
+          git push origin HEAD:gpt/qym-gb78-matrix-observer-20260820
