@@ -1,0 +1,60 @@
+{
+  "schema": "qym-gb27-common-atlas-v2",
+  "authority": "actual full-QYM direct Lean",
+  "run_id": 32311901574,
+  "trigger_sha": "4ecb20c81c08b0314427f86f616e30bf2c042d2f",
+  "branch": "gpt/qym-gb57-global-batch-round2-20260820",
+  "exit": 1,
+  "error_headers": 22,
+  "warning_headers": 360,
+  "panic_lines": 0,
+  "elapsed_seconds": 499,
+  "first_error": {
+    "file": "PrimalitySheafVerification/QYM.lean",
+    "line": 48450,
+    "column": 4,
+    "code": null,
+    "message": "Type mismatch: After simplification, term",
+    "enclosing_declaration": "inverseEtaFibreOfCoordinate_continuous"
+  },
+  "source_sha256": "13f61def42995ff3b1a1c3ca223e7bc8f1d6cc30728c3b64a8a5f25985dd07d4",
+  "source_blob": "db3f1285dac62c0a03e088acc41e73c7f07fea48",
+  "log_sha256": "8155dfdc1284d2b872cfe1f640e7c16541b89476317c0a1657d90f3f00fc8ca6",
+  "forbidden_zero": true,
+  "forbidden_counts": {
+    "sorry": 0,
+    "admit": 0,
+    "unsafe": 0,
+    "native_decide": 0,
+    "Lean.ofReduceBool": 0,
+    "axiom_declaration": 0,
+    "maxHeartbeats_zero": 0
+  },
+  "comment_depth": 0,
+  "olean_exists": false,
+  "ilean_exists": false,
+  "error_codes": {
+    "uncoded": 18,
+    "lean.invalidField": 3,
+    "lean.synthInstanceFailed": 1
+  },
+  "error_declarations": {
+    "inverseEtaFibreOfCoordinate_continuous": 1,
+    "actualStagePeterssonInner_self_re_eq_zero_iff": 1,
+    "qymPullback_hasGroupoid": 2,
+    "inverseEtaBaseChartedSpaceH": 1,
+    "inverseEtaTotalTransported_extChartAt_target": 1,
+    "inverseEtaTotalTrivialization_contMDiff": 1,
+    "inverseEtaTotalTrivialization_symm_contMDiff": 3,
+    "inverseEtaTotalTrivializationDiffeomorph": 1,
+    "inverseEtaProjection_contMDiff": 1,
+    "etaCoordinate_contMDiff": 1,
+    "globalStageProjection_add": 2,
+    "globalStageProjection_smul": 2,
+    "globalStageProjectionErrorDensity_le": 2,
+    "globalStageProjectionErrorDensity_eventually_zero": 1,
+    "globalStageProjectionErrorDensity_tendsto_pointwise": 1,
+    "coordinateHamiltonianForm_re_self": 1
+  },
+  "pass": false
+}
