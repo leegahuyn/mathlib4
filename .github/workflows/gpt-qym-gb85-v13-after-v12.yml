@@ -1,0 +1,121 @@
+name: GPT QYM GB85 post-C2 cumulative v13
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - gpt/qym-gb85-c2-v8-20260819
+    paths:
+      - PrimalitySheafVerification/QYM_GB85_C2_V12_RESULT.json
+      - .github/workflows/gpt-qym-gb85-v13-after-v12.yml
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: qym-gb85-post-c2-v13
+  cancel-in-progress: false
+
+env:
+  BRANCH: gpt/qym-gb85-c2-v8-20260819
+  QYM_PATH: PrimalitySheafVerification/QYM.lean
+  C2_RESULT: PrimalitySheafVerification/QYM_GB85_C2_V12_RESULT.json
+  OUT: qym-gb85-v13-output
+
+jobs:
+  cumulative-c3-c5-c6:
+    runs-on: ubuntu-latest
+    timeout-minutes: 355
+    steps:
+      - name: Checkout latest verified branch
+        uses: actions/checkout@v4
+        with:
+          ref: gpt/qym-gb85-c2-v8-20260819
+          fetch-depth: 0
+
+      - name: Read C2 promotion and prepare frontier
+        id: decision
+        run: |
+          set -euo pipefail
+          rm -rf "$OUT"
+          mkdir -p "$OUT"
+          if [ ! -f "$C2_RESULT" ]; then
+            jq -n '{schema:"qym-gb85-v13-skip",strict_improvement:false,reason:"C2 v12 result missing"}' > "$OUT/RESULT.json"
+            printf 'run=false\n' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          promoted="$(jq -r '.promoted // false' "$C2_RESULT")"
+          if [ "$promoted" != "true" ]; then
+            jq -n --slurpfile c2 "$C2_RESULT" '{schema:"qym-gb85-v13-skip",strict_improvement:false,reason:"C2 v12 found no verified strict improvement",c2:$c2[0]}' > "$OUT/RESULT.json"
+            printf 'run=false\n' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          jq '.winner' "$C2_RESULT" > "$OUT/STARTING_FRONTIER.json"
+          jq -e '.error_headers != null and .panic_lines == 0' "$OUT/STARTING_FRONTIER.json" >/dev/null
+          printf 'run=true\n' >> "$GITHUB_OUTPUT"
+
+      - name: Install pinned Lean and Mathlib cache
+        if: steps.decision.outputs.run == 'true'
+        run: |
+          set -euo pipefail
+          curl -sSfL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          export PATH="$HOME/.elan/bin:$PATH"
+          elan toolchain install "$(cat lean-toolchain)"
+          lake exe cache get
+
+      - name: Directly compile completed prerequisites
+        if: steps.decision.outputs.run == 'true'
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          export LEAN_ABORT_ON_PANIC=1
+          timeout 5400 lake env lean -DmaxErrors=2000 PrimalitySheafVerification/Mock2.lean > "$OUT/Mock2.log" 2>&1
+          timeout 5400 lake env lean -DmaxErrors=2000 PrimalitySheafVerification/Mock2_Advanced.lean > "$OUT/Mock2_Advanced.log" 2>&1
+          timeout 10800 lake env lean -DmaxErrors=2000 PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean > "$OUT/Mock2_FunctionalAnalysis.log" 2>&1
+
+      - name: Run cumulative C3 C5 C6 candidate archaeology
+        if: steps.decision.outputs.run == 'true'
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          export LEAN_ABORT_ON_PANIC=1
+          python3 .github/qym_gb85_v10_orchestrate.py "$GITHUB_WORKSPACE" "$QYM_PATH" "$OUT/STARTING_FRONTIER.json" "$OUT/tournament" "$OUT/QYM.final.lean" > "$OUT/orchestrator.stdout.json"
+          cp "$OUT/tournament/RESULT.json" "$OUT/RESULT.json"
+
+      - name: Rebase verified result on latest branch and commit
+        run: |
+          set -euo pipefail
+          jq --arg run_id "$GITHUB_RUN_ID" --arg run_url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" '. + {run_id:$run_id,run_url:$run_url,promoted:(.strict_improvement == true)}' "$OUT/RESULT.json" > "$OUT/RESULT.with-run.json"
+          mv "$OUT/RESULT.with-run.json" "$OUT/RESULT.json"
+          cp "$OUT/RESULT.json" /tmp/QYM_GB85_V13_RESULT.json
+          improvement="$(jq -r '.strict_improvement // false' /tmp/QYM_GB85_V13_RESULT.json)"
+          if [ "$improvement" = "true" ]; then
+            cp "$OUT/QYM.final.lean" /tmp/QYM.v13.final.lean
+          fi
+          git fetch origin "$BRANCH"
+          git reset --hard "origin/$BRANCH"
+          cp /tmp/QYM_GB85_V13_RESULT.json PrimalitySheafVerification/QYM_GB85_V13_RESULT.json
+          if [ "$improvement" = "true" ]; then
+            cp /tmp/QYM.v13.final.lean "$QYM_PATH"
+          fi
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add PrimalitySheafVerification/QYM_GB85_V13_RESULT.json
+          if [ "$improvement" = "true" ]; then
+            git add "$QYM_PATH"
+            git commit -m "QYM: promote verified post-C2 cumulative v13 improvement"
+          else
+            git commit -m "QYM: record post-C2 cumulative v13 diagnostics"
+          fi
+          git push origin HEAD:"$BRANCH"
+
+      - name: Upload complete cumulative evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qym-gb85-v13-${{ github.run_id }}
+          path: qym-gb85-v13-output
+          if-no-files-found: warn
+          retention-days: 30
