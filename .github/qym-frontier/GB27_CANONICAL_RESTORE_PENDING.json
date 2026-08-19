@@ -1,0 +1,6 @@
+{
+  "operation": "restore canonical QYM from parser-clean GB27 authority",
+  "expected_blob": "8b2c97644198fd18c31422795e07db3f7c32be0b",
+  "expected_sha256": "8abc23b49c1cabed88fac0a67c3958d4dec7411d9c078ff555e137a1c19560d7",
+  "status": "pending atomic tree update"
+}
