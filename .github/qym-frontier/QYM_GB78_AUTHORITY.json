@@ -1,0 +1,22 @@
+{
+  "blocker": "conj_mul_hyperbolicRightNormal_realMultiple_re",
+  "canonical_promoted_by_workflow": true,
+  "exit": 1,
+  "first_error": {
+    "column": 61,
+    "file": "PrimalitySheafVerification/QYM.lean",
+    "line": 44749,
+    "message": "unsolved goals"
+  },
+  "full_qym_direct_lean_executed": true,
+  "global_best_error_headers": 78,
+  "origin_artifact_id": 9369764112,
+  "origin_artifact_name": "qym-gb79-v11b-change_const_mul-32262658070",
+  "origin_run_id": 32262658070,
+  "origin_variant": "change_const_mul",
+  "panic_lines": 0,
+  "schema": "qym-gb78-authority-freeze-v1",
+  "source_git_blob": "029620c5d7085dbc7a11c8eaaa485a67fe9312fe",
+  "source_sha256": "1a1abeeb248031cd91577034329944caab08fd9f9e6c70f7a913c1dd66e0e714",
+  "warning_headers": 358
+}
