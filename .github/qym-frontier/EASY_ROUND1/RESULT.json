@@ -1,0 +1,17 @@
+{
+  "schema": "qym-gb76-easy-round1-v1",
+  "authority": "actual full-QYM direct Lean",
+  "run_id": 32297128006,
+  "variant": "change",
+  "exit": 1,
+  "error_headers": 11,
+  "warning_headers": 478,
+  "panic_lines": 0,
+  "elapsed_seconds": 232,
+  "first_error": "PrimalitySheafVerification/QYM.lean:45558:28: error(lean.unknownIdentifier): Unknown identifier `hSmooth`",
+  "source_sha256": "0176e0872eb992062a1a01922d42c31cce57ad4c7c1d0e0c49ce9e35f4a754ff",
+  "source_blob": "67ac1112ae0c5d639054a2dcdaecfd1c6251e949",
+  "log_sha256": "1bec992e3fb1710907ae6b0e5c0e0a5b10e14e54575074e200bb3cde5918e921",
+  "strict_improvement": true,
+  "pass": false
+}

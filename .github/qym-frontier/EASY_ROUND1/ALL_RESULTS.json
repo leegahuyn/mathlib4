@@ -1,0 +1,53 @@
+[
+  {
+    "schema": "qym-gb76-easy-round1-v1",
+    "authority": "actual full-QYM direct Lean",
+    "run_id": 32297128006,
+    "variant": "change",
+    "exit": 1,
+    "error_headers": 11,
+    "warning_headers": 478,
+    "panic_lines": 0,
+    "elapsed_seconds": 232,
+    "first_error": "PrimalitySheafVerification/QYM.lean:45558:28: error(lean.unknownIdentifier): Unknown identifier `hSmooth`",
+    "source_sha256": "0176e0872eb992062a1a01922d42c31cce57ad4c7c1d0e0c49ce9e35f4a754ff",
+    "source_blob": "67ac1112ae0c5d639054a2dcdaecfd1c6251e949",
+    "log_sha256": "1bec992e3fb1710907ae6b0e5c0e0a5b10e14e54575074e200bb3cde5918e921",
+    "strict_improvement": true,
+    "pass": false
+  },
+  {
+    "schema": "qym-gb76-easy-round1-v1",
+    "authority": "actual full-QYM direct Lean",
+    "run_id": 32297128006,
+    "variant": "convert",
+    "exit": 1,
+    "error_headers": 11,
+    "warning_headers": 478,
+    "panic_lines": 0,
+    "elapsed_seconds": 235,
+    "first_error": "PrimalitySheafVerification/QYM.lean:45558:28: error(lean.unknownIdentifier): Unknown identifier `hSmooth`",
+    "source_sha256": "02784f98a34cc328262680b9c06782bc93288ccb980096646863495ee2634df6",
+    "source_blob": "3d635278c7cb37bca4a5558b45d258c95e31a228",
+    "log_sha256": "799f0b5a134a851bf958b62a6aa3715cfca97f00ead61b902c3c09f94d372b20",
+    "strict_improvement": true,
+    "pass": false
+  },
+  {
+    "schema": "qym-gb76-easy-round1-v1",
+    "authority": "actual full-QYM direct Lean",
+    "run_id": 32297128006,
+    "variant": "norm_num",
+    "exit": 1,
+    "error_headers": 11,
+    "warning_headers": 478,
+    "panic_lines": 0,
+    "elapsed_seconds": 221,
+    "first_error": "PrimalitySheafVerification/QYM.lean:45558:28: error(lean.unknownIdentifier): Unknown identifier `hSmooth`",
+    "source_sha256": "b77032b7313f5bb6020083ee807e538815ceca983f042d35dc1e87789e22840b",
+    "source_blob": "21935d50ca3450da86e905c53321261da6d21481",
+    "log_sha256": "a19ada71cec19e9dabc78da94fd69e477e30012db6939f75427e938c41c41f6e",
+    "strict_improvement": true,
+    "pass": false
+  }
+]
