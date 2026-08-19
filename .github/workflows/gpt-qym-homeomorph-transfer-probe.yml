@@ -1,0 +1,75 @@
+name: GPT QYM homeomorph charted-space transfer probe
+
+on:
+  push:
+    branches:
+      - gpt/qym-gb57-global-batch-round2-20260820
+    paths:
+      - .github/qym-probes/qym_homeomorph_transfer_probe.lean
+      - .github/workflows/gpt-qym-homeomorph-transfer-probe.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: gpt-qym-homeomorph-transfer-probe
+  cancel-in-progress: true
+
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/qym-homeomorph-transfer
+          curl --retry 8 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none >/tmp/qym-homeomorph-transfer/elan.log 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          tc="$(tr -d '\r\n' < lean-toolchain)"
+          elan toolchain install "$tc" >/tmp/qym-homeomorph-transfer/toolchain.log 2>&1
+          lake exe cache get >/tmp/qym-homeomorph-transfer/cache.log 2>&1
+      - name: Compile transfer probe
+        shell: bash
+        run: |
+          set -euo pipefail
+          set +e
+          lake env lean .github/qym-probes/qym_homeomorph_transfer_probe.lean \
+            >/tmp/qym-homeomorph-transfer/probe.log 2>&1
+          rc=$?
+          set -e
+          printf '%s\n' "$rc" >/tmp/qym-homeomorph-transfer/exit.txt
+          cat /tmp/qym-homeomorph-transfer/probe.log
+      - name: Persist probe evidence
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf .github/qym-frontier/HOMEOMORPH_TRANSFER_PROBE
+          mkdir -p .github/qym-frontier/HOMEOMORPH_TRANSFER_PROBE
+          cp /tmp/qym-homeomorph-transfer/exit.txt .github/qym-frontier/HOMEOMORPH_TRANSFER_PROBE/
+          cp /tmp/qym-homeomorph-transfer/probe.log .github/qym-frontier/HOMEOMORPH_TRANSFER_PROBE/
+          printf '{"run_id":%s,"trigger_sha":"%s","exit":%s}\n' \
+            "$GITHUB_RUN_ID" "$GITHUB_SHA" "$(cat /tmp/qym-homeomorph-transfer/exit.txt)" \
+            > .github/qym-frontier/HOMEOMORPH_TRANSFER_PROBE/STATUS.json
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .github/qym-frontier/HOMEOMORPH_TRANSFER_PROBE
+          git commit -m "QYM: persist homeomorph transfer probe ${GITHUB_RUN_ID} [skip ci]"
+          for attempt in 1 2 3 4 5; do
+            git fetch origin gpt/qym-gb57-global-batch-round2-20260820
+            if git rebase origin/gpt/qym-gb57-global-batch-round2-20260820 && \
+              git push origin HEAD:gpt/qym-gb57-global-batch-round2-20260820; then exit 0; fi
+            git rebase --abort || true
+            sleep $((attempt*5))
+          done
+          exit 1
