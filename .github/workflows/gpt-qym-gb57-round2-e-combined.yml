@@ -1,0 +1,252 @@
+name: GPT QYM GB57 round2 plus E combined
+
+on:
+  push:
+    branches:
+      - gpt/qym-gb57-round2-e-combined-20260820
+    paths:
+      - .github/workflows/gpt-qym-gb57-round2-e-combined.yml
+      - .github/qym_patch_round2_syntax.py
+      - .github/qym_patch_gb57_cluster_e.py
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: gpt-qym-gb57-round2-e-combined
+  cancel-in-progress: true
+
+env:
+  BRANCH: gpt/qym-gb57-round2-e-combined-20260820
+  QYM: PrimalitySheafVerification/QYM.lean
+  OLEAN: .lake/build/lib/lean/PrimalitySheafVerification
+  BASE_SHA256: c604b258541c4ec8477f0e4aa93b7fb9658d5a9f74546e85faa4b2c6add7ace4
+  BASE_BLOB: d6be2245ce32bb8bce2585f9b0da5d54f8babec0
+  SYNTAX_PATCH_SHA256: 9fc37ec047f05745d39c72863b138619e849fb79fa323bf7b8dd86377f034fbd
+  E_PATCH_SHA256: 9099694003f47be16546d9070df0f41b5ebd027f35a92041720e63d9e00a19ec
+
+jobs:
+  candidate:
+    name: combined-${{ matrix.e_variant }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        e_variant: [rw, unfold, simp]
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - name: Gate exact parser-damaged round2 candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT="/tmp/qym-combined/${{ matrix.e_variant }}"
+          mkdir -p "$OUT" "$OLEAN"
+          test "$GITHUB_REF_NAME" = "$BRANCH"
+          test "$(tr -d '\r\n' < lean-toolchain)" = leanprover/lean4:v4.33.0-rc1
+          test "$(sha256sum "$QYM" | awk '{print $1}')" = "$BASE_SHA256"
+          test "$(git hash-object "$QYM")" = "$BASE_BLOB"
+          test "$(sha256sum .github/qym_patch_round2_syntax.py | awk '{print $1}')" = "$SYNTAX_PATCH_SHA256"
+          test "$(sha256sum .github/qym_patch_gb57_cluster_e.py | awk '{print $1}')" = "$E_PATCH_SHA256"
+          python3 -m py_compile .github/qym_patch_round2_syntax.py .github/qym_patch_gb57_cluster_e.py
+
+      - name: Install pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT="/tmp/qym-combined/${{ matrix.e_variant }}"
+          curl --retry 8 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none > "$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          tc="$(tr -d '\r\n' < lean-toolchain)"
+          for attempt in 1 2 3 4 5; do elan toolchain install "$tc" >> "$OUT/toolchain.log" 2>&1 && break; sleep $((attempt * 5)); done
+          lean --version | tee "$OUT/lean-version.txt"
+          lake --version | tee "$OUT/lake-version.txt"
+          for attempt in 1 2 3 4 5; do lake exe cache get >> "$OUT/mathlib-cache.log" 2>&1 && break; sleep $((attempt * 5)); done
+
+      - name: Restore completed dependency objects
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: |
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.ilean
+          key: qym-deps-v4-${{ runner.os }}-${{ hashFiles('lean-toolchain','lake-manifest.json','lakefile.lean','PrimalitySheafVerification/Mock2.lean','PrimalitySheafVerification/Mock2_Advanced.lean','PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean','PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean') }}
+          restore-keys: |
+            qym-deps-v3-${{ runner.os }}-
+            qym-probe4-deps-v1-${{ runner.os }}-
+
+      - name: Ensure imported project objects by actual Lean
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT="/tmp/qym-combined/${{ matrix.e_variant }}"
+          for source in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated; do
+            if [[ ! -s "$OLEAN/$source.olean" || ! -s "$OLEAN/$source.ilean" ]]; then
+              max_errors=1
+              if [[ "$source" = Mock2_FunctionalAnalysis || "$source" = Mock2_FunctionalAnalysis_Integrated ]]; then max_errors=2000; fi
+              rm -f "$OLEAN/$source.olean" "$OLEAN/$source.ilean"
+              lake env lean "-DmaxErrors=$max_errors" -DwarningAsError=false -o "$OLEAN/$source.olean" -i "$OLEAN/$source.ilean" "PrimalitySheafVerification/$source.lean" > "$OUT/$source.log" 2>&1
+            fi
+            test -s "$OLEAN/$source.olean" && test -s "$OLEAN/$source.ilean"
+          done
+
+      - name: Apply parser repair and E-cluster repair
+        shell: bash
+        env:
+          E_VARIANT: ${{ matrix.e_variant }}
+        run: |
+          set -euo pipefail
+          OUT="/tmp/qym-combined/$E_VARIANT"
+          cp "$QYM" "$OUT/QYM.round2-broken.lean"
+          python3 -B .github/qym_patch_round2_syntax.py "$OUT/QYM.round2-broken.lean" "$OUT/QYM.syntax-fixed.lean" simpa
+          python3 -B .github/qym_patch_gb57_cluster_e.py "$OUT/QYM.syntax-fixed.lean" "$OUT/QYM.candidate.lean" "$E_VARIANT"
+          export OUT
+          python3 - <<'PY'
+          from pathlib import Path
+          import json, os, re
+          out=Path(os.environ['OUT']); t=(out/'QYM.candidate.lean').read_text(); lines=t.splitlines()
+          duplicate_docs=[i+1 for i in range(len(lines)-1) if lines[i].lstrip().startswith('/--') and lines[i+1].lstrip().startswith('/--')]
+          parser_balance=t.count('/-')-t.count('-/')
+          stripped=[]; i=0; block=0; string=False; line=False
+          while i<len(t):
+              if line:
+                  if t[i]=='\n': line=False; stripped.append('\n')
+                  else: stripped.append(' ')
+                  i+=1; continue
+              if block:
+                  if t.startswith('/-',i): block+=1; stripped.extend('  '); i+=2
+                  elif t.startswith('-/',i): block-=1; stripped.extend('  '); i+=2
+                  else: stripped.append('\n' if t[i]=='\n' else ' '); i+=1
+                  continue
+              if string:
+                  if t[i]=='\\' and i+1<len(t): stripped.extend('  '); i+=2
+                  elif t[i]=='"': string=False; stripped.append(' '); i+=1
+                  else: stripped.append('\n' if t[i]=='\n' else ' '); i+=1
+                  continue
+              if t.startswith('--',i): line=True; stripped.extend('  '); i+=2
+              elif t.startswith('/-',i): block=1; stripped.extend('  '); i+=2
+              elif t[i]=='"': string=True; stripped.append(' '); i+=1
+              else: stripped.append(t[i]); i+=1
+          code=''.join(stripped)
+          patterns={
+            'sorry':r'\bsorry\b','admit':r'\badmit\b','unsafe':r'\bunsafe\b',
+            'native_decide':r'\bnative_decide\b','Lean.ofReduceBool':r'\bLean\.ofReduceBool\b',
+            'axiom':r'(?m)^\s*(?:public\s+|private\s+)?axiom\b','maxHeartbeats_zero':r'\bmaxHeartbeats\s*(?::=|=)\s*0\b'}
+          counts={k:len(re.findall(v,code)) for k,v in patterns.items()}
+          required=['currentBoundedSurrogateAcceptance_false','originalEffectiveHomeomorph','gammaTwoQuotient_isManifold_of_smoothTransitionResidual']
+          missing=[x for x in required if x not in t]
+          ok=not duplicate_docs and parser_balance==0 and block==0 and not string and all(v==0 for v in counts.values()) and not missing
+          (out/'PRECHECK.json').write_text(json.dumps({'pass':ok,'duplicate_doc_comments':duplicate_docs,'comment_balance':parser_balance,'forbidden_counts':counts,'missing_required_markers':missing},indent=2)+'\n')
+          if not ok: raise SystemExit('precheck failed')
+          PY
+          sha256sum "$OUT/QYM.candidate.lean" > "$OUT/candidate.sha256"
+          git hash-object "$OUT/QYM.candidate.lean" > "$OUT/candidate.blob"
+
+      - name: Run authoritative full-QYM direct Lean
+        shell: bash
+        env:
+          E_VARIANT: ${{ matrix.e_variant }}
+        run: |
+          set -euo pipefail
+          OUT="/tmp/qym-combined/$E_VARIANT"
+          cp "$OUT/QYM.candidate.lean" "$QYM"
+          rm -f "$OUT/QYM.olean" "$OUT/QYM.ilean"
+          set +e
+          started="$(date +%s)"
+          lake env lean -DmaxErrors=10000 -DwarningAsError=false -o "$OUT/QYM.olean" -i "$OUT/QYM.ilean" "$QYM" > "$OUT/full.log" 2>&1
+          rc=$?
+          ended="$(date +%s)"
+          set -e
+          errors="$(grep -cE '^.*\.lean:[0-9]+:[0-9]+: error' "$OUT/full.log" || true)"
+          warnings="$(grep -cE '^.*\.lean:[0-9]+:[0-9]+: warning' "$OUT/full.log" || true)"
+          panic="$(grep -ciE 'internal error|uncaught exception|panic(!|:| )' "$OUT/full.log" || true)"
+          parser="$(grep -ciE 'unexpected token|unterminated comment|invalid syntax|unexpected end of input' "$OUT/full.log" || true)"
+          first="$(grep -m1 -E '^.*\.lean:[0-9]+:[0-9]+: error' "$OUT/full.log" || true)"
+          export OUT E_VARIANT rc errors warnings panic parser first started ended
+          python3 - <<'PY'
+          import bisect,collections,hashlib,json,os,pathlib,re,subprocess
+          out=pathlib.Path(os.environ['OUT']); src=out/'QYM.candidate.lean'; log=out/'full.log'; text=src.read_text(); lines=text.splitlines()
+          decl_re=re.compile(r'^\s*(?:(?:noncomputable|private|protected|public)\s+)*(?:theorem|lemma|def|abbrev|instance|structure|class|inductive|opaque)\s+([^\s({:\[]+)')
+          dl=[]; dn=[]
+          for no,line in enumerate(lines,1):
+              m=decl_re.match(line)
+              if m: dl.append(no); dn.append(m.group(1))
+          header=re.compile(r'^(.*\.lean):(\d+):(\d+): error(?:\(([^)]+)\))?:\s*(.*)$')
+          inv=[]
+          for line in log.read_text(errors='replace').splitlines():
+              m=header.match(line)
+              if m:
+                  ln=int(m.group(2)); k=bisect.bisect_right(dl,ln)-1
+                  inv.append({'line':ln,'column':int(m.group(3)),'code':m.group(4),'message':m.group(5),'declaration':dn[k] if k>=0 else None})
+          pre=json.loads((out/'PRECHECK.json').read_text()); olean=(out/'QYM.olean').is_file() and (out/'QYM.olean').stat().st_size>0; ilean=(out/'QYM.ilean').is_file() and (out/'QYM.ilean').stat().st_size>0
+          d={'schema':'qym-gb57-round2-e-combined-v1','authority':'actual full-QYM direct Lean','run_id':int(os.environ['GITHUB_RUN_ID']),'trigger_sha':os.environ['GITHUB_SHA'],'branch':os.environ['BRANCH'],'e_variant':os.environ['E_VARIANT'],'exit':int(os.environ['rc']),'error_headers':int(os.environ['errors']),'warning_headers':int(os.environ['warnings']),'panic_lines':int(os.environ['panic']),'parser_error_lines':int(os.environ['parser']),'elapsed_seconds':int(os.environ['ended'])-int(os.environ['started']),'first_error':os.environ['first'] or None,'source_sha256':hashlib.sha256(src.read_bytes()).hexdigest(),'source_blob':subprocess.check_output(['git','hash-object',str(src)],text=True).strip(),'log_sha256':hashlib.sha256(log.read_bytes()).hexdigest(),'precheck_pass':pre['pass'],'olean_exists':olean,'ilean_exists':ilean,'errors':inv}
+          d['parser_clean']=d['parser_error_lines']==0 and d['precheck_pass']; d['valid_partial']=d['panic_lines']==0 and d['parser_clean']; d['pass']=d['exit']==0 and d['error_headers']==0 and d['valid_partial'] and olean and ilean
+          (out/'RESULT.json').write_text(json.dumps({k:v for k,v in d.items() if k!='errors'},indent=2)+'\n'); (out/'FULL_RESULT.json').write_text(json.dumps(d,indent=2)+'\n'); print(json.dumps({k:v for k,v in d.items() if k!='errors'},indent=2))
+          PY
+
+      - name: Upload immutable combined evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-gb57-combined-${{ matrix.e_variant }}-${{ github.run_id }}
+          path: /tmp/qym-combined/${{ matrix.e_variant }}
+          if-no-files-found: error
+          retention-days: 30
+
+  selector:
+    name: select-parser-clean-best
+    if: always()
+    needs: candidate
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: qym-gb57-combined-*-${{ github.run_id }}
+          path: /tmp/downloaded
+          merge-multiple: false
+      - name: Freeze exact best evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,pathlib,shutil
+          rows=[]
+          for p in pathlib.Path('/tmp/downloaded').rglob('RESULT.json'):
+              d=json.loads(p.read_text()); rows.append((0 if d.get('valid_partial') else 1,int(d.get('error_headers',10**9)),int(d.get('warning_headers',10**9)),d.get('e_variant',''),p,d))
+          if not rows: raise SystemExit('no result')
+          rows.sort(key=lambda r:r[:4]); *_,p,best=rows[0]
+          dest=pathlib.Path('.github/qym-frontier/GB57_ROUND2_E_COMBINED')
+          if dest.exists(): shutil.rmtree(dest)
+          dest.mkdir(parents=True)
+          for name in ['RESULT.json','FULL_RESULT.json','full.log','QYM.candidate.lean','PRECHECK.json']: shutil.copy2(p.parent/name,dest/name)
+          (dest/'ALL_RESULTS.json').write_text(json.dumps([r[-1] for r in rows],indent=2)+'\n')
+          status={'schema':'qym-gb57-round2-e-combined-selector-v1','authority':'actual full-QYM direct Lean',**best,'branch_check_in':bool(best.get('valid_partial') and best.get('error_headers',57)<57),'status':'VALID_STRICT_IMPROVEMENT' if best.get('valid_partial') and best.get('error_headers',57)<57 else 'EVIDENCE_ONLY'}
+          (dest/'STATUS.json').write_text(json.dumps(status,indent=2)+'\n')
+          if status['branch_check_in']: shutil.copy2(p.parent/'QYM.candidate.lean','PrimalitySheafVerification/QYM.lean')
+          print(json.dumps(status,indent=2))
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .github/qym-frontier/GB57_ROUND2_E_COMBINED PrimalitySheafVerification/QYM.lean
+          git commit -m "QYM: freeze parser-clean round2 plus E ${GITHUB_RUN_ID} [skip ci]"
+          for attempt in 1 2 3 4 5; do git fetch origin "$BRANCH"; if git rebase "origin/$BRANCH" && git push origin "HEAD:$BRANCH"; then exit 0; fi; git rebase --abort || true; sleep $((attempt*5)); done
+          exit 1
