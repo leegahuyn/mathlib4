@@ -1,0 +1,4 @@
+baseline_artifact=9326706450
+baseline_errors=89
+variants=derive_and_star,coordinate_star,derive_and_normsq
+triggered_at=2026-08-19T04:55:00Z
