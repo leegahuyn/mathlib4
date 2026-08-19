@@ -1,0 +1,383 @@
+name: GPT QYM C2 race-safe global collector v2
+
+on:
+  push:
+    branches:
+      - gpt/qym-gb85-c2-explicit-20260819
+    paths:
+      - .github/workflows/gpt-qym-c2-global-collector-v2.yml
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: gpt-qym-c2-global-collector-v2
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 420
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: leegahuyn/mathlib4
+      BRANCH: gpt/qym-gb85-c2-explicit-20260819
+      BASE_SHA256: f4c9b27a297be772cde7183526378ad42ae826053f69cf3ce521670da4f06210
+      BASE_BLOB: bd28d0436230a8f0bcb01806dac01787542256b8
+      BASE_ERRORS: "85"
+      OUT: /tmp/qym-c2-global-collector-v2
+
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Locate latest run of every C2 tournament
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf "$OUT"
+          mkdir -p "$OUT/artifacts"
+          workflows=(
+            gpt-qym-gb85-c2-matrix-v2.yml
+            gpt-qym-gb85-c2-matrix-v3.yml
+            gpt-qym-gb85-c2-discovered-v4.yml
+            gpt-qym-gb85-c2-unfold-v5.yml
+          )
+          : > "$OUT/runs.tsv"
+          for workflow in "${workflows[@]}"; do
+            run_id=""
+            for _ in $(seq 1 360); do
+              payload="$(gh api -H 'Accept: application/vnd.github+json' \
+                "repos/$REPO/actions/workflows/$workflow/runs?branch=$BRANCH&event=push&per_page=30")"
+              run_id="$(jq -r \
+                '[.workflow_runs[]] | sort_by(.created_at) | last | .id // empty' \
+                <<<"$payload")"
+              [[ -n "$run_id" ]] && break
+              sleep 5
+            done
+            test -n "$run_id"
+            printf '%s\t%s\n' "$workflow" "$run_id" >> "$OUT/runs.tsv"
+          done
+
+      - name: Await completion and download candidate artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          : > "$OUT/completions.jsonl"
+          while IFS=$'\t' read -r workflow run_id; do
+            status=""
+            conclusion=""
+            for _ in $(seq 1 4320); do
+              run="$(gh api -H 'Accept: application/vnd.github+json' \
+                "repos/$REPO/actions/runs/$run_id")"
+              status="$(jq -r '.status' <<<"$run")"
+              conclusion="$(jq -r '.conclusion // ""' <<<"$run")"
+              [[ "$status" = completed ]] && break
+              sleep 5
+            done
+            test "$status" = completed
+            jq -n --arg workflow "$workflow" --argjson run_id "$run_id" \
+              --arg status "$status" --arg conclusion "$conclusion" \
+              '{workflow:$workflow,run_id:$run_id,status:$status,conclusion:$conclusion}' \
+              >> "$OUT/completions.jsonl"
+
+            artifacts="$(gh api -H 'Accept: application/vnd.github+json' \
+              "repos/$REPO/actions/runs/$run_id/artifacts?per_page=100")"
+            jq --argjson run_id "$run_id" --arg workflow "$workflow" \
+              '[.artifacts[] | select(.expired == false) |
+                select(.name | startswith("qym-gb85-c2-")) |
+                . + {source_run_id:$run_id,source_workflow:$workflow}]' \
+              <<<"$artifacts" > "$OUT/artifacts-$run_id.json"
+
+            while IFS=$'\t' read -r artifact_id artifact_name; do
+              zip="$OUT/${run_id}-${artifact_name}.zip"
+              dir="$OUT/artifacts/${run_id}-${artifact_name}"
+              gh api -H 'Accept: application/vnd.github+json' \
+                "repos/$REPO/actions/artifacts/$artifact_id/zip" > "$zip"
+              mkdir -p "$dir"
+              unzip -q -o "$zip" -d "$dir"
+              jq -n --argjson run_id "$run_id" --arg workflow "$workflow" \
+                --arg artifact_name "$artifact_name" \
+                '{run_id:$run_id,workflow:$workflow,artifact_name:$artifact_name}' \
+                > "$dir/COLLECTOR_ORIGIN.json"
+            done < <(jq -r '.[] | [.id,.name] | @tsv' \
+              "$OUT/artifacts-$run_id.json")
+          done < "$OUT/runs.tsv"
+
+      - name: Synchronize clean branch before writing selection
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin "$BRANCH"
+          git rebase "origin/$BRANCH"
+          test -z "$(git status --porcelain=v1 --untracked-files=all)"
+
+      - name: Recompute full-compile validity and stage one global best
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - "$OUT" "$BASE_ERRORS" "$BASE_SHA256" "$BASE_BLOB" <<'PY'
+          from pathlib import Path
+          import hashlib
+          import json
+          import os
+          import shutil
+          import sys
+
+          out = Path(sys.argv[1])
+          base_errors = int(sys.argv[2])
+          base_sha = sys.argv[3]
+          base_blob = sys.argv[4]
+          frontier = Path('.github/qym-frontier')
+          frontier.mkdir(parents=True, exist_ok=True)
+
+          def git_blob(raw: bytes) -> str:
+              return hashlib.sha1(
+                  b'blob ' + str(len(raw)).encode() + b'\0' + raw
+              ).hexdigest()
+
+          valid = []
+          rejected = []
+          for result_path in sorted(out.glob('artifacts/**/RESULT.json')):
+              artifact_dir = result_path.parent
+              origin_path = artifact_dir / 'COLLECTOR_ORIGIN.json'
+              origin = json.loads(origin_path.read_text()) if origin_path.exists() else {}
+              try:
+                  result = json.loads(result_path.read_text())
+              except Exception as exc:
+                  rejected.append({
+                      'path': str(result_path),
+                      'origin': origin,
+                      'reason': f'bad-result-json:{exc}',
+                  })
+                  continue
+
+              candidate_files = list(artifact_dir.glob('QYM.candidate*.lean'))
+              full_log = artifact_dir / 'full.log'
+              full_exit = artifact_dir / 'full.exit'
+              if len(candidate_files) != 1:
+                  rejected.append({
+                      'variant': result.get('variant'),
+                      'origin': origin,
+                      'reason': f'candidate-count:{len(candidate_files)}',
+                  })
+                  continue
+              if not full_log.is_file() or full_log.stat().st_size == 0 or not full_exit.is_file():
+                  rejected.append({
+                      'variant': result.get('variant'),
+                      'origin': origin,
+                      'reason': 'full-compile-not-executed',
+                  })
+                  continue
+              try:
+                  actual_exit = int(full_exit.read_text().strip())
+              except Exception:
+                  rejected.append({
+                      'variant': result.get('variant'),
+                      'origin': origin,
+                      'reason': 'invalid-full-exit',
+                  })
+                  continue
+              if result.get('full_compile_executed') is False:
+                  rejected.append({
+                      'variant': result.get('variant'),
+                      'origin': origin,
+                      'reason': 'result-declares-no-full-compile',
+                  })
+                  continue
+              if result.get('exit') is None or int(result['exit']) != actual_exit:
+                  rejected.append({
+                      'variant': result.get('variant'),
+                      'origin': origin,
+                      'reason': 'exit-mismatch',
+                  })
+                  continue
+
+              source = candidate_files[0]
+              raw = source.read_bytes()
+              source_sha = hashlib.sha256(raw).hexdigest()
+              source_blob = git_blob(raw)
+              if source_sha != result.get('candidate_qym_sha256') or source_blob != result.get('candidate_qym_blob'):
+                  rejected.append({
+                      'variant': result.get('variant'),
+                      'origin': origin,
+                      'reason': 'source-identity-mismatch',
+                  })
+                  continue
+              if (
+                  result.get('baseline_qym_sha256') != base_sha
+                  or result.get('baseline_qym_blob') != base_blob
+                  or int(result.get('baseline_error_headers', -1)) != base_errors
+              ):
+                  rejected.append({
+                      'variant': result.get('variant'),
+                      'origin': origin,
+                      'reason': 'wrong-baseline',
+                  })
+                  continue
+              if any((result.get('forbidden') or {}).values()):
+                  rejected.append({
+                      'variant': result.get('variant'),
+                      'origin': origin,
+                      'reason': 'forbidden-token-audit',
+                  })
+                  continue
+
+              errors = int(result.get('error_headers', 10**9))
+              panics = int(result.get('panic_lines', 10**9))
+              semantic = (
+                  bool(result.get('semantic_pass'))
+                  and actual_exit == 0
+                  and errors == 0
+                  and panics == 0
+              )
+              strict = semantic or (panics == 0 and errors < base_errors)
+              if not strict:
+                  rejected.append({
+                      'variant': result.get('variant'),
+                      'origin': origin,
+                      'reason': 'not-strict',
+                      'errors': errors,
+                      'panic_lines': panics,
+                      'exit': actual_exit,
+                  })
+                  continue
+
+              row = dict(result)
+              row['collector_origin'] = origin
+              row['_source'] = str(source)
+              row['_artifact_dir'] = str(artifact_dir)
+              valid.append(row)
+
+          def rank(row: dict) -> tuple:
+              first_line = int((row.get('first_error') or {}).get('line') or 0)
+              return (
+                  0 if row.get('semantic_pass') else 1,
+                  int(row['error_headers']),
+                  int(row['panic_lines']),
+                  -first_line,
+                  int(row.get('warning_headers', 10**9)),
+                  str(row.get('variant', '')),
+                  str((row.get('collector_origin') or {}).get('workflow', '')),
+              )
+
+          valid.sort(key=rank)
+          public = [
+              {key: value for key, value in row.items() if not key.startswith('_')}
+              for row in valid
+          ]
+          completions = [
+              json.loads(line)
+              for line in (out / 'completions.jsonl').read_text().splitlines()
+              if line.strip()
+          ]
+          decision = {
+              'schema': 'qym-c2-global-collector-v2',
+              'collector_run_id': int(os.environ['GITHUB_RUN_ID']),
+              'baseline': {
+                  'sha256': base_sha,
+                  'blob': base_blob,
+                  'error_headers': base_errors,
+              },
+              'workflow_completions': completions,
+              'promoted': bool(valid),
+              'best': public[0] if public else None,
+              'valid_candidates': public,
+              'rejected_candidates': rejected,
+          }
+          (frontier / 'C2_GLOBAL_SELECTION.json').write_text(
+              json.dumps(decision, indent=2, sort_keys=True) + '\n'
+          )
+
+          markdown = [
+              '# QYM C2 global collector v2',
+              '',
+              f"Promoted: **{decision['promoted']}**",
+              '',
+          ]
+          if valid:
+              best = valid[0]
+              source = Path(best['_source'])
+              artifact_dir = Path(best['_artifact_dir'])
+              shutil.copy2(source, frontier / 'QYM_C2_GLOBAL_BEST.lean')
+              (frontier / 'C2_GLOBAL_RESULT.json').write_text(
+                  json.dumps(public[0], indent=2, sort_keys=True) + '\n'
+              )
+              for source_name, target_name in [
+                  ('error-headers.txt', 'C2_GLOBAL_error-headers.txt'),
+                  ('diagnostics.jsonl', 'C2_GLOBAL_diagnostics.jsonl'),
+                  ('full.time', 'C2_GLOBAL_time.txt'),
+                  ('LOCAL_RESULT.json', 'C2_GLOBAL_LOCAL_RESULT.json'),
+              ]:
+                  path = artifact_dir / source_name
+                  if path.exists():
+                      shutil.copy2(path, frontier / target_name)
+              markdown.extend([
+                  f"- Error headers: **{best['error_headers']}**",
+                  f"- Variant: `{best.get('variant')}`",
+                  f"- Source SHA256: `{best['candidate_qym_sha256']}`",
+                  f"- Source run: `{(best.get('collector_origin') or {}).get('run_id')}`",
+              ])
+          else:
+              markdown.append(
+                  '- No artifact strictly improved the verified 85-error baseline.'
+              )
+          markdown.extend(['', '## Tournament completion state', ''])
+          for row in completions:
+              markdown.append(
+                  f"- `{row['workflow']}` run `{row['run_id']}`: "
+                  f"`{row['status']}/{row['conclusion'] or '-'}`"
+              )
+          (frontier / 'C2_GLOBAL_SELECTION.md').write_text(
+              '\n'.join(markdown) + '\n'
+          )
+          print(json.dumps(decision, indent=2, sort_keys=True))
+          PY
+
+      - name: Commit and push race-safely
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .github/qym-frontier
+          if git diff --cached --quiet; then
+            echo 'No collector state changed.'
+            exit 0
+          fi
+          promoted="$(jq -r '.promoted' .github/qym-frontier/C2_GLOBAL_SELECTION.json)"
+          if [[ "$promoted" = true ]]; then
+            errors="$(jq -r '.best.error_headers' .github/qym-frontier/C2_GLOBAL_SELECTION.json)"
+            variant="$(jq -r '.best.variant' .github/qym-frontier/C2_GLOBAL_SELECTION.json)"
+            git commit -m \
+              "QYM C2 global: promote verified ${errors}-error ${variant}"
+          else
+            git commit -m \
+              'QYM C2 global: record non-improving artifact tournament [skip ci]'
+          fi
+
+          for attempt in 1 2 3 4 5; do
+            if git push origin "HEAD:$BRANCH"; then
+              exit 0
+            fi
+            git fetch origin "$BRANCH"
+            git rebase "origin/$BRANCH"
+            sleep $((attempt * 3))
+          done
+          echo 'Unable to push collector result after retries.' >&2
+          exit 1
+
+      - name: Upload immutable collector evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-c2-global-collector-v2-${{ github.sha }}-attempt${{ github.run_attempt }}
+          path: ${{ env.OUT }}
+          if-no-files-found: error
+          retention-days: 60
+          compression-level: 6
