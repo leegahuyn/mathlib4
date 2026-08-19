@@ -1,0 +1,61 @@
+name: GPT QYM source inspector
+
+on:
+  push:
+    branches:
+      - gpt/qym-probe43-observer-20260819
+    paths:
+      - .github/workflows/gpt-qym-source-inspector.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - name: Extract exact source declarations and nearby lemmas
+        shell: bash
+        run: |
+          set -euo pipefail
+          out=.github/qym-probe43-observer/SOURCE_INSPECTION.txt
+          mkdir -p "$(dirname "$out")"
+          : > "$out"
+          for pattern in \
+            'def upperLift' \
+            'theorem upperLift' \
+            'lemma upperLift' \
+            'structure SmoothQuotientCompactFunction' \
+            'def SmoothQuotientCompactFunction' \
+            'InverseEtaFixedPhaseCore' \
+            'inductive GammaTwoCusp' \
+            'def gammaTwoCuspScaling' \
+            'gammaTwoCuspScaling_atInfinity' \
+            'gammaTwoCuspScaling_zero' \
+            'gammaTwoCuspScaling_one' \
+            'coe_smul_of_det_pos' \
+            'coe_specialLinearGroup_apply'; do
+            printf '\n===== PATTERN: %s =====\n' "$pattern" >> "$out"
+            rg -n -C 30 --glob '*.lean' "$pattern" PrimalitySheafVerification Mathlib >> "$out" || true
+          done
+          printf '\n===== FILE INVENTORY HITS =====\n' >> "$out"
+          rg -l --glob '*.lean' 'upperLift|gammaTwoCuspScaling|coe_smul_of_det_pos' PrimalitySheafVerification Mathlib \
+            | sort >> "$out" || true
+          test -s "$out"
+
+      - name: Persist inspection
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .github/qym-probe43-observer/SOURCE_INSPECTION.txt
+          git commit -m 'QYM inspector: persist exact upperLift and cusp sources'
+          git push origin HEAD:gpt/qym-probe43-observer-20260819
