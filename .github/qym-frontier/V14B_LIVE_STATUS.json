@@ -1,0 +1,12 @@
+{
+  "schema": "qym-v14b-live-status-v1",
+  "authority": "actual full-QYM direct Lean GB77",
+  "branch": "gpt/qym-gb77-v14-right-normal-im-20260820",
+  "run_id": 32281700927,
+  "trigger_sha": "abc8e5d1dee3658afa5591637ab45e3861da8057",
+  "source_sha256": "b6f0126c27dfc08b5f81c306a7140f9531fcc3d6ca6b75dd8abbd71101d458fd",
+  "source_blob": "c6e8883353b350f22b7f48d955fc5cfa4e61f88f",
+  "baseline_error_headers": 77,
+  "phase": "CANDIDATE_MATRIX_RUNNING",
+  "canonical_source_unchanged": true
+}
