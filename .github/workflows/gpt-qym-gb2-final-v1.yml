@@ -1,0 +1,225 @@
+name: GPT QYM GB2 final cast normalization v1
+
+on:
+  push:
+    branches:
+      - gpt/qym-gb5-semantic-round4-20260820
+    paths:
+      - .github/qym_patch_gb2_final.py
+      - .github/qym_gb2_final_driver.py
+      - .github/qym-gb2-final-trigger.txt
+      - .github/workflows/gpt-qym-gb2-final-v1.yml
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: gpt-qym-gb2-final-v1
+  cancel-in-progress: false
+
+env:
+  BRANCH: gpt/qym-gb5-semantic-round4-20260820
+  QYM: PrimalitySheafVerification/QYM.lean
+  PATCH: .github/qym_patch_gb2_final.py
+  OLEAN: .lake/build/lib/lean/PrimalitySheafVerification
+  OUT: /tmp/qym-gb2-final-v1
+
+jobs:
+  direct:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - name: Gate exact two-error source and pinned toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf "$OUT"
+          mkdir -p "$OUT" "$OLEAN"
+          test "$GITHUB_REF_NAME" = "$BRANCH"
+          test "$(tr -d '\r\n' < lean-toolchain)" = leanprover/lean4:v4.33.0-rc1
+          test "$(sha256sum "$QYM" | awk '{print $1}')" = 1e545a316c33741875b5c0ca252105f5a0d858f327b44b0e79e8e5193a7986d4
+          python3 -m py_compile .github/qym_patch_gb2_final.py .github/qym_gb2_final_driver.py
+          git rev-parse HEAD | tee "$OUT/trigger-commit.txt"
+
+      - name: Install pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 8 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none > "$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          tc="$(tr -d '\r\n' < lean-toolchain)"
+          ok=0
+          for attempt in 1 2 3 4 5; do
+            if elan toolchain install "$tc" >> "$OUT/toolchain.log" 2>&1; then ok=1; break; fi
+            sleep $((attempt * 5))
+          done
+          test "$ok" = 1
+          lean --version | tee "$OUT/lean-version.txt"
+          lake --version | tee "$OUT/lake-version.txt"
+          ok=0
+          for attempt in 1 2 3 4 5; do
+            if lake exe cache get >> "$OUT/mathlib-cache.log" 2>&1; then ok=1; break; fi
+            sleep $((attempt * 5))
+          done
+          test "$ok" = 1
+
+      - name: Verify exact cast-normalization tactics in small Lean probes
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > "$OUT/CastNormalizationProbe.lean" <<'EOF'
+          import Mathlib
+
+          example {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
+              (u : H) : (inner ℂ u u).re = 0 ↔ u = 0 := by
+            rw [inner_self_eq_norm_sq_to_K]
+            simp [pow_two, Complex.mul_re]
+
+          example (a b : ℝ) :
+              (((a : ℂ) ^ 2).re) + (4 : ℝ)⁻¹ * (((b : ℂ) ^ 2).re) =
+                a ^ 2 + (4 : ℝ)⁻¹ * b ^ 2 := by
+            simp [pow_two, Complex.mul_re]
+          EOF
+          lake env lean -DwarningAsError=false \
+            -o "$OUT/CastNormalizationProbe.olean" \
+            -i "$OUT/CastNormalizationProbe.ilean" \
+            "$OUT/CastNormalizationProbe.lean" \
+            > "$OUT/cast-probe.log" 2>&1
+          test -s "$OUT/CastNormalizationProbe.olean"
+          test -s "$OUT/CastNormalizationProbe.ilean"
+
+      - name: Restore verified QYM dependency objects
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: |
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.ilean
+          key: qym-deps-v5-${{ runner.os }}-${{ hashFiles('lean-toolchain','lake-manifest.json','lakefile.lean','PrimalitySheafVerification/Mock2.lean','PrimalitySheafVerification/Mock2_Advanced.lean','PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean','PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean') }}
+          restore-keys: |
+            qym-deps-v5-${{ runner.os }}-
+            qym-deps-v4-${{ runner.os }}-
+            qym-deps-v3-${{ runner.os }}-
+
+      - name: Ensure exact dependency chain by actual Lean
+        shell: bash
+        run: |
+          set -euo pipefail
+          for source in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated; do
+            if [[ ! -s "$OLEAN/$source.olean" || ! -s "$OLEAN/$source.ilean" ]]; then
+              max_errors=1
+              [[ "$source" = Mock2_FunctionalAnalysis* ]] && max_errors=2000
+              rm -f "$OLEAN/$source.olean" "$OLEAN/$source.ilean"
+              lake env lean "-DmaxErrors=$max_errors" -DwarningAsError=false \
+                -o "$OLEAN/$source.olean" -i "$OLEAN/$source.ilean" \
+                "PrimalitySheafVerification/$source.lean" > "$OUT/$source.log" 2>&1
+            fi
+            test -s "$OLEAN/$source.olean"
+            test -s "$OLEAN/$source.ilean"
+          done
+
+      - name: Patch, audit, and run authoritative full QYM
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -B .github/qym_gb2_final_driver.py
+          test -s "$OUT/RESULT.json"
+          test -s "$OUT/FULL_RESULT.json"
+
+      - name: Independently replay exact passing QYM
+        shell: bash
+        run: |
+          set -euo pipefail
+          first_pass="$(python3 -c 'import json; print(str(json.load(open("'"$OUT"'/RESULT.json"))["pass"]).lower())')"
+          if [[ "$first_pass" != true ]]; then
+            printf '{"executed": false, "reason": "first pass not clean"}\n' > "$OUT/REPLAY_RESULT.json"
+            exit 0
+          fi
+          rm -f "$OUT/QYM.replay.olean" "$OUT/QYM.replay.ilean"
+          set +e
+          lake env lean -DmaxErrors=10000 -DwarningAsError=false \
+            -o "$OUT/QYM.replay.olean" -i "$OUT/QYM.replay.ilean" \
+            "$QYM" > "$OUT/replay.log" 2>&1
+          replay_exit=$?
+          set -e
+          REPLAY_EXIT="$replay_exit" python3 - <<'PY'
+          import hashlib, json, os, pathlib, re
+          out = pathlib.Path(os.environ["OUT"])
+          text = (out / "replay.log").read_text(errors="replace")
+          errors = len(re.findall(r"(?m)^.*\.lean:\d+:\d+: error(?:\([^)]+\))?:", text))
+          warnings = len(re.findall(r"(?m)^.*\.lean:\d+:\d+: warning:", text))
+          panic = len(re.findall(r"internal error|uncaught exception|panic(?:!|:| )", text, re.I))
+          olean = (out / "QYM.replay.olean").is_file() and (out / "QYM.replay.olean").stat().st_size > 0
+          ilean = (out / "QYM.replay.ilean").is_file() and (out / "QYM.replay.ilean").stat().st_size > 0
+          result = {
+              "executed": True,
+              "exit": int(os.environ["REPLAY_EXIT"]),
+              "error_headers": errors,
+              "warning_headers": warnings,
+              "panic_lines": panic,
+              "olean_exists": olean,
+              "ilean_exists": ilean,
+              "source_sha256": hashlib.sha256(pathlib.Path(os.environ["QYM"]).read_bytes()).hexdigest(),
+              "pass": int(os.environ["REPLAY_EXIT"]) == 0 and errors == 0 and panic == 0 and olean and ilean,
+          }
+          (out / "REPLAY_RESULT.json").write_text(json.dumps(result, indent=2) + "\n")
+          print(json.dumps(result, indent=2))
+          PY
+          python3 -c 'import json,sys; sys.exit(0 if json.load(open("'"$OUT"'/REPLAY_RESULT.json"))["pass"] else 1)'
+
+      - name: Upload immutable evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-gb2-final-v1-${{ github.run_id }}
+          path: ${{ env.OUT }}
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Persist result and promote only strict improvement
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s "$OUT/RESULT.json"
+          dest=.github/qym-frontier/GB2_FINAL_V1
+          rm -rf "$dest"
+          mkdir -p "$dest"
+          cp "$OUT/RESULT.json" "$dest/"
+          cp "$OUT/FULL_RESULT.json" "$dest/"
+          cp "$OUT/FORBIDDEN_AUDIT.json" "$dest/"
+          cp "$OUT/full.log" "$dest/"
+          cp "$OUT/patch.log" "$dest/"
+          cp "$OUT/cast-probe.log" "$dest/"
+          cp "$OUT/REPLAY_RESULT.json" "$dest/" 2>/dev/null || true
+          cp "$OUT/QYM.candidate.lean" "$dest/QYM_GB2_FINAL_V1.lean"
+          promote="$(python3 -c 'import json; d=json.load(open("'"$OUT"'/RESULT.json")); print(str(d["pass"] or d["strict_improvement"]).lower())')"
+          if [[ "$promote" != true ]]; then
+            git restore --source="$GITHUB_SHA" -- "$QYM"
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "$dest" "$QYM"
+          git commit -m "QYM GB2 final: persist direct Lean result ${GITHUB_RUN_ID} [skip ci]"
+          for attempt in 1 2 3 4 5; do
+            git fetch origin "$BRANCH"
+            if git rebase "origin/$BRANCH" && git push origin "HEAD:$BRANCH"; then exit 0; fi
+            git rebase --abort || true
+            sleep $((attempt * 5))
+          done
+          exit 1
