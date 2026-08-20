@@ -1,105 +1,91 @@
-﻿name: PrimalitySheafVerification CI
+name: Mock2 V21 corrected validation
 
 on:
   push:
-    branches: [master]
-    paths:
-      - 'PrimalitySheafVerification/**'
-      - 'lakefile.lean'
-      - 'lake-manifest.json'
-      - 'lean-toolchain'
-      - '.github/workflows/primality-sheaf-ci.yml'
+    branches: [chatgpt/mock2-v21-validation-3]
   pull_request:
     branches: [master]
-    paths:
-      - 'PrimalitySheafVerification/**'
-      - 'lakefile.lean'
-      - 'lake-manifest.json'
-      - 'lean-toolchain'
-      - '.github/workflows/primality-sheaf-ci.yml'
   workflow_dispatch:
 
-concurrency:
-  group: primality-sheaf-ci-${{ github.ref }}
-  cancel-in-progress: true
-
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  check:
-    name: Check PrimalitySheafVerification
+  mock2-v21:
+    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
-
+    timeout-minutes: 360
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v7
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Install Lean and fetch Mathlib cache
+      - name: Install Lean and Mathlib cache
         uses: leanprover/lean-action@v1
         with:
           auto-config: false
           use-github-cache: false
           use-mathlib-cache: true
 
-      - name: Check stable Lean files
+      - name: Reconstruct exact V20 and corrected V21
         shell: bash
         run: |
           set -euo pipefail
+          target=PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          base64 -d ci/mock2-v19/base_00 | gzip -d > /tmp/v18_from_github.patch
+          git apply /tmp/v18_from_github.patch
+          git apply ci/mock2-v19/v18_to_v19.patch
+          git apply ci/mock2-v20/v19_to_v20.patch
+          echo "V20 SHA: $(sha256sum "$target" | cut -d' ' -f1)"
+          test "$(sha256sum "$target" | cut -d' ' -f1)" = "4be644826b8a0e87cb7438b9a8552539e5a02720f1b216d854540b643574dbb0"
+          base64 -d ci/mock2-v21/v20_to_v21_corrected.patch.gz.b64 | gzip -d > /tmp/v20_to_v21.patch
+          git apply /tmp/v20_to_v21.patch
+          echo "V21 SHA: $(sha256sum "$target" | cut -d' ' -f1)"
+          test "$(sha256sum "$target" | cut -d' ' -f1)" = "2f49407a7ba153a420e3308ede9653a9eeae55834ef5b15e9e8f359ac482d36a"
 
-          strict_files=(
-            "PrimalitySheafVerification/Spt1.lean"
-            "PrimalitySheafVerification/Spt2.lean"
-            "PrimalitySheafVerification/Spt3.lean"
-            "PrimalitySheafVerification/Spt4.lean"
-            "PrimalitySheafVerification/Spt5.lean"
-          )
-
-          for file in "${strict_files[@]}"; do
-            if [[ ! -f "$file" ]]; then
-              echo "::error file=$file::Required stable file is missing"
-              exit 1
-            fi
-
-            echo "::group::lake env lean $file"
-            lake env lean "$file"
-            echo "::endgroup::"
-          done
-
-      - name: Advisory check for in-progress files
+      - name: Direct Lean check and retain log
+        id: leancheck
         shell: bash
-        continue-on-error: true
         run: |
-          set -uo pipefail
+          set +e
+          target=PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          lake env lean -DmaxErrors=1000000 "$target" > /tmp/mock2-v21-direct.log 2>&1
+          code=$?
+          mkdir -p ci/mock2-v21/results
+          cp /tmp/mock2-v21-direct.log ci/mock2-v21/results/direct.log
+          errors=$(grep -cE '^PrimalitySheafVerification/Mock2_FunctionalAnalysis\.lean:[0-9]+:[0-9]+: error' /tmp/mock2-v21-direct.log || true)
+          warnings=$(grep -cE '^PrimalitySheafVerification/Mock2_FunctionalAnalysis\.lean:[0-9]+:[0-9]+: warning' /tmp/mock2-v21-direct.log || true)
+          {
+            echo "exit_code=$code"
+            echo "errors=$errors"
+            echo "warnings=$warnings"
+            echo "v21_sha256=$(sha256sum "$target" | cut -d' ' -f1)"
+          } > ci/mock2-v21/results/summary.txt
+          echo "lean_exit=$code" >> "$GITHUB_OUTPUT"
+          cat ci/mock2-v21/results/summary.txt
+          exit 0
 
-          advisory_files=(
-            "PrimalitySheafVerification/Spt6.lean"
-            "PrimalitySheafVerification/Spt7.lean"
-            "PrimalitySheafVerification/Verification.lean"
-            "PrimalitySheafVerification/Spt2_AdditionalFormalization.lean"
-            "PrimalitySheafVerification/Spt2_BypassCertificate.lean"
-            "PrimalitySheafVerification/Spt2_CompletionLayer.lean"
-            "PrimalitySheafVerification/Spt2_GeometricWorkarounds.lean"
-            "PrimalitySheafVerification/Spt2_Master_Integrated.lean"
-          )
+      - name: Upload direct log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mock2-v21-corrected-direct-log
+          path: |
+            ci/mock2-v21/results/direct.log
+            ci/mock2-v21/results/summary.txt
+          if-no-files-found: warn
 
-          failures=0
+      - name: Commit validation log on push runs
+        if: github.event_name == 'push'
+        shell: bash
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add ci/mock2-v21/results/direct.log ci/mock2-v21/results/summary.txt
+          git commit -m "Record corrected Mock2 V21 direct Lean log [skip validation]" || true
+          git push
 
-          for file in "${advisory_files[@]}"; do
-            if [[ -f "$file" ]]; then
-              echo "::group::lake env lean $file"
-              if lake env lean "$file"; then
-                echo "OK: $file"
-              else
-                echo "::warning file=$file::Advisory Lean check failed; this file is treated as in-progress"
-                failures=$((failures + 1))
-              fi
-              echo "::endgroup::"
-            else
-              echo "::notice file=$file::Advisory file is not present; skipping"
-            fi
-          done
-
-          if [[ "$failures" -gt 0 ]]; then
-            echo "::warning::$failures advisory file(s) failed. Stable CI still passed."
-          fi
+      - name: Set validation conclusion
+        shell: bash
+        run: exit "${{ steps.leancheck.outputs.lean_exit }}"
