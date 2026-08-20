@@ -1,0 +1,143 @@
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Spt1.lean:349:2: warning: Try this: 
+  haveI̵
+
+The goal is a proposition, so `have` is preferred over `haveI`.
+The difference between `have` and `haveI` is that `haveI` inlines the value.
+But this is not relevant for proofs because of proof irrelevance.
+
+Note: This linter can be disabled with `set_option linter.style.haveILetI false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Spt1.lean:2500:2: warning: Try this: 
+  haveI̵
+
+The goal is a proposition, so `have` is preferred over `haveI`.
+The difference between `have` and `haveI` is that `haveI` inlines the value.
+But this is not relevant for proofs because of proof irrelevance.
+
+Note: This linter can be disabled with `set_option linter.style.haveILetI false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Spt1.lean:2508:2: warning: Try this: 
+  haveI̵
+
+The goal is a proposition, so `have` is preferred over `haveI`.
+The difference between `have` and `haveI` is that `haveI` inlines the value.
+But this is not relevant for proofs because of proof irrelevance.
+
+Note: This linter can be disabled with `set_option linter.style.haveILetI false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Spt1.lean:2522:2: warning: Try this: 
+  haveI̵
+
+The goal is a proposition, so `have` is preferred over `haveI`.
+The difference between `have` and `haveI` is that `haveI` inlines the value.
+But this is not relevant for proofs because of proof irrelevance.
+
+Note: This linter can be disabled with `set_option linter.style.haveILetI false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Spt1.lean:2564:2: warning: Try this: 
+  haveI̵
+
+The goal is a proposition, so `have` is preferred over `haveI`.
+The difference between `have` and `haveI` is that `haveI` inlines the value.
+But this is not relevant for proofs because of proof irrelevance.
+
+Note: This linter can be disabled with `set_option linter.style.haveILetI false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Spt1.lean:2573:2: warning: Try this: 
+  haveI̵
+
+The goal is a proposition, so `have` is preferred over `haveI`.
+The difference between `have` and `haveI` is that `haveI` inlines the value.
+But this is not relevant for proofs because of proof irrelevance.
+
+Note: This linter can be disabled with `set_option linter.style.haveILetI false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Spt1.lean:2843:2: warning: Try this: 
+  haveI̵
+
+The goal is a proposition, so `have` is preferred over `haveI`.
+The difference between `have` and `haveI` is that `haveI` inlines the value.
+But this is not relevant for proofs because of proof irrelevance.
+
+Note: This linter can be disabled with `set_option linter.style.haveILetI false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Spt1.lean:2933:2: warning: Try this: 
+  haveI̵
+
+The goal is a proposition, so `have` is preferred over `haveI`.
+The difference between `have` and `haveI` is that `haveI` inlines the value.
+But this is not relevant for proofs because of proof irrelevance.
+
+Note: This linter can be disabled with `set_option linter.style.haveILetI false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Spt1.lean:3064:2: warning: Try this: 
+  letI̵
+
+The goal is a proposition, so `let` is preferred over `letI`.
+The difference between `let` and `letI` is that `letI` inlines the value.
+But this is not relevant for proofs because of proof irrelevance.
+
+Note: This linter can be disabled with `set_option linter.style.haveILetI false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Spt1.lean:3100:0: warning: Definition `sound` is a proposition; use `theorem` instead of `def`
+
+Note: This linter can be disabled with `set_option linter.defProp false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Spt1.lean:5977:2: warning: Try this: 
+  haveI̵
+
+The goal is a proposition, so `have` is preferred over `haveI`.
+The difference between `have` and `haveI` is that `haveI` inlines the value.
+But this is not relevant for proofs because of proof irrelevance.
+
+Note: This linter can be disabled with `set_option linter.style.haveILetI false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Spt1.lean:6140:2: warning: Try this: 
+  haveI̵
+
+The goal is a proposition, so `have` is preferred over `haveI`.
+The difference between `have` and `haveI` is that `haveI` inlines the value.
+But this is not relevant for proofs because of proof irrelevance.
+
+Note: This linter can be disabled with `set_option linter.style.haveILetI false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Spt1.lean:7098:0: warning: automatically included section variable(s) unused in theorem `Spt1.PadicLog.padicLogTrunc_tendsto`:
+  [PadicLogTailCertificate p]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [PadicLogTailCertificate p] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Spt1.lean:7104:0: warning: automatically included section variable(s) unused in theorem `Spt1.PadicLog.padicLogSeries_norm_eq`:
+  [PadicLogTailCertificate p]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [PadicLogTailCertificate p] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Spt1.lean:7134:0: warning: automatically included section variable(s) unused in theorem `Spt1.PadicLog.pk_lt_one`:
+  [PadicLogTailCertificate p]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [PadicLogTailCertificate p] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Spt1.lean:7160:0: warning: automatically included section variable(s) unused in theorem `Spt1.PadicLog.padicLogSeries_summable_nonarch`:
+  [PadicLogTailCertificate p]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [PadicLogTailCertificate p] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Spt1.lean:7214:0: warning: automatically included section variable(s) unused in theorem `Spt1.PadicLog.padicLog1p_starPow`:
+  [PadicLogTailCertificate p]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [PadicLogTailCertificate p] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Spt1.lean:7325:0: warning: automatically included section variable(s) unused in theorem `Spt1.PadicLog.cast_norm_le_pow`:
+  [PadicLogTailCertificate p]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [PadicLogTailCertificate p] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Spt1.lean:7700:2: warning: Try this: 
+  haveI̵
+
+The goal is a proposition, so `have` is preferred over `haveI`.
+The difference between `have` and `haveI` is that `haveI` inlines the value.
+But this is not relevant for proofs because of proof irrelevance.
+
+Note: This linter can be disabled with `set_option linter.style.haveILetI false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Spt1.lean:7946:2: warning: Try this: 
+  letI̵
+
+The goal is a proposition, so `let` is preferred over `letI`.
+The difference between `let` and `letI` is that `letI` inlines the value.
+But this is not relevant for proofs because of proof irrelevance.
+
+Note: This linter can be disabled with `set_option linter.style.haveILetI false`

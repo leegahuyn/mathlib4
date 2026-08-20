@@ -1,0 +1,161 @@
+{
+  "best": {
+    "authority": "actual direct Lean on both modified canonical paths",
+    "files": {
+      "Mock1_Advanced": {
+        "elapsed_seconds": 262,
+        "error_headers": 6,
+        "errors": [
+          {
+            "code": null,
+            "column": 11,
+            "file": "/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock1_Advanced.lean",
+            "line": 65815,
+            "message": "unsolved goals"
+          },
+          {
+            "code": null,
+            "column": 42,
+            "file": "/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock1_Advanced.lean",
+            "line": 65823,
+            "message": "unsolved goals"
+          },
+          {
+            "code": null,
+            "column": 42,
+            "file": "/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock1_Advanced.lean",
+            "line": 65844,
+            "message": "unsolved goals"
+          },
+          {
+            "code": null,
+            "column": 47,
+            "file": "/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock1_Advanced.lean",
+            "line": 65853,
+            "message": "unsolved goals"
+          },
+          {
+            "code": null,
+            "column": 61,
+            "file": "/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock1_Advanced.lean",
+            "line": 65861,
+            "message": "unsolved goals"
+          },
+          {
+            "code": null,
+            "column": 29,
+            "file": "/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock1_Advanced.lean",
+            "line": 66733,
+            "message": "unsolved goals"
+          }
+        ],
+        "exit": 1,
+        "first_error": {
+          "code": null,
+          "column": 11,
+          "file": "/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock1_Advanced.lean",
+          "line": 65815,
+          "message": "unsolved goals"
+        },
+        "ilean_exists": false,
+        "olean_exists": false,
+        "panic_lines": 0,
+        "source": "/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock1_Advanced.lean",
+        "source_blob": "da99c78fdc2f6f894b55dd79af1438fa2d51a1b6",
+        "source_sha256": "d2cf9f101e04d58e0fd87e62d1f102b8eb910d4cc5e3e9d2b903e5c7df0f98f2",
+        "warning_headers": 112
+      },
+      "Spt1": {
+        "elapsed_seconds": 29,
+        "error_headers": 0,
+        "errors": [],
+        "exit": 0,
+        "first_error": null,
+        "ilean_exists": true,
+        "olean_exists": true,
+        "panic_lines": 0,
+        "source": "/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Spt1.lean",
+        "source_blob": "172b67583e3c491902c2baac7e363fdece1a6907",
+        "source_sha256": "1fa51432d22614e31408f56afd7a080a70421123d141742b0efeaea6c5007162",
+        "warning_headers": 20
+      }
+    },
+    "pass": false,
+    "remaining_native_decide": {
+      "Mock1_Advanced": 0,
+      "Spt1": 0
+    },
+    "run_id": 32333095345,
+    "schema": "final13-native-decide-cleanup-r2-candidate-v1",
+    "total_error_headers": 6,
+    "total_panic_lines": 0,
+    "trigger_sha": "c5227e117b9652113f6b5e2c533b56951de90c51",
+    "variant": "rw-structural"
+  },
+  "candidate_count": 4,
+  "promote": false,
+  "ranking": [
+    {
+      "mock1_advanced_blob": "da99c78fdc2f6f894b55dd79af1438fa2d51a1b6",
+      "mock1_advanced_first_error": {
+        "code": null,
+        "column": 11,
+        "file": "/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock1_Advanced.lean",
+        "line": 65815,
+        "message": "unsolved goals"
+      },
+      "mock1_advanced_sha256": "d2cf9f101e04d58e0fd87e62d1f102b8eb910d4cc5e3e9d2b903e5c7df0f98f2",
+      "pass": false,
+      "total_error_headers": 6,
+      "total_panic_lines": 0,
+      "variant": "rw-structural"
+    },
+    {
+      "mock1_advanced_blob": "ba1549bb2d6a9d80545b33056cb8debfc5c217ce",
+      "mock1_advanced_first_error": {
+        "code": null,
+        "column": 11,
+        "file": "/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock1_Advanced.lean",
+        "line": 65815,
+        "message": "unsolved goals"
+      },
+      "mock1_advanced_sha256": "0b3a58e567a633a4649229cd32ef924a2273aab2b1bb6f26d18fe052d2fc6cce",
+      "pass": false,
+      "total_error_headers": 8,
+      "total_panic_lines": 0,
+      "variant": "norm-defs"
+    },
+    {
+      "mock1_advanced_blob": "d43b6760470ae4e3203575fdfdbbf7458b5d0d34",
+      "mock1_advanced_first_error": {
+        "code": null,
+        "column": 11,
+        "file": "/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock1_Advanced.lean",
+        "line": 65815,
+        "message": "unsolved goals"
+      },
+      "mock1_advanced_sha256": "fca9b97a4ae835f741ddafdb0f1745f048e72521b57a10819a49524e87f8f551",
+      "pass": false,
+      "total_error_headers": 8,
+      "total_panic_lines": 0,
+      "variant": "unfold-norm"
+    },
+    {
+      "mock1_advanced_blob": "8f5076f42929cc3e7c513b454647a5c95679302e",
+      "mock1_advanced_first_error": {
+        "code": null,
+        "column": 11,
+        "file": "/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock1_Advanced.lean",
+        "line": 65815,
+        "message": "unsolved goals"
+      },
+      "mock1_advanced_sha256": "7582348a7663a886a031125e3a653ec57afc2119537a61737a9eabbc32d3e589",
+      "pass": false,
+      "total_error_headers": 11,
+      "total_panic_lines": 0,
+      "variant": "simp-norm-defs"
+    }
+  ],
+  "schema": "final13-native-decide-cleanup-r2-selector-v1",
+  "true_pass": false
+}
