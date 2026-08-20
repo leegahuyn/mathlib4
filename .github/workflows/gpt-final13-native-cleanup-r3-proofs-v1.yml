@@ -1,4 +1,4 @@
-name: GPT final13 R5 closed-goal proof probe v2
+name: GPT final13 R5 closed-goal proof probe v3
 
 on:
   push:
@@ -13,7 +13,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: gpt-final13-r5-closed-goal-proof-probe-v2
+  group: gpt-final13-r5-closed-goal-proof-probe-v3
   cancel-in-progress: true
 
 env:
@@ -31,12 +31,12 @@ jobs:
       max-parallel: 6
       matrix:
         variant:
-          - norm-num-delta
-          - norm-num-delta-fold
-          - simp-delta
-          - simp-delta-norm
-          - dsimp-delta-norm
-          - simp-fold-norm
+          - hrange-decide-norm
+          - hrange-rfl-norm
+          - hrange-decide-simp
+          - hrange-decide-fold
+          - hrange-rfl-simp
+          - hrange-decide-simp-only
     env:
       VARIANT: ${{ matrix.variant }}
       OUT: /tmp/final13-r5-closed-${{ matrix.variant }}
@@ -91,9 +91,7 @@ jobs:
           warnings="$(grep -Ec '^/tmp/[^:]+/Probe\.lean:[0-9]+:[0-9]+: warning' "$OUT/full.log" || true)"
           panic="$(grep -Eic 'internal error|uncaught exception|panic(!|:|[[:space:]])' "$OUT/full.log" || true)"
           pass=false
-          if [[ "$rc" -eq 0 && "$errors" -eq 0 && "$panic" -eq 0 ]]; then
-            pass=true
-          fi
+          if [[ "$rc" -eq 0 && "$errors" -eq 0 && "$panic" -eq 0 ]]; then pass=true; fi
           printf '%s\n' "$rc" > "$OUT/exit.txt"
           printf '%s\n' "$errors" > "$OUT/errors.txt"
           printf '%s\n' "$warnings" > "$OUT/warnings.txt"
@@ -109,7 +107,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: final13-r5-v2-${{ matrix.variant }}-${{ github.run_id }}
+          name: final13-r5-v3-${{ matrix.variant }}-${{ github.run_id }}
           path: ${{ env.OUT }}
           if-no-files-found: error
           retention-days: 30
