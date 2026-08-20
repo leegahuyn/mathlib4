@@ -1,0 +1,72 @@
+{
+  "schema": "qym-gb5-semantic-round3-monotone",
+  "authority": "actual full-QYM direct Lean",
+  "run_id": 32331485735,
+  "trigger_sha": "f03206290a71fc5a6e605e9dc2cb6957c67704e9",
+  "base_error_headers": 5,
+  "exit": 1,
+  "error_headers": 4,
+  "warning_headers": 343,
+  "panic_lines": 0,
+  "elapsed_seconds": 537,
+  "first_error": {
+    "file": "PrimalitySheafVerification/QYM.lean",
+    "line": 50830,
+    "column": 54,
+    "code": null,
+    "message": "unsolved goals",
+    "enclosing_declaration": "actualStagePeterssonInner_self_re_eq_zero_iff"
+  },
+  "source_sha256": "07dc5df9ca34811bc2f7551014c67a3139b846161d7d1d5a2d2ed676c979e42a",
+  "source_blob": "95f19cd490ebe0141dbf4d0e7aeee98abf7ab25e",
+  "log_sha256": "f4f9441801173b27a6eb7a78d885457a43e0c746abc55d177fb4cfbfa4c30902",
+  "forbidden_zero": true,
+  "olean_exists": false,
+  "ilean_exists": false,
+  "error_codes": {
+    "uncoded": 4
+  },
+  "error_declarations": {
+    "actualStagePeterssonInner_self_re_eq_zero_iff": 1,
+    "globalStageProjection_add": 1,
+    "globalStageProjection_smul": 1,
+    "coordinateHamiltonianForm_re_self": 1
+  },
+  "errors": [
+    {
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 50830,
+      "column": 54,
+      "code": null,
+      "message": "unsolved goals",
+      "enclosing_declaration": "actualStagePeterssonInner_self_re_eq_zero_iff"
+    },
+    {
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 57731,
+      "column": 4,
+      "code": null,
+      "message": "Type mismatch: After simplification, term",
+      "enclosing_declaration": "globalStageProjection_add"
+    },
+    {
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 57753,
+      "column": 4,
+      "code": null,
+      "message": "Type mismatch: After simplification, term",
+      "enclosing_declaration": "globalStageProjection_smul"
+    },
+    {
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 59507,
+      "column": 78,
+      "code": null,
+      "message": "unsolved goals",
+      "enclosing_declaration": "coordinateHamiltonianForm_re_self"
+    }
+  ],
+  "semantic_improvement": true,
+  "numeric_global_improvement": true,
+  "pass": false
+}
