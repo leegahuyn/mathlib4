@@ -1,0 +1,96 @@
+{
+  "schema": "qym-r4-targeted-matrix-candidate-v1",
+  "authority": "actual full-QYM direct Lean",
+  "variant": "tolp-cast",
+  "run_id": 32331314591,
+  "trigger_sha": "a55ca0e2bdf8c1c148a59328b2266695d21871a5",
+  "base_sha256": "231efe9a0b8f9d05aae5e65ff3904b3636182ef6f1c93c11eac0c05313730998",
+  "base_error_headers": 5,
+  "source_sha256": "28431dba8d755ff394869e00fb5d800fa98220db2dae787e39bba4a9c529e7d4",
+  "source_blob": "14790ec4877a65e3752f06d861abfc2c56a83853",
+  "exit": 1,
+  "error_headers": 7,
+  "warning_headers": 349,
+  "panic_lines": 0,
+  "elapsed_seconds": 485,
+  "first_error": {
+    "file": "PrimalitySheafVerification/QYM.lean",
+    "line": 50832,
+    "column": 6,
+    "code": null,
+    "message": "Tactic `rewrite` failed: Did not find an occurrence of the pattern",
+    "enclosing_declaration": "actualStagePeterssonInner_self_re_eq_zero_iff"
+  },
+  "forbidden_zero": true,
+  "olean_exists": false,
+  "ilean_exists": false,
+  "error_codes": {
+    "uncoded": 7
+  },
+  "error_declarations": {
+    "actualStagePeterssonInner_self_re_eq_zero_iff": 1,
+    "globalStageProjection_add": 2,
+    "globalStageProjection_smul": 2,
+    "coordinateHamiltonianForm_re_self": 2
+  },
+  "errors": [
+    {
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 50832,
+      "column": 6,
+      "code": null,
+      "message": "Tactic `rewrite` failed: Did not find an occurrence of the pattern",
+      "enclosing_declaration": "actualStagePeterssonInner_self_re_eq_zero_iff"
+    },
+    {
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 57721,
+      "column": 2,
+      "code": null,
+      "message": "unsolved goals",
+      "enclosing_declaration": "globalStageProjection_add"
+    },
+    {
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 57722,
+      "column": 2,
+      "code": null,
+      "message": "unsolved goals",
+      "enclosing_declaration": "globalStageProjection_add"
+    },
+    {
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 57734,
+      "column": 2,
+      "code": null,
+      "message": "unsolved goals",
+      "enclosing_declaration": "globalStageProjection_smul"
+    },
+    {
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 57735,
+      "column": 2,
+      "code": null,
+      "message": "unsolved goals",
+      "enclosing_declaration": "globalStageProjection_smul"
+    },
+    {
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 59490,
+      "column": 62,
+      "code": null,
+      "message": "unsolved goals",
+      "enclosing_declaration": "coordinateHamiltonianForm_re_self"
+    },
+    {
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 59494,
+      "column": 16,
+      "code": null,
+      "message": "Tactic `rewrite` failed: Did not find an occurrence of the pattern",
+      "enclosing_declaration": "coordinateHamiltonianForm_re_self"
+    }
+  ],
+  "pass": false,
+  "strict_improvement": false
+}

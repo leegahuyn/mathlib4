@@ -1,0 +1,54 @@
+{
+  "schema": "qym-r4-targeted-matrix-candidate-v1",
+  "authority": "actual full-QYM direct Lean",
+  "variant": "convert-change",
+  "run_id": 32331314591,
+  "trigger_sha": "a55ca0e2bdf8c1c148a59328b2266695d21871a5",
+  "base_sha256": "231efe9a0b8f9d05aae5e65ff3904b3636182ef6f1c93c11eac0c05313730998",
+  "base_error_headers": 5,
+  "source_sha256": "c798cc256e41e19073cc57aef0723e213ef234e353dde65daf47790a91efcd7f",
+  "source_blob": "ac1b09ba35a642a9d2edfe1037c1a677dc524eeb",
+  "exit": 1,
+  "error_headers": 2,
+  "warning_headers": 345,
+  "panic_lines": 0,
+  "elapsed_seconds": 524,
+  "first_error": {
+    "file": "PrimalitySheafVerification/QYM.lean",
+    "line": 50832,
+    "column": 6,
+    "code": null,
+    "message": "Tactic `rewrite` failed: Did not find an occurrence of the pattern",
+    "enclosing_declaration": "actualStagePeterssonInner_self_re_eq_zero_iff"
+  },
+  "forbidden_zero": true,
+  "olean_exists": false,
+  "ilean_exists": false,
+  "error_codes": {
+    "uncoded": 2
+  },
+  "error_declarations": {
+    "actualStagePeterssonInner_self_re_eq_zero_iff": 1,
+    "coordinateHamiltonianForm_re_self": 1
+  },
+  "errors": [
+    {
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 50832,
+      "column": 6,
+      "code": null,
+      "message": "Tactic `rewrite` failed: Did not find an occurrence of the pattern",
+      "enclosing_declaration": "actualStagePeterssonInner_self_re_eq_zero_iff"
+    },
+    {
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 59501,
+      "column": 48,
+      "code": null,
+      "message": "Tactic `rewrite` failed: Did not find an occurrence of the pattern",
+      "enclosing_declaration": "coordinateHamiltonianForm_re_self"
+    }
+  ],
+  "pass": false,
+  "strict_improvement": true
+}

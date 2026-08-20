@@ -1,0 +1,192 @@
+{
+  "schema": "qym-r4-targeted-matrix-selector-v1",
+  "candidate_count": 8,
+  "eligible_count": 8,
+  "base_error_headers": 5,
+  "best": {
+    "schema": "qym-r4-targeted-matrix-candidate-v1",
+    "authority": "actual full-QYM direct Lean",
+    "variant": "convert-change",
+    "run_id": 32331314591,
+    "trigger_sha": "a55ca0e2bdf8c1c148a59328b2266695d21871a5",
+    "base_sha256": "231efe9a0b8f9d05aae5e65ff3904b3636182ef6f1c93c11eac0c05313730998",
+    "base_error_headers": 5,
+    "source_sha256": "c798cc256e41e19073cc57aef0723e213ef234e353dde65daf47790a91efcd7f",
+    "source_blob": "ac1b09ba35a642a9d2edfe1037c1a677dc524eeb",
+    "exit": 1,
+    "error_headers": 2,
+    "warning_headers": 345,
+    "panic_lines": 0,
+    "elapsed_seconds": 524,
+    "first_error": {
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 50832,
+      "column": 6,
+      "code": null,
+      "message": "Tactic `rewrite` failed: Did not find an occurrence of the pattern",
+      "enclosing_declaration": "actualStagePeterssonInner_self_re_eq_zero_iff"
+    },
+    "forbidden_zero": true,
+    "olean_exists": false,
+    "ilean_exists": false,
+    "error_codes": {
+      "uncoded": 2
+    },
+    "error_declarations": {
+      "actualStagePeterssonInner_self_re_eq_zero_iff": 1,
+      "coordinateHamiltonianForm_re_self": 1
+    },
+    "errors": [
+      {
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 50832,
+        "column": 6,
+        "code": null,
+        "message": "Tactic `rewrite` failed: Did not find an occurrence of the pattern",
+        "enclosing_declaration": "actualStagePeterssonInner_self_re_eq_zero_iff"
+      },
+      {
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 59501,
+        "column": 48,
+        "code": null,
+        "message": "Tactic `rewrite` failed: Did not find an occurrence of the pattern",
+        "enclosing_declaration": "coordinateHamiltonianForm_re_self"
+      }
+    ],
+    "pass": false,
+    "strict_improvement": true
+  },
+  "promote": true,
+  "true_pass": false,
+  "ranking": [
+    {
+      "variant": "convert-change",
+      "pass": false,
+      "error_headers": 2,
+      "panic_lines": 0,
+      "first_error": {
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 50832,
+        "column": 6,
+        "code": null,
+        "message": "Tactic `rewrite` failed: Did not find an occurrence of the pattern",
+        "enclosing_declaration": "actualStagePeterssonInner_self_re_eq_zero_iff"
+      },
+      "source_sha256": "c798cc256e41e19073cc57aef0723e213ef234e353dde65daf47790a91efcd7f",
+      "source_blob": "ac1b09ba35a642a9d2edfe1037c1a677dc524eeb"
+    },
+    {
+      "variant": "convert-manual",
+      "pass": false,
+      "error_headers": 2,
+      "panic_lines": 0,
+      "first_error": {
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 50832,
+        "column": 6,
+        "code": null,
+        "message": "Tactic `rewrite` failed: Did not find an occurrence of the pattern",
+        "enclosing_declaration": "actualStagePeterssonInner_self_re_eq_zero_iff"
+      },
+      "source_sha256": "c4594c838d9b123d921149e246c7ec29c9ba2e7eeb850f9e09bd7df66cb78db2",
+      "source_blob": "f0cf758597bd9f2db593f76b37f2ae3c2f3e0f9b"
+    },
+    {
+      "variant": "direct-manual",
+      "pass": false,
+      "error_headers": 3,
+      "panic_lines": 0,
+      "first_error": {
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 50832,
+        "column": 6,
+        "code": null,
+        "message": "Tactic `rewrite` failed: Did not find an occurrence of the pattern",
+        "enclosing_declaration": "actualStagePeterssonInner_self_re_eq_zero_iff"
+      },
+      "source_sha256": "b26bc262dd0f47271ee54e5ad95335737a6b8e98bcbfab5d40f30147d71bef9c",
+      "source_blob": "3f847f0c3a5a842b187ae0ea91014c24255c40a8"
+    },
+    {
+      "variant": "simpa-manual",
+      "pass": false,
+      "error_headers": 3,
+      "panic_lines": 0,
+      "first_error": {
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 50832,
+        "column": 6,
+        "code": null,
+        "message": "Tactic `rewrite` failed: Did not find an occurrence of the pattern",
+        "enclosing_declaration": "actualStagePeterssonInner_self_re_eq_zero_iff"
+      },
+      "source_sha256": "873aa704d23a69acf2208fa70bd597867683e0485a4e42f1410e287deb1ce19a",
+      "source_blob": "f026ac838ab2ab8d7e2097e842ce60b373ac4d15"
+    },
+    {
+      "variant": "simpa-simp",
+      "pass": false,
+      "error_headers": 3,
+      "panic_lines": 0,
+      "first_error": {
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 50832,
+        "column": 6,
+        "code": null,
+        "message": "Tactic `rewrite` failed: Did not find an occurrence of the pattern",
+        "enclosing_declaration": "actualStagePeterssonInner_self_re_eq_zero_iff"
+      },
+      "source_sha256": "8e0779d0cb38a2781fcd081f7b3d70421ad5bbbba3bcf9ced84f48318b47a183",
+      "source_blob": "a760149cdb39b0f28fc3ea52a61ca12f1b12423f"
+    },
+    {
+      "variant": "direct-cast",
+      "pass": false,
+      "error_headers": 4,
+      "panic_lines": 0,
+      "first_error": {
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 50832,
+        "column": 6,
+        "code": null,
+        "message": "Tactic `rewrite` failed: Did not find an occurrence of the pattern",
+        "enclosing_declaration": "actualStagePeterssonInner_self_re_eq_zero_iff"
+      },
+      "source_sha256": "8b5be34ba3e8ca4e3545c7d70bc04cdf93ca3258a414b2776e33b29f661a6819",
+      "source_blob": "bfa748e1bb80501d1aa4aa1d9b9686be1a1f9d58"
+    },
+    {
+      "variant": "tolp-manual",
+      "pass": false,
+      "error_headers": 6,
+      "panic_lines": 0,
+      "first_error": {
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 50832,
+        "column": 6,
+        "code": null,
+        "message": "Tactic `rewrite` failed: Did not find an occurrence of the pattern",
+        "enclosing_declaration": "actualStagePeterssonInner_self_re_eq_zero_iff"
+      },
+      "source_sha256": "af4944cfc629cc407f05e0b3ee03106103d1fd0f35ec514d3f09888638206068",
+      "source_blob": "99d59d4c5d1f629dba8d2c8d1bbe9ecf2cb371ce"
+    },
+    {
+      "variant": "tolp-cast",
+      "pass": false,
+      "error_headers": 7,
+      "panic_lines": 0,
+      "first_error": {
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 50832,
+        "column": 6,
+        "code": null,
+        "message": "Tactic `rewrite` failed: Did not find an occurrence of the pattern",
+        "enclosing_declaration": "actualStagePeterssonInner_self_re_eq_zero_iff"
+      },
+      "source_sha256": "28431dba8d755ff394869e00fb5d800fa98220db2dae787e39bba4a9c529e7d4",
+      "source_blob": "14790ec4877a65e3752f06d861abfc2c56a83853"
+    }
+  ]
+}
