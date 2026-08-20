@@ -1,0 +1,146 @@
+name: GPT Final13 R5 closed-goal proof probe
+
+on:
+  push:
+    branches:
+      - gpt/final13-gb0-r5-six-clean-20260820
+    paths:
+      - .github/workflows/gpt-final13-r5-closed-goal-probe.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gpt-final13-r5-closed-goal-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        variant:
+          - decide
+          - decide-high
+          - norm-num-range
+          - simp-norm-range
+          - simp-only-norm
+          - norm-num-expanded
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+      - name: Install pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none >/tmp/elan.log 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1
+          lake exe cache get >/tmp/mathlib-cache.log 2>&1
+      - name: Generate exact closed-goal reproducer
+        shell: bash
+        env:
+          VARIANT: ${{ matrix.variant }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import os
+          v=os.environ['VARIANT']
+          tactics={
+            'decide':'by decide',
+            'decide-high':'by\n  set_option maxRecDepth 200000 in\n    decide',
+            'norm-num-range':'by\n  norm_num [List.range_succ, Function.comp_def]',
+            'simp-norm-range':'by\n  simp [List.range_succ, Function.comp_def] <;> norm_num',
+            'simp-only-norm':'by\n  simp only [List.range_succ, List.map_cons, List.map_nil, List.append_assoc,\n    List.append_cons, List.append_nil, Function.comp_apply, if_pos, if_false,\n    Nat.succ_ne_zero, Nat.one_ne_zero, Nat.reduceEqDiff] <;> norm_num',
+            'norm-num-expanded':'by\n  norm_num [List.range_succ, Function.comp_apply, List.zip, List.foldl]',
+          }
+          t=tactics[v]
+          src=f'''import Mathlib
+set_option maxRecDepth 200000
+
+open Function
+
+def coord (dimension index : Nat) (value : Rat) : List Rat :=
+  (List.range dimension).map (fun j => if j = index then value else 0)
+
+def signedRow (dimension row : Nat) : List Rat :=
+  coord dimension row 1 ++ coord dimension row (-1)
+
+def dotRatProbe (row x : List Rat) : Rat :=
+  List.foldl (fun acc p => acc + p.1 * p.2) 0 (List.zip row x)
+
+def matVecProbe (A : List (List Rat)) (x : List Rat) : List Rat :=
+  A.map (fun row => dotRatProbe row x)
+
+def pairSolution : List (Rat × Rat) :=
+  (List.range 11).map (fun i => if i = 0 then ((1 / 2 : Rat), (-1 / 2 : Rat)) else (0, 0))
+
+example :
+    List.map (fun j => if j = 0 then (1 / 2 : Rat) else 0) (List.range 11) ++
+      List.map (fun j => if j = 0 then (-(1 / 2) : Rat) else 0) (List.range 11) =
+    [1 / 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -(1 / 2), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] := {t}
+
+example :
+    List.map
+      ((fun row => List.foldl (fun acc p => acc + p.1 * p.2) 0
+        (row.zip [1 / 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -(1 / 2), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])) ∘
+        signedRow 11) (List.range 11) =
+      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] := {t}
+
+example :
+    List.map ((fun pair : Rat × Rat => pair.1 - pair.2) ∘
+      fun i => if i = 0 then ((1 / 2 : Rat), (-1 / 2 : Rat)) else (0, 0))
+      (List.range 11) = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] := {t}
+
+example :
+    List.map (Prod.fst ∘ fun i => if i = 0 then ((1 / 2 : Rat), (-1 / 2 : Rat)) else (0, 0))
+        (List.range 11) ++
+      List.map (Prod.snd ∘ fun i => if i = 0 then ((1 / 2 : Rat), (-1 / 2 : Rat)) else (0, 0))
+        (List.range 11) =
+      [1 / 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -(1 / 2), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] := {t}
+
+example :
+    (List.map ((fun pair : Rat × Rat => pair.1 ^ 2 + pair.2 ^ 2) ∘
+      fun i => if i = 0 then ((1 / 2 : Rat), (-1 / 2 : Rat)) else (0, 0))
+      (List.range 11)).sum = 1 / 2 := {t}
+
+example : (1 : Rat) = 1 * 1 := {t}
+'''
+          open('/tmp/Probe.lean','w').write(src)
+          PY
+      - name: Compile reproducer
+        shell: bash
+        env:
+          VARIANT: ${{ matrix.variant }}
+        run: |
+          set +e
+          start=$(date +%s)
+          lake env lean -DmaxErrors=100 -DwarningAsError=false /tmp/Probe.lean > /tmp/full.log 2>&1
+          rc=$?
+          end=$(date +%s)
+          set -e
+          errors=$(grep -Ec '^/tmp/Probe\.lean:[0-9]+:[0-9]+: error' /tmp/full.log || true)
+          warnings=$(grep -Ec '^/tmp/Probe\.lean:[0-9]+:[0-9]+: warning' /tmp/full.log || true)
+          printf '{"variant":"%s","exit":%s,"errors":%s,"warnings":%s,"elapsed_seconds":%s}\n' \
+            "$VARIANT" "$rc" "$errors" "$warnings" "$((end-start))" | tee /tmp/result.json
+          cat /tmp/full.log
+          test "$rc" -eq 0
+          test "$errors" -eq 0
+      - name: Upload probe evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: final13-r5-closed-goal-${{ matrix.variant }}-${{ github.run_id }}
+          path: |
+            /tmp/Probe.lean
+            /tmp/full.log
+            /tmp/result.json
+          if-no-files-found: warn
+          retention-days: 30
