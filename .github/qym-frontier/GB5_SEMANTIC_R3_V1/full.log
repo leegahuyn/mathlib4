@@ -3203,15 +3203,11 @@ PrimalitySheafVerification/QYM.lean:50260:31: warning: `Set.mem_setOf_eq` has be
 PrimalitySheafVerification/QYM.lean:50671:2: warning: Try `simp at hPos` instead of `simpa using hPos`
 
 Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
-PrimalitySheafVerification/QYM.lean:50833:6: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
-  ↑(?r ^ ?n)
-in the target expression
-  (↑‖u‖ ^ 2).re = 0 ↔ u = 0
-
+PrimalitySheafVerification/QYM.lean:50830:54: error: unsolved goals
 Y : ℝ
 u : ↥(ActualStageInverseEtaL2Section Y)
 ⊢ (↑‖u‖ ^ 2).re = 0 ↔ u = 0
-PrimalitySheafVerification/QYM.lean:51076:2: warning: Try this: 
+PrimalitySheafVerification/QYM.lean:51075:2: warning: Try this: 
   letI̵
 
 The goal is a proposition, so `let` is preferred over `letI`.
@@ -3219,7 +3215,7 @@ The difference between `let` and `letI` is that `letI` inlines the value.
 But this is not relevant for proofs because of proof irrelevance.
 
 Note: This linter can be disabled with `set_option linter.style.haveILetI false`
-PrimalitySheafVerification/QYM.lean:51089:2: warning: Try this: 
+PrimalitySheafVerification/QYM.lean:51088:2: warning: Try this: 
   letI̵
 
 The goal is a proposition, so `let` is preferred over `letI`.
@@ -3264,24 +3260,24 @@ Note: This linter can be disabled with `set_option linter.style.haveILetI false`
 'QYM.FullCertification.P3ActualStageL2SectionsExtension.actualStageInverseEtaL2PositiveCertificate' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
-PrimalitySheafVerification/QYM.lean:51262:2: warning: 'change ambientStageMeasure Y Set.univ < (∞ : ℝ≥0∞)' tactic does nothing
+PrimalitySheafVerification/QYM.lean:51261:2: warning: 'change ambientStageMeasure Y Set.univ < (∞ : ℝ≥0∞)' tactic does nothing
 
 Note: This linter can be disabled with `set_option linter.unusedTactic false`
-PrimalitySheafVerification/QYM.lean:51594:15: warning: This simp argument is unused:
+PrimalitySheafVerification/QYM.lean:51593:15: warning: This simp argument is unused:
   hx
 
 Hint: Omit it from the simp argument list.
   [apply] simp only [hxZ, Set.indicator_of_mem]
 
 Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
-PrimalitySheafVerification/QYM.lean:51596:17: warning: This simp argument is unused:
+PrimalitySheafVerification/QYM.lean:51595:17: warning: This simp argument is unused:
   hx
 
 Hint: Omit it from the simp argument list.
   [apply] simp only [hxZ, Set.indicator_of_mem, Set.indicator_of_notMem]
 
 Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
-PrimalitySheafVerification/QYM.lean:51597:8: warning: This simp argument is unused:
+PrimalitySheafVerification/QYM.lean:51596:8: warning: This simp argument is unused:
   Set.indicator_of_notMem
 
 Hint: Omit it from the simp argument list.
@@ -3309,15 +3305,15 @@ Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
 'QYM.FullCertification.P14ActualStageL2MapsExtension.actualStageL2MapsCertificate' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
-PrimalitySheafVerification/QYM.lean:51808:0: warning: Definition `QYM.FullCertification.P3InverseEtaSmoothTrivializationClosureExtension.inverseEtaBaseChartedSpaceH` of class type is semireducible. Most type class instances should be instance-reducible, so consider marking this
+PrimalitySheafVerification/QYM.lean:51807:0: warning: Definition `QYM.FullCertification.P3InverseEtaSmoothTrivializationClosureExtension.inverseEtaBaseChartedSpaceH` of class type is semireducible. Most type class instances should be instance-reducible, so consider marking this
 definition with `@[instance_reducible]`. If it is intentionally semireducible, this warning can be disabled with `set_option warn.classDefReducibility false`.
-PrimalitySheafVerification/QYM.lean:51817:0: warning: Definition `QYM.FullCertification.P3InverseEtaSmoothTrivializationClosureExtension.inverseEtaBaseChartedSpaceComplex` of class type is semireducible. Most type class instances should be instance-reducible, so consider marking this
+PrimalitySheafVerification/QYM.lean:51816:0: warning: Definition `QYM.FullCertification.P3InverseEtaSmoothTrivializationClosureExtension.inverseEtaBaseChartedSpaceComplex` of class type is semireducible. Most type class instances should be instance-reducible, so consider marking this
 definition with `@[instance_reducible]`. If it is intentionally semireducible, this warning can be disabled with `set_option warn.classDefReducibility false`.
-PrimalitySheafVerification/QYM.lean:51859:0: warning: Definition `QYM.FullCertification.P3InverseEtaSmoothTrivializationClosureExtension.inverseEtaTotalSingletonProductChartedSpace` of class type is semireducible. Most type class instances should be instance-reducible, so consider marking this
+PrimalitySheafVerification/QYM.lean:51858:0: warning: Definition `QYM.FullCertification.P3InverseEtaSmoothTrivializationClosureExtension.inverseEtaTotalSingletonProductChartedSpace` of class type is semireducible. Most type class instances should be instance-reducible, so consider marking this
 definition with `@[instance_reducible]`. If it is intentionally semireducible, this warning can be disabled with `set_option warn.classDefReducibility false`.
-PrimalitySheafVerification/QYM.lean:51866:0: warning: Definition `QYM.FullCertification.P3InverseEtaSmoothTrivializationClosureExtension.inverseEtaTotalTransportedChartedSpace` of class type is semireducible. Most type class instances should be instance-reducible, so consider marking this
+PrimalitySheafVerification/QYM.lean:51865:0: warning: Definition `QYM.FullCertification.P3InverseEtaSmoothTrivializationClosureExtension.inverseEtaTotalTransportedChartedSpace` of class type is semireducible. Most type class instances should be instance-reducible, so consider marking this
 definition with `@[instance_reducible]`. If it is intentionally semireducible, this warning can be disabled with `set_option warn.classDefReducibility false`.
-PrimalitySheafVerification/QYM.lean:51895:2: warning: Try this: 
+PrimalitySheafVerification/QYM.lean:51894:2: warning: Try this: 
   letI̵
 
 The goal is a proposition, so `let` is preferred over `letI`.
@@ -3325,7 +3321,7 @@ The difference between `let` and `letI` is that `letI` inlines the value.
 But this is not relevant for proofs because of proof irrelevance.
 
 Note: This linter can be disabled with `set_option linter.style.haveILetI false`
-PrimalitySheafVerification/QYM.lean:51897:2: warning: Try this: 
+PrimalitySheafVerification/QYM.lean:51896:2: warning: Try this: 
   letI̵
 
 The goal is a proposition, so `let` is preferred over `letI`.
@@ -3333,7 +3329,7 @@ The difference between `let` and `letI` is that `letI` inlines the value.
 But this is not relevant for proofs because of proof irrelevance.
 
 Note: This linter can be disabled with `set_option linter.style.haveILetI false`
-PrimalitySheafVerification/QYM.lean:51913:2: warning: Try this: 
+PrimalitySheafVerification/QYM.lean:51912:2: warning: Try this: 
   letI̵
 
 The goal is a proposition, so `let` is preferred over `letI`.
@@ -3341,7 +3337,7 @@ The difference between `let` and `letI` is that `letI` inlines the value.
 But this is not relevant for proofs because of proof irrelevance.
 
 Note: This linter can be disabled with `set_option linter.style.haveILetI false`
-PrimalitySheafVerification/QYM.lean:51915:2: warning: Try this: 
+PrimalitySheafVerification/QYM.lean:51914:2: warning: Try this: 
   letI̵
 
 The goal is a proposition, so `let` is preferred over `letI`.
@@ -3349,7 +3345,7 @@ The difference between `let` and `letI` is that `letI` inlines the value.
 But this is not relevant for proofs because of proof irrelevance.
 
 Note: This linter can be disabled with `set_option linter.style.haveILetI false`
-PrimalitySheafVerification/QYM.lean:51917:2: warning: Try this: 
+PrimalitySheafVerification/QYM.lean:51916:2: warning: Try this: 
   letI̵
 
 The goal is a proposition, so `let` is preferred over `letI`.
@@ -3357,7 +3353,7 @@ The difference between `let` and `letI` is that `letI` inlines the value.
 But this is not relevant for proofs because of proof irrelevance.
 
 Note: This linter can be disabled with `set_option linter.style.haveILetI false`
-PrimalitySheafVerification/QYM.lean:51945:2: warning: Try this: 
+PrimalitySheafVerification/QYM.lean:51944:2: warning: Try this: 
   letI̵
 
 The goal is a proposition, so `let` is preferred over `letI`.
@@ -3365,7 +3361,7 @@ The difference between `let` and `letI` is that `letI` inlines the value.
 But this is not relevant for proofs because of proof irrelevance.
 
 Note: This linter can be disabled with `set_option linter.style.haveILetI false`
-PrimalitySheafVerification/QYM.lean:51947:2: warning: Try this: 
+PrimalitySheafVerification/QYM.lean:51946:2: warning: Try this: 
   letI̵
 
 The goal is a proposition, so `let` is preferred over `letI`.
@@ -3373,7 +3369,7 @@ The difference between `let` and `letI` is that `letI` inlines the value.
 But this is not relevant for proofs because of proof irrelevance.
 
 Note: This linter can be disabled with `set_option linter.style.haveILetI false`
-PrimalitySheafVerification/QYM.lean:51949:2: warning: Try this: 
+PrimalitySheafVerification/QYM.lean:51948:2: warning: Try this: 
   letI̵
 
 The goal is a proposition, so `let` is preferred over `letI`.
@@ -3381,7 +3377,7 @@ The difference between `let` and `letI` is that `letI` inlines the value.
 But this is not relevant for proofs because of proof irrelevance.
 
 Note: This linter can be disabled with `set_option linter.style.haveILetI false`
-PrimalitySheafVerification/QYM.lean:51972:2: warning: Try this: 
+PrimalitySheafVerification/QYM.lean:51971:2: warning: Try this: 
   letI̵
 
 The goal is a proposition, so `let` is preferred over `letI`.
@@ -3389,7 +3385,7 @@ The difference between `let` and `letI` is that `letI` inlines the value.
 But this is not relevant for proofs because of proof irrelevance.
 
 Note: This linter can be disabled with `set_option linter.style.haveILetI false`
-PrimalitySheafVerification/QYM.lean:51974:2: warning: Try this: 
+PrimalitySheafVerification/QYM.lean:51973:2: warning: Try this: 
   letI̵
 
 The goal is a proposition, so `let` is preferred over `letI`.
@@ -3397,7 +3393,7 @@ The difference between `let` and `letI` is that `letI` inlines the value.
 But this is not relevant for proofs because of proof irrelevance.
 
 Note: This linter can be disabled with `set_option linter.style.haveILetI false`
-PrimalitySheafVerification/QYM.lean:51976:2: warning: Try this: 
+PrimalitySheafVerification/QYM.lean:51975:2: warning: Try this: 
   letI̵
 
 The goal is a proposition, so `let` is preferred over `letI`.
@@ -3405,7 +3401,7 @@ The difference between `let` and `letI` is that `letI` inlines the value.
 But this is not relevant for proofs because of proof irrelevance.
 
 Note: This linter can be disabled with `set_option linter.style.haveILetI false`
-PrimalitySheafVerification/QYM.lean:51991:2: warning: Try this: 
+PrimalitySheafVerification/QYM.lean:51990:2: warning: Try this: 
   letI̵
 
 The goal is a proposition, so `let` is preferred over `letI`.
@@ -3413,7 +3409,7 @@ The difference between `let` and `letI` is that `letI` inlines the value.
 But this is not relevant for proofs because of proof irrelevance.
 
 Note: This linter can be disabled with `set_option linter.style.haveILetI false`
-PrimalitySheafVerification/QYM.lean:51993:2: warning: Try this: 
+PrimalitySheafVerification/QYM.lean:51992:2: warning: Try this: 
   letI̵
 
 The goal is a proposition, so `let` is preferred over `letI`.
@@ -3421,7 +3417,7 @@ The difference between `let` and `letI` is that `letI` inlines the value.
 But this is not relevant for proofs because of proof irrelevance.
 
 Note: This linter can be disabled with `set_option linter.style.haveILetI false`
-PrimalitySheafVerification/QYM.lean:52015:2: warning: Try this: 
+PrimalitySheafVerification/QYM.lean:52014:2: warning: Try this: 
   letI̵
 
 The goal is a proposition, so `let` is preferred over `letI`.
@@ -3429,7 +3425,7 @@ The difference between `let` and `letI` is that `letI` inlines the value.
 But this is not relevant for proofs because of proof irrelevance.
 
 Note: This linter can be disabled with `set_option linter.style.haveILetI false`
-PrimalitySheafVerification/QYM.lean:52017:2: warning: Try this: 
+PrimalitySheafVerification/QYM.lean:52016:2: warning: Try this: 
   letI̵
 
 The goal is a proposition, so `let` is preferred over `letI`.
@@ -3437,7 +3433,7 @@ The difference between `let` and `letI` is that `letI` inlines the value.
 But this is not relevant for proofs because of proof irrelevance.
 
 Note: This linter can be disabled with `set_option linter.style.haveILetI false`
-PrimalitySheafVerification/QYM.lean:52087:2: warning: Try this: 
+PrimalitySheafVerification/QYM.lean:52086:2: warning: Try this: 
   letI̵
 
 The goal is a proposition, so `let` is preferred over `letI`.
@@ -3445,7 +3441,7 @@ The difference between `let` and `letI` is that `letI` inlines the value.
 But this is not relevant for proofs because of proof irrelevance.
 
 Note: This linter can be disabled with `set_option linter.style.haveILetI false`
-PrimalitySheafVerification/QYM.lean:52089:2: warning: Try this: 
+PrimalitySheafVerification/QYM.lean:52088:2: warning: Try this: 
   letI̵
 
 The goal is a proposition, so `let` is preferred over `letI`.
@@ -3453,7 +3449,7 @@ The difference between `let` and `letI` is that `letI` inlines the value.
 But this is not relevant for proofs because of proof irrelevance.
 
 Note: This linter can be disabled with `set_option linter.style.haveILetI false`
-PrimalitySheafVerification/QYM.lean:52138:2: warning: Try this: 
+PrimalitySheafVerification/QYM.lean:52137:2: warning: Try this: 
   letI̵
 
 The goal is a proposition, so `let` is preferred over `letI`.
@@ -3461,7 +3457,7 @@ The difference between `let` and `letI` is that `letI` inlines the value.
 But this is not relevant for proofs because of proof irrelevance.
 
 Note: This linter can be disabled with `set_option linter.style.haveILetI false`
-PrimalitySheafVerification/QYM.lean:52140:2: warning: Try this: 
+PrimalitySheafVerification/QYM.lean:52139:2: warning: Try this: 
   letI̵
 
 The goal is a proposition, so `let` is preferred over `letI`.
@@ -3469,7 +3465,7 @@ The difference between `let` and `letI` is that `letI` inlines the value.
 But this is not relevant for proofs because of proof irrelevance.
 
 Note: This linter can be disabled with `set_option linter.style.haveILetI false`
-PrimalitySheafVerification/QYM.lean:52189:2: warning: Try this: 
+PrimalitySheafVerification/QYM.lean:52188:2: warning: Try this: 
   letI̵
 
 The goal is a proposition, so `let` is preferred over `letI`.
@@ -3477,7 +3473,7 @@ The difference between `let` and `letI` is that `letI` inlines the value.
 But this is not relevant for proofs because of proof irrelevance.
 
 Note: This linter can be disabled with `set_option linter.style.haveILetI false`
-PrimalitySheafVerification/QYM.lean:52191:2: warning: Try this: 
+PrimalitySheafVerification/QYM.lean:52190:2: warning: Try this: 
   letI̵
 
 The goal is a proposition, so `let` is preferred over `letI`.
@@ -3527,10 +3523,10 @@ Note: This linter can be disabled with `set_option linter.style.haveILetI false`
 'QYM.FullCertification.P3InverseEtaSmoothTrivializationClosureExtension.inverseEtaSmoothTrivialBundleCertificate' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
-PrimalitySheafVerification/QYM.lean:52499:4: warning: 'change zStage ∈ U' tactic does nothing
+PrimalitySheafVerification/QYM.lean:52498:4: warning: 'change zStage ∈ U' tactic does nothing
 
 Note: This linter can be disabled with `set_option linter.unusedTactic false`
-PrimalitySheafVerification/QYM.lean:52532:2: warning: Try this: 
+PrimalitySheafVerification/QYM.lean:52531:2: warning: Try this: 
   letI̵
 
 The goal is a proposition, so `let` is preferred over `letI`.
@@ -3538,7 +3534,7 @@ The difference between `let` and `letI` is that `letI` inlines the value.
 But this is not relevant for proofs because of proof irrelevance.
 
 Note: This linter can be disabled with `set_option linter.style.haveILetI false`
-PrimalitySheafVerification/QYM.lean:52601:2: warning: Try this: 
+PrimalitySheafVerification/QYM.lean:52600:2: warning: Try this: 
   letI̵
 
 The goal is a proposition, so `let` is preferred over `letI`.
@@ -3609,10 +3605,10 @@ Note: This linter can be disabled with `set_option linter.style.haveILetI false`
 'QYM.FullCertification.P4ActualStageNonconstantCoreExtension.actualStageNonconstantCoreCertificate' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
-PrimalitySheafVerification/QYM.lean:53276:21: warning: `ContinuousLinearMap.zero_apply` has been deprecated: Use `zero_apply` instead
+PrimalitySheafVerification/QYM.lean:53275:21: warning: `ContinuousLinearMap.zero_apply` has been deprecated: Use `zero_apply` instead
 
 Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.zero_apply` to `zero_apply x`).
-PrimalitySheafVerification/QYM.lean:53287:4: warning: `ContinuousLinearMap.add_apply` has been deprecated: Use `add_apply` instead
+PrimalitySheafVerification/QYM.lean:53286:4: warning: `ContinuousLinearMap.add_apply` has been deprecated: Use `add_apply` instead
 
 Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.add_apply` to `add_apply x`).
 'QYM.FullCertification.P6ActualStageContinuousPivotExtension.actualStageContinuousPivotEmbedding_injective' depends on axioms: [propext,
@@ -3633,14 +3629,14 @@ Note: The updated constant is in a different namespace. Dot notation may need to
 'QYM.FullCertification.P6ActualStageContinuousPivotExtension.actualStageContinuousPivotCertificate' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
-PrimalitySheafVerification/QYM.lean:53642:13: warning: This simp argument is unused:
+PrimalitySheafVerification/QYM.lean:53641:13: warning: This simp argument is unused:
   Pi.smul_apply
 
 Hint: Omit it from the simp argument list.
   [apply] simp only [smul_eq_mul]
 
 Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
-PrimalitySheafVerification/QYM.lean:53998:13: warning: This simp argument is unused:
+PrimalitySheafVerification/QYM.lean:53997:13: warning: This simp argument is unused:
   Pi.smul_apply
 
 Hint: Omit it from the simp argument list.
@@ -3687,10 +3683,10 @@ Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
 'QYM.FullCertification.P6ActualStageDiscriminantPotentialExtension.actualStageSectorDiscriminantPotentialCertificate' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
-PrimalitySheafVerification/QYM.lean:54414:2: warning: try 'simp' instead of 'simpa'
+PrimalitySheafVerification/QYM.lean:54413:2: warning: try 'simp' instead of 'simpa'
 
 Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
-PrimalitySheafVerification/QYM.lean:54727:13: warning: This simp argument is unused:
+PrimalitySheafVerification/QYM.lean:54726:13: warning: This simp argument is unused:
   Pi.smul_apply
 
 Hint: Omit it from the simp argument list.
@@ -3748,7 +3744,7 @@ Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
 'QYM.FullCertification.P8ActualStagePotentialSelfAdjointExtension.actualStageSectorDiscriminantPotentialSelfAdjointCertificate' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
-PrimalitySheafVerification/QYM.lean:55813:2: warning: Try this: 
+PrimalitySheafVerification/QYM.lean:55812:2: warning: Try this: 
   letI̵
 
 The goal is a proposition, so `let` is preferred over `letI`.
@@ -3756,7 +3752,7 @@ The difference between `let` and `letI` is that `letI` inlines the value.
 But this is not relevant for proofs because of proof irrelevance.
 
 Note: This linter can be disabled with `set_option linter.style.haveILetI false`
-PrimalitySheafVerification/QYM.lean:55846:2: warning: Try this: 
+PrimalitySheafVerification/QYM.lean:55845:2: warning: Try this: 
   letI̵
 
 The goal is a proposition, so `let` is preferred over `letI`.
@@ -3764,7 +3760,7 @@ The difference between `let` and `letI` is that `letI` inlines the value.
 But this is not relevant for proofs because of proof irrelevance.
 
 Note: This linter can be disabled with `set_option linter.style.haveILetI false`
-PrimalitySheafVerification/QYM.lean:55848:2: warning: Try this: 
+PrimalitySheafVerification/QYM.lean:55847:2: warning: Try this: 
   letI̵
 
 The goal is a proposition, so `let` is preferred over `letI`.
@@ -3808,7 +3804,7 @@ Note: This linter can be disabled with `set_option linter.style.haveILetI false`
 'QYM.FullCertification.P4ActualStageL2InfiniteDimensionalExtension.actualStageL2InfiniteDimensionalCertificate' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
-PrimalitySheafVerification/QYM.lean:56257:13: warning: Variable name `hY` is not explicitly referenced.
+PrimalitySheafVerification/QYM.lean:56256:13: warning: Variable name `hY` is not explicitly referenced.
 
 Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
   [apply] _hY
@@ -3880,13 +3876,13 @@ Note: This linter can be disabled with `set_option linter.unusedVariables false`
 'QYM.FullCertification.P12ActualInverseEtaTestNoncoercivityBridgeExtension.actualInverseEtaTestNoncoercivityBridgeCertificate' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
-PrimalitySheafVerification/QYM.lean:56849:4: warning: `ContinuousLinearMap.sub_apply` has been deprecated: Use `sub_apply` instead
+PrimalitySheafVerification/QYM.lean:56848:4: warning: `ContinuousLinearMap.sub_apply` has been deprecated: Use `sub_apply` instead
 
 Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.sub_apply` to `sub_apply x`).
-PrimalitySheafVerification/QYM.lean:56849:35: warning: `ContinuousLinearMap.one_apply` has been deprecated: Use `one_apply_eq_self` instead
+PrimalitySheafVerification/QYM.lean:56848:35: warning: `ContinuousLinearMap.one_apply` has been deprecated: Use `one_apply_eq_self` instead
 
 Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.one_apply` to `one_apply_eq_self x`).
-PrimalitySheafVerification/QYM.lean:57226:2: warning: Try this: 
+PrimalitySheafVerification/QYM.lean:57225:2: warning: Try this: 
   letI̵
 
 The goal is a proposition, so `let` is preferred over `letI`.
@@ -3894,7 +3890,7 @@ The difference between `let` and `letI` is that `letI` inlines the value.
 But this is not relevant for proofs because of proof irrelevance.
 
 Note: This linter can be disabled with `set_option linter.style.haveILetI false`
-PrimalitySheafVerification/QYM.lean:57228:2: warning: Try this: 
+PrimalitySheafVerification/QYM.lean:57227:2: warning: Try this: 
   letI̵
 
 The goal is a proposition, so `let` is preferred over `letI`.
@@ -3902,7 +3898,7 @@ The difference between `let` and `letI` is that `letI` inlines the value.
 But this is not relevant for proofs because of proof irrelevance.
 
 Note: This linter can be disabled with `set_option linter.style.haveILetI false`
-PrimalitySheafVerification/QYM.lean:57230:2: warning: Try this: 
+PrimalitySheafVerification/QYM.lean:57229:2: warning: Try this: 
   letI̵
 
 The goal is a proposition, so `let` is preferred over `letI`.
@@ -3910,7 +3906,7 @@ The difference between `let` and `letI` is that `letI` inlines the value.
 But this is not relevant for proofs because of proof irrelevance.
 
 Note: This linter can be disabled with `set_option linter.style.haveILetI false`
-PrimalitySheafVerification/QYM.lean:57234:2: warning: Try this: 
+PrimalitySheafVerification/QYM.lean:57233:2: warning: Try this: 
   letI̵
 
 The goal is a proposition, so `let` is preferred over `letI`.
@@ -3918,7 +3914,7 @@ The difference between `let` and `letI` is that `letI` inlines the value.
 But this is not relevant for proofs because of proof irrelevance.
 
 Note: This linter can be disabled with `set_option linter.style.haveILetI false`
-PrimalitySheafVerification/QYM.lean:57248:2: warning: Try this: 
+PrimalitySheafVerification/QYM.lean:57247:2: warning: Try this: 
   letI̵
 
 The goal is a proposition, so `let` is preferred over `letI`.
@@ -3969,78 +3965,18 @@ Note: This linter can be disabled with `set_option linter.style.haveILetI false`
  Classical.choice,
  Quot.sound]
 'Mock2FA.ActualInverseEtaProjectionHamiltonian.certificate' depends on axioms: [propext, Classical.choice, Quot.sound]
-PrimalitySheafVerification/QYM.lean:57731:43: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
-  (P2IntrinsicTruncatedQuotientExtension.XSet (↑n + 2)).indicator ?f x
-in the target expression
-  (naturalStageSet n).indicator (↑↑(u + v)) x =
-    globalStageProjectionRepresentative n u x + globalStageProjectionRepresentative n v x
-
-case pos
-n : ℕ
-u v : ↥ActualGlobalQuotientL2
-x : Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.GammaTwoQuotient
-hsum : ↑↑(globalStageProjection n (u + v)) x = globalStageProjectionRepresentative n (u + v) x
-hu : ↑↑(globalStageProjection n u) x = globalStageProjectionRepresentative n u x
-hv : ↑↑(globalStageProjection n v) x = globalStageProjectionRepresentative n v x
-huv : ↑↑(u + v) x = (↑↑u + ↑↑v) x
-hout :
-  ↑↑(globalStageProjection n u + globalStageProjection n v) x =
-    (↑↑(globalStageProjection n u) + ↑↑(globalStageProjection n v)) x
-hx : x ∈ P2IntrinsicTruncatedQuotientExtension.XSet (↑n + 2)
-⊢ (naturalStageSet n).indicator (↑↑(u + v)) x =
-    globalStageProjectionRepresentative n u x + globalStageProjectionRepresentative n v x
-PrimalitySheafVerification/QYM.lean:57738:43: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
-  (P2IntrinsicTruncatedQuotientExtension.XSet (↑n + 2)).indicator ?f x
-in the target expression
-  (naturalStageSet n).indicator (↑↑(u + v)) x =
-    globalStageProjectionRepresentative n u x + globalStageProjectionRepresentative n v x
-
-case neg
-n : ℕ
-u v : ↥ActualGlobalQuotientL2
-x : Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.GammaTwoQuotient
-hsum : ↑↑(globalStageProjection n (u + v)) x = globalStageProjectionRepresentative n (u + v) x
-hu : ↑↑(globalStageProjection n u) x = globalStageProjectionRepresentative n u x
-hv : ↑↑(globalStageProjection n v) x = globalStageProjectionRepresentative n v x
-huv : ↑↑(u + v) x = (↑↑u + ↑↑v) x
-hout :
-  ↑↑(globalStageProjection n u + globalStageProjection n v) x =
-    (↑↑(globalStageProjection n u) + ↑↑(globalStageProjection n v)) x
-hx : x ∉ P2IntrinsicTruncatedQuotientExtension.XSet (↑n + 2)
-⊢ (naturalStageSet n).indicator (↑↑(u + v)) x =
-    globalStageProjectionRepresentative n u x + globalStageProjectionRepresentative n v x
-PrimalitySheafVerification/QYM.lean:57759:43: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
-  (P2IntrinsicTruncatedQuotientExtension.XSet (↑n + 2)).indicator ?f x
-in the target expression
-  (naturalStageSet n).indicator (↑↑(c • u)) x = (c • ↑↑(globalStageProjection n u)) x
-
-case pos
-n : ℕ
-c : ℂ
-u : ↥ActualGlobalQuotientL2
-x : Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.GammaTwoQuotient
-hleft : ↑↑(globalStageProjection n (c • u)) x = globalStageProjectionRepresentative n (c • u) x
-hu : ↑↑(globalStageProjection n u) x = globalStageProjectionRepresentative n u x
-hcu : ↑↑(c • u) x = (c • ↑↑u) x
-hright : ↑↑(c • globalStageProjection n u) x = (c • ↑↑(globalStageProjection n u)) x
-hx : x ∈ P2IntrinsicTruncatedQuotientExtension.XSet (↑n + 2)
-⊢ (naturalStageSet n).indicator (↑↑(c • u)) x = (c • ↑↑(globalStageProjection n u)) x
-PrimalitySheafVerification/QYM.lean:57766:43: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
-  (P2IntrinsicTruncatedQuotientExtension.XSet (↑n + 2)).indicator ?f x
-in the target expression
-  (naturalStageSet n).indicator (↑↑(c • u)) x = (c • ↑↑(globalStageProjection n u)) x
-
-case neg
-n : ℕ
-c : ℂ
-u : ↥ActualGlobalQuotientL2
-x : Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.GammaTwoQuotient
-hleft : ↑↑(globalStageProjection n (c • u)) x = globalStageProjectionRepresentative n (c • u) x
-hu : ↑↑(globalStageProjection n u) x = globalStageProjectionRepresentative n u x
-hcu : ↑↑(c • u) x = (c • ↑↑u) x
-hright : ↑↑(c • globalStageProjection n u) x = (c • ↑↑(globalStageProjection n u)) x
-hx : x ∉ P2IntrinsicTruncatedQuotientExtension.XSet (↑n + 2)
-⊢ (naturalStageSet n).indicator (↑↑(c • u)) x = (c • ↑↑(globalStageProjection n u)) x
+PrimalitySheafVerification/QYM.lean:57731:4: error: Type mismatch: After simplification, term
+  huv
+ has type
+  @Eq ℂ (↑↑(u + v) x) (↑↑u x + ↑↑v x)
+but is expected to have type
+  @Eq ℂ (↑↑(u + v) x) (↑↑u x + ↑↑v x)
+PrimalitySheafVerification/QYM.lean:57753:4: error: Type mismatch: After simplification, term
+  hcu
+ has type
+  @Eq ℂ (↑↑(c • u) x) (c * ↑↑u x)
+but is expected to have type
+  @Eq ℂ (↑↑(c • u) x) (c * ↑↑u x)
 'QYM.FullCertification.P14ActualGlobalL2ProjectionConvergenceExtension.exists_mem_naturalStageSet' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
@@ -4133,37 +4069,37 @@ hx : x ∉ P2IntrinsicTruncatedQuotientExtension.XSet (↑n + 2)
  sorryAx,
  Classical.choice,
  Quot.sound]
-PrimalitySheafVerification/QYM.lean:58689:5: warning: Variable name `hResidual` is not explicitly referenced.
+PrimalitySheafVerification/QYM.lean:58676:5: warning: Variable name `hResidual` is not explicitly referenced.
 
 Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
   [apply] _hResidual
 
 Note: This linter can be disabled with `set_option linter.unusedVariables false`
-PrimalitySheafVerification/QYM.lean:58697:5: warning: Variable name `hResidual` is not explicitly referenced.
+PrimalitySheafVerification/QYM.lean:58684:5: warning: Variable name `hResidual` is not explicitly referenced.
 
 Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
   [apply] _hResidual
 
 Note: This linter can be disabled with `set_option linter.unusedVariables false`
-PrimalitySheafVerification/QYM.lean:58705:5: warning: Variable name `hResidual` is not explicitly referenced.
+PrimalitySheafVerification/QYM.lean:58692:5: warning: Variable name `hResidual` is not explicitly referenced.
 
 Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
   [apply] _hResidual
 
 Note: This linter can be disabled with `set_option linter.unusedVariables false`
-PrimalitySheafVerification/QYM.lean:58713:5: warning: Variable name `hResidual` is not explicitly referenced.
+PrimalitySheafVerification/QYM.lean:58700:5: warning: Variable name `hResidual` is not explicitly referenced.
 
 Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
   [apply] _hResidual
 
 Note: This linter can be disabled with `set_option linter.unusedVariables false`
-PrimalitySheafVerification/QYM.lean:58721:5: warning: Variable name `hResidual` is not explicitly referenced.
+PrimalitySheafVerification/QYM.lean:58708:5: warning: Variable name `hResidual` is not explicitly referenced.
 
 Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
   [apply] _hResidual
 
 Note: This linter can be disabled with `set_option linter.unusedVariables false`
-PrimalitySheafVerification/QYM.lean:58729:5: warning: Variable name `hResidual` is not explicitly referenced.
+PrimalitySheafVerification/QYM.lean:58716:5: warning: Variable name `hResidual` is not explicitly referenced.
 
 Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
   [apply] _hResidual
@@ -4217,7 +4153,7 @@ Note: This linter can be disabled with `set_option linter.unusedVariables false`
 'QYM.FullCertification.Mock3FullGreenClosedCovariantDerivativeExtension.actualHighCutoffResidual_closes_fixedPhaseTower' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
-PrimalitySheafVerification/QYM.lean:59295:2: warning: Try this: 
+PrimalitySheafVerification/QYM.lean:59282:2: warning: Try this: 
   letI̵
 
 The goal is a proposition, so `let` is preferred over `letI`.
@@ -4225,10 +4161,13 @@ The difference between `let` and `letI` is that `letI` inlines the value.
 But this is not relevant for proofs because of proof irrelevance.
 
 Note: This linter can be disabled with `set_option linter.style.haveILetI false`
-PrimalitySheafVerification/QYM.lean:59338:29: warning: `ContinuousLinearMap.add_apply` has been deprecated: Use `add_apply` instead
+PrimalitySheafVerification/QYM.lean:59325:29: warning: `ContinuousLinearMap.add_apply` has been deprecated: Use `add_apply` instead
 
 Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.add_apply` to `add_apply x`).
-PrimalitySheafVerification/QYM.lean:59523:2: error: `simp` made no progress
+PrimalitySheafVerification/QYM.lean:59507:78: error: unsolved goals
+u : CoordinateL2
+⊢ (↑‖u - ⟪groundVector, u⟫_ℂ • groundVector‖ ^ 2).re + 4⁻¹ * (↑‖⟪groundVector, u⟫_ℂ • groundVector‖ ^ 2).re =
+    ‖u - ⟪groundVector, u⟫_ℂ • groundVector‖ ^ 2 + 4⁻¹ * ‖⟪groundVector, u⟫_ℂ • groundVector‖ ^ 2
 'QYM.FullCertification.Mock3SpectralCoordinateH1RellichExtension.covariantDerivativePMap_isClosed' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
@@ -4272,14 +4211,14 @@ PrimalitySheafVerification/QYM.lean:59523:2: error: `simp` made no progress
 'QYM.FullCertification.Mock3SpectralCoordinateH1RellichExtension.actualStage_no_bounded_compactResolvent_surrogate' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
-PrimalitySheafVerification/QYM.lean:60001:0: warning: automatically included section variable(s) unused in theorem `QYM.FullCertification.Mock3ActualMockRSResolventUniformGapExtension.normLowerBound_of_squared_lowerFrame`:
+PrimalitySheafVerification/QYM.lean:59987:0: warning: automatically included section variable(s) unused in theorem `QYM.FullCertification.Mock3ActualMockRSResolventUniformGapExtension.normLowerBound_of_squared_lowerFrame`:
   [CompleteSpace H]
 consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
   omit [CompleteSpace H] in theorem ...
 
 Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
-PrimalitySheafVerification/QYM.lean:60386:13: warning: `ContinuousLinearMap.coe_zero` has been deprecated: Use `ContinuousLinearMap.toLinearMap_zero` instead
-PrimalitySheafVerification/QYM.lean:60504:13: warning: `ContinuousLinearMap.zero_apply` has been deprecated: Use `zero_apply` instead
+PrimalitySheafVerification/QYM.lean:60372:13: warning: `ContinuousLinearMap.coe_zero` has been deprecated: Use `ContinuousLinearMap.toLinearMap_zero` instead
+PrimalitySheafVerification/QYM.lean:60490:13: warning: `ContinuousLinearMap.zero_apply` has been deprecated: Use `zero_apply` instead
 
 Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.zero_apply` to `zero_apply x`).
 'QYM.FullCertification.Mock3ActualMockRSResolventUniformGapExtension.excessCoercivity_of_lowerFrame_and_energyComparison' depends on axioms: [propext,
@@ -4473,7 +4412,7 @@ Note: The updated constant is in a different namespace. Dot notation may need to
 'QYM.FullCertification.Mock4ActualCurvilinearStokesGreenExtension.scalarMatterStokes_and_deckCoulombDomain_firewall' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
-PrimalitySheafVerification/QYM.lean:61338:16: warning: `ContinuousLinearMap.coe_comp'` has been deprecated: Use `ContinuousLinearMap.coe_comp` instead
+PrimalitySheafVerification/QYM.lean:61324:16: warning: `ContinuousLinearMap.coe_comp'` has been deprecated: Use `ContinuousLinearMap.coe_comp` instead
 'QYM.FullCertification.Mock4ActualQuotientH1HamiltonianExtension.actualStage_topological_and_smooth_boundary_iff_smoothResidual' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
@@ -4516,35 +4455,35 @@ PrimalitySheafVerification/QYM.lean:61338:16: warning: `ContinuousLinearMap.coe_
 'QYM.FullCertification.Mock4ActualQuotientH1HamiltonianExtension.actualStage_constructedData_and_boundedNoGo' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
-PrimalitySheafVerification/QYM.lean:61918:5: warning: Variable name `q` is not explicitly referenced.
+PrimalitySheafVerification/QYM.lean:61904:5: warning: Variable name `q` is not explicitly referenced.
 
 Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
   [apply] _q
 
 Note: This linter can be disabled with `set_option linter.unusedVariables false`
-PrimalitySheafVerification/QYM.lean:61971:4: warning: try 'simp' instead of 'simpa'
+PrimalitySheafVerification/QYM.lean:61957:4: warning: try 'simp' instead of 'simpa'
 
 Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
-PrimalitySheafVerification/QYM.lean:61973:4: warning: try 'simp' instead of 'simpa'
+PrimalitySheafVerification/QYM.lean:61959:4: warning: try 'simp' instead of 'simpa'
 
 Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
-PrimalitySheafVerification/QYM.lean:61994:13: warning: `ContinuousLinearMap.zero_apply` has been deprecated: Use `zero_apply` instead
+PrimalitySheafVerification/QYM.lean:61980:13: warning: `ContinuousLinearMap.zero_apply` has been deprecated: Use `zero_apply` instead
 
 Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.zero_apply` to `zero_apply x`).
-PrimalitySheafVerification/QYM.lean:62073:4: warning: `ContinuousLinearMap.smul_apply` has been deprecated: Use `smul_apply` instead
+PrimalitySheafVerification/QYM.lean:62059:4: warning: `ContinuousLinearMap.smul_apply` has been deprecated: Use `smul_apply` instead
 
 Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.smul_apply` to `smul_apply x`).
-PrimalitySheafVerification/QYM.lean:62084:4: warning: `push_neg` has been deprecated. Prefer using `push Not` instead.
+PrimalitySheafVerification/QYM.lean:62070:4: warning: `push_neg` has been deprecated. Prefer using `push Not` instead.
 If you'd rather continue using `push_neg` in your project, you can implement it as follows:
 ```
 open Lean.Parser.Tactic in
 macro "push_neg" cfg:optConfig loc:(location)? : tactic =>
   `(tactic| push $cfg:optConfig Not $[$loc]?)
 ```
-PrimalitySheafVerification/QYM.lean:62088:16: warning: `ContinuousLinearMap.zero_apply` has been deprecated: Use `zero_apply` instead
+PrimalitySheafVerification/QYM.lean:62074:16: warning: `ContinuousLinearMap.zero_apply` has been deprecated: Use `zero_apply` instead
 
 Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.zero_apply` to `zero_apply x`).
-PrimalitySheafVerification/QYM.lean:62134:4: warning: `push_neg` has been deprecated. Prefer using `push Not` instead.
+PrimalitySheafVerification/QYM.lean:62120:4: warning: `push_neg` has been deprecated. Prefer using `push Not` instead.
 If you'd rather continue using `push_neg` in your project, you can implement it as follows:
 ```
 open Lean.Parser.Tactic in

@@ -50830,8 +50830,7 @@ theorem actualStagePeterssonInner_self_re_eq_zero_iff
     (actualStagePeterssonInner u u).re = 0 ↔ u = 0 := by
   unfold actualStagePeterssonInner
   rw [inner_self_eq_norm_sq_to_K]
-  rw [Complex.ofReal_pow, Complex.ofReal_re]
-  simp only [sq_eq_zero_iff, norm_eq_zero]
+  simp
 
 /-! ## 4. Restriction of genuine quotient sections -/
 
@@ -57724,21 +57723,15 @@ theorem globalStageProjection_add
       MeasureTheory.Lp.coeFn_add
         (globalStageProjection n u) (globalStageProjection n v)]
     with x hsum hu hv huv hout
+  rw [hsum, hout, Pi.add_apply, hu, hv]
   by_cases hx : x ∈ naturalStageSet n
   · change x ∈ QYM.FullCertification.P2IntrinsicTruncatedQuotientExtension.XSet
       ((n : ℝ) + 2) at hx
-    rw [hsum, hout, Pi.add_apply, hu, hv,
-      globalStageProjectionRepresentative, Set.indicator_of_mem hx,
-      globalStageProjectionRepresentative, Set.indicator_of_mem hx,
-      globalStageProjectionRepresentative, Set.indicator_of_mem hx,
-      huv, Pi.add_apply]
+    simp [globalStageProjectionRepresentative, hx]
+    simpa only [Pi.add_apply] using huv
   · change x ∉ QYM.FullCertification.P2IntrinsicTruncatedQuotientExtension.XSet
       ((n : ℝ) + 2) at hx
-    rw [hsum, hout, Pi.add_apply, hu, hv,
-      globalStageProjectionRepresentative, Set.indicator_of_notMem hx,
-      globalStageProjectionRepresentative, Set.indicator_of_notMem hx,
-      globalStageProjectionRepresentative, Set.indicator_of_notMem hx,
-      zero_add]
+    simp [globalStageProjectionRepresentative, hx]
 
 /-- Complex homogeneity of the indicator projection. -/
 theorem globalStageProjection_smul
@@ -57752,21 +57745,15 @@ theorem globalStageProjection_smul
       MeasureTheory.Lp.coeFn_smul c u,
       MeasureTheory.Lp.coeFn_smul c (globalStageProjection n u)]
     with x hleft hu hcu hright
+  rw [hleft, hright, Pi.smul_apply, hu]
   by_cases hx : x ∈ naturalStageSet n
   · change x ∈ QYM.FullCertification.P2IntrinsicTruncatedQuotientExtension.XSet
       ((n : ℝ) + 2) at hx
-    rw [hleft, hright,
-      globalStageProjectionRepresentative, Set.indicator_of_mem hx,
-      hcu, Pi.smul_apply, Pi.smul_apply, hu,
-      globalStageProjectionRepresentative, Set.indicator_of_mem hx]
-    simp only [smul_eq_mul]
+    simp [globalStageProjectionRepresentative, hx]
+    simpa only [Pi.smul_apply, smul_eq_mul] using hcu
   · change x ∉ QYM.FullCertification.P2IntrinsicTruncatedQuotientExtension.XSet
       ((n : ℝ) + 2) at hx
-    rw [hleft, hright,
-      globalStageProjectionRepresentative, Set.indicator_of_notMem hx,
-      Pi.smul_apply, hu,
-      globalStageProjectionRepresentative, Set.indicator_of_notMem hx,
-      smul_zero]
+    simp [globalStageProjectionRepresentative, hx]
 
 /-! ## 4. The bounded global projection operator -/
 
@@ -59520,8 +59507,7 @@ theorem coordinateHamiltonianForm_re_self (u : CoordinateL2) :
       ‖covariantDerivative u‖ ^ 2 + (1 / 4 : ℝ) * ‖groundProjection u‖ ^ 2 := by
   rw [coordinateHamiltonianForm_apply,
     inner_self_eq_norm_sq_to_K, inner_self_eq_norm_sq_to_K]
-  simp only [Complex.ofReal_pow, Complex.ofReal_mul,
-    Complex.ofReal_add, Complex.ofReal_re]
+  simp
 
 /-- The displayed positive shift is proved pointwise. -/
 theorem coordinateHamiltonianForm_positiveShift :

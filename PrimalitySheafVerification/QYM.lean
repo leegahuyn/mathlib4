@@ -50830,8 +50830,7 @@ theorem actualStagePeterssonInner_self_re_eq_zero_iff
     (actualStagePeterssonInner u u).re = 0 ↔ u = 0 := by
   unfold actualStagePeterssonInner
   rw [inner_self_eq_norm_sq_to_K]
-  rw [← Complex.ofReal_pow, Complex.ofReal_re]
-  rw [sq_eq_zero_iff, norm_eq_zero]
+  simp
 
 /-! ## 4. Restriction of genuine quotient sections -/
 
@@ -51919,7 +51918,7 @@ theorem inverseEtaTotalTransported_extChartAt_target
   unfold extChartAt
   rw [inverseEtaTotalTransported_chartAt u]
   simp only [OpenPartialHomeomorph.extend_target,
-    PartialEquiv.trans_target,
+    OpenPartialHomeomorph.trans_target,
     Homeomorph.toOpenPartialHomeomorph_target,
     preimage_univ, inter_univ]
 
@@ -59508,8 +59507,7 @@ theorem coordinateHamiltonianForm_re_self (u : CoordinateL2) :
       ‖covariantDerivative u‖ ^ 2 + (1 / 4 : ℝ) * ‖groundProjection u‖ ^ 2 := by
   rw [coordinateHamiltonianForm_apply,
     inner_self_eq_norm_sq_to_K, inner_self_eq_norm_sq_to_K]
-  rw [← Complex.ofReal_pow, ← Complex.ofReal_pow,
-    ← Complex.ofReal_mul, ← Complex.ofReal_add, Complex.ofReal_re]
+  simp
 
 /-- The displayed positive shift is proved pointwise. -/
 theorem coordinateHamiltonianForm_positiveShift :

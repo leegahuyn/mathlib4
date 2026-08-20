@@ -1,88 +1,72 @@
 {
-  "schema": "qym-gb5-semantic-round3-v1",
+  "schema": "qym-gb5-semantic-round3-monotone",
   "authority": "actual full-QYM direct Lean",
-  "run_id": 32328964372,
-  "trigger_sha": "cd7d081fdb3bc77f0f1bb4c126936c11d82fbc41",
+  "run_id": 32330790481,
+  "trigger_sha": "b992806b0c3c7e0d1d29bc3c5cd4f726b406869f",
   "base_error_headers": 5,
   "exit": 1,
-  "error_headers": 6,
+  "error_headers": 4,
   "warning_headers": 343,
   "panic_lines": 0,
-  "elapsed_seconds": 308,
+  "elapsed_seconds": 562,
   "first_error": {
     "file": "PrimalitySheafVerification/QYM.lean",
-    "line": 50833,
-    "column": 6,
+    "line": 50830,
+    "column": 54,
     "code": null,
-    "message": "Tactic `rewrite` failed: Did not find an occurrence of the pattern",
+    "message": "unsolved goals",
     "enclosing_declaration": "actualStagePeterssonInner_self_re_eq_zero_iff"
   },
-  "source_sha256": "bda4c24cabaf5b855e9e22e367d3c7a966673c3664c75554dc1360988e48e3f9",
-  "source_blob": "7b6fb84c99b6c25ac7168f151e4e1810f24ee7a5",
-  "log_sha256": "ea7df7020a2b45e8863ee8f643c7a4b96d96fbd9c3fc6e6cde381c3042e28797",
+  "source_sha256": "07dc5df9ca34811bc2f7551014c67a3139b846161d7d1d5a2d2ed676c979e42a",
+  "source_blob": "95f19cd490ebe0141dbf4d0e7aeee98abf7ab25e",
+  "log_sha256": "f4f9441801173b27a6eb7a78d885457a43e0c746abc55d177fb4cfbfa4c30902",
   "forbidden_zero": true,
   "olean_exists": false,
   "ilean_exists": false,
   "error_codes": {
-    "uncoded": 6
+    "uncoded": 4
   },
   "error_declarations": {
     "actualStagePeterssonInner_self_re_eq_zero_iff": 1,
-    "globalStageProjection_add": 2,
-    "globalStageProjection_smul": 2,
+    "globalStageProjection_add": 1,
+    "globalStageProjection_smul": 1,
     "coordinateHamiltonianForm_re_self": 1
   },
   "errors": [
     {
       "file": "PrimalitySheafVerification/QYM.lean",
-      "line": 50833,
-      "column": 6,
+      "line": 50830,
+      "column": 54,
       "code": null,
-      "message": "Tactic `rewrite` failed: Did not find an occurrence of the pattern",
+      "message": "unsolved goals",
       "enclosing_declaration": "actualStagePeterssonInner_self_re_eq_zero_iff"
     },
     {
       "file": "PrimalitySheafVerification/QYM.lean",
       "line": 57731,
-      "column": 43,
+      "column": 4,
       "code": null,
-      "message": "Tactic `rewrite` failed: Did not find an occurrence of the pattern",
+      "message": "Type mismatch: After simplification, term",
       "enclosing_declaration": "globalStageProjection_add"
     },
     {
       "file": "PrimalitySheafVerification/QYM.lean",
-      "line": 57738,
-      "column": 43,
+      "line": 57753,
+      "column": 4,
       "code": null,
-      "message": "Tactic `rewrite` failed: Did not find an occurrence of the pattern",
-      "enclosing_declaration": "globalStageProjection_add"
-    },
-    {
-      "file": "PrimalitySheafVerification/QYM.lean",
-      "line": 57759,
-      "column": 43,
-      "code": null,
-      "message": "Tactic `rewrite` failed: Did not find an occurrence of the pattern",
+      "message": "Type mismatch: After simplification, term",
       "enclosing_declaration": "globalStageProjection_smul"
     },
     {
       "file": "PrimalitySheafVerification/QYM.lean",
-      "line": 57766,
-      "column": 43,
+      "line": 59507,
+      "column": 78,
       "code": null,
-      "message": "Tactic `rewrite` failed: Did not find an occurrence of the pattern",
-      "enclosing_declaration": "globalStageProjection_smul"
-    },
-    {
-      "file": "PrimalitySheafVerification/QYM.lean",
-      "line": 59523,
-      "column": 2,
-      "code": null,
-      "message": "`simp` made no progress",
+      "message": "unsolved goals",
       "enclosing_declaration": "coordinateHamiltonianForm_re_self"
     }
   ],
-  "semantic_improvement": false,
-  "numeric_global_improvement": false,
+  "semantic_improvement": true,
+  "numeric_global_improvement": true,
   "pass": false
 }
