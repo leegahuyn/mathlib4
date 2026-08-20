@@ -1,5 +1,7 @@
 import Mathlib
 
+set_option maxRecDepth 200000
+
 /-!
 Mock1_Integrated.lean
 
@@ -64681,12 +64683,12 @@ def AdvancedClaimsIIPaperI2PrecisionTube (value : Int) : Prop :=
 theorem advanced_claims_ii_paper_i2_extrapolated_value_table :
     List.ofFn AdvancedClaimsIIPaperI2ExtrapolatedValue =
       [9, 1, 7, 14, 24] := by
-  native_decide
+  decide
 
 theorem advanced_claims_ii_paper_i2_extrapolated_residue_table :
     List.ofFn AdvancedClaimsIIPaperI2ExtrapolatedResidue =
       [9, 1, 7, 14, 24] := by
-  native_decide
+  decide
 
 theorem advanced_claims_ii_paper_i2_extrapolated_not_in_precision_tube
     (i : Fin 5) :
@@ -64971,12 +64973,12 @@ theorem advanced_claims_ii_paper_i2_forward_difference_table :
         (fun j : Fin 6 =>
           AdvancedClaimsIIPaperI2ForwardDifference (j : Nat)) =
       [1, 4, 3, -14, 36, -91] := by
-  native_decide
+  decide
 
 theorem advanced_claims_ii_paper_i2_forward_difference_residue_table :
     List.ofFn AdvancedClaimsIIPaperI2ForwardDifferenceResidue =
       AdvancedClaimsIIPaperI2CoefficientTable := by
-  native_decide
+  decide
 
 theorem advanced_claims_ii_paper_i2_coefficient_is_forward_difference_residue
     (j : Fin 6) :
@@ -65781,69 +65783,85 @@ def AdvancedClaimsIIPaperT1T2FullPairSolution : List (Prod Rat Rat) :=
 
 theorem advanced_claims_ii_paper_t1t2_full_depth :
     AdvancedClaimsIIPaperT1T2FullDepth = 11 := by
-  native_decide
+  decide
 
 theorem advanced_claims_ii_paper_t1t2_full_column_count :
     AdvancedClaimsIIPaperT1T2FullColumnLabels.length = 22 := by
-  native_decide
+  decide
 
 theorem advanced_claims_ii_paper_t1t2_full_matrix_formula :
     AdvancedClaimsIIPaperT1T2FullMatrix =
       AdvancedClaimsIISignedIdentityMatrix 11 := by
-  native_decide
+  decide
 
 theorem advanced_claims_ii_paper_t1t2_full_matrix_rows :
     AdvancedClaimsIIPaperT1T2FullMatrix.length = 11 := by
-  native_decide
+  decide
 
 theorem advanced_claims_ii_paper_t1t2_full_matrix_row_lengths :
     AdvancedClaimsIIPaperT1T2FullMatrix.map List.length =
       List.replicate 11 22 := by
-  native_decide
+  decide
 
 theorem advanced_claims_ii_paper_t1t2_full_rhs_table :
     AdvancedClaimsIIPaperT1T2FullRHS =
       [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] := by
-  native_decide
+  decide
 
 theorem advanced_claims_ii_paper_t1t2_full_solution_table :
     AdvancedClaimsIIPaperT1T2FullSolution =
       [ (1 / 2 : Rat), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
       , (-1 / 2 : Rat), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
       ] := by
-  native_decide
+  norm_num [AdvancedClaimsIIPaperT1T2FullSolution,
+    AdvancedClaimsIIPaperT1T2FullDepth, referenceMock1MList,
+    AdvancedClaimsIIRatCoordinateVector]
 
 theorem advanced_claims_ii_paper_t1t2_full_matvec :
     MatVecRat AdvancedClaimsIIPaperT1T2FullMatrix
         AdvancedClaimsIIPaperT1T2FullSolution =
       AdvancedClaimsIIPaperT1T2FullRHS := by
-  native_decide
+  rw [advanced_claims_ii_paper_t1t2_full_matrix_formula,
+    advanced_claims_ii_paper_t1t2_full_solution_table,
+    advanced_claims_ii_paper_t1t2_full_rhs_table]
+  norm_num [MatVecRat, dotRat, AdvancedClaimsIISignedIdentityMatrix,
+    AdvancedClaimsIISignedIdentityRow, AdvancedClaimsIIRatCoordinateVector]
 
 theorem advanced_claims_ii_paper_t1t2_full_solution_squared_norm :
     AdvancedClaimsIIRatSquaredNorm AdvancedClaimsIIPaperT1T2FullSolution =
       1 / 2 := by
-  native_decide
+  rw [advanced_claims_ii_paper_t1t2_full_solution_table]
+  norm_num [AdvancedClaimsIIRatSquaredNorm]
 
 theorem advanced_claims_ii_paper_t1t2_full_rhs_squared_norm :
     AdvancedClaimsIIRatSquaredNorm AdvancedClaimsIIPaperT1T2FullRHS = 1 := by
-  native_decide
+  rw [advanced_claims_ii_paper_t1t2_full_rhs_table]
+  norm_num [AdvancedClaimsIIRatSquaredNorm]
 
 theorem advanced_claims_ii_paper_t1t2_full_pair_targets :
     AdvancedClaimsIISignedPairTargets
         AdvancedClaimsIIPaperT1T2FullPairSolution =
       AdvancedClaimsIIPaperT1T2FullRHS := by
-  native_decide
+  rw [advanced_claims_ii_paper_t1t2_full_rhs_table]
+  norm_num [AdvancedClaimsIISignedPairTargets,
+    AdvancedClaimsIIPaperT1T2FullPairSolution,
+    AdvancedClaimsIIPaperT1T2FullDepth, referenceMock1MList]
 
 theorem advanced_claims_ii_paper_t1t2_full_pair_flatten :
     AdvancedClaimsIIFlattenSignedPairs
         AdvancedClaimsIIPaperT1T2FullPairSolution =
       AdvancedClaimsIIPaperT1T2FullSolution := by
-  native_decide
+  rw [advanced_claims_ii_paper_t1t2_full_solution_table]
+  norm_num [AdvancedClaimsIIFlattenSignedPairs,
+    AdvancedClaimsIIPaperT1T2FullPairSolution,
+    AdvancedClaimsIIPaperT1T2FullDepth, referenceMock1MList]
 
 theorem advanced_claims_ii_paper_t1t2_full_pair_squared_norm :
     AdvancedClaimsIISignedPairSquaredNorm
         AdvancedClaimsIIPaperT1T2FullPairSolution = 1 / 2 := by
-  native_decide
+  norm_num [AdvancedClaimsIISignedPairSquaredNorm,
+    AdvancedClaimsIIPaperT1T2FullPairSolution,
+    AdvancedClaimsIIPaperT1T2FullDepth, referenceMock1MList]
 
 theorem advanced_claims_ii_paper_t1t2_pair_assignment_minimality
     (pairs : List (Prod Rat Rat))
@@ -65867,9 +65885,9 @@ def referenceAdvancedClaimsIIPaperT1T2FullMatrixCertificate :
   rowCount_eq :=
     advanced_claims_ii_paper_t1t2_full_matrix_rows
   rhs_length_eq := by
-    native_decide
+    decide
   solution_length_eq := by
-    native_decide
+    decide
   matvec_eq_rhs :=
     advanced_claims_ii_paper_t1t2_full_matvec
 
@@ -66078,7 +66096,7 @@ theorem advanced_claims_ii_appell_lerch_ridge_index_table :
     referenceAdvancedClaimsIIAppellLerchRidgeParameters.map
         AdvancedClaimsIIAppellLerchRidgeIndex =
       referenceAdvancedClaimsIIAppellLerchRidgeIndices := by
-  native_decide
+  decide
 
 theorem advanced_claims_ii_appell_lerch_leading_exponent_table :
     referenceAdvancedClaimsIIAppellLerchRidgeParameters.map
@@ -66086,7 +66104,9 @@ theorem advanced_claims_ii_appell_lerch_leading_exponent_table :
           AdvancedClaimsIIAppellLerchTotalExponent
             (AdvancedClaimsIIAppellLerchRidgeIndex m) m) =
       referenceAdvancedClaimsIIAppellLerchLeadingExponents := by
-  native_decide
+  norm_num [referenceAdvancedClaimsIIAppellLerchRidgeParameters,
+    referenceAdvancedClaimsIIAppellLerchLeadingExponents,
+    advanced_claims_ii_appell_lerch_ridge_total_exponent]
 
 structure AdvancedClaimsIIAppellLerchFiniteLatticeCertificate : Prop where
   ridge_cast :
@@ -66251,28 +66271,44 @@ theorem advanced_claims_ii_unary_theta_window_closed :
     referenceAdvancedClaimsIIUnaryThetaRawIndices.map
         AdvancedClaimsIIUnaryThetaPartner =
       referenceAdvancedClaimsIIUnaryThetaRawIndices.reverse := by
-  native_decide
+  decide
 
 theorem advanced_claims_ii_unary_theta_raw_term_table :
     referenceAdvancedClaimsIIUnaryThetaRawIndices.map
         AdvancedClaimsIIUnaryThetaRawTerm =
       referenceAdvancedClaimsIIUnaryThetaRawTerms := by
-  native_decide
+  norm_num [referenceAdvancedClaimsIIUnaryThetaRawIndices,
+    referenceAdvancedClaimsIIUnaryThetaRawTerms,
+    AdvancedClaimsIIUnaryThetaRawTerm, AdvancedClaimsIIUnaryThetaQExponent,
+    AdvancedClaimsIIUnaryThetaHalfLatticePoint,
+    AdvancedClaimsIIUnaryThetaCharacteristicA]
 
 theorem advanced_claims_ii_unary_theta_coefficient_one_eighth :
     AdvancedClaimsIIUnaryThetaFiniteCoefficientAt
         referenceAdvancedClaimsIIUnaryThetaRawIndices (1 / 8 : Rat) = 0 := by
-  native_decide
+  norm_num [AdvancedClaimsIIUnaryThetaFiniteCoefficientAt,
+    referenceAdvancedClaimsIIUnaryThetaRawIndices,
+    AdvancedClaimsIIUnaryThetaQExponent,
+    AdvancedClaimsIIUnaryThetaHalfLatticePoint,
+    AdvancedClaimsIIUnaryThetaCharacteristicA]
 
 theorem advanced_claims_ii_unary_theta_coefficient_nine_eighths :
     AdvancedClaimsIIUnaryThetaFiniteCoefficientAt
         referenceAdvancedClaimsIIUnaryThetaRawIndices (9 / 8 : Rat) = 0 := by
-  native_decide
+  norm_num [AdvancedClaimsIIUnaryThetaFiniteCoefficientAt,
+    referenceAdvancedClaimsIIUnaryThetaRawIndices,
+    AdvancedClaimsIIUnaryThetaQExponent,
+    AdvancedClaimsIIUnaryThetaHalfLatticePoint,
+    AdvancedClaimsIIUnaryThetaCharacteristicA]
 
 theorem advanced_claims_ii_unary_theta_coefficient_twenty_five_eighths :
     AdvancedClaimsIIUnaryThetaFiniteCoefficientAt
         referenceAdvancedClaimsIIUnaryThetaRawIndices (25 / 8 : Rat) = 0 := by
-  native_decide
+  norm_num [AdvancedClaimsIIUnaryThetaFiniteCoefficientAt,
+    referenceAdvancedClaimsIIUnaryThetaRawIndices,
+    AdvancedClaimsIIUnaryThetaQExponent,
+    AdvancedClaimsIIUnaryThetaHalfLatticePoint,
+    AdvancedClaimsIIUnaryThetaCharacteristicA]
 
 structure AdvancedClaimsIIUnaryThetaRawFiniteCertificate : Prop where
   characteristic_a :
@@ -66404,11 +66440,14 @@ def AdvancedClaimsIIPaperT3CompletionCorrectionScale : Rat :=
 
 theorem advanced_claims_ii_paper_t3_block_sum :
     AdvancedClaimsIIPaperT3BlockSum = 1 := by
-  native_decide
+  norm_num [AdvancedClaimsIIPaperT3BlockSum,
+    referenceAdvancedClaimsIIPaperT3WeightedBlocks]
 
 theorem advanced_claims_ii_paper_t3_completion_correction_scale :
     AdvancedClaimsIIPaperT3CompletionCorrectionScale = (-1 / 2 : Rat) := by
-  native_decide
+  norm_num [AdvancedClaimsIIPaperT3CompletionCorrectionScale,
+    AdvancedClaimsIIPaperT3BlockSum,
+    referenceAdvancedClaimsIIPaperT3WeightedBlocks]
 
 theorem advanced_claims_ii_paper_t3_block_admissible
     (block : AdvancedClaimsIIPaperT3WeightedBlock)
@@ -66689,9 +66728,12 @@ theorem reference_advanced_claims_ii_paper_t3_block_portfolio :
   completion_correction_scale :=
     advanced_claims_ii_paper_t3_completion_correction_scale
   fixed_shadow_block_sum_link := by
-    native_decide
+    change (1 : Rat) = AdvancedClaimsIIPaperT3BlockSum
+    exact advanced_claims_ii_paper_t3_block_sum.symm
   fixed_shadow_scale_link := by
-    native_decide
+    change (1 : Rat) =
+      AdvancedClaimsIIPaperT3BlockSum * (1 : Rat)
+    rw [advanced_claims_ii_paper_t3_block_sum]
   declared_scale_nonzero :=
     referenceFixedShadowUnaryThetaDataCertificate.scale_nonzero_at
   principal_terms_kind :=
@@ -66735,26 +66777,26 @@ def AdvancedClaimsIIPaperItem1Nu : Nat :=
 
 theorem advanced_claims_ii_paper_item1_character_table :
     AdvancedClaimsIIPaperItem1CharacterTable = [0, 1, 0, -1] := by
-  native_decide
+  decide
 
 theorem advanced_claims_ii_paper_item1_character_minus_one :
     AdvancedClaimsIIPaperItem1CharacterInt (-1) = -1 := by
-  native_decide
+  decide
 
 theorem advanced_claims_ii_paper_item1_expected_nu_parity :
     ((-1 : Int) ^ AdvancedClaimsIIPaperItem1Nu) = 1 := by
-  native_decide
+  decide
 
 theorem advanced_claims_ii_paper_item1_character_parity_mismatch :
     Not
       (AdvancedClaimsIIPaperItem1CharacterInt (-1) =
         ((-1 : Int) ^ AdvancedClaimsIIPaperItem1Nu)) := by
-  native_decide
+  decide
 
 theorem advanced_claims_ii_paper_item1_first_symmetric_pair_cancels :
     AdvancedClaimsIIPaperItem1CharacterInt 1 +
         AdvancedClaimsIIPaperItem1CharacterInt (-1) = 0 := by
-  native_decide
+  decide
 
 noncomputable def referenceAdvancedClaimsIIPaperItem1KernelDatum :
     KloostermanDatum where
@@ -67413,24 +67455,24 @@ theorem advanced_claims_ii_paper_k_theta_term_table :
       , { latticeIndex := 1, square := 1, character := 1 }
       , { latticeIndex := 3, square := 9, character := -1 }
       ] := by
-  native_decide
+  decide
 
 theorem advanced_claims_ii_paper_k_theta_pair_one_cancels :
     AdvancedClaimsIIPaperItem1CharacterInt (-1) +
         AdvancedClaimsIIPaperItem1CharacterInt 1 = 0 /\
       ((-1 : Int) ^ 2) = ((1 : Int) ^ 2) := by
-  native_decide
+  decide
 
 theorem advanced_claims_ii_paper_k_theta_pair_three_cancels :
     AdvancedClaimsIIPaperItem1CharacterInt (-3) +
         AdvancedClaimsIIPaperItem1CharacterInt 3 = 0 /\
       ((-3 : Int) ^ 2) = ((3 : Int) ^ 2) := by
-  native_decide
+  decide
 
 theorem advanced_claims_ii_paper_k_theta_window_character_sum :
     (referenceAdvancedClaimsIIPaperKThetaTerms.map
       (fun term => term.character)).sum = 0 := by
-  native_decide
+  decide
 
 def AdvancedClaimsIIPaperKRootFilteredCoefficient
     (epsilon coefficient : Int) : Int :=
@@ -68252,7 +68294,7 @@ theorem advanced_claims_ii_ramanujan_f_coefficient_formula (r : Nat) :
 theorem advanced_claims_ii_ramanujan_f_prefix_table :
     AdvancedClaimsIIRamanujanFPrefixTable =
       [1, 1, -2, 3, -3, 3, -5, 7, -6, 6, -10, 12, -11, 13, -17, 20] := by
-  native_decide
+  decide
 
 def referenceAdvancedClaimsIIRamanujanFQSeries : QSeries Int where
   coeff := AdvancedClaimsIIRamanujanFCoefficient
@@ -68487,7 +68529,7 @@ def AdvancedClaimsIINegativeTwelveKroneckerTable : List Int :=
 theorem advanced_claims_ii_negative_twelve_kronecker_table :
     AdvancedClaimsIINegativeTwelveKroneckerTable =
       [0, 1, 0, 0, 0, -1, 0, 1, 0, 0, 0, -1] := by
-  native_decide
+  decide
 
 def AdvancedClaimsIIRamanujanPsiCoefficient (r : Nat) : Int :=
   (Finset.range (24 * r + 2)).sum
@@ -68547,35 +68589,35 @@ def AdvancedClaimsIIRamanujanDictionaryCorrectionPrefixTable : List Int :=
 theorem advanced_claims_ii_ramanujan_f_outside_prefix_table :
     AdvancedClaimsIIRamanujanFOutsidePrefixTable =
       [1, 1, -1, 2, -4, 5, -6, 7, -10, 14, -16, 18, -23, 30, -34, 39] := by
-  native_decide
+  decide
 
 theorem advanced_claims_ii_ramanujan_psi_prefix_table :
     AdvancedClaimsIIRamanujanPsiPrefixTable =
       [1, -1, 1, 0, 0, -1, 0, 1, 0, 0, 0, 0, -1, 0, 0, 1] := by
-  native_decide
+  decide
 
 theorem advanced_claims_ii_ramanujan_explicit_correction_prefix_table :
     AdvancedClaimsIIRamanujanExplicitCorrectionPrefixTable =
       [1, -3, 3, -2, 4, -7, 6, -5, 10, -14, 16, -18, 21, -30, 34, -37] := by
-  native_decide
+  decide
 
 theorem advanced_claims_ii_ramanujan_dictionary_correction_prefix_table :
     AdvancedClaimsIIRamanujanDictionaryCorrectionPrefixTable =
       [1, -3, 3, -2, 4, -7, 6, -5, 10, -14, 16, -18, 21, -30, 34, -37] := by
-  native_decide
+  decide
 
 theorem advanced_claims_ii_ramanujan_explicit_matches_dictionary
     (r : Fin 16) :
     AdvancedClaimsIIRamanujanExplicitCorrectionCoefficient (r : Nat) =
       AdvancedClaimsIIRamanujanDictionaryCorrectionCoefficient (r : Nat) := by
-  fin_cases r <;> native_decide
+  fin_cases r <;> decide
 
 theorem advanced_claims_ii_ramanujan_finite_inside_outside_identity
     (r : Fin 16) :
     AdvancedClaimsIIRamanujanFOutsideCoefficient (r : Nat) =
       2 * AdvancedClaimsIIRamanujanPsiCoefficient (r : Nat) -
         AdvancedClaimsIIRamanujanExplicitCorrectionCoefficient (r : Nat) := by
-  fin_cases r <;> native_decide
+  fin_cases r <;> decide
 
 noncomputable def referenceAdvancedClaimsIIRamanujanFOutsidePaperObject :
     PaperObject where
@@ -68889,7 +68931,7 @@ theorem advanced_claims_ii_rlf_ramanujan_f_finite_manifest_fields :
           referenceAdvancedClaimsIIRlfRamanujanFInputManifest.objectQSeriesLinked = true /\
             referenceAdvancedClaimsIIRlfRamanujanFInputManifest.scalarDegeneracyLinked = true /\
               referenceAdvancedClaimsIIRlfRamanujanFInputManifest.finiteInsideOutsideCertified = true := by
-  native_decide
+  decide
 
 theorem advanced_claims_ii_rlf_ramanujan_f_input_manifest_incomplete :
     Not
@@ -69433,11 +69475,11 @@ def AdvancedClaimsIIRamanujanFPAdicInterpolationTable : List Int :=
 
 theorem advanced_claims_ii_ramanujan_f_padic_modulus_value :
     AdvancedClaimsIIRamanujanFPAdicModulus = 25 := by
-  native_decide
+  decide
 
 theorem advanced_claims_ii_ramanujan_f_padic_denominator_positive :
     0 < AdvancedClaimsIIRamanujanFPAdicDenominator := by
-  native_decide
+  decide
 
 theorem advanced_claims_ii_ramanujan_f_padic_denominator_clears_at
     (n : Fin 6) :
@@ -69451,47 +69493,47 @@ theorem advanced_claims_ii_ramanujan_f_padic_denominator_clears_at
 theorem advanced_claims_ii_ramanujan_f_padic_raw_prefix :
     AdvancedClaimsIIRamanujanFPAdicRawPrefix =
       [1, 1, -2, 3, -3, 3] := by
-  native_decide
+  decide
 
 theorem advanced_claims_ii_ramanujan_f_padic_residue_table :
     AdvancedClaimsIIRamanujanFPAdicResidueTable =
       [1, 1, 23, 3, 22, 3] := by
-  native_decide
+  decide
 
 theorem advanced_claims_ii_ramanujan_f_padic_forward_difference_table :
     List.ofFn
         (fun j : Fin 6 =>
           AdvancedClaimsIIRamanujanFPAdicForwardDifference (j : Nat)) =
       [1, 0, -3, 11, -30, 72] := by
-  native_decide
+  decide
 
 theorem advanced_claims_ii_ramanujan_f_padic_mahler_coefficient_table :
     List.ofFn AdvancedClaimsIIRamanujanFPAdicMahlerCoefficient =
       [1, 0, 22, 11, 20, 22] := by
-  native_decide
+  decide
 
 theorem advanced_claims_ii_ramanujan_f_padic_interpolation_at
     (n : Fin 6) :
     AdvancedClaimsIIRamanujanFPAdicMahlerEval (n : Nat) %
         (AdvancedClaimsIIRamanujanFPAdicModulus : Int) =
       AdvancedClaimsIIRamanujanFPAdicResidueValue (n : Nat) := by
-  fin_cases n <;> native_decide
+  fin_cases n <;> decide
 
 theorem advanced_claims_ii_ramanujan_f_padic_interpolation_table :
     AdvancedClaimsIIRamanujanFPAdicInterpolationTable =
       AdvancedClaimsIIRamanujanFPAdicResidueTable := by
-  native_decide
+  decide
 
 theorem advanced_claims_ii_ramanujan_f_padic_worked_table_witness :
     AdvancedClaimsIIRamanujanFPAdicResidueValue 1 = 1 /\
       AdvancedClaimsIIPaperI2NormalizedValue 1 = 5 := by
-  native_decide
+  decide
 
 theorem advanced_claims_ii_ramanujan_f_padic_worked_table_mismatch :
     Not
       (AdvancedClaimsIIRamanujanFPAdicResidueTable =
         AdvancedClaimsIIPaperI2InputTable) := by
-  native_decide
+  decide
 
 theorem advanced_claims_ii_ramanujan_f_padic_no_pointwise_worked_link :
     Not
@@ -69762,7 +69804,7 @@ theorem advanced_claims_ii_entropy_cardy_formula_symbol :
 theorem advanced_claims_ii_entropy_crt_free_gate_arithmetic :
     Nat.gcd 2 (PrimePower 5 2) = 1 /\
       Nat.lcm 2 (PrimePower 5 2) = 50 := by
-  native_decide
+  decide
 
 theorem advanced_claims_ii_entropy_crt_kernel_nonzero_witness :
     IntCongruent 2 50 0 /\
@@ -72118,7 +72160,7 @@ and central L-value identities as explicit proof fields with provenance.
 
 theorem advanced_claims_ii_ramanujan_f_coefficient_two :
     AdvancedClaimsIIRamanujanFCoefficient 2 = -2 := by
-  native_decide
+  decide
 
 theorem advanced_claims_ii_ramanujan_f_real_coefficient_two :
     referenceAdvancedClaimsIIRamanujanFPaperObject.coeff 2 = -2 := by
