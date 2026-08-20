@@ -1,8 +1,9 @@
-triggered_at=2026-08-20T15:28:00+09:00
+triggered_at=2026-08-20T15:59:34+09:00
 authority=GB2
 base_error_headers=2
 base_blob=ac1b09ba35a642a9d2edfe1037c1a677dc524eeb
 base_sha256=c798cc256e41e19073cc57aef0723e213ef234e353dde65daf47790a91efcd7f
 proof_patch=actualStagePeterssonInner_self_re_eq_zero_iff,coordinateHamiltonianForm_re_self
-trigger_attempt=1
+proof_variant=explicit_complex_mul_re_hreal
+trigger_attempt=2
 registered_workflow_route=true
