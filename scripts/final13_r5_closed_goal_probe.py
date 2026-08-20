@@ -1,17 +1,20 @@
 #!/usr/bin/env python3
-"""Generate a small exact reproducer for the six residual Mock1_Advanced goals."""
+"""Generate exact small reproducers for the six residual Mock1_Advanced goals."""
 from __future__ import annotations
 
 import argparse
 from pathlib import Path
 
+DELTA = "coord, signedRow, pairSolution, matVecProbe, dotRatProbe, List.range, Function.comp_def"
+DELTA_FOLD = DELTA + ", List.zip, List.foldl, List.map, List.append, List.sum"
+
 TACTICS = {
-    "decide": "by\n  decide",
-    "decide-depth": "by\n  set_option maxRecDepth 200000 in\n    decide",
-    "rfl": "by\n  rfl",
-    "norm-num-range": "by\n  norm_num [List.range_succ, Function.comp_def]",
-    "simp-range": "by\n  simp [List.range_succ, Function.comp_def]",
-    "simp-norm": "by\n  simp [List.range_succ, Function.comp_def] <;> norm_num",
+    "norm-num-delta": f"by\n  norm_num [{DELTA}]",
+    "norm-num-delta-fold": f"by\n  norm_num [{DELTA_FOLD}]",
+    "simp-delta": f"by\n  simp [{DELTA}]",
+    "simp-delta-norm": f"by\n  simp [{DELTA}] <;> norm_num",
+    "dsimp-delta-norm": f"by\n  dsimp [{DELTA}]\n  norm_num",
+    "simp-fold-norm": f"by\n  simp [{DELTA_FOLD}] <;> norm_num",
 }
 
 
