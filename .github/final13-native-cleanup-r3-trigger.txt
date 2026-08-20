@@ -1,0 +1,5 @@
+triggered_at=2026-08-20T14:45:00+09:00
+source_spt1_blob=ed554b8268e9504281572d0cea27e40d5ba06a19
+source_mock1_advanced_blob=2dc68bb04df549064b41fc318d18ea02d4d40679
+candidate_count=4
+strategy=explicit-definition-unfolding
