@@ -129,3 +129,5 @@ namespace = {
     "__package__": None,
 }
 exec(compile(source, str(ORIGINAL), "exec"), namespace, namespace)
+
+# Trigger: independent full-authority sweep after M1A TRUE-PASS promotion.
