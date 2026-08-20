@@ -1,0 +1,8 @@
+triggered_at=2026-08-20T15:50:00+09:00
+base=master
+source_branch=gpt/qym-gb5-semantic-round4-matrix-20260820
+authority_blob=ac1b09ba35a642a9d2edfe1037c1a677dc524eeb
+authority_sha256=c798cc256e41e19073cc57aef0723e213ef234e353dde65daf47790a91efcd7f
+candidate_sha256=a7d8f928e42efc3f3f8425f76e58b64bf04bb4ca7a2c1a8353638295067edd6c
+candidate_blob=b1cb50481c764a5452f3a0908c3e17d653b3a97d
+route=qym-gb2-master-route-v1
