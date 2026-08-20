@@ -1,0 +1,17 @@
+OpenPartialHomeomorph.extend_target.{u_1, u_2, u_3, u_4} {𝕜 : Type u_1} {E : Type u_2} {M : Type u_3} {H : Type u_4}
+  [NontriviallyNormedField 𝕜] [NormedAddCommGroup E] [NormedSpace 𝕜 E] [TopologicalSpace H] [TopologicalSpace M]
+  (f : OpenPartialHomeomorph M H) {I : ModelWithCorners 𝕜 E H} : (f.extend I).target = ↑I.symm ⁻¹' f.target ∩ range ↑I
+Complex.ofReal_pow (r : ℝ) (n : ℕ) : ↑(r ^ n) = ↑r ^ n
+Complex.ofReal_mul (r s : ℝ) : ↑(r * s) = ↑r * ↑s
+Complex.ofReal_add (r s : ℝ) : ↑(r + s) = ↑r + ↑s
+Complex.ofReal_re (r : ℝ) : (↑r).re = r
+/tmp/qym-gb10-api/Probe.lean:23:48: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+  (↑?r).re
+in the target expression
+  RCLike.re ↑(a ^ 2 + 1 / 4 * b ^ 2) = a ^ 2 + 1 / 4 * b ^ 2
+
+E : Type u
+inst✝¹ : NormedAddCommGroup E
+inst✝ : InnerProductSpace ℂ E
+a b : ℝ
+⊢ RCLike.re ↑(a ^ 2 + 1 / 4 * b ^ 2) = a ^ 2 + 1 / 4 * b ^ 2
