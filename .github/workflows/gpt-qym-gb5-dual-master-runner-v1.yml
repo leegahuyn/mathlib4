@@ -1,0 +1,180 @@
+name: GPT QYM GB5 dual authoritative direct Lean runner v1
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - .github/workflows/gpt-qym-gb5-dual-master-runner-v1.yml
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: gpt-qym-gb5-dual-master-runner-v1
+  cancel-in-progress: false
+
+env:
+  QYM: PrimalitySheafVerification/QYM.lean
+  BASE: .github/qym-frontier/GB10_SEMANTIC_R2_V2/QYM_GB10_SEMANTIC_R2_V2.lean
+  OLEAN: .lake/build/lib/lean/PrimalitySheafVerification
+
+jobs:
+  direct:
+    name: ${{ matrix.label }} full-QYM direct Lean
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: easy3
+            branch: gpt/qym-gb5-semantic-round3-20260820
+            patch: .github/qym_patch_gb5_semantic_round3.py
+            dest: .github/qym-frontier/GB5_EASY3_MASTER_RUN_V1
+          - label: all5
+            branch: gpt/qym-gb5-semantic-round4-20260820
+            patch: .github/qym_patch_gb5_semantic_round4.py
+            dest: .github/qym-frontier/GB5_ALL5_MASTER_RUN_V1
+    steps:
+      - name: Check out candidate branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ matrix.branch }}
+          fetch-depth: 0
+
+      - name: Gate exact five-error baseline, candidate inputs, and toolchain
+        shell: bash
+        env:
+          TARGET_BRANCH: ${{ matrix.branch }}
+          PATCH: ${{ matrix.patch }}
+          LABEL: ${{ matrix.label }}
+        run: |
+          set -euo pipefail
+          OUT="/tmp/qym-gb5-${LABEL}-${GITHUB_RUN_ID}"
+          echo "OUT=$OUT" >> "$GITHUB_ENV"
+          rm -rf "$OUT"
+          mkdir -p "$OUT" "$OLEAN"
+          test "$(git branch --show-current)" = "$TARGET_BRANCH"
+          test "$(tr -d '\r\n' < lean-toolchain)" = leanprover/lean4:v4.33.0-rc1
+          test "$(sha256sum "$BASE" | awk '{print $1}')" = 231efe9a0b8f9d05aae5e65ff3904b3636182ef6f1c93c11eac0c05313730998
+          test -s "$PATCH"
+          test -s .github/qym_gb5_r3_driver.py
+          python3 -m py_compile .github/qym_gb5_r3_driver.py "$PATCH"
+          git rev-parse HEAD | tee "$OUT/target-trigger-commit.txt"
+          printf '%s\n' "$GITHUB_SHA" > "$OUT/master-runner-trigger-commit.txt"
+
+      - name: Install pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 8 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none > "$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          tc="$(tr -d '\r\n' < lean-toolchain)"
+          ok=0
+          for attempt in 1 2 3 4 5; do
+            if elan toolchain install "$tc" >> "$OUT/toolchain.log" 2>&1; then ok=1; break; fi
+            sleep $((attempt * 5))
+          done
+          test "$ok" = 1
+          lean --version | tee "$OUT/lean-version.txt"
+          lake --version | tee "$OUT/lake-version.txt"
+          ok=0
+          for attempt in 1 2 3 4 5; do
+            if lake exe cache get >> "$OUT/mathlib-cache.log" 2>&1; then ok=1; break; fi
+            sleep $((attempt * 5))
+          done
+          test "$ok" = 1
+
+      - name: Restore verified QYM dependency objects
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: |
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.ilean
+          key: qym-deps-v5-${{ runner.os }}-${{ hashFiles('lean-toolchain','lake-manifest.json','lakefile.lean','PrimalitySheafVerification/Mock2.lean','PrimalitySheafVerification/Mock2_Advanced.lean','PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean','PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean') }}
+          restore-keys: |
+            qym-deps-v5-${{ runner.os }}-
+            qym-deps-v4-${{ runner.os }}-
+            qym-deps-v3-${{ runner.os }}-
+
+      - name: Ensure dependency objects by actual Lean
+        shell: bash
+        run: |
+          set -euo pipefail
+          for source in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated; do
+            if [[ ! -s "$OLEAN/$source.olean" || ! -s "$OLEAN/$source.ilean" ]]; then
+              max_errors=1
+              [[ "$source" = Mock2_FunctionalAnalysis* ]] && max_errors=2000
+              rm -f "$OLEAN/$source.olean" "$OLEAN/$source.ilean"
+              lake env lean "-DmaxErrors=$max_errors" -DwarningAsError=false \
+                -o "$OLEAN/$source.olean" -i "$OLEAN/$source.ilean" \
+                "PrimalitySheafVerification/$source.lean" > "$OUT/$source.log" 2>&1
+            fi
+            test -s "$OLEAN/$source.olean"
+            test -s "$OLEAN/$source.ilean"
+          done
+
+      - name: Build candidate, audit, and run authoritative full QYM
+        shell: bash
+        env:
+          PATCH: ${{ matrix.patch }}
+        run: |
+          set -euo pipefail
+          BASE="$BASE" PATCH="$PATCH" QYM="$QYM" OUT="$OUT" \
+            python3 -B .github/qym_gb5_r3_driver.py
+          test -s "$OUT/RESULT.json"
+          test -s "$OUT/FULL_RESULT.json"
+
+      - name: Upload immutable evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-gb5-${{ matrix.label }}-master-run-${{ github.run_id }}
+          path: ${{ env.OUT }}
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Persist result and promote only strict improvement
+        if: always()
+        shell: bash
+        env:
+          TARGET_BRANCH: ${{ matrix.branch }}
+          DEST: ${{ matrix.dest }}
+          LABEL: ${{ matrix.label }}
+        run: |
+          set -euo pipefail
+          test -s "$OUT/RESULT.json"
+          rm -rf "$DEST"
+          mkdir -p "$DEST"
+          cp "$OUT/RESULT.json" "$DEST/"
+          cp "$OUT/FULL_RESULT.json" "$DEST/"
+          cp "$OUT/FORBIDDEN_AUDIT.json" "$DEST/"
+          cp "$OUT/full.log" "$DEST/"
+          cp "$OUT/QYM.candidate.lean" "$DEST/QYM_GB5_${LABEL^^}_MASTER_RUN_V1.lean"
+          promote="$(python3 -c 'import json; d=json.load(open("'"$OUT"'/RESULT.json")); print(str(d["pass"] or d["numeric_global_improvement"]).lower())')"
+          if [[ "$promote" != true ]]; then
+            git restore --source=HEAD -- "$QYM"
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "$DEST" "$QYM"
+          git commit -m "QYM GB5 ${LABEL}: persist master-run direct Lean result ${GITHUB_RUN_ID} [skip ci]"
+          for attempt in 1 2 3 4 5; do
+            git fetch origin "$TARGET_BRANCH"
+            if git rebase "origin/$TARGET_BRANCH" && git push origin "HEAD:$TARGET_BRANCH"; then exit 0; fi
+            git rebase --abort || true
+            sleep $((attempt * 5))
+          done
+          exit 1
