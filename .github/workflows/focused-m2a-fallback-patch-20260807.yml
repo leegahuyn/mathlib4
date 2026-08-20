@@ -1,0 +1,47 @@
+name: Patch alternate verified M2A repair fallback
+
+on:
+  push:
+    branches: [fix/primality-sheaf-clean-build]
+    paths:
+      - '.github/workflows/focused-m2a-fallback-patch-20260807.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: patch-focused-m2a-fallback
+  cancel-in-progress: false
+
+jobs:
+  patch:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      BRANCH: fix/primality-sheaf-clean-build
+    steps:
+      - name: Patch latest branch with retry
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git clone --branch "${BRANCH}" --single-branch \
+            "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" repo
+          cd repo
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          for attempt in 1 2 3 4 5; do
+            git fetch origin "${BRANCH}"
+            git reset --hard "origin/${BRANCH}"
+            python3 scripts/patch_focused_m2a_fallback_20260807.py
+            bash -n scripts/focused_materialize_pipeline_20260807.sh
+            git diff --check
+            if git diff --quiet; then exit 0; fi
+            git add scripts/focused_materialize_pipeline_20260807.sh
+            git commit -m 'ci: add theorem-preserving M2A repair fallback'
+            if git push origin "HEAD:${BRANCH}"; then exit 0; fi
+            sleep $((attempt * 3))
+          done
+          exit 1

@@ -1,0 +1,13 @@
+utc=2026-08-07T08:11:29Z
+start_head=13099aef3e015d41da834177e2224013eaf53e42
+candidate_mode=checked-in
+overall=0
+candidate_sha256=cf44063abca1d5b47331a9001a3cff45a86b5e889865812fe4e7826c6af41526
+stage,exit_code,error_count
+checked-in-probe,0,0
+mock2-pass1,0,0
+advanced-pass1,0,0
+mock2-pass2,0,0
+advanced-pass2,0,0
+status=PASS
+runtime_repair_during_final_direct=0

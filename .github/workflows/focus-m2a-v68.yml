@@ -1,0 +1,116 @@
+name: Focus M2A v68 verify and materialize
+on:
+  push:
+    branches: [fix/primality-sheaf-clean-build]
+    paths: ['.github/workflows/focus-m2a-v68.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: focus-m2a-v68
+  cancel-in-progress: false
+jobs:
+  verify:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 360
+    env:
+      BRANCH: fix/primality-sheaf-clean-build
+      TARGET: PrimalitySheafVerification/Mock2_Advanced.lean
+      MOCK2: PrimalitySheafVerification/Mock2.lean
+      OUT: .lake/build/lib/lean/PrimalitySheafVerification
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Exact checkout
+        shell: bash
+        run: |
+          set -euo pipefail
+          git init .
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git fetch --depth=1 origin "${GITHUB_SHA}"
+          git checkout --detach FETCH_HEAD
+          test "$(git rev-parse HEAD)" = "${GITHUB_SHA}"
+          echo "$(git hash-object "${TARGET}")" > /tmp/start_blob
+          mkdir -p "${OUT}" build-logs/focus-m2a-v68
+      - name: Toolchain and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL --retry 5 https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          lean --version
+          lake exe cache get
+      - name: Direct probe or v61-v68 candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          log=build-logs/focus-m2a-v68
+          compile() {
+            local f=$1 n=$2 b
+            b=$(basename "$f" .lean)
+            rm -f "${OUT}/${b}.olean" "${OUT}/${b}.ilean" "${OUT}/${b}.olean.private"
+            lake env lean "$f" -o "${OUT}/${b}.olean" -i "${OUT}/${b}.ilean" > "${log}/${n}.log" 2>&1
+            test -s "${OUT}/${b}.olean"; test -s "${OUT}/${b}.ilean"
+            test "$(grep -c 'error:' "${log}/${n}.log" || true)" -eq 0
+            ! grep -Eqi "maximum number of errors|missing object file|sorryAx|declaration uses 'sorry'|PANIC|segmentation fault|stack overflow" "${log}/${n}.log"
+          }
+          if compile "${TARGET}" direct-probe1 && compile "${TARGET}" direct-probe2; then
+            echo direct > /tmp/mode
+          else
+            git reset --hard HEAD
+            for n in 61 62 63 64 65 66 67 68; do
+              s="scripts/repair_mock2_advanced_v${n}.py"
+              test -f "$s"
+              python3 "$s" >> "${log}/repairs.log" 2>&1
+            done
+            test "$(git diff --name-only)" = "${TARGET}"
+            git diff --check
+            echo candidate > /tmp/mode
+          fi
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          p=Path('PrimalitySheafVerification/Mock2_Advanced.lean')
+          s=p.read_text(); o=[]; i=0; d=0; q=False; e=False
+          while i<len(s):
+            if d:
+              if s.startswith('/-',i): d+=1;o+=[' ',' '];i+=2
+              elif s.startswith('-/',i): d-=1;o+=[' ',' '];i+=2
+              else:o.append('\n' if s[i]=='\n' else ' ');i+=1
+            elif q:
+              c=s[i];o.append('\n' if c=='\n' else ' ')
+              if e:e=False
+              elif c=='\\':e=True
+              elif c=='"':q=False
+              i+=1
+            elif s.startswith('/-',i):d=1;o+=[' ',' '];i+=2
+            elif s.startswith('--',i):
+              while i<len(s) and s[i]!='\n':o.append(' ');i+=1
+            elif s[i]=='"':q=True;o.append(' ');i+=1
+            else:o.append(s[i]);i+=1
+          c=''.join(o)
+          pats=[r'\bsorry\b',r'\badmit\b',r'(?m)^\s*axiom\b',r'\bunsafe\b',r'\bnative_decide\b',r'\bLean\.ofReduceBool\b']
+          assert all(not re.search(x,c) for x in pats)
+          PY
+          compile "${MOCK2}" Mock2-regression
+          compile "${TARGET}" verified-pass1
+          compile "${TARGET}" verified-pass2
+          sha256sum "${TARGET}" "${OUT}/Mock2_Advanced.olean" "${OUT}/Mock2_Advanced.ilean" | tee "${log}/hashes.txt"
+      - name: Materialize verified candidate only
+        if: ${{ success() }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(cat /tmp/mode)" = candidate || exit 0
+          start_blob=$(cat /tmp/start_blob)
+          remote_blob=$(git ls-remote origin "refs/heads/${BRANCH}" | awk '{print $1}' | xargs -I{} git ls-tree {} "${TARGET}" | awk '{print $3}')
+          test "$remote_blob" = "$start_blob"
+          sha=$(sha256sum "${TARGET}" | awk '{print $1}')
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add "${TARGET}"
+          git commit -m "fix: materialize Mock2 Advanced v68 verified source (${sha})"
+          git fetch origin "${BRANCH}"
+          git rebase "origin/${BRANCH}"
+          git push origin "HEAD:${BRANCH}"

@@ -1,0 +1,255 @@
+name: Mock2 FunctionalAnalysis pass 315 ARM candidate clean CI
+
+on:
+  push:
+    branches: [fix/primality-sheaf-clean-build]
+    paths:
+      - '.github/workflows/mock2-functional-analysis-pass315-arm-ci.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mock2-functional-analysis-pass315-arm-${{ github.sha }}
+  cancel-in-progress: false
+
+jobs:
+  verify-candidate-and-integrated-boundary:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 300
+    env:
+      FA: PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+      INTEGRATED: PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean
+      QYM: PrimalitySheafVerification/QYM.lean
+      ADVANCED: PrimalitySheafVerification/Mock2_Advanced.lean
+      ADVANCED_BASELINE_COMMIT: 623dfac27a24c170330d6218005e67b06490b814
+      EXPECTED_ADVANCED_BASELINE_BLOB: 54bbfa432f1b8a6554d25104a0c29d4f41999984
+      EXPECTED_FA_START_BLOB: 4eedc43d57f96b45897990bbeaada01ee0fd3b84
+      EXPECTED_PRE313_SHA256: 7048e0cd364ff150a79b4696b08db0c3a29aa29dc252d623650818f59f6162ca
+      EXPECTED_CANDIDATE_SHA256: 36258b062cf8caef1f07cb28111cf0d6293897515b0cc49565f177eb2195de69
+      LOGDIR: build-logs/Mock2_FunctionalAnalysis-pass315-candidate
+
+    steps:
+      - name: Clone exact PR head without marketplace actions
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          git init .
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git fetch --depth=1 origin "${SOURCE_SHA}"
+          git checkout --detach FETCH_HEAD
+          test "$(git rev-parse HEAD)" = "${SOURCE_SHA}"
+          test "$(git hash-object "${FA}")" = "${EXPECTED_FA_START_BLOB}"
+          test ! -e "${INTEGRATED}"
+          mkdir -p "${LOGDIR}"
+          printf '%s\n' "source_sha=${SOURCE_SHA}" \
+            "fa_start_blob=${EXPECTED_FA_START_BLOB}" \
+            "advanced_checked_in_blob=$(git hash-object "${ADVANCED}")" \
+            > "${LOGDIR}/snapshot.txt"
+
+      - name: Reproduce the pre-313 FunctionalAnalysis source
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp "${ADVANCED}" /tmp/checked-in-Mock2_Advanced.lean
+          git fetch --depth=1 origin "${ADVANCED_BASELINE_COMMIT}"
+          git show "${ADVANCED_BASELINE_COMMIT}:${ADVANCED}" > "${ADVANCED}"
+          test "$(git hash-object "${ADVANCED}")" = "${EXPECTED_ADVANCED_BASELINE_BLOB}"
+          scripts=(
+            apply_two_hundred_eighty_ninth_pass_repairs.py
+            apply_two_hundred_ninetieth_pass_repairs.py
+            apply_two_hundred_ninety_first_pass_repairs.py
+            apply_two_hundred_ninety_second_pass_repairs.py
+            apply_two_hundred_ninety_third_pass_repairs.py
+            apply_two_hundred_ninety_fourth_pass_repairs.py
+            apply_two_hundred_ninety_fifth_pass_repairs.py
+            apply_two_hundred_ninety_seventh_pass_repairs.py
+            apply_two_hundred_ninety_eighth_pass_repairs.py
+            apply_two_hundred_ninety_ninth_pass_repairs.py
+            apply_three_hundredth_pass_repairs.py
+            apply_three_hundred_ninth_pass_repairs.py
+            apply_three_hundred_tenth_pass_repairs.py
+            apply_three_hundred_eleventh_pass_repairs.py
+            apply_three_hundred_twelfth_pass_repairs.py
+          )
+          for script in "${scripts[@]}"; do
+            python3 "scripts/${script}"
+          done 2>&1 | tee "${LOGDIR}/pre313-repair-application.log"
+          pre313_sha="$(sha256sum "${FA}" | awk '{print $1}')"
+          test "${pre313_sha}" = "${EXPECTED_PRE313_SHA256}"
+          echo "pre313_sha256=${pre313_sha}" >> "${LOGDIR}/snapshot.txt"
+
+      - name: Apply FunctionalAnalysis passes 313 through 315
+        shell: bash
+        run: |
+          set -euo pipefail
+          for script in \
+            apply_three_hundred_thirteenth_pass_repairs.py \
+            apply_three_hundred_fourteenth_pass_repairs.py \
+            apply_three_hundred_fifteenth_pass_repairs.py; do
+            python3 "scripts/${script}"
+          done 2>&1 | tee "${LOGDIR}/pass313-315-application.log"
+          cp /tmp/checked-in-Mock2_Advanced.lean "${ADVANCED}"
+          while IFS= read -r changed; do
+            [[ -z "${changed}" || "${changed}" = "${FA}" ]] || \
+              git restore --source=HEAD --worktree -- "${changed}"
+          done < <(git diff --name-only)
+          test "$(git diff --name-only)" = "${FA}"
+          git diff --check
+          candidate_sha="$(sha256sum "${FA}" | awk '{print $1}')"
+          test "${candidate_sha}" = "${EXPECTED_CANDIDATE_SHA256}"
+          printf '%s\n' "candidate_sha256=${candidate_sha}" \
+            "candidate_lines=$(wc -l < "${FA}")" >> "${LOGDIR}/snapshot.txt"
+
+      - name: Static forbidden-token gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY' | tee "${LOGDIR}/forbidden-token-audit.txt"
+          from pathlib import Path
+          import re
+          src = Path("PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean").read_text()
+          out, i, depth, string, esc = [], 0, 0, False, False
+          while i < len(src):
+              if depth:
+                  if src.startswith("/-", i): depth += 1; out += "  "; i += 2
+                  elif src.startswith("-/", i): depth -= 1; out += "  "; i += 2
+                  else: out.append("\n" if src[i] == "\n" else " "); i += 1
+              elif string:
+                  ch = src[i]; out.append("\n" if ch == "\n" else " ")
+                  if esc: esc = False
+                  elif ch == "\\": esc = True
+                  elif ch == '"': string = False
+                  i += 1
+              elif src.startswith("/-", i): depth = 1; out += "  "; i += 2
+              elif src.startswith("--", i):
+                  while i < len(src) and src[i] != "\n": out.append(" "); i += 1
+              elif src[i] == '"': string = True; out.append(" "); i += 1
+              else: out.append(src[i]); i += 1
+          code = "".join(out)
+          pats = {
+              "sorry": r"\bsorry\b", "admit": r"\badmit\b",
+              "axiom": r"(?m)^\s*axiom\b", "unsafe": r"\bunsafe\b",
+              "native_decide": r"\bnative_decide\b",
+              "Lean.ofReduceBool": r"\bLean\.ofReduceBool\b",
+              "by_contra!": r"\bby_contra!\b",
+          }
+          counts = {k: len(re.findall(v, code)) for k, v in pats.items()}
+          for k, v in counts.items(): print(f"{k}: {v}")
+          if depth or string or any(counts.values()): raise SystemExit(1)
+          PY
+
+      - name: Install Lean and restore Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          echo "${HOME}/.elan/bin" >> "${GITHUB_PATH}"
+          "${HOME}/.elan/bin/lean" --version | tee "${LOGDIR}/lean-version.txt"
+          "${HOME}/.elan/bin/lake" --version | tee "${LOGDIR}/lake-version.txt"
+          "${HOME}/.elan/bin/lake" exe cache get
+
+      - name: Compile the full candidate twice
+        shell: bash
+        run: |
+          set -euo pipefail
+          outdir='.lake/build/lib/lean/PrimalitySheafVerification'
+          mkdir -p "${outdir}"
+          for pass in 1 2; do
+            rm -f "${outdir}/Mock2_FunctionalAnalysis.olean" \
+              "${outdir}/Mock2_FunctionalAnalysis.ilean" \
+              "${outdir}/Mock2_FunctionalAnalysis.olean.private"
+            set +e
+            "${HOME}/.elan/bin/lake" env lean "${FA}" \
+              -o "${outdir}/Mock2_FunctionalAnalysis.olean" \
+              -i "${outdir}/Mock2_FunctionalAnalysis.ilean" \
+              > "${LOGDIR}/full-candidate-pass${pass}.log" 2>&1
+            code=$?
+            set -e
+            echo "${code}" > "${LOGDIR}/full-candidate-exit-pass${pass}.txt"
+            if [[ "${code}" -ne 0 ]]; then
+              echo "error_count=$(grep -c 'error:' "${LOGDIR}/full-candidate-pass${pass}.log" || true)"
+              grep -n 'error:' "${LOGDIR}/full-candidate-pass${pass}.log" | head -10 || true
+              grep -n 'error:' "${LOGDIR}/full-candidate-pass${pass}.log" | tail -1 || true
+              tail -160 "${LOGDIR}/full-candidate-pass${pass}.log" || true
+              exit "${code}"
+            fi
+            test -s "${outdir}/Mock2_FunctionalAnalysis.olean"
+            test -s "${outdir}/Mock2_FunctionalAnalysis.ilean"
+            test "$(grep -c 'error:' "${LOGDIR}/full-candidate-pass${pass}.log" || true)" -eq 0
+          done
+
+      - name: Verify the real Integrated split and historical entry point
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp "${FA}" "${INTEGRATED}"
+          cat > "${FA}" <<'LEAN'
+          /-!
+          # Mock2 FunctionalAnalysis compatibility entry point
+
+          The complete source-level implementation is stored in
+          `PrimalitySheafVerification.Mock2_FunctionalAnalysis_Integrated`.
+          This module preserves the historical import path and re-exports the
+          same public declarations without duplicating their definitions.
+          -/
+          import PrimalitySheafVerification.Mock2_FunctionalAnalysis_Integrated
+          LEAN
+          test "$(sha256sum "${INTEGRATED}" | awk '{print $1}')" = "${EXPECTED_CANDIDATE_SHA256}"
+          outdir='.lake/build/lib/lean/PrimalitySheafVerification'
+          for pass in 1 2; do
+            rm -f "${outdir}/Mock2_FunctionalAnalysis_Integrated.olean" \
+              "${outdir}/Mock2_FunctionalAnalysis_Integrated.ilean" \
+              "${outdir}/Mock2_FunctionalAnalysis_Integrated.olean.private" \
+              "${outdir}/Mock2_FunctionalAnalysis.olean" \
+              "${outdir}/Mock2_FunctionalAnalysis.ilean" \
+              "${outdir}/Mock2_FunctionalAnalysis.olean.private"
+            for module in Mock2_FunctionalAnalysis_Integrated Mock2_FunctionalAnalysis; do
+              set +e
+              "${HOME}/.elan/bin/lake" env lean \
+                "PrimalitySheafVerification/${module}.lean" \
+                -o "${outdir}/${module}.olean" -i "${outdir}/${module}.ilean" \
+                > "${LOGDIR}/${module}-pass${pass}.log" 2>&1
+              code=$?
+              set -e
+              if [[ "${code}" -ne 0 ]]; then
+                grep -n 'error:' "${LOGDIR}/${module}-pass${pass}.log" | head -10 || true
+                tail -160 "${LOGDIR}/${module}-pass${pass}.log" || true
+                exit "${code}"
+              fi
+              test -s "${outdir}/${module}.olean"
+              test -s "${outdir}/${module}.ilean"
+              test "$(grep -c 'error:' "${LOGDIR}/${module}-pass${pass}.log" || true)" -eq 0
+            done
+          done
+          sha256sum "${INTEGRATED}" "${FA}" \
+            "${outdir}/Mock2_FunctionalAnalysis_Integrated.olean" \
+            "${outdir}/Mock2_FunctionalAnalysis_Integrated.ilean" \
+            "${outdir}/Mock2_FunctionalAnalysis.olean" \
+            "${outdir}/Mock2_FunctionalAnalysis.ilean" | tee "${LOGDIR}/sha256.txt"
+
+      - name: Confirm QYM passes the Integrated object boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          outdir='.lake/build/lib/lean/PrimalitySheafVerification'
+          rm -f "${outdir}/QYM.olean" "${outdir}/QYM.ilean" "${outdir}/QYM.olean.private"
+          set +e
+          "${HOME}/.elan/bin/lake" env lean "${QYM}" \
+            -o "${outdir}/QYM.olean" -i "${outdir}/QYM.ilean" \
+            > "${LOGDIR}/QYM-smoke.log" 2>&1
+          code=$?
+          set -e
+          echo "${code}" > "${LOGDIR}/QYM-smoke-exit-code.txt"
+          ! grep -Fq "Mock2_FunctionalAnalysis_Integrated.olean' of module" "${LOGDIR}/QYM-smoke.log"
+          echo "qym_smoke_exit_code=${code}"
+          echo "qym_error_count=$(grep -c 'error:' "${LOGDIR}/QYM-smoke.log" || true)"
+          grep -n 'error:' "${LOGDIR}/QYM-smoke.log" | head -10 || true
+          grep -n 'error:' "${LOGDIR}/QYM-smoke.log" | tail -1 || true

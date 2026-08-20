@@ -3141,7 +3141,8 @@ theorem modGate_crt {M M' : ℕ} (h : Nat.Coprime M M') (n : ℕ) :
 on sections, for coprime `M, M'`. -/
 theorem Fmod_crt_compatible {M M' : ℕ} (h : Nat.Coprime M M') (U : PrincipalOpen) (n : ℕ) :
     (Fmod M ⊓ Fmod M').pred U n ↔ (Fmod (M * M')).pred U n := by
-  rw [SubPresheaf.mem_inf]; exact modGate_crt h n
+  change (modGate M n ∧ modGate M' n) ↔ modGate (M * M') n
+  exact modGate_crt h n
 
 /-! ### §Δ9.3 — Base-change stability: localization, reduction mod p, completion. -/
 
@@ -4901,7 +4902,8 @@ noncomputable def piN (N : ℕ) :
   (ChainComplex.toSingle₀Equiv (resC N) (ModuleCat.of ℤ (ZMod N))).symm
     ⟨quotN N, by
       have hd : (resC N).d 1 0 = mulN N := by
-        simpa [resC, df] using (ChainComplex.of_d Xf (df N) (0 : ℕ))
+        dsimp [resC, df]
+        rfl
       rw [hd]; exact mulN_quotN N⟩
 
 /-! ## §Δ29.1b — the augmentation is a quasi-isomorphism: genuine `ProjectiveResolution`.
@@ -4939,10 +4941,12 @@ theorem quotN_surjective (N : ℕ) : Function.Surjective (quotN N).hom := by
   obtain ⟨z, rfl⟩ := ZMod.intCast_surjective y
   exact ⟨z, rfl⟩
 
-/-- The differential `(resC N).d (j+1+1) (j+1)` vanishes (everything above degree 0). -/
+/- The differential `(resC N).d (j+1+1) (j+1)` vanishes (everything above degree 0). -/
+set_option maxHeartbeats 800000 in
 theorem resC_d_succ_zero (N j : ℕ) : (resC N).d (j + 1 + 1) (j + 1) = 0 := by
-  have h : (resC N).d (j + 1 + 1) (j + 1) = df N (j + 1) := ChainComplex.of_d _ _ (j + 1)
-  rw [h]; rfl
+  change ChainComplex.of.d Xf (df N) (j + 1 + 1) (j + 1) = 0
+  rw [ChainComplex.of_d]
+  rfl
 
 /-- **The augmentation `piN N` is a quasi-isomorphism** (`N ≠ 0`): `resC N` is a
 genuine resolution of `ℤ/N`.  Degree 0 reads off `range(×N) = ker(reduction)` plus
@@ -4950,7 +4954,8 @@ surjectivity; positive degrees are exact (injectivity of `×N`, then zero module
 theorem piN_quasiIso (N : ℕ) [NeZero N] : QuasiIso (piN N) := by
   have hN : N ≠ 0 := NeZero.ne N
   have hd10 : (resC N).d 1 0 = mulN N := by
-    simpa [resC, df] using (ChainComplex.of_d Xf (df N) (0 : ℕ))
+    dsimp [resC, df]
+    rfl
   constructor
   intro i
   match i with

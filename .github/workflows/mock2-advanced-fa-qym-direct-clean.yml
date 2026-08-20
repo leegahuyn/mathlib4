@@ -1,0 +1,201 @@
+name: Mock2 Advanced FunctionalAnalysis QYM direct clean CI
+
+on:
+  push:
+    branches: [fix/primality-sheaf-clean-build]
+    paths:
+      - 'PrimalitySheafVerification/Mock2.lean'
+      - 'PrimalitySheafVerification/Mock2_Advanced.lean'
+      - 'PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'
+      - 'PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean'
+      - 'PrimalitySheafVerification/QYM.lean'
+      - '.github/workflows/mock2-advanced-fa-qym-direct-clean.yml'
+  pull_request:
+    branches: [master]
+    paths:
+      - 'PrimalitySheafVerification/Mock2.lean'
+      - 'PrimalitySheafVerification/Mock2_Advanced.lean'
+      - 'PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'
+      - 'PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean'
+      - 'PrimalitySheafVerification/QYM.lean'
+      - '.github/workflows/mock2-advanced-fa-qym-direct-clean.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mock2-advanced-fa-qym-direct-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: false
+
+jobs:
+  direct-clean-twice:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 360
+    env:
+      HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      HEAD_BRANCH: ${{ github.event.pull_request.head.ref || github.ref_name }}
+      OUTDIR: .lake/build/lib/lean/PrimalitySheafVerification
+      EVIDENCE: /tmp/mock2-advanced-fa-qym-direct-clean
+
+    steps:
+      - name: Clone exact triggering head
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git init .
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git fetch --depth=1 origin "${HEAD_SHA}"
+          git checkout --detach FETCH_HEAD
+          test "$(git rev-parse HEAD)" = "${HEAD_SHA}"
+          test -z "$(git status --porcelain)"
+          mkdir -p "${EVIDENCE}/logs" "${EVIDENCE}/artifacts" "${OUTDIR}"
+          printf '%s\n' \
+            "repository=${GITHUB_REPOSITORY}" \
+            "head_sha=${HEAD_SHA}" \
+            "head_branch=${HEAD_BRANCH}" \
+            "utc_started=$(date -u +%FT%TZ)" \
+            | tee "${EVIDENCE}/snapshot.txt"
+          sha256sum \
+            PrimalitySheafVerification/Mock2.lean \
+            PrimalitySheafVerification/Mock2_Advanced.lean \
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean \
+            PrimalitySheafVerification/QYM.lean \
+            | tee "${EVIDENCE}/source-sha256.txt"
+
+      - name: Static forbidden-token audit
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY' | tee "${EVIDENCE}/forbidden-token-audit.txt"
+          from pathlib import Path
+          import re
+
+          files = [
+              Path("PrimalitySheafVerification/Mock2.lean"),
+              Path("PrimalitySheafVerification/Mock2_Advanced.lean"),
+              Path("PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean"),
+              Path("PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean"),
+              Path("PrimalitySheafVerification/QYM.lean"),
+          ]
+
+          def strip(src: str) -> str:
+              out=[]; i=0; depth=0; string=False; esc=False
+              while i < len(src):
+                  if depth:
+                      if src.startswith('/-', i): depth += 1; out += [' ',' ']; i += 2
+                      elif src.startswith('-/', i): depth -= 1; out += [' ',' ']; i += 2
+                      else: out.append('\n' if src[i] == '\n' else ' '); i += 1
+                  elif string:
+                      c=src[i]; out.append('\n' if c == '\n' else ' ')
+                      if esc: esc=False
+                      elif c == '\\': esc=True
+                      elif c == '"': string=False
+                      i += 1
+                  elif src.startswith('/-', i): depth=1; out += [' ',' ']; i += 2
+                  elif src.startswith('--', i):
+                      while i < len(src) and src[i] != '\n': out.append(' '); i += 1
+                  elif src[i] == '"': string=True; out.append(' '); i += 1
+                  else: out.append(src[i]); i += 1
+              if depth or string: raise SystemExit('unterminated comment or string')
+              return ''.join(out)
+
+          patterns = {
+              'sorry': r'\bsorry\b', 'admit': r'\badmit\b',
+              'line_start_global_axiom': r'(?m)^\s*axiom\b',
+              'unsafe': r'\bunsafe\b', 'native_decide': r'\bnative_decide\b',
+              'Lean.ofReduceBool': r'\bLean\.ofReduceBool\b',
+          }
+          bad=False
+          for path in files:
+              code=strip(path.read_text(encoding='utf-8'))
+              print(f'[{path}]')
+              for name, pat in patterns.items():
+                  count=len(re.findall(pat, code)); print(f'{name}: {count}')
+                  bad |= count != 0
+          if bad: raise SystemExit('forbidden executable token detected')
+          PY
+
+      - name: Install exact Lean toolchain and restore Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          elan toolchain install "$(cat lean-toolchain)"
+          lean --version | tee "${EVIDENCE}/lean-version.txt"
+          lake --version | tee "${EVIDENCE}/lake-version.txt"
+          cp lean-toolchain lake-manifest.json "${EVIDENCE}/"
+          lake exe cache get 2>&1 | tee "${EVIDENCE}/logs/cache-get.log"
+
+      - name: Compile direct checked-in sources twice
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          modules=(
+            Mock2
+            Mock2_Advanced
+            Mock2_FunctionalAnalysis
+            Mock2_FunctionalAnalysis_Integrated
+            QYM
+          )
+          echo 'module,pass,exit_code,error_count,warning_count' > "${EVIDENCE}/compile-summary.csv"
+
+          for pass in 1 2; do
+            rm -f "${OUTDIR}"/{Mock2,Mock2_Advanced,Mock2_FunctionalAnalysis,Mock2_FunctionalAnalysis_Integrated,QYM}.{olean,ilean} \
+              "${OUTDIR}"/{Mock2,Mock2_Advanced,Mock2_FunctionalAnalysis,Mock2_FunctionalAnalysis_Integrated,QYM}.olean.private
+            for module in "${modules[@]}"; do
+              log="${EVIDENCE}/logs/${module}-pass${pass}.log"
+              set +e
+              lake env lean "PrimalitySheafVerification/${module}.lean" \
+                -o "${OUTDIR}/${module}.olean" \
+                -i "${OUTDIR}/${module}.ilean" >"${log}" 2>&1
+              code=$?
+              set -e
+              errors="$(grep -c 'error:' "${log}" || true)"
+              warnings="$(grep -c 'warning:' "${log}" || true)"
+              printf '%s,%s,%s,%s,%s\n' "${module}" "${pass}" "${code}" "${errors}" "${warnings}" \
+                >> "${EVIDENCE}/compile-summary.csv"
+              if [[ "${code}" -ne 0 ]]; then
+                {
+                  echo "module=${module}"
+                  echo "pass=${pass}"
+                  echo "exit_code=${code}"
+                  echo "error_count=${errors}"
+                  echo 'first_errors:'
+                  grep -n 'error:' "${log}" | head -20 || true
+                  echo 'last_error:'
+                  grep -n 'error:' "${log}" | tail -1 || true
+                  tail -240 "${log}" || true
+                } | tee "${EVIDENCE}/logs/${module}-pass${pass}.summary.txt"
+                exit "${code}"
+              fi
+              test "${errors}" -eq 0
+              test -s "${OUTDIR}/${module}.olean"
+              test -s "${OUTDIR}/${module}.ilean"
+              ! grep -Eqi "maximum number of errors|missing object file|sorryAx|declaration uses 'sorry'|PANIC|segmentation fault|stack overflow" "${log}"
+            done
+          done
+
+          for module in "${modules[@]}"; do
+            cp "${OUTDIR}/${module}.olean" "${OUTDIR}/${module}.ilean" "${EVIDENCE}/artifacts/"
+          done
+          sha256sum "${EVIDENCE}/artifacts/"* | tee "${EVIDENCE}/artifact-sha256.txt"
+          test -z "$(git status --porcelain)"
+
+      - name: Upload direct-clean evidence
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: mock2-advanced-fa-qym-direct-clean-${{ env.HEAD_SHA }}
+          path: /tmp/mock2-advanced-fa-qym-direct-clean
+          if-no-files-found: warn
+          retention-days: 30

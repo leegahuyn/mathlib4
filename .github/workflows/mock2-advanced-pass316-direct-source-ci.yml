@@ -1,0 +1,15 @@
+name: Superseded Mock2 Advanced pass 316 direct-source CI
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  superseded:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo 'Superseded by mock2-advanced-pass316-direct-source-v2-ci.yml.'
+          echo 'This workflow intentionally performs no source mutation or PASS claim.'

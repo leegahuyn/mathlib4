@@ -65,9 +65,6 @@ different object.  The two lemmas below make both valuations precise. -/
 theorem factorization_lcm_apply {M N : ℕ} (hM : M ≠ 0) (hN : N ≠ 0) (p : ℕ) :
     (Nat.lcm M N).factorization p = max (M.factorization p) (N.factorization p) := by
   rw [Nat.factorization_lcm hM hN, Finsupp.sup_apply]
-  rcases Nat.le_total (M.factorization p) (N.factorization p) with h | h
-  · rw [sup_eq_right.mpr h, max_eq_right h]
-  · rw [sup_eq_left.mpr h, max_eq_left h]
 
 /-- `v_p(gcd M N) = min(v_p M, v_p N)`.  This `min` is exactly the quantity the
     paper calls `ε_p`; it belongs to the gcd (common residue fiber), **not** to the
@@ -75,9 +72,6 @@ theorem factorization_lcm_apply {M N : ℕ} (hM : M ≠ 0) (hN : N ≠ 0) (p : �
 theorem factorization_gcd_apply {M N : ℕ} (hM : M ≠ 0) (hN : N ≠ 0) (p : ℕ) :
     (Nat.gcd M N).factorization p = min (M.factorization p) (N.factorization p) := by
   rw [Nat.factorization_gcd hM hN, Finsupp.inf_apply]
-  rcases Nat.le_total (M.factorization p) (N.factorization p) with h | h
-  · rw [inf_eq_left.mpr h, min_eq_left h]
-  · rw [inf_eq_right.mpr h, min_eq_right h]
 
 /-- Specialisation to a prime power `N = pᵏ`: the intersection generator `lcm`
     has `p`-thickness `max(v_p M, k)`. -/
@@ -92,7 +86,7 @@ theorem gcd_thickness_prime_pow {p : ℕ} (hp : p.Prime) {M : ℕ} (hM : M ≠ 0
   have hpk : p ^ k ≠ 0 := pow_ne_zero k hp.pos.ne'
   rw [factorization_gcd_apply hM hpk, Nat.factorization_pow_self hp]
 
-/-- **Concrete witness of the discrepancy** (the Example 4.5 data `M = 12`, `p = 3`,
+/-! **Concrete witness of the discrepancy** (the Example 4.5 data `M = 12`, `p = 3`,
     `k = 2`).  The ideal intersection is `(lcm 12 9) = (36)` with `3`-adic thickness
     `2 = max(1,2)`, while the paper's formula would give `ε₃ = min(1,2) = 1`. -/
 section Example45Thickness

@@ -1,0 +1,52 @@
+name: Install scoped PrimalitySheaf SHA audit v2 once
+
+on:
+  push:
+    branches: [fix/primality-sheaf-clean-build]
+    paths:
+      - '.github/workflows/install-scoped-primality-sha-audit-v2.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: install-scoped-primality-sha-audit-v2-once
+  cancel-in-progress: true
+
+jobs:
+  install:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      BRANCH: fix/primality-sheaf-clean-build
+      SOURCE_SHA: ${{ github.sha }}
+      TARGET: scripts/primality_workflow_audit.py
+      TEMPLATE: scripts/primality_workflow_audit_v2.template
+      OLD_INSTALLER: .github/workflows/install-scoped-primality-sha-audit.yml
+      SELF: .github/workflows/install-scoped-primality-sha-audit-v2.yml
+
+    steps:
+      - name: Replace SHA audit and remove both installers
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git init .
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git fetch --depth=1 origin "${SOURCE_SHA}"
+          git checkout --detach FETCH_HEAD
+          test "$(git rev-parse HEAD)" = "${SOURCE_SHA}"
+
+          cp "${TEMPLATE}" "${TARGET}"
+          git rm "${TEMPLATE}" "${OLD_INSTALLER}" "${SELF}"
+          git add "${TARGET}"
+          git diff --cached --check
+
+          remote_head="$(git ls-remote origin "refs/heads/${BRANCH}" | awk '{print $1}')"
+          test "${remote_head}" = "${SOURCE_SHA}"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'ci: scope final SHA audit to official workflow'
+          git push origin "HEAD:${BRANCH}"

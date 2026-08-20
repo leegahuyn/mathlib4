@@ -1,0 +1,15 @@
+name: Superseded Mock2 Advanced pass 316 direct-source CI v2
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  superseded:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo 'Superseded by mock2-advanced-pass316-direct-source-v3-ci.yml.'
+          echo 'v2 used a context-insensitive constant-field scan and makes no PASS claim.'

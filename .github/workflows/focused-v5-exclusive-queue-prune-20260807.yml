@@ -1,0 +1,54 @@
+name: Prioritize phased focused v5 queue
+
+on:
+  push:
+    branches: [fix/primality-sheaf-clean-build]
+    paths:
+      - '.github/workflows/focused-v5-exclusive-queue-prune-20260807.yml'
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: read
+
+concurrency:
+  group: prioritize-phased-focused-v5
+  cancel-in-progress: true
+
+jobs:
+  prune:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Cancel active obsolete focused runs only
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          curl -fsSL -H "Authorization: Bearer ${GH_TOKEN}" -H 'Accept: application/vnd.github+json' \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/runs?branch=fix%2Fprimality-sheaf-clean-build&per_page=100" -o /tmp/runs-v5.json
+          python3 - <<'PY' > /tmp/cancel-v5.txt
+          import json,os
+          runs=json.load(open('/tmp/runs-v5.json')).get('workflow_runs',[]); current=int(os.environ['GITHUB_RUN_ID'])
+          keep={
+            'Focused phased Mock2 Advanced candidate v5',
+            'Focused phased Mock2 Advanced direct-source v5',
+            'Focused phased FunctionalAnalysis candidate v5',
+            'Focused phased FunctionalAnalysis direct-source v5',
+            'Focused phased QYM final direct-source v5',
+            'Finalize phased focused direct-source PASS v5',
+            'Prioritize phased focused v5 queue',
+          }
+          active={'queued','in_progress','waiting','pending','requested'}
+          for r in runs:
+            name=r.get('name','')
+            if r.get('id')==current or r.get('status') not in active: continue
+            focused=(name.startswith('Focused ') or name.startswith('Patch focused ') or name.startswith('Patch comprehensive focused ') or name.startswith('Patch alternate verified M2A') or name.startswith('Consolidated focused ') or name.startswith('Deterministic focused ') or name.startswith('Normalize focused ') or name.startswith('Fix focused ') or name.startswith('Finalize focused '))
+            if focused and name not in keep: print(r['id'])
+          PY
+          while read -r id; do
+            [[ -n "$id" ]] || continue
+            curl -fsSL -X POST -H "Authorization: Bearer ${GH_TOKEN}" -H 'Accept: application/vnd.github+json' \
+              "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/runs/${id}/cancel" >/dev/null || true
+          done < /tmp/cancel-v5.txt

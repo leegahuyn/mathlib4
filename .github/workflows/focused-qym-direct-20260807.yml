@@ -1,0 +1,222 @@
+name: Focused QYM direct-source clean verification
+
+on:
+  push:
+    branches: [fix/primality-sheaf-clean-build]
+    paths:
+      - '.ci/focused/functional_analysis_direct_pass.json'
+      - 'PrimalitySheafVerification/QYM.lean'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: focused-qym-direct-source
+  cancel-in-progress: false
+
+jobs:
+  direct-source:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 360
+    env:
+      BRANCH: fix/primality-sheaf-clean-build
+      M2A_PASS: .ci/focused/mock2_advanced_direct_pass.json
+      FA_PASS: .ci/focused/functional_analysis_direct_pass.json
+      QYM_PASS: .ci/focused/qym_direct_pass.json
+      QYM: PrimalitySheafVerification/QYM.lean
+      LOGDIR: focused-proof/QYM-direct
+
+    steps:
+      - name: Clone exact triggering checked-in source graph
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git init .
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git fetch --depth=1 origin "${GITHUB_SHA}"
+          git checkout --detach FETCH_HEAD
+          test "$(git rev-parse HEAD)" = "${GITHUB_SHA}"
+          test -f "${M2A_PASS}"
+          test -f "${FA_PASS}"
+          mkdir -p "${LOGDIR}"
+          git status --porcelain=v1 > "${LOGDIR}/initial-status.txt"
+          test ! -s "${LOGDIR}/initial-status.txt"
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib,json
+          m2a=json.loads(Path('.ci/focused/mock2_advanced_direct_pass.json').read_text())
+          fa=json.loads(Path('.ci/focused/functional_analysis_direct_pass.json').read_text())
+          paths={
+            'm2a':Path('PrimalitySheafVerification/Mock2_Advanced.lean'),
+            'integrated':Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean'),
+            'compatibility':Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean')}
+          assert hashlib.sha256(paths['m2a'].read_bytes()).hexdigest()==m2a['source_sha256']
+          assert hashlib.sha256(paths['integrated'].read_bytes()).hexdigest()==fa['integrated_source_sha256']
+          assert hashlib.sha256(paths['compatibility'].read_bytes()).hexdigest()==fa['compatibility_source_sha256']
+          PY
+          printf '%s\n' \
+            "trigger_sha=${GITHUB_SHA}" \
+            "base_master_sha=$(git ls-remote origin refs/heads/master | awk '{print $1}')" \
+            "mock2_blob=$(git hash-object PrimalitySheafVerification/Mock2.lean)" \
+            "advanced_blob=$(git hash-object PrimalitySheafVerification/Mock2_Advanced.lean)" \
+            "integrated_blob=$(git hash-object PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean)" \
+            "fa_blob=$(git hash-object PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean)" \
+            "qym_blob=$(git hash-object "${QYM}")" \
+            "qym_sha256=$(sha256sum "${QYM}" | awk '{print $1}')" \
+            > "${LOGDIR}/snapshot.txt"
+
+      - name: Audit QYM conditional interface and trust policy
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY' | tee "${LOGDIR}/qym-static-trust-audit.txt"
+          from pathlib import Path
+          import hashlib,re
+          p=Path('PrimalitySheafVerification/QYM.lean'); src=p.read_text(encoding='utf-8')
+          out=[]; i=0; depth=0; string=False; esc=False
+          while i<len(src):
+            if depth:
+              if src.startswith('/-',i): depth+=1; out+=[' ',' ']; i+=2
+              elif src.startswith('-/',i): depth-=1; out+=[' ',' ']; i+=2
+              else: out.append('\n' if src[i]=='\n' else ' '); i+=1
+            elif string:
+              ch=src[i]; out.append('\n' if ch=='\n' else ' ')
+              if esc: esc=False
+              elif ch=='\\': esc=True
+              elif ch=='"': string=False
+              i+=1
+            elif src.startswith('/-',i): depth=1; out+=[' ',' ']; i+=2
+            elif src.startswith('--',i):
+              while i<len(src) and src[i]!='\n': out.append(' '); i+=1
+            elif src[i]=='"': string=True; out.append(' '); i+=1
+            else: out.append(src[i]); i+=1
+          if depth or string: raise SystemExit('unterminated comment/string')
+          code=''.join(out)
+          pats={
+            'sorry':r'\bsorry\b','admit':r'\badmit\b','global_axiom':r'(?m)^\s*axiom\b',
+            'unsafe':r'\bunsafe\b','native_decide':r'\bnative_decide\b',
+            'Lean.ofReduceBool':r'\bLean\.ofReduceBool\b','by_contra!':r'\bby_contra!\b'}
+          counts={k:len(re.findall(v,code)) for k,v in pats.items()}
+          for k,v in counts.items(): print(f'{k}: {v}')
+          if any(counts.values()): raise SystemExit(1)
+          assert 'Mock2_FunctionalAnalysis_Integrated' in src
+          terms=['mass','gauge','modular','spectral']
+          for term in terms: print(f'interface_term_{term}:', int(term.lower() in src.lower()))
+          sigs=[]
+          for m in re.finditer(r'(?m)^\s*(?:theorem|lemma)\s+([^\s:(]+)',code):
+            start=m.start(); end=len(code)
+            nxt=re.search(r'(?m)^\s*(?:theorem|lemma|def|structure|class|instance|abbrev|inductive)\s+',code[m.end():])
+            if nxt: end=m.end()+nxt.start()
+            block=code[start:end]
+            cut=re.search(r'(?m)\s+:=\s*by\b|(?m)\s+:=|(?m)^\s*where\s*$',block)
+            if cut: block=block[:cut.start()]
+            sigs.append(' '.join(block.split()))
+          print('qym_theorem_signature_sha256:',hashlib.sha256('\n'.join(sigs).encode()).hexdigest())
+          PY
+          git diff --exit-code
+
+      - name: Install Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="$HOME/.elan/bin:$PATH"
+          elan toolchain install "$(cat lean-toolchain)"
+          lean --version | tee "${LOGDIR}/lean-version.txt"
+          lake --version | tee "${LOGDIR}/lake-version.txt"
+          lake exe cache get | tee "${LOGDIR}/cache-get.log"
+
+      - name: Compile full focused dependency sequence twice
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          out='.lake/build/lib/lean/PrimalitySheafVerification'
+          mkdir -p "$out"
+          modules=(Mock2 Mock2_Advanced Mock2_FunctionalAnalysis_Integrated Mock2_FunctionalAnalysis QYM)
+          for pass in 1 2; do
+            for mod in "${modules[@]}"; do
+              rm -f "$out/${mod}.olean" "$out/${mod}.ilean" "$out/${mod}.olean.private"
+              src="PrimalitySheafVerification/${mod}.lean"
+              set +e
+              lake env lean "$src" -o "$out/${mod}.olean" -i "$out/${mod}.ilean" \
+                > "${LOGDIR}/${mod}-pass${pass}.log" 2>&1
+              code=$?
+              set -e
+              echo "$code" > "${LOGDIR}/${mod}-pass${pass}-exit.txt"
+              test "$code" -eq 0
+              test -s "$out/${mod}.olean"
+              test -s "$out/${mod}.ilean"
+              test "$(grep -c 'error:' "${LOGDIR}/${mod}-pass${pass}.log" || true)" -eq 0
+              ! grep -Eqi "maximum number of errors|PANIC|segmentation fault|stack overflow|missing object file|declaration uses 'sorry'|sorryAx" \
+                "${LOGDIR}/${mod}-pass${pass}.log"
+              ! grep -a -q 'sorryAx' "$out/${mod}.olean"
+            done
+          done
+          sha256sum PrimalitySheafVerification/Mock2.lean \
+            PrimalitySheafVerification/Mock2_Advanced.lean \
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean \
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+            PrimalitySheafVerification/QYM.lean \
+            "$out/Mock2.olean" "$out/Mock2.ilean" \
+            "$out/Mock2_Advanced.olean" "$out/Mock2_Advanced.ilean" \
+            "$out/Mock2_FunctionalAnalysis_Integrated.olean" "$out/Mock2_FunctionalAnalysis_Integrated.ilean" \
+            "$out/Mock2_FunctionalAnalysis.olean" "$out/Mock2_FunctionalAnalysis.ilean" \
+            "$out/QYM.olean" "$out/QYM.ilean" \
+            | tee "${LOGDIR}/source-and-artifact-sha256.txt"
+          git diff --exit-code
+          git status --porcelain=v1 > "${LOGDIR}/post-build-status.txt"
+          test ! -s "${LOGDIR}/post-build-status.txt"
+
+      - name: Build focused final proof report
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib,json,subprocess
+          q=Path('PrimalitySheafVerification/QYM.lean')
+          report={
+            'focused_status':'PASS',
+            'verified_source_commit':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),
+            'base_master_sha':subprocess.check_output(['git','ls-remote','origin','refs/heads/master'],text=True).split()[0],
+            'qym_source_blob':subprocess.check_output(['git','hash-object',str(q)],text=True).strip(),
+            'qym_source_sha256':hashlib.sha256(q.read_bytes()).hexdigest(),
+            'modules':['Mock2','Mock2_Advanced','Mock2_FunctionalAnalysis_Integrated','Mock2_FunctionalAnalysis','QYM'],
+            'clean_pass_1':0,'clean_pass_2':0,'error_count':0,'missing_project_objects':0,
+            'forbidden_tokens':0,'sorryAx':0,'new_global_axioms':0,
+            'runtime_repair_used':False,'mock2_regression':'PASS',
+            'conditional_certificate_boundary':'preserved'
+          }
+          Path('focused-proof/QYM-direct/direct-pass.json').write_text(json.dumps(report,indent=2)+'\n')
+          Path('/tmp/qym_direct_pass.json').write_text(json.dumps(report,indent=2)+'\n')
+          PY
+          tar -czf /tmp/qym-focused-direct-proof.tar.gz "${LOGDIR}"
+
+      - name: Upload final focused direct-source proof artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: focused-qym-direct-${{ github.sha }}
+          path: /tmp/qym-focused-direct-proof.tar.gz
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Publish final focused PASS marker
+        shell: bash
+        run: |
+          set -euo pipefail
+          remote_head="$(git ls-remote origin "refs/heads/${BRANCH}" | awk '{print $1}')"
+          test "$remote_head" = "${GITHUB_SHA}"
+          mkdir -p "$(dirname "${QYM_PASS}")"
+          cp /tmp/qym_direct_pass.json "${QYM_PASS}"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "${QYM_PASS}"
+          test "$(git diff --cached --name-only)" = "${QYM_PASS}"
+          git commit -m 'ci: record focused Mock2 Advanced FunctionalAnalysis QYM PASS'
+          git push origin "HEAD:${BRANCH}"

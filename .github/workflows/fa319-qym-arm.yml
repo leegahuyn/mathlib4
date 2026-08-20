@@ -1,0 +1,70 @@
+name: FunctionalAnalysis pass320 materialize and QYM ARM
+
+on:
+  push:
+    branches: [fix/primality-sheaf-clean-build]
+    paths:
+      - '.github/workflows/fa319-qym-arm.yml'
+      - 'scripts/ci_fa320_qym.sh'
+      - 'scripts/apply_three_hundred_twentieth_pass_functional_analysis_repairs.py'
+  pull_request:
+    branches: [master]
+    paths:
+      - '.github/workflows/fa319-qym-arm.yml'
+      - 'scripts/ci_fa320_qym.sh'
+      - 'scripts/apply_three_hundred_twentieth_pass_functional_analysis_repairs.py'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: fa320-qym-arm-${{ github.event_name }}-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  verify-materialize-qym:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 360
+    env:
+      SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      SOURCE_BRANCH: ${{ github.event.pull_request.head.ref || github.ref_name }}
+
+    steps:
+      - name: Checkout exact branch head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ env.SOURCE_SHA }}
+          fetch-depth: 1
+          persist-credentials: true
+
+      - name: Install exact Lean toolchain and restore Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          elan toolchain install "$(cat lean-toolchain)"
+          lean --version
+          lake --version
+          lake exe cache get
+
+      - name: Verify pass320, materialize FunctionalAnalysis, then compile Integrated and QYM
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          bash scripts/ci_fa320_qym.sh
+
+      - name: Upload pass320 and QYM evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fa320-qym-arm-${{ env.SOURCE_SHA }}
+          path: /tmp/fa320-qym-x86
+          if-no-files-found: warn
+          retention-days: 30

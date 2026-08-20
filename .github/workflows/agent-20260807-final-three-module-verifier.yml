@@ -1,0 +1,200 @@
+name: Agent final direct-source gate — Advanced FunctionalAnalysis QYM
+
+on:
+  push:
+    branches:
+      - fix/primality-sheaf-clean-build
+    paths:
+      - '.github/workflows/agent-20260807-final-three-module-verifier.yml'
+      - 'PrimalitySheafVerification/Mock2.lean'
+      - 'PrimalitySheafVerification/Mock2_Advanced.lean'
+      - 'PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'
+      - 'PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean'
+      - 'PrimalitySheafVerification/QYM.lean'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: agent-final-three-module-gate
+  cancel-in-progress: false
+
+jobs:
+  direct-source-gate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    env:
+      BRANCH: fix/primality-sheaf-clean-build
+      GITHUB_TOKEN: ${{ github.token }}
+      EVIDENCE: build-evidence/mock2-advanced-functional-qym-pass.json
+
+    steps:
+      - name: Fetch exact triggering commit without checkout action
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir repo
+          cd repo
+          git init
+          git remote add origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git fetch --depth=1 origin "${GITHUB_SHA}"
+          git checkout --detach FETCH_HEAD
+          test "$(git rev-parse HEAD)" = "${GITHUB_SHA}"
+
+      - name: Static executable-code trust audit
+        shell: bash
+        working-directory: repo
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          paths=[Path('PrimalitySheafVerification')/f for f in (
+            'Mock2_Advanced.lean','Mock2_FunctionalAnalysis.lean',
+            'Mock2_FunctionalAnalysis_Integrated.lean','QYM.lean')]
+          checks={'sorry':r'\bsorry\b','admit':r'\badmit\b',
+            'line_start_axiom':r'(?m)^\s*axiom\b','unsafe':r'\bunsafe\b',
+            'native_decide':r'\bnative_decide\b','Lean.ofReduceBool':r'\bLean\.ofReduceBool\b',
+            'by_contra!':r'\bby_contra!\b'}
+          def strip(src):
+            out=[];i=0;depth=0;string=False;esc=False
+            while i<len(src):
+              if depth:
+                if src.startswith('/-',i):depth+=1;out+=[' ',' '];i+=2
+                elif src.startswith('-/',i):depth-=1;out+=[' ',' '];i+=2
+                else:out.append('\n' if src[i]=='\n' else ' ');i+=1
+              elif string:
+                c=src[i];out.append('\n' if c=='\n' else ' ')
+                if esc:esc=False
+                elif c=='\\':esc=True
+                elif c=='"':string=False
+                i+=1
+              elif src.startswith('/-',i):depth=1;out+=[' ',' '];i+=2
+              elif src.startswith('--',i):
+                while i<len(src) and src[i]!='\n':out.append(' ');i+=1
+              elif src[i]=='"':string=True;out.append(' ');i+=1
+              else:out.append(src[i]);i+=1
+            if depth or string:raise RuntimeError('unterminated comment/string')
+            return ''.join(out)
+          bad=False
+          for p in paths:
+            if not p.exists():raise SystemExit(f'missing source: {p}')
+            code=strip(p.read_text(encoding='utf-8'))
+            print(f'===== {p} =====')
+            for n,pat in checks.items():
+              c=len(re.findall(pat,code));print(f'{n}: {c}');bad|=c!=0
+          if bad:raise SystemExit('trust audit failed')
+          PY
+
+      - name: Install exact Lean toolchain without setup action
+        shell: bash
+        working-directory: repo
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          "$HOME/.elan/bin/elan" toolchain install "$(cat lean-toolchain)"
+          "$HOME/.elan/bin/lean" --version
+
+      - name: Restore Mathlib cache
+        shell: bash
+        working-directory: repo
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          lake exe cache get
+
+      - name: Direct clean compile chain twice
+        shell: bash
+        working-directory: repo
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          outdir='.lake/build/lib/lean/PrimalitySheafVerification'
+          logdir='/tmp/final-three-module-logs'
+          mkdir -p "$outdir" "$logdir"
+          compile() {
+            local module="$1" pass="$2"
+            rm -f "$outdir/${module}.olean" "$outdir/${module}.ilean" "$outdir/${module}.olean.private"
+            echo "===== ${module} direct clean compile ${pass} ====="
+            set +e
+            lake env lean "PrimalitySheafVerification/${module}.lean" \
+              -o "$outdir/${module}.olean" -i "$outdir/${module}.ilean" 2>&1 \
+              | tee "$logdir/${module}-${pass}.log"
+            local code=${PIPESTATUS[0]}
+            set -e
+            echo "$code" > "$logdir/${module}-${pass}.exit"
+            echo "${module} ${pass} exit_code=${code}"
+            test "$code" -eq 0
+            test -s "$outdir/${module}.olean"
+            test -s "$outdir/${module}.ilean"
+            test "$(grep -c 'error:' "$logdir/${module}-${pass}.log" || true)" -eq 0
+            ! grep -Eqi "maximum number of errors|PANIC|segmentation fault|stack overflow|missing object file|declaration uses 'sorry'|sorryAx" \
+              "$logdir/${module}-${pass}.log"
+          }
+          compile Mock2 dependency
+          compile Mock2_Advanced pass1
+          compile Mock2_Advanced pass2
+          compile Mock2_FunctionalAnalysis pass1
+          compile Mock2_FunctionalAnalysis pass2
+          compile Mock2_FunctionalAnalysis_Integrated pass1
+          compile Mock2_FunctionalAnalysis_Integrated pass2
+          compile QYM pass1
+          compile QYM pass2
+
+      - name: Create reproducible PASS evidence
+        shell: bash
+        working-directory: repo
+        run: |
+          set -euo pipefail
+          mkdir -p "$(dirname "${EVIDENCE}")"
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib,json,subprocess,re,os
+          root=Path('.')
+          out=root/'.lake/build/lib/lean/PrimalitySheafVerification'
+          logs=Path('/tmp/final-three-module-logs')
+          modules=['Mock2_Advanced','Mock2_FunctionalAnalysis','Mock2_FunctionalAnalysis_Integrated','QYM']
+          data={
+            'schema':'primality-sheaf-three-module-pass-v1',
+            'verified_commit':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),
+            'lean_toolchain':(root/'lean-toolchain').read_text().strip(),
+            'trust_policy':{'sorry':0,'admit':0,'global_axiom':0,'unsafe':0,'native_decide':0,'sorryAx_in_logs':0},
+            'modules':{}
+          }
+          def sha(p):return hashlib.sha256(Path(p).read_bytes()).hexdigest()
+          for m in modules:
+            src=root/'PrimalitySheafVerification'/f'{m}.lean'
+            item={'source_sha256':sha(src),'source_lines':len(src.read_text(encoding='utf-8').splitlines()),
+                  'olean_sha256':sha(out/f'{m}.olean'),'ilean_sha256':sha(out/f'{m}.ilean'),
+                  'passes':[]}
+            passes=['pass1','pass2']
+            for p in passes:
+              log=logs/f'{m}-{p}.log'
+              text=log.read_text(errors='replace')
+              item['passes'].append({'name':p,'exit_code':int((logs/f'{m}-{p}.exit').read_text()),
+                'errors':len(re.findall(r'(?m)^.*error:',text)),
+                'warnings':len(re.findall(r'(?m)^.*warning:',text))})
+            data['modules'][m]=item
+          Path(os.environ['EVIDENCE']).write_text(json.dumps(data,indent=2,sort_keys=True)+'\n',encoding='utf-8')
+          PY
+          cat "${EVIDENCE}"
+
+      - name: Commit PASS evidence only when branch head is unchanged
+        shell: bash
+        working-directory: repo
+        run: |
+          set -euo pipefail
+          remote_head="$(git ls-remote origin "refs/heads/${BRANCH}" | awk '{print $1}')"
+          echo "trigger head=${GITHUB_SHA}"
+          echo "remote head=${remote_head}"
+          test "${remote_head}" = "${GITHUB_SHA}"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "${EVIDENCE}"
+          test "$(git diff --cached --name-only)" = "${EVIDENCE}"
+          git commit -m 'ci: record PASS evidence for Mock2 Advanced FunctionalAnalysis and QYM'
+          git push origin "HEAD:${BRANCH}"

@@ -1,0 +1,182 @@
+name: Focused checked-in direct-source verification v4
+
+on:
+  push:
+    branches: [fix/primality-sheaf-clean-build]
+    paths:
+      - '.ci/focused/focused_candidate_v4.json'
+      - '.ci/focused/focused_direct_v4_retry.txt'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: focused-checked-in-direct-source-v4
+  cancel-in-progress: false
+
+jobs:
+  direct-source:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 360
+    env:
+      BRANCH: fix/primality-sheaf-clean-build
+      FOCUSED_BRANCH: fix/primality-sheaf-clean-build
+      FOCUSED_LOGDIR: /tmp/focused-proof/direct-v4
+      FOCUSED_CANDIDATE_MARKER: .ci/focused/focused_candidate_v4.json
+      FOCUSED_REPORT_OUT: /tmp/focused_direct_pass_v4.json
+      FOCUSED_BUNDLE_OUT: /tmp/focused-direct-v4-proof.tar.gz
+      FINAL_MARKER: .ci/focused/focused_direct_pass_v4.json
+
+    steps:
+      - name: Clone exact checked-in candidate snapshot
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git init .
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git fetch --depth=1 origin "${GITHUB_SHA}"
+          git checkout --detach FETCH_HEAD
+          test "$(git rev-parse HEAD)" = "${GITHUB_SHA}"
+          test -f "${FOCUSED_CANDIDATE_MARKER}"
+          git status --porcelain=v1 | tee /tmp/v4-direct-initial-status.txt
+          test ! -s /tmp/v4-direct-initial-status.txt
+          python3 scripts/prepare_focused_v4_runtime_20260807.py
+          git diff --exit-code
+          python3 -m py_compile \
+            scripts/focused_source_audit_20260807.py \
+            scripts/generate_focused_axiom_audit_20260807.py
+          bash -n scripts/focused_direct_verify_20260807.sh
+          bash -n scripts/focused_axiom_audit_dispatch_20260807.sh
+          bash -n scripts/focused_environment_axiom_audit_20260807.sh
+
+      - name: Install exact Lean toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          export PATH="$HOME/.elan/bin:$PATH"
+          elan toolchain install "$(cat lean-toolchain)"
+          lean --version
+          lake --version
+
+      - name: Restore Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          lake exe cache get
+
+      - name: Compile all checked-in focused sources twice without repair
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          bash scripts/run_focused_direct_v3_20260807.sh
+
+      - name: Upload direct-source proof artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: focused-direct-source-v4-${{ github.sha }}
+          path: /tmp/focused-direct-v4-proof.tar.gz
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Publish final focused direct PASS marker
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$(dirname "${FINAL_MARKER}")"
+          cp /tmp/focused_direct_pass_v4.json "${FINAL_MARKER}"
+          git diff --check
+          test "$(git status --porcelain=v1 | wc -l)" -eq 1
+          test "$(git status --porcelain=v1 | sed 's/^...//')" = "${FINAL_MARKER}"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "${FINAL_MARKER}"
+          git commit -m 'ci: record focused checked-in direct-source PASS v4'
+
+          remote_head="$(git ls-remote origin "refs/heads/${BRANCH}" | awk '{print $1}')"
+          if [[ "${remote_head}" != "${GITHUB_SHA}" ]]; then
+            git fetch origin "${BRANCH}"
+            critical="$(git diff --name-only "${GITHUB_SHA}" "${remote_head}" | grep -E \
+              '^(PrimalitySheafVerification/(Mock2|Mock2_Advanced|Mock2_FunctionalAnalysis|Mock2_FunctionalAnalysis_Integrated|QYM)\.lean|\.ci/focused/focused_candidate_v4\.json|lean-toolchain|lakefile\.lean|lake-manifest\.json|scripts/(focused_direct_verify_20260807|focused_source_audit_20260807|focused_axiom_audit_dispatch_20260807|focused_environment_axiom_audit_20260807|generate_focused_axiom_audit_20260807|prepare_focused_v4_runtime_20260807)\.(py|sh))$' \
+              || true)"
+            if [[ -n "${critical}" ]]; then
+              printf '%s\n' "${critical}" >&2
+              echo 'Direct-source verification inputs changed concurrently; refusing a stale PASS.' >&2
+              exit 1
+            fi
+            git rebase "${remote_head}"
+          fi
+          git push origin "HEAD:${BRANCH}"
+
+      - name: Publish compact direct-source failure evidence
+        if: failure()
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import json, os
+          logdir=Path('/tmp/focused-proof/direct-v4')
+          def read(name, limit=16000):
+              p=logdir/name
+              return p.read_text(errors='replace')[:limit] if p.exists() else None
+          report={
+            'status':'FAIL','pipeline':'focused-direct-v4',
+            'trigger_sha':os.environ.get('GITHUB_SHA'),
+            'workflow_run':f"https://github.com/{os.environ.get('GITHUB_REPOSITORY')}/actions/runs/{os.environ.get('GITHUB_RUN_ID')}",
+            'pipeline_exit_code':read('pipeline-exit-code.txt'),
+            'first_failure':read('first-failure.env'),
+            'axiom_audit_tail':read('axiom-audit.tail.txt'),
+            'first_errors':{p.name:p.read_text(errors='replace')[:16000] for p in logdir.glob('*.first-ten-errors.txt')},
+            'tails':{p.name:p.read_text(errors='replace')[-16000:] for p in logdir.glob('*.tail.txt')},
+          }
+          Path('/tmp/focused_direct_v4_failure.json').write_text(json.dumps(report,indent=2)+'\n')
+          PY
+          rm -rf /tmp/v4-direct-failure-repo
+          git clone --branch "${BRANCH}" --single-branch \
+            "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" /tmp/v4-direct-failure-repo
+          cd /tmp/v4-direct-failure-repo
+          marker=.ci/focused/focused_direct_v4_failure.json
+          mkdir -p "$(dirname "${marker}")"
+          cp /tmp/focused_direct_v4_failure.json "${marker}"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "${marker}"
+          git diff --cached --quiet && exit 0
+          git commit -m 'ci: record focused direct-source v4 failure evidence'
+          git push origin "HEAD:${BRANCH}" || true
+
+      - name: Queue bounded direct-source retry
+        if: failure()
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/v4-direct-retry-repo
+          git clone --branch "${BRANCH}" --single-branch \
+            "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" /tmp/v4-direct-retry-repo
+          cd /tmp/v4-direct-retry-repo
+          counter=.ci/focused/focused_direct_v4_retry.txt
+          mkdir -p "$(dirname "${counter}")"
+          count=0; [[ -f "${counter}" ]] && count="$(cat "${counter}")"
+          [[ "${count}" =~ ^[0-9]+$ ]] || count=0
+          [[ "${count}" -ge 2 ]] && exit 0
+          count=$((count+1)); echo "${count}" > "${counter}"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "${counter}"
+          git commit -m "ci: retry focused direct-source v4 (${count}/2)"
+          git push origin "HEAD:${BRANCH}" || true
