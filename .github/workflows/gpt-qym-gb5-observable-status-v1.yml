@@ -1,0 +1,42 @@
+name: GPT QYM GB5 observable status v1
+
+on:
+  pull_request:
+    branches:
+      - master
+    types:
+      - opened
+      - synchronize
+      - reopened
+    paths:
+      - .github/qym-gb5-observable-status-trigger.txt
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  list-qym-runs:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: List relevant QYM workflow runs
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          gh api --paginate "repos/$GH_REPO/actions/runs?per_page=100" \
+            --jq '.workflow_runs[] | select((.name | test("QYM GB5|QYM GB5 semantic round 4 targeted matrix|QYM GB5 dual authoritative|QYM GB5 semantic round 3|QYM GB5 semantic round 4"; "i"))) | {id,name,event,head_branch,head_sha,status,conclusion,created_at,updated_at,html_url}' \
+            | head -100 | tee relevant-qym-runs.jsonl
+          test -s relevant-qym-runs.jsonl
+
+      - name: Upload run ledger
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-gb5-run-ledger-${{ github.run_id }}
+          path: relevant-qym-runs.jsonl
+          if-no-files-found: error
+          retention-days: 7
