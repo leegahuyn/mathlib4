@@ -6,6 +6,11 @@ on:
       - gpt/final13-spt1-native-clean-candidate-20260820
     paths:
       - .github/workflows/spt1-native-decide-replacement-probe.yml
+  pull_request:
+    branches:
+      - gpt/final-authority-gb0-canonical-20260820
+    paths:
+      - .github/workflows/spt1-native-decide-replacement-probe.yml
   workflow_dispatch:
 
 jobs:
@@ -15,7 +20,7 @@ jobs:
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
-          ref: ${{ github.sha }}
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 1
           persist-credentials: false
 
@@ -55,6 +60,14 @@ jobs:
             rw [← AddSubgroup.index_ker, AddSubgroup.card_mul_index]
             norm_num [AddMonoidHom.mem_ker]
           LEAN
+          cat > .spt1_probe/ExistingTheorem.lean <<'LEAN'
+          import PrimalitySheafVerification.Spt1
+          open Spt1
+          example : Fintype.card {x : ZMod 9 // (12 : ZMod 9) * x = 0} = 3 := by
+            change Fintype.card (AddMonoidHom.mulLeft (12 : ZMod 9)).ker = 3
+            rw [← Nat.card_eq_fintype_card, card_ker_mulLeft]
+            norm_num
+          LEAN
 
       - name: Compile all strategies without stopping at first failure
         shell: bash
@@ -62,7 +75,7 @@ jobs:
           set -uo pipefail
           export PATH="$HOME/.elan/bin:$PATH"
           : > .spt1_probe/results.tsv
-          for f in Decide NormNum KernelCard; do
+          for f in Decide NormNum KernelCard ExistingTheorem; do
             set +e
             timeout --signal=TERM --kill-after=10s 900s \
               lake env lean -DmaxErrors=100 -DwarningAsError=false ".spt1_probe/${f}.lean" \
@@ -85,7 +98,7 @@ jobs:
           for line in Path('.spt1_probe/results.tsv').read_text().splitlines():
               strategy, rc, errors = line.split('\t')
               rows.append({'strategy': strategy, 'exit': int(rc), 'errors': int(errors), 'pass': int(rc) == 0 and int(errors) == 0})
-          priority = ['NormNum', 'Decide', 'KernelCard']
+          priority = ['ExistingTheorem', 'NormNum', 'Decide', 'KernelCard']
           selected = next((name for name in priority if any(r['strategy'] == name and r['pass'] for r in rows)), None)
           result = {'results': rows, 'selected': selected, 'pass': selected is not None}
           Path('.spt1_probe/RESULT.json').write_text(json.dumps(result, indent=2) + '\n')
