@@ -1,0 +1,87 @@
+name: Final Authority GB0 — Actual Lean Final13 Clean Replay
+
+on:
+  push:
+    branches:
+      - gpt/final-authority-gb0-canonical-20260820
+    paths:
+      - .github/workflows/final-authority-gb0-actual-lean.yml
+      - scripts/final_authority_gate.py
+      - PrimalitySheafVerification/**
+      - lean-toolchain
+      - lakefile.lean
+      - lake-manifest.json
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: final-authority-gb0-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  actual-lean-final-authority:
+    if: github.ref_name == 'gpt/final-authority-gb0-canonical-20260820'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    env:
+      PYTHONUNBUFFERED: "1"
+    steps:
+      - name: Checkout exact triggering source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Assert authoritative branch and clean source tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF_NAME" = "gpt/final-authority-gb0-canonical-20260820"
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test -z "$(git status --porcelain=v1 --untracked-files=all)"
+          test "$(tr -d '\r\n' < lean-toolchain)" = "leanprover/lean4:v4.33.0-rc1"
+          test -s scripts/final_authority_gate.py
+
+      - name: Install pinned Lean and Mathlib dependency cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="$HOME/.elan/bin:$PATH"
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)"
+          lake exe cache get
+          lean --version
+          lake --version
+
+      - name: Execute protected-source replay, Mock3, Final13, BuildAll, clean x2, checklist 15
+        id: authority
+        shell: bash
+        run: |
+          set -uo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          set +e
+          python3 scripts/final_authority_gate.py 2>&1 | tee /tmp/final-authority-runner.log
+          rc=${PIPESTATUS[0]}
+          set -e
+          mkdir -p .final_authority
+          cp /tmp/final-authority-runner.log .final_authority/WORKFLOW_RUNNER.log
+          printf '%s\n' "$rc" > .final_authority/WORKFLOW_EXIT.txt
+          echo "exit_code=$rc" >> "$GITHUB_OUTPUT"
+          exit "$rc"
+
+      - name: Upload complete authority evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: final-authority-gb0-${{ github.run_id }}-attempt${{ github.run_attempt }}
+          path: .final_authority/**
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 6
