@@ -1,0 +1,62 @@
+name: Codex FA recover R009 from commit patch v1
+on:
+  push:
+    branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
+    paths: [.github/workflows/codex-fa-recover-r009-from-commit-patch-v1.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  recover:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      CREATION_COMMIT: "6769aaab28a5ba4f13eae4a35cd3f3993644b03b"
+      TARGET_PATH: "scripts/fa_d0a3_r009_high_confidence_overrides.json"
+      EXPECTED_SHA256: "0f14f9f15cc2256399d5201648c157764f7db800cbed32125f0ba9b5b9a3c5e2"
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with: {ref: "${{ github.sha }}", fetch-depth: 1, persist-credentials: false}
+      - name: Reconstruct exact UTF-8 JSON from GitHub commit patch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/recovered
+          gh api "repos/${GITHUB_REPOSITORY}/commits/${CREATION_COMMIT}" > /tmp/commit.json
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib,json,os,re
+          payload=json.loads(Path('/tmp/commit.json').read_text())
+          matches=[f for f in payload.get('files',[]) if f.get('filename')==os.environ['TARGET_PATH']]
+          if len(matches)!=1: raise SystemExit('target patch count '+str(len(matches)))
+          patch=matches[0].get('patch')
+          if not patch: raise SystemExit('creation patch unavailable')
+          lines=patch.splitlines()
+          if not lines or not lines[0].startswith('@@ -0,0 +1,'):
+            raise SystemExit('unexpected new-file patch header '+repr(lines[:1]))
+          body=[]
+          for line in lines[1:]:
+            if line.startswith('\\ No newline at end of file'): continue
+            if not line.startswith('+'): raise SystemExit('non-add line in creation patch '+repr(line[:80]))
+            body.append(line[1:])
+          text='\n'.join(body)+'\n'
+          data=text.encode('utf-8')
+          digest=hashlib.sha256(data).hexdigest()
+          expected=os.environ['EXPECTED_SHA256']
+          obj=json.loads(text)
+          report={'line_count':len(text.splitlines()),'bytes':len(data),'sha256':digest,'expected_sha256':expected,'exact_expected':digest==expected,'json_schema':obj.get('schema'),'batch_id':obj.get('batch_id')}
+          Path('/tmp/recovered/REPORT.json').write_text(json.dumps(report,indent=2,sort_keys=True)+'\n')
+          print(json.dumps(report,indent=2))
+          if digest!=expected: raise SystemExit('reconstructed R009 hash mismatch')
+          Path('/tmp/recovered/fa_d0a3_r009_high_confidence_overrides.json').write_bytes(data)
+          PY
+      - name: Upload exact recovery evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-recover-r009-from-commit-patch-v1-${{ github.sha }}
+          path: /tmp/recovered
+          retention-days: 7
+          if-no-files-found: warn

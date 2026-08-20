@@ -1,0 +1,19 @@
+{
+  "schema": "fa-dynamic-cluster-3225-3226-ambient-translation-v1",
+  "status": "PINNED_API_SHAPE_PENDING_MODULE_DIRECT_LEAN",
+  "api_evidence_runs": [31532636694, 31534427373],
+  "repairs": [
+    {
+      "declaration_index": 3225,
+      "declaration_name": "ambientPlaneL2_translation_tendsto",
+      "old_fragment": "  have h : Continuous (fun t : ℂ ↦ DomAddAct.mk t +ᵥ f) := by\n    fun_prop\n  simpa using h.continuousAt",
+      "new_fragment": "  have h : Continuous (fun t : ℂ ↦ DomAddAct.mk t +ᵥ f) :=\n    DomAddAct.continuous_mk.vadd continuous_const\n  simpa using h.continuousAt"
+    },
+    {
+      "declaration_index": 3226,
+      "declaration_name": "ambientPlaneL2_norm_translation_sub_tendsto_zero",
+      "old_fragment": "  have h : Continuous\n      (fun t : ℂ ↦ ‖DomAddAct.mk t +ᵥ f - f‖) := by\n    fun_prop\n  simpa using h.continuousAt",
+      "new_fragment": "  have hTranslate : Continuous\n      (fun t : ℂ ↦ DomAddAct.mk t +ᵥ f) :=\n    DomAddAct.continuous_mk.vadd continuous_const\n  have h : Continuous\n      (fun t : ℂ ↦ ‖DomAddAct.mk t +ᵥ f - f‖) :=\n    (hTranslate.sub continuous_const).norm\n  simpa using h.continuousAt"
+    }
+  ]
+}

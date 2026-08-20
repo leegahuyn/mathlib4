@@ -1,0 +1,336 @@
+{
+  "schema": "fa-v41-section-repairs-v1",
+  "section": "v40-residual-g4-high-confidence",
+  "authority_source": "work/v40-artifact-9178173556/extracted/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+  "authority_source_sha256": "c88cd9832ea095ab22b0f1dd9307c8f43587d85b10688d47c4a534529cebca5c",
+  "authority_source_bytes": 2755606,
+  "authority_source_lines": 61693,
+  "authority_declaration_count": 4416,
+  "authority_error_inventory": {
+    "path": "work/v40-artifact-9178173556/extracted/build-logs/codex-fa-v40-saturation-highcap2000/FULL_DIAGNOSTICS.json",
+    "sha256": "fe09d7ad50bfebb6fbc13e03e2bb58cfde0f7116e4ed624f97a7204c2de38efc",
+    "range": [4309, 4409],
+    "failed_declarations": 28,
+    "error_headers": 35
+  },
+  "prior_promotion_inventory": {
+    "path": "work/v39-workers/late-promoted-repairs.json",
+    "sha256": "90983206d248bcab35926bef6889cff9aee69d5cdb4110e64caf2d3dd00f9805",
+    "duplicate_policy": "FAIL_ON_REPAIR_ID_OR_EXACT_OLD_NEW_PAIR"
+  },
+  "status": "STATIC_ONLY_DIRECT_LEAN_UNVERIFIED",
+  "header_policy": "NO_NEW_HEADER_CHANGES",
+  "allowed_header_change_names": [],
+  "selected_declaration_owners": [
+    "fullPlaneTestToL2_lowerForward_bufferedEssentialFriedrichs",
+    "raisedPeriodization_isReducedChartGaugeModel",
+    "loweredPeriodization_isReducedChartGaugeModel",
+    "reducedChartEmbedding_l2Coordinate_eq_fullPlaneTestToL2",
+    "norm_l2Coordinate_sq_eq_fullPlaneTestToL2_sq",
+    "exists_periodizedLocalRaisingGraphLimit",
+    "exists_periodizedLocalLoweringGraphLimit",
+    "exists_periodizedLocalRaisingGraphLimitWithModels",
+    "exists_periodizedLocalLoweringGraphLimitWithModels",
+    "effectiveScalarPeriodizationTerm_realSmooth",
+    "effectiveScalarPoincarePeriodization_eq_seed_on_reducedChart",
+    "effectiveScalarSmoothQuotient_invariant",
+    "effectiveScalarPoincarePeriodization_re_nonneg",
+    "effectiveScalarPoincarePeriodization_im_eq_zero",
+    "quotientChartPeriodizedMass_re_nonneg",
+    "quotientChartPeriodizedMass_im_eq_zero",
+    "one_le_quotientChartPeriodizedMass_re_on_compact",
+    "quotientChartNormalizationDenominator_ne_zero",
+    "quotientChartNormalizer_realSmooth",
+    "normalizedQuotientChartPeriodizations_sum_eq_one_on_saturation",
+    "invariantScalarCoreOperator",
+    "coeFn_finsetSum_Lp",
+    "invariantScalarCoreOperator_isReducedChartGaugeModel",
+    "fullPlaneTestToL2_reducedChartGaugeLocalizedAmbientTest",
+    "effectiveScalarSmoothQuotient_sum_attach_eq_one"
+  ],
+  "staged_excluded_declaration_owners": [
+    "orbitPeterssonEuclideanEmbedding_invariantScalarMultiplier",
+    "finset_sum_invariantScalarMultipliers_eq_of_compactSupport",
+    "fullPlaneTestMulCLM_apply"
+  ],
+  "notes": [
+    "All executable entries are exact declaration-local body fragments against the locked v40 authority.",
+    "The three excluded owners share a stuck HolderTriple/Lp exponent API and require a direct isolated probe; no guessed exponent annotation is executable here.",
+    "The work/v40-staged chain is not consumed and no staged/header/environment repair is included.",
+    "A later direct high-cap compile is the only authority for semantic closure."
+  ],
+  "repairs": [
+    {
+      "id": "G4-4309-rewrite-whole-buffered-representative",
+      "owner": "fullPlaneTestToL2_lowerForward_bufferedEssentialFriedrichs",
+      "declaration_index": 4309,
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "  rw [htest]\n  change euclideanLowerFromSuccForwardTest n a w = _\n  rw [euclideanLowerFromSuccForwardTest_eq_ambientAffineMaass,\n    show a w = friedrichsMollifiedRepresentative j u w by\n      simpa only [a, b, reducedChartAmbientTest_apply] using\n        bufferedEssentialFriedrichsFullPlaneTest_apply hK j u hu w,\n    hWeak.friedrichs_loweringFromSucc_identity]",
+      "new": "  rw [htest]\n  change euclideanLowerFromSuccForwardTest n a w = _\n  have haFun : (a : ℂ → ℂ) =\n      friedrichsMollifiedRepresentative j u := by\n    funext x\n    simpa only [a, b, reducedChartAmbientTest_apply] using\n      bufferedEssentialFriedrichsFullPlaneTest_apply hK j u hu x\n  rw [euclideanLowerFromSuccForwardTest_eq_ambientAffineMaass, haFun,\n    hWeak.friedrichs_loweringFromSucc_identity]"
+    },
+    {
+      "id": "G4-4313-4314-extensional-reduced-chart-test-support",
+      "owners": [
+        "raisedPeriodization_isReducedChartGaugeModel",
+        "loweredPeriodization_isReducedChartGaugeModel"
+      ],
+      "declaration_indices": [4313, 4314],
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 2,
+      "old": "  let a := reducedChartAmbientTest v hv\n  have ha : tsupport (a : ℂ → ℂ) ⊆\n      ambientGammaTwoReducedChart z₀ := by\n    simpa only [a, reducedChartAmbientTest] using hv",
+      "new": "  let a := reducedChartAmbientTest v hv\n  have haFun : (a : ℂ → ℂ) = (v : ℂ → ℂ) := by\n    funext w\n    exact reducedChartAmbientTest_apply v hv w\n  have ha : tsupport (a : ℂ → ℂ) ⊆\n      ambientGammaTwoReducedChart z₀ := by\n    rw [haFun]\n    exact hv"
+    },
+    {
+      "id": "G4-4315-expose-completion-coercion",
+      "owner": "reducedChartEmbedding_l2Coordinate_eq_fullPlaneTestToL2",
+      "declaration_index": 4315,
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "  rw [l2Coordinate_apply,\n    orbitPeterssonReducedChartEmbedding_coe]",
+      "new": "  rw [l2Coordinate_apply]\n  change orbitPeterssonReducedChartEmbedding m z₀\n      ((coreEmbedding m q : OrbitPeterssonCore m) :\n        OrbitPeterssonHilbert m) =\n    fullPlaneTestToL2 v\n  rw [orbitPeterssonReducedChartEmbedding_coe]"
+    },
+    {
+      "id": "G4-4317-real-inner-calc",
+      "owner": "norm_l2Coordinate_sq_eq_fullPlaneTestToL2_sq",
+      "declaration_index": 4317,
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "  have h := inner_l2Coordinate_eq_inner_fullPlaneTestToL2 hq hq\n  have hre := congrArg Complex.re h\n  simpa only [inner_self_eq_norm_sq (𝕜 := ℂ), Complex.ofReal_re] using hre",
+      "new": "  calc\n    ‖l2Coordinate m q‖ ^ 2 =\n        (inner ℂ (l2Coordinate m q) (l2Coordinate m q)).re :=\n      norm_sq_eq_re_inner (𝕜 := ℂ) _\n    _ = (inner ℂ (fullPlaneTestToL2 v)\n          (fullPlaneTestToL2 v)).re := by\n      exact congrArg Complex.re\n        (inner_l2Coordinate_eq_inner_fullPlaneTestToL2 hq hq)\n    _ = ‖fullPlaneTestToL2 v‖ ^ 2 :=\n      (norm_sq_eq_re_inner (𝕜 := ℂ) _).symm"
+    },
+    {
+      "id": "G4-4320-4322-expose-raised-coordinate",
+      "owners": [
+        "exists_periodizedLocalRaisingGraphLimit",
+        "exists_periodizedLocalRaisingGraphLimitWithModels"
+      ],
+      "declaration_indices": [4320, 4322],
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 2,
+      "old": "    simpa only [l2CoreRangeEquiv_coe,\n      physicalRaise_on_core] using",
+      "new": "    simpa only [l2CoreRangeEquiv_coe, raisedCoordinate_apply,\n      physicalRaise_on_core] using"
+    },
+    {
+      "id": "G4-4321-4323-expose-lowered-coordinate",
+      "owners": [
+        "exists_periodizedLocalLoweringGraphLimit",
+        "exists_periodizedLocalLoweringGraphLimitWithModels"
+      ],
+      "declaration_indices": [4321, 4323],
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 2,
+      "old": "    simpa only [l2CoreRangeEquiv_coe,\n      physicalLowerFromSucc_on_core] using\n        (physicalLowerFromSucc n).mem_graph\n          (l2CoreRangeEquiv (n + 1) (q j))\n  · simpa only [lowerFromSuccCoordinate_apply] using hy",
+      "new": "    simpa only [l2CoreRangeEquiv_coe, lowerFromSuccCoordinate_apply,\n      physicalLowerFromSucc_on_core] using\n        (physicalLowerFromSucc n).mem_graph\n          (l2CoreRangeEquiv (n + 1) (q j))\n  · simpa only [lowerFromSuccCoordinate_apply] using hy"
+    },
+    {
+      "id": "G4-4332-effective-inverse-action-normalization",
+      "owner": "effectiveScalarPeriodizationTerm_realSmooth",
+      "declaration_index": 4332,
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "  simpa only [effectiveScalarPeriodizationTerm, hgamma] using h",
+      "new": "  simpa only [effectiveScalarPeriodizationTerm, ← hgamma,\n    gammaTwoEffectiveElement_smul] using h"
+    },
+    {
+      "id": "G4-4337-type-finsum-calc",
+      "owner": "effectiveScalarPoincarePeriodization_eq_seed_on_reducedChart",
+      "declaration_index": 4337,
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "  unfold effectiveScalarPoincarePeriodization\n  apply finsum_eq_single (1 : GammaTwoEffective)\n  · intro a ha\n    by_contra hterm\n    have hxSupport : ((((a⁻¹ • z : ℍ) : ℂ))) ∈\n        tsupport (v : ℂ → ℂ) :=\n      subset_tsupport _ hterm\n    have hxU : a⁻¹ • z ∈ gammaTwoReducedChart z₀ :=\n      hv hxSupport\n    have hInter :\n        (((a • ·) '' gammaTwoReducedChart z₀) ∩\n          gammaTwoReducedChart z₀).Nonempty :=\n      ⟨z, ⟨a⁻¹ • z, hxU, by simp⟩, hz⟩\n    exact ha (gammaTwoReducedChart_inter_translate_imp_eq_one z₀ a hInter)\n  · simp [effectiveScalarPeriodizationTerm]",
+      "new": "  unfold effectiveScalarPoincarePeriodization\n  calc\n    (∑ᶠ a : GammaTwoEffective,\n        effectiveScalarPeriodizationTerm v a z) =\n        effectiveScalarPeriodizationTerm v (1 : GammaTwoEffective) z := by\n      apply finsum_eq_single (1 : GammaTwoEffective)\n      intro a ha\n      by_contra hterm\n      have hxSupport : ((((a⁻¹ • z : ℍ) : ℂ))) ∈\n          tsupport (v : ℂ → ℂ) :=\n        subset_tsupport _ hterm\n      have hxU : a⁻¹ • z ∈ gammaTwoReducedChart z₀ :=\n        hv hxSupport\n      have hInter :\n          (((a • ·) '' gammaTwoReducedChart z₀) ∩\n            gammaTwoReducedChart z₀).Nonempty :=\n        ⟨z, ⟨a⁻¹ • z, hxU, by simp⟩, hz⟩\n      exact ha\n        (gammaTwoReducedChart_inter_translate_imp_eq_one z₀ a hInter)\n    _ = v (z : ℂ) := by\n      simp [effectiveScalarPeriodizationTerm]"
+    },
+    {
+      "id": "G4-4346-unfold-local-effective-element",
+      "owner": "effectiveScalarSmoothQuotient_invariant",
+      "declaration_index": 4346,
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "  simpa only [effectiveScalarSmoothQuotient_apply,\n    gammaTwoEffectiveElement_smul] using",
+      "new": "  simpa only [a, effectiveScalarSmoothQuotient_apply,\n    gammaTwoEffectiveElement_smul] using"
+    },
+    {
+      "id": "G4-4350-4351-expose-finset-membership",
+      "owners": [
+        "effectiveScalarPoincarePeriodization_re_nonneg",
+        "effectiveScalarPoincarePeriodization_im_eq_zero"
+      ],
+      "declaration_indices": [4350, 4351],
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 2,
+      "old": "    intro a ha\n    rw [Set.Finite.mem_toFinset]\n    exact ⟨z, ha, mem_of_mem_nhds _hsNhds⟩",
+      "new": "    intro a ha\n    change a ∈ hsFinite.toFinset\n    rw [Set.Finite.mem_toFinset]\n    exact ⟨z, ha, mem_of_mem_nhds _hsNhds⟩"
+    },
+    {
+      "id": "G4-4350-explicit-real-projection-map-sum",
+      "owner": "effectiveScalarPoincarePeriodization_re_nonneg",
+      "declaration_index": 4350,
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "  rw [effectiveScalarPoincarePeriodization,\n    finsum_eq_sum_of_support_subset _ hsupport, map_sum]\n  exact Finset.sum_nonneg fun a _ ↦ hv _",
+      "new": "  rw [effectiveScalarPoincarePeriodization,\n    finsum_eq_sum_of_support_subset _ hsupport]\n  change 0 ≤ Complex.reCLM\n    (∑ a ∈ I, effectiveScalarPeriodizationTerm v a z)\n  rw [map_sum]\n  exact Finset.sum_nonneg fun a _ ↦ hv _"
+    },
+    {
+      "id": "G4-4351-explicit-imag-projection-map-sum",
+      "owner": "effectiveScalarPoincarePeriodization_im_eq_zero",
+      "declaration_index": 4351,
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "  rw [effectiveScalarPoincarePeriodization,\n    finsum_eq_sum_of_support_subset _ hsupport, map_sum]\n  simp [effectiveScalarPeriodizationTerm, hv]",
+      "new": "  rw [effectiveScalarPoincarePeriodization,\n    finsum_eq_sum_of_support_subset _ hsupport]\n  change Complex.imCLM\n    (∑ a ∈ I, effectiveScalarPeriodizationTerm v a z) = 0\n  rw [map_sum]\n  simp [effectiveScalarPeriodizationTerm, hv]"
+    },
+    {
+      "id": "G4-4358-explicit-real-projection-and-partition-nonneg",
+      "owner": "quotientChartPeriodizedMass_re_nonneg",
+      "declaration_index": 4358,
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "  rw [quotientChartPeriodizedMass, map_sum]\n  exact Finset.sum_nonneg fun x _ ↦\n    effectiveScalarPoincarePeriodization_re_nonneg _\n      (fun w ↦ by simp [reducedChartPartitionAmbientTest_apply]) z",
+      "new": "  rw [quotientChartPeriodizedMass]\n  change 0 ≤ Complex.reCLM\n    (∑ x ∈ quotientChartActiveCenters rho hfinite,\n      effectiveScalarPoincarePeriodization\n        (reducedChartPartitionAmbientTest rho hrho x) z)\n  rw [map_sum]\n  exact Finset.sum_nonneg fun x _ ↦\n    effectiveScalarPoincarePeriodization_re_nonneg _\n      (fun w ↦ by\n        simp only [reducedChartPartitionAmbientTest_apply, Complex.ofReal_re]\n        exact rho.nonneg x w) z"
+    },
+    {
+      "id": "G4-4359-explicit-imag-projection-map-sum",
+      "owner": "quotientChartPeriodizedMass_im_eq_zero",
+      "declaration_index": 4359,
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "  rw [quotientChartPeriodizedMass, map_sum]\n  apply Finset.sum_eq_zero\n  intro x hx\n  exact effectiveScalarPoincarePeriodization_im_eq_zero _\n    (fun w ↦ by simp [reducedChartPartitionAmbientTest_apply]) z",
+      "new": "  rw [quotientChartPeriodizedMass]\n  change Complex.imCLM\n    (∑ x ∈ quotientChartActiveCenters rho hfinite,\n      effectiveScalarPoincarePeriodization\n        (reducedChartPartitionAmbientTest rho hrho x) z) = 0\n  rw [map_sum]\n  apply Finset.sum_eq_zero\n  intro x hx\n  exact effectiveScalarPoincarePeriodization_im_eq_zero _\n    (fun w ↦ by simp [reducedChartPartitionAmbientTest_apply]) z"
+    },
+    {
+      "id": "G4-4360-expose-active-center-finset-membership",
+      "owner": "one_le_quotientChartPeriodizedMass_re_on_compact",
+      "declaration_index": 4360,
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "    intro x hx\n    rw [mem_quotientChartActiveCenters_iff]\n    exact ⟨(z : ℂ), subset_closure hx, ⟨z, hz, rfl⟩⟩",
+      "new": "    intro x hx\n    change x ∈ quotientChartActiveCenters rho hfinite\n    rw [mem_quotientChartActiveCenters_iff]\n    exact ⟨(z : ℂ), subset_closure hx, ⟨z, hz, rfl⟩⟩"
+    },
+    {
+      "id": "G4-4360-use-partition-nonneg-api",
+      "owner": "one_le_quotientChartPeriodizedMass_re_on_compact",
+      "declaration_index": 4360,
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "      rw [hrhozero]\n      exact effectiveScalarPoincarePeriodization_re_nonneg _\n        (fun w ↦ by simp [reducedChartPartitionAmbientTest_apply]) z",
+      "new": "      rw [hrhozero]\n      exact effectiveScalarPoincarePeriodization_re_nonneg _\n        (fun w ↦ by\n          simp only [reducedChartPartitionAmbientTest_apply, Complex.ofReal_re]\n          exact rho.nonneg x w) z"
+    },
+    {
+      "id": "G4-4367-explicit-real-denominator-contradiction",
+      "owner": "quotientChartNormalizationDenominator_ne_zero",
+      "declaration_index": 4367,
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "  have hB := quotientChartPeriodizedMass_re_nonneg rho hrho hfinite z\n  have hchi0 := Real.smoothTransition.nonneg\n    (2 * (quotientChartPeriodizedMass rho hrho hfinite z).re - 1)\n  have hchi1 := Real.smoothTransition.le_one\n    (2 * (quotientChartPeriodizedMass rho hrho hfinite z).re - 1)\n  have him := quotientChartPeriodizedMass_im_eq_zero rho hrho hfinite z\n  intro hzero\n  have hre := congrArg Complex.re hzero\n  simp only [quotientChartNormalizationDenominator,\n    quotientChartMassSwitch, map_add, map_sub, Complex.one_re,\n    Complex.ofReal_re, Complex.zero_re] at hre\n  by_cases hBzero :\n      (quotientChartPeriodizedMass rho hrho hfinite z).re = 0\n  · rw [hBzero] at hre\n    have hswitch : Real.smoothTransition (-1) = 0 :=\n      Real.smoothTransition.zero_of_nonpos (by norm_num)\n    rw [hswitch] at hre\n    norm_num at hre\n  · have hBpos :\n        0 < (quotientChartPeriodizedMass rho hrho hfinite z).re :=\n      lt_of_le_of_ne hB (Ne.symm hBzero)\n    nlinarith",
+      "new": "  let B := quotientChartPeriodizedMass rho hrho hfinite z\n  have hB : 0 ≤ B.re := by\n    exact quotientChartPeriodizedMass_re_nonneg rho hrho hfinite z\n  have hchi1 := Real.smoothTransition.le_one (2 * B.re - 1)\n  intro hzero\n  have hre :\n      B.re + (1 - Real.smoothTransition (2 * B.re - 1)) = 0 := by\n    simpa only [B, quotientChartNormalizationDenominator,\n      quotientChartMassSwitch, Complex.add_re, Complex.sub_re,\n      Complex.one_re, Complex.ofReal_re, Complex.zero_re] using\n      congrArg Complex.re hzero\n  by_cases hBzero : B.re = 0\n  · have hswitch :\n        Real.smoothTransition (2 * (0 : ℝ) - 1) = 0 :=\n      Real.smoothTransition.zero_of_nonpos (by norm_num)\n    rw [hBzero, hswitch] at hre\n    norm_num at hre\n  · have hBpos : 0 < B.re :=\n      lt_of_le_of_ne hB (Ne.symm hBzero)\n    nlinarith [hchi1]"
+    },
+    {
+      "id": "G4-4369-chart-lift-nonzero-premise",
+      "owner": "quotientChartNormalizer_realSmooth",
+      "declaration_index": 4369,
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "    RealSmooth (quotientChartNormalizer rho hrho hfinite) :=\n  (quotientChartNormalizationDenominator_realSmooth rho hrho hfinite).inv\n    (quotientChartNormalizationDenominator_ne_zero rho hrho hfinite)",
+      "new": "    RealSmooth (quotientChartNormalizer rho hrho hfinite) := by\n  simpa only [quotientChartNormalizer] using\n    RealSmooth.inv\n      (quotientChartNormalizationDenominator_realSmooth rho hrho hfinite)\n      (quotientChartNormalizationDenominator_ne_zero rho hrho hfinite)"
+    },
+    {
+      "id": "G4-4374-unfold-normalized-seed-wrapper",
+      "owner": "normalizedQuotientChartPeriodizations_sum_eq_one_on_saturation",
+      "declaration_index": 4374,
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "  simp_rw [effectiveScalarPeriodization_localizeLeft\n    (quotientChartNormalizer rho hrho hfinite)",
+      "new": "  simp_rw [normalizedQuotientChartSeed,\n    effectiveScalarPeriodization_localizeLeft\n    (quotientChartNormalizer rho hrho hfinite)"
+    },
+    {
+      "id": "G4-4376-map-add-pointwise-weight-section",
+      "owner": "invariantScalarCoreOperator",
+      "declaration_index": 4376,
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "  toFun u :=\n    invariantCutoffTimesOrbitSection n c hc\n      (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.toWeightSection n u)\n      (u : SmoothQuotientCompactFunction).1.2\n  map_add' u v := by\n    apply Subtype.ext\n    apply Subtype.ext\n    apply Subtype.ext\n    funext z\n    rfl",
+      "new": "  toFun u :=\n    invariantCutoffTimesOrbitSection n c hc\n      (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.toWeightSection n u)\n      (u : SmoothQuotientCompactFunction).1.2\n  map_add' u v := by\n    apply Subtype.ext\n    apply Subtype.ext\n    apply Subtype.ext\n    funext z\n    change\n      (c : ℍ → ℂ) z *\n          (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.toWeightSection n (u + v)) z =\n        (c : ℍ → ℂ) z *\n            (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.toWeightSection n u) z +\n          (c : ℍ → ℂ) z *\n            (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.toWeightSection n v) z\n    simp only [map_add, HalfIntegralMultiplier.WeightSection.add_apply, mul_add]"
+    },
+    {
+      "id": "G4-4376-map-smul-pointwise-weight-section",
+      "owner": "invariantScalarCoreOperator",
+      "declaration_index": 4376,
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "  map_smul' a u := by\n    apply Subtype.ext\n    apply Subtype.ext\n    apply Subtype.ext\n    funext z\n    rfl",
+      "new": "  map_smul' a u := by\n    apply Subtype.ext\n    apply Subtype.ext\n    apply Subtype.ext\n    funext z\n    change\n      (c : ℍ → ℂ) z *\n          (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.toWeightSection n (a • u)) z =\n        a * ((c : ℍ → ℂ) z *\n          (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.toWeightSection n u) z)\n    simp only [map_smul, HalfIntegralMultiplier.WeightSection.smul_apply, smul_eq_mul]\n    ring"
+    },
+    {
+      "id": "G4-4390-empty-eventual-zero-pointwise",
+      "owner": "coeFn_finsetSum_Lp",
+      "declaration_index": 4390,
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "  | empty =>\n      simpa using (MeasureTheory.Lp.coeFn_zero E p mu)",
+      "new": "  | empty =>\n      filter_upwards [MeasureTheory.Lp.coeFn_zero E p mu] with z hz\n      simpa only [Finset.sum_empty, Pi.zero_apply] using hz"
+    },
+    {
+      "id": "G4-4390-insert-pointwise-add",
+      "owner": "coeFn_finsetSum_Lp",
+      "declaration_index": 4390,
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "      rw [hadd, hsum]",
+      "new": "      rw [hadd, Pi.add_apply, hsum]"
+    },
+    {
+      "id": "G4-4399-use-direct-localized-support-theorem",
+      "owner": "invariantScalarCoreOperator_isReducedChartGaugeModel",
+      "declaration_index": 4399,
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "  · exact\n      (tsupport_comp_subset rfl\n        (reducedChartGaugeLocalizedAmbientTest m phi u : ℂ → ℂ)).trans <|\n        (tsupport_reducedChartGaugeLocalizedAmbientTest_subset m phi u).trans\n          hphi",
+      "new": "  · change tsupport\n        (reducedChartGaugeLocalizedAmbientTest m phi u : ℂ → ℂ) ⊆\n      ambientGammaTwoReducedChart z₀\n    exact (tsupport_reducedChartGaugeLocalizedAmbientTest_subset m phi u).trans\n      hphi"
+    },
+    {
+      "id": "G4-4400-expose-completion-coercion",
+      "owner": "fullPlaneTestToL2_reducedChartGaugeLocalizedAmbientTest",
+      "declaration_index": 4400,
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "  rw [l2Coordinate_apply, orbitPeterssonReducedChartEmbedding_coe]",
+      "new": "  rw [l2Coordinate_apply]\n  change fullPlaneTestToL2\n      (ambientTestCoreToFullPlaneTest\n        (reducedChartGaugeLocalizedAmbientTest m phi u)) =\n    fullPlaneTestMulL2 (ambientTestCoreToFullPlaneTest phi)\n      (orbitPeterssonReducedChartEmbedding m z₀\n        ((coreEmbedding m u : OrbitPeterssonCore m) :\n          OrbitPeterssonHilbert m))\n  rw [orbitPeterssonReducedChartEmbedding_coe]"
+    },
+    {
+      "id": "G4-4409-pin-sum-attach-codomain",
+      "owner": "effectiveScalarSmoothQuotient_sum_attach_eq_one",
+      "declaration_index": 4409,
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "            exact Finset.sum_attach t _",
+      "new": "            exact Finset.sum_attach t\n              (fun x : ℍ ↦\n                effectiveScalarPoincarePeriodization (theta x) z)"
+    }
+  ]
+}

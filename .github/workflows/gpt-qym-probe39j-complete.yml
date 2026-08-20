@@ -1,0 +1,290 @@
+name: GPT QYM Probe39j complete GammaTwo stabilizer proof
+
+on:
+  push:
+    branches:
+      - gpt/fa-qym-clean-final-20260816
+    paths:
+      - .github/workflows/gpt-qym-probe39j-complete.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  complete:
+    name: complete GammaTwo stabilizer theorem
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    env:
+      OUT: /tmp/qym-probe39j
+      TEST: QYM_Probe39j.lean
+
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Install pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT"
+          test "$(tr -d '\r\n' < lean-toolchain)" = leanprover/lean4:v4.33.0-rc1
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none > "$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" > "$OUT/toolchain.log" 2>&1
+          lake exe cache get > "$OUT/mathlib-cache.log" 2>&1
+          lean --version | tee "$OUT/lean-version.txt"
+          lake --version | tee "$OUT/lake-version.txt"
+
+      - name: Materialize complete theorem test
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > "$TEST" <<'LEAN'
+          import Mathlib.Analysis.Complex.UpperHalfPlane.Manifold
+          import Mathlib.NumberTheory.Modular
+          import Mathlib.NumberTheory.ModularForms.CongruenceSubgroups
+          import Mathlib.LinearAlgebra.Matrix.Notation
+          import Mathlib.Tactic
+
+          open Matrix Function Set Topology
+          open scoped MatrixGroups UpperHalfPlane
+
+          theorem gammaTwo_test
+              {gamma : SL(2, ℤ)} {z : ℍ}
+              (hGamma : gamma ∈ CongruenceSubgroup.Gamma 2)
+              (hz : z ∈ ModularGroup.fd)
+              (hfix : gamma • z = z) :
+              gamma = 1 ∨ gamma = -1 := by
+            have hInv00 : (ModularGroup.T⁻¹ : SL(2, ℤ)) 0 0 = (1 : ℤ) := by
+              have h := congrArg (fun g : SL(2, ℤ) => g 0 0)
+                (inv_mul_cancel ModularGroup.T)
+              norm_num [Matrix.SpecialLinearGroup.coe_mul,
+                ModularGroup.T, Matrix.mul_fin_two] at h
+              exact h
+            have hInv10 : (ModularGroup.T⁻¹ : SL(2, ℤ)) 1 0 = (0 : ℤ) := by
+              have h := congrArg (fun g : SL(2, ℤ) => g 1 0)
+                (inv_mul_cancel ModularGroup.T)
+              norm_num [Matrix.SpecialLinearGroup.coe_mul,
+                ModularGroup.T, Matrix.mul_fin_two] at h
+              exact h
+            have hInv11 : (ModularGroup.T⁻¹ : SL(2, ℤ)) 1 1 = (1 : ℤ) := by
+              have h := congrArg (fun g : SL(2, ℤ) => g 1 1)
+                (inv_mul_cancel ModularGroup.T)
+              norm_num [Matrix.SpecialLinearGroup.coe_mul,
+                ModularGroup.T, Matrix.mul_fin_two, hInv10] at h
+              exact h
+            have hInv01 : (ModularGroup.T⁻¹ : SL(2, ℤ)) 0 1 = (-1 : ℤ) := by
+              have h := congrArg (fun g : SL(2, ℤ) => g 0 1)
+                (inv_mul_cancel ModularGroup.T)
+              norm_num [Matrix.SpecialLinearGroup.coe_mul,
+                ModularGroup.T, Matrix.mul_fin_two, hInv00] at h
+              exact h
+
+            have hTSUpper :
+                (ModularGroup.T * ModularGroup.S : SL(2, ℤ)) 0 1 = (-1 : ℤ) := by
+              change
+                ModularGroup.T.val 0 0 * ModularGroup.S.val 0 1 +
+                  ModularGroup.T.val 0 1 * ModularGroup.S.val 1 1 = -1
+              norm_num [ModularGroup.T, ModularGroup.S]
+            have hTinvSLower :
+                (ModularGroup.T⁻¹ * ModularGroup.S : SL(2, ℤ)) 1 0 = (1 : ℤ) := by
+              change
+                (ModularGroup.T⁻¹).val 1 0 * ModularGroup.S.val 0 0 +
+                  (ModularGroup.T⁻¹).val 1 1 * ModularGroup.S.val 1 0 = 1
+              norm_num [ModularGroup.S, hInv10, hInv11]
+            have hTinvS11 :
+                (ModularGroup.T⁻¹ * ModularGroup.S : SL(2, ℤ)) 1 1 = (0 : ℤ) := by
+              change
+                (ModularGroup.T⁻¹).val 1 0 * ModularGroup.S.val 0 1 +
+                  (ModularGroup.T⁻¹).val 1 1 * ModularGroup.S.val 1 1 = 0
+              norm_num [ModularGroup.S, hInv10, hInv11]
+            have hTinvSTinvLower :
+                (ModularGroup.T⁻¹ * ModularGroup.S * ModularGroup.T⁻¹ : SL(2, ℤ)) 1 0 =
+                  (1 : ℤ) := by
+              change
+                (ModularGroup.T⁻¹ * ModularGroup.S).val 1 0 *
+                    (ModularGroup.T⁻¹).val 0 0 +
+                  (ModularGroup.T⁻¹ * ModularGroup.S).val 1 1 *
+                    (ModularGroup.T⁻¹).val 1 0 = 1
+              rw [hTinvSLower, hTinvS11, hInv00, hInv10]
+              norm_num
+            have hSTinvUpper :
+                (ModularGroup.S * ModularGroup.T⁻¹ : SL(2, ℤ)) 0 1 = (-1 : ℤ) := by
+              change
+                ModularGroup.S.val 0 0 * (ModularGroup.T⁻¹).val 0 1 +
+                  ModularGroup.S.val 0 1 * (ModularGroup.T⁻¹).val 1 1 = -1
+              norm_num [ModularGroup.S, hInv01, hInv11]
+            have hSTUpper :
+                (ModularGroup.S * ModularGroup.T : SL(2, ℤ)) 0 1 = (-1 : ℤ) := by
+              change
+                ModularGroup.S.val 0 0 * ModularGroup.T.val 0 1 +
+                  ModularGroup.S.val 0 1 * ModularGroup.T.val 1 1 = -1
+              norm_num [ModularGroup.S, ModularGroup.T]
+            have hTSLower :
+                (ModularGroup.T * ModularGroup.S : SL(2, ℤ)) 1 0 = (1 : ℤ) := by
+              change
+                ModularGroup.T.val 1 0 * ModularGroup.S.val 0 0 +
+                  ModularGroup.T.val 1 1 * ModularGroup.S.val 1 0 = 1
+              norm_num [ModularGroup.T, ModularGroup.S]
+            have hTS11 :
+                (ModularGroup.T * ModularGroup.S : SL(2, ℤ)) 1 1 = (0 : ℤ) := by
+              change
+                ModularGroup.T.val 1 0 * ModularGroup.S.val 0 1 +
+                  ModularGroup.T.val 1 1 * ModularGroup.S.val 1 1 = 0
+              norm_num [ModularGroup.T, ModularGroup.S]
+            have hTSTLower :
+                (ModularGroup.T * ModularGroup.S * ModularGroup.T : SL(2, ℤ)) 1 0 =
+                  (1 : ℤ) := by
+              change
+                (ModularGroup.T * ModularGroup.S).val 1 0 * ModularGroup.T.val 0 0 +
+                  (ModularGroup.T * ModularGroup.S).val 1 1 * ModularGroup.T.val 1 0 = 1
+              rw [hTSLower, hTS11]
+              norm_num [ModularGroup.T]
+            have hTinvSUpper :
+                (ModularGroup.T⁻¹ * ModularGroup.S : SL(2, ℤ)) 0 1 = (-1 : ℤ) := by
+              change
+                (ModularGroup.T⁻¹).val 0 0 * ModularGroup.S.val 0 1 +
+                  (ModularGroup.T⁻¹).val 0 1 * ModularGroup.S.val 1 1 = -1
+              norm_num [ModularGroup.S, hInv00]
+
+            have pairNotMemUpperOne {g : SL(2, ℤ)} (h : g 0 1 = (1 : ℤ)) :
+                g ∉ CongruenceSubgroup.Gamma 2 ∧
+                  -g ∉ CongruenceSubgroup.Gamma 2 := by
+              constructor
+              · intro hg
+                have hu := (CongruenceSubgroup.Gamma_mem.mp hg).2.1
+                rw [h] at hu
+                norm_num at hu
+              · intro hg
+                have hu := (CongruenceSubgroup.Gamma_mem.mp hg).2.1
+                have hn : (-g : SL(2, ℤ)) 0 1 = (-1 : ℤ) := by
+                  change -(g 0 1) = -1
+                  rw [h]
+                rw [hn] at hu
+                norm_num at hu
+            have pairNotMemUpperNegOne {g : SL(2, ℤ)} (h : g 0 1 = (-1 : ℤ)) :
+                g ∉ CongruenceSubgroup.Gamma 2 ∧
+                  -g ∉ CongruenceSubgroup.Gamma 2 := by
+              constructor
+              · intro hg
+                have hu := (CongruenceSubgroup.Gamma_mem.mp hg).2.1
+                rw [h] at hu
+                norm_num at hu
+              · intro hg
+                have hu := (CongruenceSubgroup.Gamma_mem.mp hg).2.1
+                have hn : (-g : SL(2, ℤ)) 0 1 = (1 : ℤ) := by
+                  change -(g 0 1) = 1
+                  rw [h]
+                  norm_num
+                rw [hn] at hu
+                norm_num at hu
+            have pairNotMemLowerOne {g : SL(2, ℤ)} (h : g 1 0 = (1 : ℤ)) :
+                g ∉ CongruenceSubgroup.Gamma 2 ∧
+                  -g ∉ CongruenceSubgroup.Gamma 2 := by
+              constructor
+              · intro hg
+                have hl := (CongruenceSubgroup.Gamma_mem.mp hg).2.2.1
+                rw [h] at hl
+                norm_num at hl
+              · intro hg
+                have hl := (CongruenceSubgroup.Gamma_mem.mp hg).2.2.1
+                have hn : (-g : SL(2, ℤ)) 1 0 = (-1 : ℤ) := by
+                  change -(g 1 0) = -1
+                  rw [h]
+                rw [hn] at hl
+                norm_num at hl
+
+            have hTNo := pairNotMemUpperOne
+              (g := ModularGroup.T) (by norm_num [ModularGroup.T])
+            have hTinvNo := pairNotMemUpperNegOne
+              (g := ModularGroup.T⁻¹) hInv01
+            have hSNo := pairNotMemUpperNegOne
+              (g := ModularGroup.S) (by norm_num [ModularGroup.S])
+            have hTSNo := pairNotMemUpperNegOne
+              (g := ModularGroup.T * ModularGroup.S) hTSUpper
+            have hTinvSTinvNo := pairNotMemLowerOne
+              (g := ModularGroup.T⁻¹ * ModularGroup.S * ModularGroup.T⁻¹)
+              hTinvSTinvLower
+            have hSTinvNo := pairNotMemUpperNegOne
+              (g := ModularGroup.S * ModularGroup.T⁻¹) hSTinvUpper
+            have hSTNo := pairNotMemUpperNegOne
+              (g := ModularGroup.S * ModularGroup.T) hSTUpper
+            have hTSTNo := pairNotMemLowerOne
+              (g := ModularGroup.T * ModularGroup.S * ModularGroup.T) hTSTLower
+            have hTinvSNo := pairNotMemUpperNegOne
+              (g := ModularGroup.T⁻¹ * ModularGroup.S) hTinvSUpper
+
+            rcases ModularGroup.cases_of_mem_fd_smul_mem_fd hz (hfix ▸ hz) with
+              hcentral | hT | hTinv | hS | hTS | hTinvSTinv |
+                hSTinv | hST | hTST | hTinvS
+            · exact hcentral
+            · rcases hT.1 with rfl | rfl
+              · exact (hTNo.1 hGamma).elim
+              · exact (hTNo.2 hGamma).elim
+            · rcases hTinv.1 with rfl | rfl
+              · exact (hTinvNo.1 hGamma).elim
+              · exact (hTinvNo.2 hGamma).elim
+            · rcases hS.1 with rfl | rfl
+              · exact (hSNo.1 hGamma).elim
+              · exact (hSNo.2 hGamma).elim
+            · rcases hTS.1 with rfl | rfl
+              · exact (hTSNo.1 hGamma).elim
+              · exact (hTSNo.2 hGamma).elim
+            · rcases hTinvSTinv.1 with rfl | rfl
+              · exact (hTinvSTinvNo.1 hGamma).elim
+              · exact (hTinvSTinvNo.2 hGamma).elim
+            · rcases hSTinv.1 with rfl | rfl
+              · exact (hSTinvNo.1 hGamma).elim
+              · exact (hSTinvNo.2 hGamma).elim
+            · rcases hST.1 with rfl | rfl
+              · exact (hSTNo.1 hGamma).elim
+              · exact (hSTNo.2 hGamma).elim
+            · rcases hTST.1 with rfl | rfl
+              · exact (hTSTNo.1 hGamma).elim
+              · exact (hTSTNo.2 hGamma).elim
+            · rcases hTinvS.1 with rfl | rfl
+              · exact (hTinvSNo.1 hGamma).elim
+              · exact (hTinvSNo.2 hGamma).elim
+          LEAN
+          sed -i 's/^          //' "$TEST"
+          cp "$TEST" "$OUT/$TEST"
+
+      - name: Direct Lean compile complete theorem
+        shell: bash
+        run: |
+          set -euo pipefail
+          set +e
+          /usr/bin/time -v -o "$OUT/TEST.time" \
+            lake env lean -DmaxErrors=10000 -DwarningAsError=false \
+              -o "$OUT/TEST.olean" -i "$OUT/TEST.ilean" \
+              "$TEST" > "$OUT/TEST.log" 2>&1
+          rc=$?
+          set -e
+          echo "$rc" > "$OUT/TEST.exit"
+          rm -f "$TEST"
+          exit 0
+
+      - name: Upload complete theorem evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-probe39j-${{ github.sha }}
+          path: /tmp/qym-probe39j/**
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Fail closed unless complete theorem passes
+        if: always()
+        shell: bash
+        run: |
+          test -f "$OUT/TEST.exit"
+          test "$(cat "$OUT/TEST.exit")" = 0
+          test -s "$OUT/TEST.olean"
+          test -s "$OUT/TEST.ilean"

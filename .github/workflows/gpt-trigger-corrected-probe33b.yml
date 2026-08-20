@@ -1,0 +1,24 @@
+name: GPT trigger corrected Probe33b
+
+on:
+  push:
+    branches: [gpt/fa-qym-clean-final-20260816]
+    paths:
+      - .github/workflows/gpt-trigger-corrected-probe33b.yml
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Dispatch corrected explicit-opNorm matrix
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh workflow run gpt-qym-probe33b-opnorm-instance-matrix.yml \
+            --repo leegahuyn/mathlib4 \
+            --ref gpt/fa-qym-clean-final-20260816

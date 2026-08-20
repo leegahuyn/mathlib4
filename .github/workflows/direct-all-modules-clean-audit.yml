@@ -1,0 +1,319 @@
+name: Direct all modules clean rebuild and audit
+
+on:
+  push:
+    branches: [fix/primality-sheaf-clean-build]
+    paths:
+      - 'PrimalitySheafVerification/**'
+      - 'lean-toolchain'
+      - 'lake-manifest.json'
+      - 'lakefile.lean'
+      - '.github/workflows/direct-all-modules-clean-audit.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: direct-all-modules-clean-audit
+  cancel-in-progress: true
+
+jobs:
+  direct-clean-audit:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 720
+    env:
+      SOURCE_SHA: ${{ github.sha }}
+      ROOT: PrimalitySheafVerification
+      OUTDIR: .lake/build/lib/lean/PrimalitySheafVerification
+      LOGDIR: /tmp/direct-all-modules-clean-audit
+
+    steps:
+      - name: Clone exact branch head
+        shell: bash
+        run: |
+          set -euo pipefail
+          git init .
+          git remote add origin "https://github.com/${GITHUB_REPOSITORY}.git"
+          git fetch --depth=1 origin "${SOURCE_SHA}"
+          git checkout --detach FETCH_HEAD
+          test "$(git rev-parse HEAD)" = "${SOURCE_SHA}"
+          mkdir -p "${LOGDIR}/logs" "${LOGDIR}/artifacts" "${LOGDIR}/audit"
+          printf '%s\n' \
+            "repository=${GITHUB_REPOSITORY}" \
+            "source_sha=${SOURCE_SHA}" \
+            "utc_started=$(date -u +%FT%TZ)" \
+            | tee "${LOGDIR}/snapshot.txt"
+
+      - name: Install exact Lean and restore Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          elan toolchain install "$(cat lean-toolchain)"
+          lean --version | tee "${LOGDIR}/lean-version.txt"
+          lake --version | tee "${LOGDIR}/lake-version.txt"
+          cp lean-toolchain lake-manifest.json "${LOGDIR}/"
+          lake exe cache get 2>&1 | tee "${LOGDIR}/logs/cache-get.log"
+
+      - name: Executable-source forbidden-token audit
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY' | tee "${LOGDIR}/audit/forbidden-token-audit.txt"
+          from pathlib import Path
+          import re
+
+          root = Path('PrimalitySheafVerification')
+          names = [
+              'Spt1.lean','Spt2.lean','Spt3.lean','Spt4.lean','Spt5.lean','Spt6.lean','Spt7.lean',
+              'Mock1.lean','Mock1_Advanced.lean','Mock2.lean','Mock2_Advanced.lean',
+              'Mock2_FunctionalAnalysis.lean','Mock2_FunctionalAnalysis_Integrated.lean',
+              'QYM.lean','BuildAll.lean',
+          ]
+
+          def strip(src: str) -> str:
+              out=[]; i=0; depth=0; string=False; esc=False
+              while i < len(src):
+                  if depth:
+                      if src.startswith('/-',i): depth+=1; out+=[' ',' ']; i+=2
+                      elif src.startswith('-/',i): depth-=1; out+=[' ',' ']; i+=2
+                      else: out.append('\n' if src[i]=='\n' else ' '); i+=1
+                  elif string:
+                      c=src[i]; out.append('\n' if c=='\n' else ' ')
+                      if esc: esc=False
+                      elif c=='\\': esc=True
+                      elif c=='"': string=False
+                      i+=1
+                  elif src.startswith('/-',i): depth=1; out+=[' ',' ']; i+=2
+                  elif src.startswith('--',i):
+                      while i < len(src) and src[i] != '\n': out.append(' '); i+=1
+                  elif src[i]=='"': string=True; out.append(' '); i+=1
+                  else: out.append(src[i]); i+=1
+              if depth or string: raise SystemExit('unterminated comment or string')
+              return ''.join(out)
+
+          patterns={
+              'sorry':r'\bsorry\b',
+              'admit':r'\badmit\b',
+              'line_start_global_axiom':r'(?m)^\s*axiom\b',
+              'unsafe':r'\bunsafe\b',
+              'native_decide':r'\bnative_decide\b',
+              'Lean.ofReduceBool':r'\bLean\.ofReduceBool\b',
+          }
+          bad=False
+          for name in names:
+              path=root/name
+              if not path.is_file():
+                  print(f'{name}: MISSING')
+                  bad=True
+                  continue
+              code=strip(path.read_text(encoding='utf-8'))
+              print(f'[{name}]')
+              for label,pattern in patterns.items():
+                  matches=list(re.finditer(pattern,code))
+                  print(f'{label}={len(matches)}')
+                  if matches:
+                      bad=True
+                      for match in matches[:20]:
+                          line=code.count('\n',0,match.start())+1
+                          print(f'  line {line}: {match.group(0)!r}')
+          if bad: raise SystemExit(1)
+          PY
+
+      - name: Generate whole-file Spt5 axiom audit source
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          source = Path('PrimalitySheafVerification/Spt5.lean').read_text(encoding='utf-8')
+
+          def strip(src: str) -> str:
+              out=[]; i=0; depth=0; string=False; esc=False
+              while i < len(src):
+                  if depth:
+                      if src.startswith('/-',i): depth+=1; out+=[' ',' ']; i+=2
+                      elif src.startswith('-/',i): depth-=1; out+=[' ',' ']; i+=2
+                      else: out.append('\n' if src[i]=='\n' else ' '); i+=1
+                  elif string:
+                      c=src[i]; out.append('\n' if c=='\n' else ' ')
+                      if esc: esc=False
+                      elif c=='\\': esc=True
+                      elif c=='"': string=False
+                      i+=1
+                  elif src.startswith('/-',i): depth=1; out+=[' ',' ']; i+=2
+                  elif src.startswith('--',i):
+                      while i < len(src) and src[i] != '\n': out.append(' '); i+=1
+                  elif src[i]=='"': string=True; out.append(' '); i+=1
+                  else: out.append(src[i]); i+=1
+              return ''.join(out)
+
+          code=strip(source)
+          blocks=[]
+          namespaces=[]
+          declarations=[]
+          declaration=re.compile(
+              r'^\s*(?:(?:noncomputable|private|protected|local)\s+)*'
+              r'(theorem|lemma|def|abbrev|opaque|structure|class|inductive)\s+'
+              r'([A-Za-z_][A-Za-z0-9_\'.]*)', re.M)
+          namespace=re.compile(r'^\s*namespace\s+([A-Za-z_][A-Za-z0-9_\'.]*)\s*$', re.M)
+          section=re.compile(r'^\s*section(?:\s+[A-Za-z_][A-Za-z0-9_\']*)?\s*$', re.M)
+          ending=re.compile(r'^\s*end(?:\s+([A-Za-z_][A-Za-z0-9_\'.]*))?\s*$', re.M)
+          event=re.compile(
+              r'^\s*(?:namespace\s+[A-Za-z_][A-Za-z0-9_\'.]*|'
+              r'section(?:\s+[A-Za-z_][A-Za-z0-9_\']*)?|'
+              r'end(?:\s+[A-Za-z_][A-Za-z0-9_\'.]*)?|'
+              r'(?:(?:noncomputable|private|protected|local)\s+)*'
+              r'(?:theorem|lemma|def|abbrev|opaque|structure|class|inductive)\s+'
+              r'[A-Za-z_][A-Za-z0-9_\'.]*)', re.M)
+          for match in event.finditer(code):
+              line=match.group(0).strip()
+              m=namespace.match(line)
+              if m:
+                  name=m.group(1)
+                  namespaces.extend(name.split('.'))
+                  blocks.append(('namespace',len(name.split('.'))))
+                  continue
+              if section.match(line):
+                  blocks.append(('section',0))
+                  continue
+              m=ending.match(line)
+              if m:
+                  if blocks:
+                      kind,width=blocks.pop()
+                      if kind=='namespace' and width:
+                          del namespaces[-width:]
+                  continue
+              m=declaration.match(line)
+              if not m or 'private ' in f' {line} ' or 'local ' in f' {line} ':
+                  continue
+              name=m.group(2)
+              full=name if '.' in name else '.'.join([*namespaces,name])
+              if full and full not in declarations:
+                  declarations.append(full)
+
+          out=Path('/tmp/Spt5WholeFileAxiomAudit.lean')
+          lines=['import PrimalitySheafVerification.Spt5','']
+          for name in declarations:
+              lines.append(f'#print axioms {name}')
+          out.write_text('\n'.join(lines)+'\n',encoding='utf-8')
+          Path('/tmp/direct-all-modules-clean-audit/audit/Spt5-declarations.txt').write_text(
+              '\n'.join(declarations)+'\n',encoding='utf-8')
+          print(f'generated {len(declarations)} #print axioms commands')
+          if not declarations:
+              raise SystemExit('no Spt5 declarations parsed')
+          PY
+
+      - name: Compile all modules and BuildAll twice from deleted project artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          primary=(Spt1 Spt2 Spt3 Spt4 Spt5 Spt6 Spt7 Mock1 Mock1_Advanced Mock2 Mock2_Advanced Mock2_FunctionalAnalysis QYM)
+          ordered=(Spt1 Spt2 Spt3 Spt4 Spt5 Spt6 Spt7 Mock1 Mock1_Advanced Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated QYM)
+          echo 'pass,module,exit_code,error_count,warning_count,olean,ilean' > "${LOGDIR}/compile-summary.csv"
+
+          compile_module() {
+            local pass="$1" module="$2" path log code errors warnings
+            path="${ROOT}/${module}.lean"
+            log="${LOGDIR}/logs/pass${pass}-${module}.log"
+            rm -f "${OUTDIR}/${module}.olean" "${OUTDIR}/${module}.ilean" \
+              "${OUTDIR}/${module}.olean.private"
+            set +e
+            lake env lean "${path}" -o "${OUTDIR}/${module}.olean" \
+              -i "${OUTDIR}/${module}.ilean" >"${log}" 2>&1
+            code=$?
+            set -e
+            errors="$(grep -c 'error:' "${log}" || true)"
+            warnings="$(grep -c 'warning:' "${log}" || true)"
+            printf '%s,%s,%s,%s,%s,%s,%s\n' \
+              "${pass}" "${module}" "${code}" "${errors}" "${warnings}" \
+              "$(test -s "${OUTDIR}/${module}.olean" && echo yes || echo no)" \
+              "$(test -s "${OUTDIR}/${module}.ilean" && echo yes || echo no)" \
+              >> "${LOGDIR}/compile-summary.csv"
+            if [[ "${code}" -ne 0 ]]; then
+              grep -n 'error:' "${log}" | head -30 || true
+              grep -n 'error:' "${log}" | tail -10 || true
+              tail -300 "${log}" || true
+              return "${code}"
+            fi
+            test "${errors}" -eq 0
+            test -s "${OUTDIR}/${module}.olean"
+            test -s "${OUTDIR}/${module}.ilean"
+            ! grep -Eqi \
+              "maximum number of errors|missing object file|sorryAx|declaration uses 'sorry'|PANIC|segmentation fault|stack overflow" \
+              "${log}"
+          }
+
+          for pass in 1 2; do
+            rm -rf "${OUTDIR}"
+            mkdir -p "${OUTDIR}"
+            for module in "${ordered[@]}"; do
+              compile_module "${pass}" "${module}"
+            done
+            compile_module "${pass}" BuildAll
+            for module in "${primary[@]}" BuildAll; do
+              test -s "${OUTDIR}/${module}.olean"
+              test -s "${OUTDIR}/${module}.ilean"
+            done
+            find "${OUTDIR}" -maxdepth 1 -type f \( -name '*.olean' -o -name '*.ilean' \) \
+              -printf '%f\n' | sort > "${LOGDIR}/artifacts/pass${pass}-artifact-list.txt"
+            sha256sum "${OUTDIR}"/*.olean "${OUTDIR}"/*.ilean \
+              > "${LOGDIR}/artifacts/pass${pass}-artifact-sha256.txt"
+          done
+
+      - name: Run and validate Spt5 whole-file axiom audit
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          lake env lean /tmp/Spt5WholeFileAxiomAudit.lean \
+            > "${LOGDIR}/audit/Spt5-whole-file-axioms.log" 2>&1
+          ! grep -Fq 'sorryAx' "${LOGDIR}/audit/Spt5-whole-file-axioms.log"
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          log=Path('/tmp/direct-all-modules-clean-audit/audit/Spt5-whole-file-axioms.log').read_text(
+              encoding='utf-8',errors='replace')
+          allowed={'propext','Classical.choice','Quot.sound'}
+          found=set()
+          for raw in re.findall(r'depends on axioms:\s*\[([^\]]*)\]',log,re.S):
+              for name in re.findall(r'[A-Za-z_][A-Za-z0-9_.]*',raw):
+                  found.add(name)
+          forbidden=sorted(found-allowed)
+          print('observed_axioms='+','.join(sorted(found)))
+          print('forbidden_axioms='+','.join(forbidden))
+          if forbidden:
+              raise SystemExit(1)
+          PY
+
+      - name: Record final provenance
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --exit-code
+          printf '%s\n' \
+            "source_sha=${SOURCE_SHA}" \
+            "lean_toolchain=$(cat lean-toolchain)" \
+            "primary_module_count=13" \
+            "clean_rebuild_passes=2" \
+            "runtime_source_repairs=0" \
+            "utc_finished=$(date -u +%FT%TZ)" \
+            | tee "${LOGDIR}/final-status.txt"
+
+      - name: Upload full direct-source evidence
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: direct-all-modules-clean-audit-${{ env.SOURCE_SHA }}
+          path: /tmp/direct-all-modules-clean-audit
+          if-no-files-found: warn
+          retention-days: 30

@@ -1,0 +1,86 @@
+name: Codex FA API probe intrinsic 3100-3114
+
+on:
+  push:
+    branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
+    paths: [.github/workflows/codex-fa-api-probe-intrinsic-3100-3114.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none >/tmp/elan.log 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1
+          lake exe cache get >/tmp/cache.log 2>&1
+      - name: Probe exact APIs
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          cat >/tmp/ProbeIntrinsic3100.lean <<'LEAN'
+          import Mathlib
+          open Matrix Matrix.SpecialLinearGroup UpperHalfPlane Set Filter
+          open scoped MatrixGroups UpperHalfPlane
+
+          #check Matrix.SpecialLinearGroup.det_coe
+          #check ContDiffOn.exists_lipschitzOnWith
+          #check Real.smoothTransition.contDiff.contDiffOn.exists_lipschitzOnWith
+          #check Complex.norm_I
+          #check UpperHalfPlane.dist_le_dist_coe_div_sqrt
+          #check nhdsWithin
+
+          example (g : SL(2, ℤ)) :
+              0 < ((g : GL (Fin 2) ℝ)).val.det := by
+            change 0 < ((Matrix.SpecialLinearGroup.map (Int.castRingHom ℝ) g : SL(2, ℝ)) :
+              Matrix (Fin 2) (Fin 2) ℝ).det
+            rw [Matrix.SpecialLinearGroup.det_coe]
+            exact zero_lt_one
+
+          example (f : ℂ → ℝ) (z : ℂ) (s : Set ℂ)
+              (hf : ContDiffWithinAt ℝ ∞ f s z) :
+              ContDiffWithinAt ℝ ∞ (fun v => (f v : ℂ)) s z := by
+            simpa only [Function.comp_apply, Complex.ofRealCLM_apply] using
+              Complex.ofRealCLM.contDiff.contDiffAt.comp_contDiffWithinAt z hf
+
+          example (z : ℍ) {w : ℂ} (hwpos : 0 < w.im) :
+              dist ((UpperHalfPlane.ofComplex w : ℍ) : ℂ) (z : ℂ) /
+                  Real.sqrt ((UpperHalfPlane.ofComplex w).im * z.im) =
+                dist w (z : ℂ) / Real.sqrt (w.im * z.im) := by
+            rw [UpperHalfPlane.ofComplex_apply_of_im_pos hwpos]
+
+          example : ‖Complex.I‖ = 1 := by
+            exact Complex.norm_I
+          LEAN
+          set +e
+          lake env lean -DwarningAsError=false /tmp/ProbeIntrinsic3100.lean >/tmp/intrinsic-3100.log 2>&1
+          code=$?
+          set -e
+          cat /tmp/intrinsic-3100.log
+          echo "$code" >/tmp/intrinsic-3100.exit
+          exit "$code"
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-api-probe-intrinsic-3100-3114-${{ github.sha }}
+          path: |
+            /tmp/intrinsic-3100.log
+            /tmp/intrinsic-3100.exit
+          if-no-files-found: warn
+          retention-days: 7

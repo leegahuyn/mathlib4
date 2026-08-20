@@ -1,0 +1,13 @@
+{
+  "schema": "fa-dynamic-idx3110-lipschitz-args-v1",
+  "status": "DIRECT_GOAL_SHAPE_MATCH_PENDING_RECOMPILE",
+  "base_direct_tested_source_sha256": "a258803cec66253288cec6f4a38b4b18c46ae0e93cf9861022d1bcef98e29f94",
+  "repairs": [
+    {
+      "declaration_index": 3110,
+      "declaration_name": "intrinsicCuspCutoffReal_lipschitz",
+      "old_fragment": "      smoothTransition_lipschitz.dist_le_mul z w",
+      "new_fragment": "      smoothTransition_lipschitz.dist_le_mul\n        (((N : ℝ) + 2) - modularLogMaxHeight z)\n        (((N : ℝ) + 2) - modularLogMaxHeight w)"
+    }
+  ]
+}

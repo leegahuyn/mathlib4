@@ -1,0 +1,5 @@
+Probe19 concise direct runner trigger.
+Authority: Probe17 run 32002705164 / artifact 9279187130.
+Runner commit: 366d44428aac1529e2f01a2110933fd77d624a4c.
+Candidate SHA256: 069c1476163e3b87670e8eae0960f7975691f83a2ac1440863387eb2036cced5.
+Candidate blob: cb104f9129f53d4db10364611bcf95911fd3ab5c.

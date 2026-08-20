@@ -1,0 +1,69 @@
+{
+  "schema": "fa-dynamic-cluster-3369-3399-weak-smooth-bridges-v2",
+  "status": "CUMULATIVE_DIRECT_LEAN_PENDING",
+  "source_run_id": 31571384486,
+  "source_sha256": "61afe5d593f26fad577b7522bb4c1d74f261ea347fbeb97db8e3ae0101ec45c7",
+  "api_probe_run_id": 31567523417,
+  "repairs": [
+    {
+      "declaration_index": 3369,
+      "declaration_name": "mem_adjoint_graph_iff_swapped_pairing",
+      "old_fragment": "    rcases (LinearPMap.mem_graph_iff (T†)).mp hGraph with\n      ⟨y', hy', hz'⟩\n    rw [← hy', ← hz']",
+      "new_fragment": "    rcases (LinearPMap.mem_graph_iff (T†)).mp hGraph with\n      ⟨y', hy', hz'⟩\n    simp only [Prod.fst] at hy'\n    simp only [Prod.snd] at hz'\n    rw [← hy', ← hz']"
+    },
+    {
+      "declaration_index": 3374,
+      "declaration_name": "weakRaisingSubmodule_isClosed",
+      "old_fragment": "  exact isClosed_iInter fun v ↦\n    ContinuousLinearMap.isClosed_ker (raisingDefect n v)",
+      "new_fragment": "  exact isClosed_iInter fun\n      (v : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore ((n + 1) + 1)) ↦\n    ContinuousLinearMap.isClosed_ker (raisingDefect n v)"
+    },
+    {
+      "declaration_index": 3375,
+      "declaration_name": "weakLoweringSubmodule_isClosed",
+      "old_fragment": "  exact isClosed_iInter fun v ↦\n    ContinuousLinearMap.isClosed_ker (loweringDefect n v)",
+      "new_fragment": "  exact isClosed_iInter fun\n      (v : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) ↦\n    ContinuousLinearMap.isClosed_ker (loweringDefect n v)"
+    },
+    {
+      "declaration_index": 3376,
+      "declaration_name": "weightedWeakSubmodule_isClosed",
+      "old_fragment": "    ext x\n    simp only [weightedWeakSubmodule, Submodule.mem_inf, Set.mem_inter_iff]]",
+      "new_fragment": "    ext x\n    exact Submodule.mem_inf]"
+    },
+    {
+      "declaration_index": 3388,
+      "declaration_name": "norm_eq_zero_iff_coordinates",
+      "old_fragment": "    have hx0 : x = 0 := norm_eq_zero.mp hx\n    simp only [hx0, map_zero]",
+      "new_fragment": "    have hx0 : x = 0 := norm_eq_zero.mp hx\n    simpa [hx0]"
+    },
+    {
+      "declaration_index": 3389,
+      "declaration_name": "successorSmoothGraph_mem_weightedWeakSubmodule",
+      "old_fragment": "    simp only [baseProjection_apply, raiseProjection_apply,\n      DefinitionOneSobolev.QuotientHilbertCoordinates.graph_fst,\n      DefinitionOneSobolev.QuotientHilbertCoordinates.graph_snd_fst,\n      FixedPhaseClosedOperators.successorGraphCoordinates]\n    have h :=\n      FixedPhaseClosedOperators.physicalLoweringGreenIdentityOnCore_unconditional\n          (n := n + 1) v u\n    linear_combination h\n  · intro v\n    rw [loweringDefect_apply]\n    simp only [baseProjection_apply, lowerProjection_apply,\n      DefinitionOneSobolev.QuotientHilbertCoordinates.graph_fst,\n      DefinitionOneSobolev.QuotientHilbertCoordinates.graph_snd_snd,\n      FixedPhaseClosedOperators.successorGraphCoordinates,\n      FixedPhaseClosedOperators.reindexedActualLoweredCoordinate_eq_lowerFromSuccCoordinate]\n    have h :=\n      FixedPhaseClosedOperators.physicalRaisingGreenIdentityOnCore_unconditional\n          (n := n) v u\n    linear_combination h",
+      "new_fragment": "    simp only [baseProjection_apply, raiseProjection_apply,\n      DefinitionOneSobolev.QuotientHilbertCoordinates.graph_fst,\n      DefinitionOneSobolev.QuotientHilbertCoordinates.graph_snd_fst,\n      FixedPhaseClosedOperators.successorGraphCoordinates_base,\n      FixedPhaseClosedOperators.successorGraphCoordinates_raised]\n    have h :=\n      FixedPhaseClosedOperators.physicalLoweringGreenIdentityOnCore_unconditional\n          (n := n + 1) v u\n    linear_combination h\n  · intro v\n    rw [loweringDefect_apply]\n    simp only [baseProjection_apply, lowerProjection_apply,\n      DefinitionOneSobolev.QuotientHilbertCoordinates.graph_fst,\n      DefinitionOneSobolev.QuotientHilbertCoordinates.graph_snd_snd,\n      FixedPhaseClosedOperators.successorGraphCoordinates_base,\n      FixedPhaseClosedOperators.successorGraphCoordinates_lowered,\n      FixedPhaseClosedOperators.reindexedActualLoweredCoordinate_eq_lowerFromSuccCoordinate]\n    have h :=\n      FixedPhaseClosedOperators.physicalRaisingGreenIdentityOnCore_unconditional\n          (n := n) v u\n    linear_combination h"
+    },
+    {
+      "declaration_index": 3393,
+      "declaration_name": "norm_smoothCoreMap_sq",
+      "old_fragment": "  simpa only [FixedPhaseClosedOperators.successorGraphCoordinates,\n    FixedPhaseClosedOperators.reindexedActualLoweredCoordinate_eq_lowerFromSuccCoordinate] using\n    (FixedPhaseClosedOperators.successorGraphCoordinates n).graph_norm_sq u",
+      "new_fragment": "  simpa only [FixedPhaseClosedOperators.successorGraphCoordinates_base,\n    FixedPhaseClosedOperators.successorGraphCoordinates_raised,\n    FixedPhaseClosedOperators.successorGraphCoordinates_lowered,\n    FixedPhaseClosedOperators.reindexedActualLoweredCoordinate_eq_lowerFromSuccCoordinate] using\n    (FixedPhaseClosedOperators.successorGraphCoordinates n).graph_norm_sq u"
+    },
+    {
+      "declaration_index": 3395,
+      "declaration_name": "graphExtension_mem_weightedWeakSubmodule",
+      "old_fragment": "  intro y\n  rw [Q.graphExtension_coe]\n  rcases y.property with ⟨u, rfl⟩\n  exact successorSmoothGraph_mem_weightedWeakSubmodule n u",
+      "new_fragment": "  intro y\n  rw [Q.graphExtension_coe]\n  rcases y.property with ⟨u, hu⟩\n  rw [← hu]\n  exact successorSmoothGraph_mem_weightedWeakSubmodule n u"
+    },
+    {
+      "declaration_index": 3399,
+      "declaration_name": "denseRange_smoothCoreMap_iff_surjective_comparison",
+      "old_fragment": "    exact ⟨\n      (FixedPhaseClosedOperators.successorGraphCoordinates n).sectionCoreMap u,\n      (graphCompletionToWeightedWeak_sectionCoreMap n u).symm⟩",
+      "new_fragment": "    exact ⟨\n      (FixedPhaseClosedOperators.successorGraphCoordinates n).sectionCoreMap u,\n      graphCompletionToWeightedWeak_sectionCoreMap n u⟩"
+    },
+    {
+      "declaration_index": 3399,
+      "declaration_name": "denseRange_smoothCoreMap_iff_surjective_comparison",
+      "old_fragment": "    simpa only [Function.comp_apply,\n      graphCompletionToWeightedWeak_sectionCoreMap] using hComp",
+      "new_fragment": "    change DenseRange (fun u ↦\n      graphCompletionToWeightedWeak n\n        ((FixedPhaseClosedOperators.successorGraphCoordinates n).sectionCoreMap u)) at hComp\n    simpa only [graphCompletionToWeightedWeak_sectionCoreMap] using hComp"
+    }
+  ]
+}

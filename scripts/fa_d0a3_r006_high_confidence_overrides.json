@@ -1,0 +1,604 @@
+{
+  "schema": "fa-fragment-repair-overrides-v1",
+  "source_sha256": "d0a3decee1c0a7a781d14fdf122e235d71d8f210bb65a894dc4e518821bf03ec",
+  "status": "STATIC_ONLY_UNVERIFIED",
+  "batch_id": "R006",
+  "scope": {
+    "start_declaration_index": 3429,
+    "end_declaration_index": 3533,
+    "selected_repair_indices": [
+      3441,
+      3456,
+      3467,
+      3472,
+      3475,
+      3477,
+      3488,
+      3489,
+      3490,
+      3527
+    ],
+    "explicit_exclusions": {
+      "idx3466_3482_3495": "map_ofReal library already owned; not duplicated",
+      "idx3529_3533": "gamma cusp environment cluster already owned; not duplicated",
+      "FullPlaneTest_and_core_instances": "shared environment/typeclass roots excluded except independent proof-body idx3441",
+      "TwoTorus_measure_instance_cluster": "idx3429--3436 deferred as shared API/measure-instance root",
+      "resource_limit": "idx3522 not treated as a fragment repair"
+    },
+    "batch_authority_path": "work/fa_full_compile_independent_root_batches.json",
+    "batch_authority_sha256": "dcfd721e0b3653d48d430a448f52aec2766c5fbe97cf7b8f00860830b29f7b1c"
+  },
+  "current_full_inventory_authority": {
+    "path": "work/fa_full_compile_error_inventory.json",
+    "sha256": "3692fd155f6029ad30678668ff83fd5f092facebd9e35829cd680b1644d59648",
+    "artifact_id": 9103368138,
+    "run_id": 31495034235,
+    "error_count": 1157,
+    "warning_count": 659,
+    "cap_reached": false,
+    "parser_sha256": "4804d0d73a01ca1600080f892bbd391bffd092b5a2b529ac302e06fd82079a76"
+  },
+  "repairs": [
+    {
+      "declaration_index": 3441,
+      "declaration_name": "fderiv_friedrichsMollifiedRepresentative_apply",
+      "header_sha256": "576b71fe9499ae2b9f39babce20a6c0e6a6ca7063018fb716646189dab62e1d5",
+      "status": "STATIC_ONLY_UNVERIFIED",
+      "proof_body_only": true,
+      "analysis_note": "UNVERIFIED: Qualify every proof-body use of pinned ContinuousLinearMap.lsmul; no open command or header change.",
+      "confidence": "HIGH_EXACT_NAMESPACE_QUALIFICATION",
+      "root_selector_ids": [
+        "E0361"
+      ],
+      "replacements": [
+        {
+          "old_fragment": "  have hDerivative :=\n    (friedrichsMollifierReal_hasCompactSupport j).hasFDerivAt_convolution_left\n        (lsmul ℝ ℂ) hRhoOne hLocal w\n  rw [hDerivative.fderiv]\n  have hDerivativeConvolution : ConvolutionExists\n      (fderiv ℝ (friedrichsMollifierReal j)) (u : ℂ → ℂ)\n      ((lsmul ℝ ℂ).precompL ℂ) (volume : Measure ℂ) :=\n    ((friedrichsMollifierReal_hasCompactSupport j).fderiv ℝ).convolutionExists_left\n        ((lsmul ℝ ℂ).precompL ℂ)\n        hRhoOne.continuous_fderiv (by norm_num) hLocal",
+          "new_fragment": "  have hDerivative :=\n    (friedrichsMollifierReal_hasCompactSupport j).hasFDerivAt_convolution_left\n        (ContinuousLinearMap.lsmul ℝ ℂ) hRhoOne hLocal w\n  rw [hDerivative.fderiv]\n  have hDerivativeConvolution : ConvolutionExists\n      (fderiv ℝ (friedrichsMollifierReal j)) (u : ℂ → ℂ)\n      ((ContinuousLinearMap.lsmul ℝ ℂ).precompL ℂ) (volume : Measure ℂ) :=\n    ((friedrichsMollifierReal_hasCompactSupport j).fderiv ℝ).convolutionExists_left\n        ((ContinuousLinearMap.lsmul ℝ ℂ).precompL ℂ)\n        hRhoOne.continuous_fderiv (by norm_num) hLocal",
+          "old_sha256": "7dc38f49df3cdfdd575b5d7c9d95c63c0c66fd4f866ce1659ea707cba8bbb547",
+          "new_sha256": "376055aee5eb8f141c8db385471f8add0c1e34a740a3f22c1f1b75975e8db9ec",
+          "old_bytes": 525,
+          "new_bytes": 585,
+          "target_old_count": 1,
+          "global_old_count": 1,
+          "target_new_count_before": 0,
+          "global_new_count_before": 0
+        }
+      ],
+      "standalone_candidate": {
+        "sha256": "79b53a3f0ddb8965f4547551b861b02f6d6c9117545ef0896b91ca6f5bb5d158",
+        "bytes": 2702312,
+        "lines": 60573,
+        "direct_lean_verified": false
+      },
+      "evidence": {
+        "artifact_id": 9103368138,
+        "run_id": 31495034235,
+        "fragment_status": "STATIC_ONLY_PENDING_DIRECT_LEAN",
+        "current_full_inventory_roots": [
+          {
+            "id": "E0361",
+            "classification": "root_candidate",
+            "category": "unknown_identifier",
+            "line": 45353,
+            "column": 9,
+            "diagnostic_code": "lean.unknownIdentifier",
+            "message_sha256": "75969f2a4fee3cc78962f522310e7aeb0d80a300fa85677ab4abfe9e53117e85"
+          }
+        ]
+      }
+    },
+    {
+      "declaration_index": 3456,
+      "declaration_name": "discriminantCuspEpsilon_tendsto_zero",
+      "header_sha256": "2c7cf0d754d79719fc43f389a257e6ba41373f72fc504f58f32f318211f1a933",
+      "status": "STATIC_ONLY_UNVERIFIED",
+      "proof_body_only": true,
+      "analysis_note": "UNVERIFIED: Expose the exact defining function with change before reusing the pinned natural reciprocal limit theorem.",
+      "confidence": "HIGH_EXACT_DEFINITIONAL_TARGET_BRIDGE",
+      "root_selector_ids": [
+        "E0373"
+      ],
+      "replacements": [
+        {
+          "old_fragment": "  simpa only [discriminantCuspEpsilon, Nat.cast_add, Nat.cast_one] using\n    (tendsto_one_div_add_atTop_nhds_zero_nat :\n      Filter.Tendsto (fun N : ℕ ↦ (1 : ℝ) / (N + 1)) Filter.atTop (nhds 0))",
+          "new_fragment": "  change Filter.Tendsto (fun N : ℕ ↦ (1 : ℝ) / ((N : ℝ) + 1))\n    Filter.atTop (nhds 0)\n  exact\n    (tendsto_one_div_add_atTop_nhds_zero_nat :\n      Filter.Tendsto (fun N : ℕ ↦ (1 : ℝ) / (N + 1)) Filter.atTop (nhds 0))",
+          "old_sha256": "7d58cff67ac83520f217919c2ec2a3d66e2057921921e7469c9b77dbaf505858",
+          "new_sha256": "e7ab8a99ef5241d5482d2856e720cdcec2d62f052542747aea3ff3bf364e88e7",
+          "old_bytes": 201,
+          "new_bytes": 232,
+          "target_old_count": 1,
+          "global_old_count": 1,
+          "target_new_count_before": 0,
+          "global_new_count_before": 0
+        }
+      ],
+      "standalone_candidate": {
+        "sha256": "eefba265c9230f019593bf9d282922665e83573851724711b3cd56b254df84b3",
+        "bytes": 2702283,
+        "lines": 60575,
+        "direct_lean_verified": false
+      },
+      "evidence": {
+        "artifact_id": 9103368138,
+        "run_id": 31495034235,
+        "fragment_status": "STATIC_ONLY_PENDING_DIRECT_LEAN",
+        "current_full_inventory_roots": [
+          {
+            "id": "E0373",
+            "classification": "root_candidate",
+            "category": "type_mismatch",
+            "line": 45615,
+            "column": 2,
+            "diagnostic_code": null,
+            "message_sha256": "cad1ea6f932aeef8ce8d24e297cad07029ec6db69478c4a936bb7c51f7866019"
+          }
+        ]
+      }
+    },
+    {
+      "declaration_index": 3467,
+      "declaration_name": "embeddedMassLinear",
+      "header_sha256": "8821eefb2af0032a0a0cd9fde9bc69686ddf8885907dc883adf0a97c9eb29a3f",
+      "status": "STATIC_ONLY_UNVERIFIED",
+      "proof_body_only": true,
+      "analysis_note": "UNVERIFIED: Add exact ContinuousLinearMap pointwise add/smul simp lemmas and RingHom.id normalization omitted from the constructor obligations.",
+      "confidence": "HIGH_DIAGNOSTIC_EXACT_NORMALIZATION",
+      "root_selector_ids": [
+        "E0379",
+        "E0380"
+      ],
+      "replacements": [
+        {
+          "old_fragment": "  map_add' u w := by\n    ext v\n    simp only [ContinuousLinearMap.comp_apply, map_add,\n      innerSLFlip_apply_apply, inner_add_right]\n  map_smul' a u := by\n    ext v\n    simp only [ContinuousLinearMap.comp_apply, map_smul,\n      innerSLFlip_apply_apply, inner_smul_right]",
+          "new_fragment": "  map_add' u w := by\n    ext v\n    simp only [ContinuousLinearMap.comp_apply, ContinuousLinearMap.add_apply,\n      map_add,\n      innerSLFlip_apply_apply, inner_add_right]\n  map_smul' a u := by\n    ext v\n    simp only [ContinuousLinearMap.comp_apply, ContinuousLinearMap.smul_apply,\n      map_smul,\n      innerSLFlip_apply_apply, inner_smul_right, RingHom.id_apply]",
+          "old_sha256": "aab2e0c63d12422353b490d4d5182427f3b0b31ffa6701a697482ffbec8bd106",
+          "new_sha256": "eee11d4ad264fbc0b84031146a851f9fdf2b8e2c386141b76b6e6c36cd758db5",
+          "old_bytes": 272,
+          "new_bytes": 365,
+          "target_old_count": 1,
+          "global_old_count": 1,
+          "target_new_count_before": 0,
+          "global_new_count_before": 0
+        }
+      ],
+      "standalone_candidate": {
+        "sha256": "c5c691412e217e308a64984de517cdcc7b4305ed4eba63438ade10eff0b8d2ca",
+        "bytes": 2702345,
+        "lines": 60575,
+        "direct_lean_verified": false
+      },
+      "evidence": {
+        "artifact_id": 9103368138,
+        "run_id": 31495034235,
+        "fragment_status": "STATIC_ONLY_PENDING_DIRECT_LEAN",
+        "current_full_inventory_roots": [
+          {
+            "id": "E0379",
+            "classification": "root_candidate",
+            "category": "unsolved_goals",
+            "line": 45846,
+            "column": 18,
+            "diagnostic_code": null,
+            "message_sha256": "aaace34bc28bde23bef0191bbc05d530f305d87f708f9b918b508c43e40eb69b"
+          },
+          {
+            "id": "E0380",
+            "classification": "root_candidate",
+            "category": "unsolved_goals",
+            "line": 45850,
+            "column": 19,
+            "diagnostic_code": null,
+            "message_sha256": "2087a97eb6a6ed8c74ec1157709f6adca992f09e640c9a336e8905e911910fa1"
+          }
+        ]
+      }
+    },
+    {
+      "declaration_index": 3472,
+      "declaration_name": "embeddedMassForm_conj_symm",
+      "header_sha256": "35d09960f3b7d59f8bc105a0514aedb13342147439500f462ce28e96972dc6da",
+      "status": "STATIC_ONLY_UNVERIFIED",
+      "proof_body_only": true,
+      "analysis_note": "UNVERIFIED: Instantiate inner_conj_symm in the exact argument order instead of asking simp to infer the rewrite.",
+      "confidence": "HIGH_EXACT_THEOREM_INSTANTIATION",
+      "root_selector_ids": [
+        "E0384"
+      ],
+      "replacements": [
+        {
+          "old_fragment": "  simp only [embeddedMassForm_apply, inner_conj_symm]",
+          "new_fragment": "  simpa only [embeddedMassForm_apply] using\n    (inner_conj_symm (J v) (J u))",
+          "old_sha256": "147b4c7d866215a3a83dcc8264612b136a3611eb77808be38ce07eb91605925c",
+          "new_sha256": "689009c4a3c320d8c757289a2a26e79e0f868bab5b368ddd63682629c758539e",
+          "old_bytes": 53,
+          "new_bytes": 77,
+          "target_old_count": 1,
+          "global_old_count": 1,
+          "target_new_count_before": 0,
+          "global_new_count_before": 0
+        }
+      ],
+      "standalone_candidate": {
+        "sha256": "06f44a3e05f7cb4232715da706e4381df8aae0f4d6f540141599e3e3c914d069",
+        "bytes": 2702276,
+        "lines": 60574,
+        "direct_lean_verified": false
+      },
+      "evidence": {
+        "artifact_id": 9103368138,
+        "run_id": 31495034235,
+        "fragment_status": "STATIC_ONLY_PENDING_DIRECT_LEAN",
+        "current_full_inventory_roots": [
+          {
+            "id": "E0384",
+            "classification": "root_candidate",
+            "category": "unsolved_goals",
+            "line": 45883,
+            "column": 62,
+            "diagnostic_code": null,
+            "message_sha256": "61d75e69f6a68b8bd6ffda9d6265a6553ff38a427c2bf54912e0c5a7b0038050"
+          }
+        ]
+      }
+    },
+    {
+      "declaration_index": 3475,
+      "declaration_name": "associatedFormGraph_fst_eq_zero_snd",
+      "header_sha256": "9b60c9980044a224461b400b47a44232da335273c1b3d73a26e31dbe55f36f12",
+      "status": "STATIC_ONLY_UNVERIFIED",
+      "proof_body_only": true,
+      "analysis_note": "UNVERIFIED: Normalize J 0 explicitly and pin the otherwise ambiguous RCLike scalar to ℂ.",
+      "confidence": "HIGH_DIAGNOSTIC_EXACT_NORMALIZATION",
+      "root_selector_ids": [
+        "E0387",
+        "E0388"
+      ],
+      "replacements": [
+        {
+          "old_fragment": "  have hu0 : u = 0 := hJinj (by simpa only [Prod.fst_zero] using hu)\n  apply hJdense.eq_zero_of_inner_right",
+          "new_fragment": "  have hu0 : u = 0 := hJinj (by simpa only [Prod.fst_zero, map_zero] using hu)\n  apply hJdense.eq_zero_of_inner_right (𝕜 := ℂ)",
+          "old_sha256": "84dc12cc54c405e063643237c8df92f6046757d937d89a9b2618a39be67eabff",
+          "new_sha256": "cf04ab6c918ddb80ea39e9893ee5b02b1fa8609fc9adde413e5dda98d82b32a0",
+          "old_bytes": 107,
+          "new_bytes": 131,
+          "target_old_count": 1,
+          "global_old_count": 1,
+          "target_new_count_before": 0,
+          "global_new_count_before": 0
+        }
+      ],
+      "standalone_candidate": {
+        "sha256": "ae395189410159a4d633b4f800801b0f0c15ed902155daa84bdab2f50860e829",
+        "bytes": 2702276,
+        "lines": 60573,
+        "direct_lean_verified": false
+      },
+      "evidence": {
+        "artifact_id": 9103368138,
+        "run_id": 31495034235,
+        "fragment_status": "STATIC_ONLY_PENDING_DIRECT_LEAN",
+        "current_full_inventory_roots": [
+          {
+            "id": "E0387",
+            "classification": "root_candidate",
+            "category": "type_mismatch",
+            "line": 45926,
+            "column": 32,
+            "diagnostic_code": null,
+            "message_sha256": "d1406e8663443e56fae5f64a79a17620562fe0cc1904c4688eca17c067ccbc01"
+          },
+          {
+            "id": "E0388",
+            "classification": "root_candidate",
+            "category": "typeclass_synthesis",
+            "line": 45927,
+            "column": 8,
+            "diagnostic_code": "lean.synthInstanceFailed",
+            "message_sha256": "80f7013d1f23aa1652b871717722dfb44181ccaf9a5685642a6137c58ae42e6a"
+          }
+        ]
+      }
+    },
+    {
+      "declaration_index": 3477,
+      "declaration_name": "associatedFormOperator_graph_eq",
+      "header_sha256": "ee2228e4f2f003baee1e2ef3c2db0c15f453862f5541f57ff55bef29f60ba512",
+      "status": "STATIC_ONLY_UNVERIFIED",
+      "proof_body_only": true,
+      "analysis_note": "UNVERIFIED: Reconstruct the product from its first-coordinate equality before transporting graph membership.",
+      "confidence": "HIGH_EXACT_PRODUCT_EXT_BRIDGE",
+      "root_selector_ids": [
+        "E0390"
+      ],
+      "replacements": [
+        {
+          "old_fragment": "  apply associatedFormGraph_fst_eq_zero_snd J B hJinj hJdense\n  simpa only [hp0] using hp",
+          "new_fragment": "  apply associatedFormGraph_fst_eq_zero_snd J B hJinj hJdense\n  have hp_eq : p = (0, p.2) := Prod.ext hp0 rfl\n  rw [hp_eq] at hp\n  exact hp",
+          "old_sha256": "a1829e96d09b77ee339c3ddad3f6bae832e7b7892af48d385b983770c1d60738",
+          "new_sha256": "69b86787cb1a3f4888fd899e73757f8c3cf7211fd57afbb367ee4d5c42702c4b",
+          "old_bytes": 89,
+          "new_bytes": 139,
+          "target_old_count": 1,
+          "global_old_count": 1,
+          "target_new_count_before": 0,
+          "global_new_count_before": 0
+        }
+      ],
+      "standalone_candidate": {
+        "sha256": "f661d86b5a05d1168a2b79d39fc513929f69304272d25e72015eef2f837d87bd",
+        "bytes": 2702302,
+        "lines": 60575,
+        "direct_lean_verified": false
+      },
+      "evidence": {
+        "artifact_id": 9103368138,
+        "run_id": 31495034235,
+        "fragment_status": "STATIC_ONLY_PENDING_DIRECT_LEAN",
+        "current_full_inventory_roots": [
+          {
+            "id": "E0390",
+            "classification": "root_candidate",
+            "category": "type_mismatch",
+            "line": 45951,
+            "column": 2,
+            "diagnostic_code": null,
+            "message_sha256": "ca84bcb95d6960b5579c7e0fec57d66a215310d881fe40243c87059c14588cb5"
+          }
+        ]
+      }
+    },
+    {
+      "declaration_index": 3488,
+      "declaration_name": "associatedFormOperator_realShift_surjective",
+      "header_sha256": "c34705fc178f0bfbffbcd08c9815baa6d2b4f83153c4115e7cf5f40d3f889220",
+      "status": "STATIC_ONLY_UNVERIFIED",
+      "proof_body_only": true,
+      "analysis_note": "UNVERIFIED: Rewrite the ambient subtype coercion in the direction stated by hx; the reverse direction cannot match.",
+      "confidence": "HIGH_COMPILER_EXACT_REWRITE_DIRECTION",
+      "root_selector_ids": [
+        "E0393"
+      ],
+      "replacements": [
+        {
+          "old_fragment": "  rw [← hx, hAx]\n  abel",
+          "new_fragment": "  rw [hx, hAx]\n  abel",
+          "old_sha256": "4ababa4cdef707221133b07c93b4fab61cdfae47075d03de1fccd5729b40d502",
+          "new_sha256": "aa12216b351b82a4382a41ce46d1b1fa7097dc3db13c2f4886c65d85cb64be7b",
+          "old_bytes": 25,
+          "new_bytes": 21,
+          "target_old_count": 1,
+          "global_old_count": 1,
+          "target_new_count_before": 0,
+          "global_new_count_before": 0
+        }
+      ],
+      "standalone_candidate": {
+        "sha256": "c7d438eccd56439029a2905024b201b39de1f29c5f88e23f3498f8902e9c9784",
+        "bytes": 2702248,
+        "lines": 60573,
+        "direct_lean_verified": false
+      },
+      "evidence": {
+        "artifact_id": 9103368138,
+        "run_id": 31495034235,
+        "fragment_status": "STATIC_ONLY_PENDING_DIRECT_LEAN",
+        "current_full_inventory_roots": [
+          {
+            "id": "E0393",
+            "classification": "root_candidate",
+            "category": "rewrite_pattern_miss",
+            "line": 46068,
+            "column": 6,
+            "diagnostic_code": null,
+            "message_sha256": "90f61492aa8402664c1c6ebbfb7cf04029d6668459a99be0e404a440a10b43f4"
+          }
+        ]
+      }
+    },
+    {
+      "declaration_index": 3489,
+      "declaration_name": "associatedFormOperator_isFormalAdjoint",
+      "header_sha256": "3d6e68bee0cf85308d45ecde026580c6e4a0b7a3e9fc8c6a22a7deaab902471d",
+      "status": "STATIC_ONLY_UNVERIFIED",
+      "proof_body_only": true,
+      "analysis_note": "UNVERIFIED: Reverse inner_conj_symm to match the exact equality orientation displayed by Lean.",
+      "confidence": "HIGH_COMPILER_EXACT_ORIENTATION",
+      "root_selector_ids": [
+        "E0394"
+      ],
+      "replacements": [
+        {
+          "old_fragment": "  calc\n    inner ℂ (associatedFormOperator J B hJinj hJdense x) (y : H) =\n        star\n          (inner ℂ (y : H)\n            (associatedFormOperator J B hJinj hJdense x)) :=\n      inner_conj_symm _ _",
+          "new_fragment": "  calc\n    inner ℂ (associatedFormOperator J B hJinj hJdense x) (y : H) =\n        star\n          (inner ℂ (y : H)\n            (associatedFormOperator J B hJinj hJdense x)) :=\n      (inner_conj_symm _ _).symm",
+          "old_sha256": "2b49f7cdbfde951277b76b6a8b7704284a8a8c5b14f6ef0acc4c5cc2bffd801a",
+          "new_sha256": "7185b5fba78882519233821e162e479c96f0806c74cc1589c4c6e0d782eec929",
+          "old_bytes": 204,
+          "new_bytes": 211,
+          "target_old_count": 1,
+          "global_old_count": 1,
+          "target_new_count_before": 0,
+          "global_new_count_before": 0
+        }
+      ],
+      "standalone_candidate": {
+        "sha256": "77beff7c12a2089abd8e7b04e8ec0b0d207bf1da2b7d18e5617c88d4b62dbfa0",
+        "bytes": 2702259,
+        "lines": 60573,
+        "direct_lean_verified": false
+      },
+      "evidence": {
+        "artifact_id": 9103368138,
+        "run_id": 31495034235,
+        "fragment_status": "STATIC_ONLY_PENDING_DIRECT_LEAN",
+        "current_full_inventory_roots": [
+          {
+            "id": "E0394",
+            "classification": "root_candidate",
+            "category": "type_mismatch",
+            "line": 46092,
+            "column": 6,
+            "diagnostic_code": null,
+            "message_sha256": "1382a232769c330fe94615109ddfe8919351ed0c2abc83ee417048a3681cb112"
+          }
+        ]
+      }
+    },
+    {
+      "declaration_index": 3490,
+      "declaration_name": "associatedFormOperator_dense_domain",
+      "header_sha256": "cec96011e2eff3153fc919c39ff3f55f28edea9d5fd9642aa4f72554b5707de9",
+      "status": "STATIC_ONLY_UNVERIFIED",
+      "proof_body_only": true,
+      "analysis_note": "UNVERIFIED: Correct both subtype rewrite directions, prove star-zero via starRingEnd, and pin the dense-range scalar to ℂ.",
+      "confidence": "HIGH_DIAGNOSTIC_EXACT_NORMALIZATION",
+      "root_selector_ids": [
+        "E0395",
+        "E0396",
+        "E0397",
+        "E0398"
+      ],
+      "replacements": [
+        {
+          "old_fragment": "  obtain ⟨xz, hxz, _⟩ := huzOperatorGraph\n  have hJuzDomain : J uz ∈\n      (associatedFormOperator J B hJinj hJdense).domain := by\n    simpa only [← hxz] using xz.property\n  have hShiftHermitian := embeddedShiftedForm_isHermitian J B hB c\n  have hJuzOrthogonalAll : ∀ y : H, inner ℂ (J uz) y = 0 := by\n    intro y\n    let uy := embeddedFormResolventSolution J B c α hCoercive y\n    have huyGraph := embeddedFormResolventSolution_mem_associatedGraph\n      J B c α hCoercive y\n    have huyOperatorGraph :\n        (J uy, y - (c : ℂ) • J uy) ∈\n          (associatedFormOperator J B hJinj hJdense).graph := by\n      rw [associatedFormOperator_graph_eq]\n      exact huyGraph\n    rw [LinearPMap.mem_graph_iff] at huyOperatorGraph\n    obtain ⟨xy, hxy, _⟩ := huyOperatorGraph\n    have hJuyDomain : J uy ∈\n        (associatedFormOperator J B hJinj hJdense).domain := by\n      simpa only [← hxy] using xy.property\n    have hzy : inner ℂ (J uy) z = 0 :=\n      hzDomain ⟨J uy, hJuyDomain⟩\n    have hSzUy := embeddedFormResolventSolution_spec\n      J B c α hCoercive z uy\n    have hSyUz := embeddedFormResolventSolution_spec\n      J B c α hCoercive y uz\n    calc\n      inner ℂ (J uz) y = embeddedShiftedForm J B c uy uz := hSyUz.symm\n      _ = star (embeddedShiftedForm J B c uz uy) :=\n        (hShiftHermitian uy uz).symm\n      _ = star (inner ℂ (J uy) z) := by rw [hSzUy]\n      _ = 0 := by rw [hzy, map_zero]\n  have hJuz : J uz = 0 := by\n    apply (inner_self_eq_zero (𝕜 := ℂ)).mp\n    exact hJuzOrthogonalAll (J uz)\n  have huz : uz = 0 := hJinj (by simpa using hJuz)\n  apply hJdense.eq_zero_of_inner_right",
+          "new_fragment": "  obtain ⟨xz, hxz, _⟩ := huzOperatorGraph\n  have hJuzDomain : J uz ∈\n      (associatedFormOperator J B hJinj hJdense).domain := by\n    simpa only [hxz] using xz.property\n  have hShiftHermitian := embeddedShiftedForm_isHermitian J B hB c\n  have hJuzOrthogonalAll : ∀ y : H, inner ℂ (J uz) y = 0 := by\n    intro y\n    let uy := embeddedFormResolventSolution J B c α hCoercive y\n    have huyGraph := embeddedFormResolventSolution_mem_associatedGraph\n      J B c α hCoercive y\n    have huyOperatorGraph :\n        (J uy, y - (c : ℂ) • J uy) ∈\n          (associatedFormOperator J B hJinj hJdense).graph := by\n      rw [associatedFormOperator_graph_eq]\n      exact huyGraph\n    rw [LinearPMap.mem_graph_iff] at huyOperatorGraph\n    obtain ⟨xy, hxy, _⟩ := huyOperatorGraph\n    have hJuyDomain : J uy ∈\n        (associatedFormOperator J B hJinj hJdense).domain := by\n      simpa only [hxy] using xy.property\n    have hzy : inner ℂ (J uy) z = 0 :=\n      hzDomain ⟨J uy, hJuyDomain⟩\n    have hSzUy := embeddedFormResolventSolution_spec\n      J B c α hCoercive z uy\n    have hSyUz := embeddedFormResolventSolution_spec\n      J B c α hCoercive y uz\n    calc\n      inner ℂ (J uz) y = embeddedShiftedForm J B c uy uz := hSyUz.symm\n      _ = star (embeddedShiftedForm J B c uz uy) :=\n        (hShiftHermitian uy uz).symm\n      _ = star (inner ℂ (J uy) z) := by rw [hSzUy]\n      _ = 0 := map_zero (starRingEnd ℂ)\n  have hJuz : J uz = 0 := by\n    apply (inner_self_eq_zero (𝕜 := ℂ)).mp\n    exact hJuzOrthogonalAll (J uz)\n  have huz : uz = 0 := hJinj (by simpa using hJuz)\n  apply hJdense.eq_zero_of_inner_right (𝕜 := ℂ)",
+          "old_sha256": "65606dc9b81f6ea38e7c77fe686165bbc780e8cca04835c95409912a6ff8a008",
+          "new_sha256": "d549635c3336b542aede2fb8cf1c88b782113686c03675aff33dbcba435d448c",
+          "old_bytes": 1638,
+          "new_bytes": 1649,
+          "target_old_count": 1,
+          "global_old_count": 1,
+          "target_new_count_before": 0,
+          "global_new_count_before": 0
+        }
+      ],
+      "standalone_candidate": {
+        "sha256": "4cfa045e342a28a53196e0f513a031c40cfb45cd9566ede01c64c6c0dcdda0f7",
+        "bytes": 2702263,
+        "lines": 60573,
+        "direct_lean_verified": false
+      },
+      "evidence": {
+        "artifact_id": 9103368138,
+        "run_id": 31495034235,
+        "fragment_status": "STATIC_ONLY_PENDING_DIRECT_LEAN",
+        "current_full_inventory_roots": [
+          {
+            "id": "E0395",
+            "classification": "root_candidate",
+            "category": "type_mismatch",
+            "line": 46128,
+            "column": 4,
+            "diagnostic_code": null,
+            "message_sha256": "a83f442c2abc4f2870192fd8b68459e9740e8ba21b74ffa3493743702d5ebd12"
+          },
+          {
+            "id": "E0396",
+            "classification": "root_candidate",
+            "category": "type_mismatch",
+            "line": 46144,
+            "column": 6,
+            "diagnostic_code": null,
+            "message_sha256": "633f9c0d1606bc41d1fce260ee2608d94fec9bdf1bb020f85646e2134b94b673"
+          },
+          {
+            "id": "E0397",
+            "classification": "root_candidate",
+            "category": "rewrite_pattern_miss",
+            "line": 46156,
+            "column": 27,
+            "diagnostic_code": null,
+            "message_sha256": "748f9bdb083fc91d3636cd27737171365aa96f67bedeb94ee13dbbf18306981d"
+          },
+          {
+            "id": "E0398",
+            "classification": "root_candidate",
+            "category": "typeclass_synthesis",
+            "line": 46161,
+            "column": 8,
+            "diagnostic_code": "lean.synthInstanceFailed",
+            "message_sha256": "80f7013d1f23aa1652b871717722dfb44181ccaf9a5685642a6137c58ae42e6a"
+          }
+        ]
+      }
+    },
+    {
+      "declaration_index": 3527,
+      "declaration_name": "reciprocalFourierTail_tendsto_zero",
+      "header_sha256": "fd34abd76ee66991416ab6c95cca2bb1c10547573da52a3f3995f335e38d2b00",
+      "status": "STATIC_ONLY_UNVERIFIED",
+      "proof_body_only": true,
+      "analysis_note": "UNVERIFIED: Delta-unfold the partially applied reciprocal tail before normalizing division to the pinned reciprocal limit.",
+      "confidence": "HIGH_EXACT_DEFINITIONAL_TARGET_BRIDGE",
+      "root_selector_ids": [
+        "E0404"
+      ],
+      "replacements": [
+        {
+          "old_fragment": "  simpa only [reciprocalFourierTail, div_eq_mul_inv, Nat.cast_add,\n    Nat.cast_one, mul_zero] using\n    tendsto_const_nhds.mul\n      (tendsto_one_div_add_atTop_nhds_zero_nat :\n        Filter.Tendsto (fun N : ℕ ↦ (1 : ℝ) / (N + 1)) Filter.atTop (nhds 0))",
+          "new_fragment": "  unfold reciprocalFourierTail\n  simpa only [div_eq_mul_inv, one_div, mul_zero] using\n    tendsto_const_nhds.mul\n      (tendsto_one_div_add_atTop_nhds_zero_nat :\n        Filter.Tendsto (fun N : ℕ ↦ (1 : ℝ) / (N + 1)) Filter.atTop (nhds 0))",
+          "old_sha256": "793963434c4b4e3255a5368b5f21ea0f2afd44f270436d97ae0ec9f76e27a688",
+          "new_sha256": "3a5ec5b31312f597cc99ad099ef73c02f7f25196422f7c7bec2acd26da24ca61",
+          "old_bytes": 260,
+          "new_bytes": 245,
+          "target_old_count": 1,
+          "global_old_count": 1,
+          "target_new_count_before": 0,
+          "global_new_count_before": 0
+        }
+      ],
+      "standalone_candidate": {
+        "sha256": "40419ca3c7e6980b61c7230eaa0d8f267a91cee817f45854148d04d223f1f90e",
+        "bytes": 2702237,
+        "lines": 60573,
+        "direct_lean_verified": false
+      },
+      "evidence": {
+        "artifact_id": 9103368138,
+        "run_id": 31495034235,
+        "fragment_status": "STATIC_ONLY_PENDING_DIRECT_LEAN",
+        "current_full_inventory_roots": [
+          {
+            "id": "E0404",
+            "classification": "root_candidate",
+            "category": "type_mismatch",
+            "line": 46647,
+            "column": 2,
+            "diagnostic_code": null,
+            "message_sha256": "631e192ef15b82781bda4b560252bd0950d19a81af18f0fc0bf89ca39486dfe7"
+          }
+        ]
+      }
+    }
+  ],
+  "library_candidate_evidence": {
+    "sha256": "78a36be3cab3285932cecfe76cbeec7648911731c0553fce58c78107cc7fd301",
+    "bytes": 2702533,
+    "lines": 60580,
+    "direct_lean_verified": false,
+    "not_full_all_error_candidate": true
+  },
+  "preservation_contract": {
+    "all_existing_documentation_and_comments_byte_preserved": true,
+    "all_existing_at_attributes_byte_preserved": true,
+    "new_declarations": 0,
+    "all_theorem_headers_and_claims_byte_preserved": true,
+    "declaration_sequence_preserved": true,
+    "all_unselected_source_bytes_preserved": true,
+    "executable_forbidden_six_zero_before_and_after": true,
+    "raw_forbidden_mention_ledger_unchanged": true
+  },
+  "application_contract": {
+    "apply_only_to_exact_d0a3": true,
+    "repairs_in_ascending_declaration_order": true,
+    "replacement_order_within_each_repair_is_list_order": true,
+    "direct_lean_required_before_promotion": true
+  },
+  "local_execution": {
+    "lean": false,
+    "lake": false,
+    "git": false,
+    "github_read": false,
+    "github_write": false,
+    "remote_upload": false
+  }
+}

@@ -1,0 +1,40 @@
+name: Codex FA493 coefficient context
+
+on:
+  push:
+    branches:
+      - fix/fa492-endpoint-explicit-continuity-20260811
+    paths:
+      - .github/workflows/codex-fa493-coeff-context.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Post coefficient context
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          python3 - <<'PY' > /tmp/fa493-context.md
+          from pathlib import Path
+          p=Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean')
+          a=p.read_text(encoding='utf-8',errors='replace').splitlines()
+          hits=[i for i,s in enumerate(a,1) if 'logHeightTraceBaseCoeff' in s]
+          out=['## FA493 source diagnostic: logHeightTraceBaseCoeff','',f'- head_sha: `{__import__("os").environ.get("GITHUB_SHA","")}`',f'- hit_lines: `{hits}`','']
+          for h in hits:
+              lo=max(1,h-10); hi=min(len(a),h+12)
+              out += [f'### around {h}','```lean']+[f'{i}: {a[i-1]}' for i in range(lo,hi+1)]+['```','']
+          print('\n'.join(out)[:30000])
+          PY
+          gh api "repos/${GITHUB_REPOSITORY}/issues/14/comments" -f body="$(cat /tmp/fa493-context.md)"

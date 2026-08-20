@@ -1,0 +1,72 @@
+{
+  "schema": "fa-dynamic-cluster-3012-3047-v1",
+  "status": "STATIC_STAGED_PENDING_DIRECT_LEAN",
+  "repairs": [
+    {
+      "declaration_index": 3012,
+      "declaration_name": "lowerFromSuccCuspCutoffCommutator_apply",
+      "old_fragment": "  change\n    lowerRaw (paperOrbitExponent (n + 1))\n        (upstairsCuspCutoff N *\n          (u : SmoothQuotientCompactFunction)) z -\n      upstairsCuspCutoff N z *\n        lowerRaw (paperOrbitExponent (n + 1))\n          (u : SmoothQuotientCompactFunction) z = _\n  rw [lowerRaw_mul_cutoff (upstairsCuspCutoff_realSmooth N)\n    (u : SmoothQuotientCompactFunction).1.2]\n  ring",
+      "new_fragment": "  simp only [lowerFromSuccCuspCutoffCommutator, LinearMap.sub_apply,\n    LinearMap.comp_apply]\n  change\n    (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.toWeightSection n\n      ((Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n)\n          (cuspCutoffOperator N (n + 1) u) -\n        (cuspCutoffOperator N n)\n          (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n u))) z = _\n  rw [map_sub]\n  change\n    lowerRaw (paperOrbitExponent (n + 1))\n        ((((cuspCutoffOperator N (n + 1) u :\n            Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore (n + 1)) :\n          SmoothQuotientCompactFunction) : ℍ → ℂ)) z -\n      upstairsCuspCutoff N z *\n        lowerRaw (paperOrbitExponent (n + 1))\n          ((u : SmoothQuotientCompactFunction) : ℍ → ℂ) z = _\n  rw [show\n      ((((cuspCutoffOperator N (n + 1) u :\n          Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore (n + 1)) :\n        SmoothQuotientCompactFunction) : ℍ → ℂ)) =\n        upstairsCuspCutoff N *\n          ((u : SmoothQuotientCompactFunction) : ℍ → ℂ) from rfl,\n    lowerRaw_mul_cutoff (upstairsCuspCutoff_realSmooth N)\n      (u : SmoothQuotientCompactFunction).1.2]\n  ring"
+    },
+    {
+      "declaration_index": 3029,
+      "declaration_name": "negativePhysicalRaise_peterssonCuspCutoff_commutator",
+      "old_fragment": "    peterssonCuspCutoff N (n + 1) ((-physicalRaise n) x) =\n        peterssonCuspCutoff N (n + 1) (-raisedCoordinate n u) := by\n      rw [LinearPMap.neg_apply, physicalRaise_apply]",
+      "new_fragment": "    peterssonCuspCutoff N (n + 1) ((-physicalRaise n) x) =\n        peterssonCuspCutoff N (n + 1) (-raisedCoordinate n u) := by\n      change peterssonCuspCutoff N (n + 1) (-(physicalRaise n x)) =\n        peterssonCuspCutoff N (n + 1) (-raisedCoordinate n u)\n      simpa only [physicalRaise_apply]"
+    },
+    {
+      "declaration_index": 3029,
+      "declaration_name": "negativePhysicalRaise_peterssonCuspCutoff_commutator",
+      "old_fragment": "    _ = (-physicalRaise n) xCut +\n          raisePeterssonCuspCommutator N n\n            (x : OrbitPeterssonHilbert n) := by\n      rw [hxCut, LinearPMap.neg_apply, physicalRaise_on_core, hx]",
+      "new_fragment": "    _ = (-physicalRaise n) xCut +\n          raisePeterssonCuspCommutator N n\n            (x : OrbitPeterssonHilbert n) := by\n      rw [hxCut, hx]\n      change -(raisedCoordinate n (cuspCutoffOperator N n u)) +\n          raisePeterssonCuspCommutator N n (x : OrbitPeterssonHilbert n) =\n        -(physicalRaise n (l2CoreRangeEquiv n (cuspCutoffOperator N n u))) +\n          raisePeterssonCuspCommutator N n (x : OrbitPeterssonHilbert n)\n      rw [physicalRaise_on_core]"
+    },
+    {
+      "declaration_index": 3031,
+      "declaration_name": "negativePhysicalLowerFromSucc_peterssonCuspCutoff_commutator",
+      "old_fragment": "    peterssonCuspCutoff N n ((-physicalLowerFromSucc n) x) =\n        peterssonCuspCutoff N n (-lowerFromSuccCoordinate n u) := by\n      rw [LinearPMap.neg_apply, physicalLowerFromSucc_apply]",
+      "new_fragment": "    peterssonCuspCutoff N n ((-physicalLowerFromSucc n) x) =\n        peterssonCuspCutoff N n (-lowerFromSuccCoordinate n u) := by\n      change peterssonCuspCutoff N n (-(physicalLowerFromSucc n x)) =\n        peterssonCuspCutoff N n (-lowerFromSuccCoordinate n u)\n      simpa only [physicalLowerFromSucc_apply]"
+    },
+    {
+      "declaration_index": 3031,
+      "declaration_name": "negativePhysicalLowerFromSucc_peterssonCuspCutoff_commutator",
+      "old_fragment": "    _ = (-physicalLowerFromSucc n) xCut +\n          lowerFromSuccPeterssonCuspCommutator N n\n            (x : OrbitPeterssonHilbert (n + 1)) := by\n      rw [hxCut, LinearPMap.neg_apply,\n        physicalLowerFromSucc_on_core, hx]",
+      "new_fragment": "    _ = (-physicalLowerFromSucc n) xCut +\n          lowerFromSuccPeterssonCuspCommutator N n\n            (x : OrbitPeterssonHilbert (n + 1)) := by\n      rw [hxCut, hx]\n      change -(lowerFromSuccCoordinate n (cuspCutoffOperator N (n + 1) u)) +\n          lowerFromSuccPeterssonCuspCommutator N n\n            (x : OrbitPeterssonHilbert (n + 1)) =\n        -(physicalLowerFromSucc n\n            (l2CoreRangeEquiv (n + 1) (cuspCutoffOperator N (n + 1) u))) +\n          lowerFromSuccPeterssonCuspCommutator N n\n            (x : OrbitPeterssonHilbert (n + 1))\n      rw [physicalLowerFromSucc_on_core]"
+    },
+    {
+      "declaration_index": 3033,
+      "declaration_name": "physicalRaise_graph_hasCompactCarrierSupport",
+      "old_fragment": "  · rw [← hxBase]\n    simpa only [l2Coordinate_l2CoreRangeEquiv_symm] using\n      l2Coordinate_hasCompactCarrierSupport n\n        ((l2CoreRangeEquiv n).symm x)\n  · rw [← hxValue, physicalRaise_apply, raisedCoordinate_apply]\n    exact l2Coordinate_hasCompactCarrierSupport (n + 1)\n      (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n\n        ((l2CoreRangeEquiv n).symm x))",
+      "new_fragment": "  · rw [← hxBase]\n    have h := l2Coordinate_hasCompactCarrierSupport n\n      ((l2CoreRangeEquiv n).symm x)\n    rw [l2Coordinate_l2CoreRangeEquiv_symm] at h\n    exact h\n  · rw [← hxValue]\n    change HasCompactCarrierSupport (n + 1) (physicalRaise n x)\n    rw [physicalRaise_apply, raisedCoordinate_apply]\n    exact l2Coordinate_hasCompactCarrierSupport (n + 1)\n      (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n\n        ((l2CoreRangeEquiv n).symm x))"
+    },
+    {
+      "declaration_index": 3034,
+      "declaration_name": "physicalLowerFromSucc_graph_hasCompactCarrierSupport",
+      "old_fragment": "  · rw [← hxBase]\n    simpa only [l2Coordinate_l2CoreRangeEquiv_symm] using\n      l2Coordinate_hasCompactCarrierSupport (n + 1)\n        ((l2CoreRangeEquiv (n + 1)).symm x)\n  · rw [← hxValue, physicalLowerFromSucc_apply,\n      lowerFromSuccCoordinate_apply]\n    exact l2Coordinate_hasCompactCarrierSupport n\n      (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n\n        ((l2CoreRangeEquiv (n + 1)).symm x))",
+      "new_fragment": "  · rw [← hxBase]\n    have h := l2Coordinate_hasCompactCarrierSupport (n + 1)\n      ((l2CoreRangeEquiv (n + 1)).symm x)\n    rw [l2Coordinate_l2CoreRangeEquiv_symm] at h\n    exact h\n  · rw [← hxValue]\n    change HasCompactCarrierSupport n (physicalLowerFromSucc n x)\n    rw [physicalLowerFromSucc_apply, lowerFromSuccCoordinate_apply]\n    exact l2Coordinate_hasCompactCarrierSupport n\n      (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n\n        ((l2CoreRangeEquiv (n + 1)).symm x))"
+    },
+    {
+      "declaration_index": 3046,
+      "declaration_name": "raising_cutoff_and_Friedrichs_of_sequentialApproximation",
+      "old_fragment": "  · rw [hasSequentialGraphLocalization_iff_graph_subset_closure]",
+      "new_fragment": "  · unfold RaisingInvariantCutoffGraphControlAt\n    rw [hasSequentialGraphLocalization_iff_graph_subset_closure]"
+    },
+    {
+      "declaration_index": 3046,
+      "declaration_name": "raising_cutoff_and_Friedrichs_of_sequentialApproximation",
+      "old_fragment": "  · rw [hasSequentialGraphRegularization_iff_subset_closure_graph]",
+      "new_fragment": "  · unfold RaisingCompactFriedrichsPeriodizationAt\n    rw [hasSequentialGraphRegularization_iff_subset_closure_graph]"
+    },
+    {
+      "declaration_index": 3047,
+      "declaration_name": "lowering_cutoff_and_Friedrichs_of_sequentialApproximation",
+      "old_fragment": "  · rw [hasSequentialGraphLocalization_iff_graph_subset_closure]",
+      "new_fragment": "  · unfold LoweringInvariantCutoffGraphControlAt\n    rw [hasSequentialGraphLocalization_iff_graph_subset_closure]"
+    },
+    {
+      "declaration_index": 3047,
+      "declaration_name": "lowering_cutoff_and_Friedrichs_of_sequentialApproximation",
+      "old_fragment": "  · rw [hasSequentialGraphRegularization_iff_subset_closure_graph]",
+      "new_fragment": "  · unfold LoweringCompactFriedrichsPeriodizationAt\n    rw [hasSequentialGraphRegularization_iff_subset_closure_graph]"
+    }
+  ]
+}

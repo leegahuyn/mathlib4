@@ -1,0 +1,77 @@
+name: Codex FA Friedrichs support and lsmul probe v1
+
+on:
+  push:
+    branches:
+      - codex/fa-qym-cleanbuild-final-20260811-fast
+    paths:
+      - .github/workflows/codex-fa-friedrichs-support-lsmul-probe-v1.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none >/tmp/elan.log 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1
+          lake exe cache get >/tmp/cache.log 2>&1
+      - name: Compile support-coercion and lsmul resolution probes
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          cat >/tmp/FriedrichsSupportLsmulProbe.lean <<'LEAN'
+          import Mathlib
+
+          open Set Function MeasureTheory
+          open scoped Convolution
+
+          theorem support_ofReal_eq_probe (f : ℂ → ℝ) :
+              Function.support (fun t : ℂ ↦ (f t : ℂ)) = Function.support f := by
+            ext t
+            simp only [Function.mem_support, Complex.ofReal_ne_zero]
+
+          namespace Probe
+          open ContinuousLinearMap
+
+          #check lsmul ℂ ℂ
+
+          example (f g : ℂ → ℂ) : ℂ → ℂ :=
+            f ⋆[lsmul ℂ ℂ, volume] g
+
+          example (f : ℂ → ℝ) (g : ℂ → ℂ) : ℂ → ℂ :=
+            f ⋆[ContinuousLinearMap.lsmul ℝ ℂ, volume] g
+
+          end Probe
+          LEAN
+          set +e
+          lake env lean -DmaxErrors=20 -DwarningAsError=false /tmp/FriedrichsSupportLsmulProbe.lean 2>&1 | tee /tmp/friedrichs-support-lsmul-probe.log
+          x=${PIPESTATUS[0]}
+          set -e
+          echo "$x" >/tmp/friedrichs-support-lsmul-probe.exit
+          exit "$x"
+      - name: Upload probe evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-friedrichs-support-lsmul-probe-v1-${{ github.sha }}
+          path: |
+            /tmp/FriedrichsSupportLsmulProbe.lean
+            /tmp/friedrichs-support-lsmul-probe.log
+            /tmp/friedrichs-support-lsmul-probe.exit
+          retention-days: 30

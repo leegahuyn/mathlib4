@@ -1,0 +1,97 @@
+name: Codex FA490 uniform hlevel simp strict direct Lean
+
+on:
+  push:
+    branches:
+      - fix/fa490-uniform-hlevel-simp-20260811
+    paths:
+      - .github/workflows/codex-fa490-uniform-hlevel-simp-observe.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+  issues: write
+
+concurrency:
+  group: codex-fa490-uniform-hlevel-simp
+  cancel-in-progress: true
+
+jobs:
+  observe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Publish FA490 start identity
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          body="## FA490 authoritative observer started\n\n- run_id: \`${GITHUB_RUN_ID}\`\n- head_sha: \`${GITHUB_SHA}\`\n- sequence: \`FA475 -> ... -> FA489 -> FA490\`\n- upstream_FA489_run: \`31456858385\`\n- upstream_FA489_job: \`93672410171\`\n- upstream_FA489_source: \`365b4489c1a6c60380a40466a50ca338aae5efa14cbdf21fbe97d848bcf540af\`\n- frontier: \`35363:8 selectedLogHeightNaturalGauge_uniform_eventually_zero / index 2807\`\n- patch: \`rw [hlevel] -> simp only [hlevel]\`"
+          gh api "repos/${GITHUB_REPOSITORY}/issues/14/comments" -f body="$body"
+
+      - name: Run exact FA490 candidate/direct Lean loop and retain exit
+        id: run
+        shell: bash
+        run: |
+          set +e
+          bash scripts/fa490_uniform_hlevel_simp_candidate_ci.sh 2>&1 | tee /tmp/fa490-observe.log
+          code=${PIPESTATUS[0]}
+          set -e
+          echo "exit_code=$code" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Report compact FA490 evidence
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SCRIPT_EXIT: ${{ steps.run.outputs.exit_code }}
+        shell: bash
+        run: |
+          python3 - <<'PY' > /tmp/fa490-comment.md
+          from pathlib import Path
+          import json, os
+          out = Path('build-logs/codex-fa490-uniform-hlevel-simp/candidates/norms')
+          p = out / 'METRIC.json'
+          source = Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean')
+          log = Path('/tmp/fa490-observe.log')
+          lines = ['## FA490 authoritative observer — actual remote execution', '',
+                   f"- run_id: `{os.environ.get('GITHUB_RUN_ID','')}`",
+                   f"- head_sha: `{os.environ.get('GITHUB_SHA','')}`",
+                   f"- script_exit: `{os.environ.get('SCRIPT_EXIT','')}`"]
+          m = None
+          if p.exists():
+              m = json.loads(p.read_text(encoding='utf-8'))
+              for key in ['classification','source_sha256','line_count','Mock2_exit','Mock2_Advanced_exit','FA_exit','FA_first_actual_error_line','FA_first_actual_error_col','FA_first_error_declaration','FA_error_declaration_index','infra_reasons']:
+                  lines.append(f"- {key}: `{m.get(key)}`")
+              msg = str(m.get('FA_first_error_message','')).replace('`','\\`')[:5000]
+              lines += ['', '### first error', '```text', msg, '```']
+          else:
+              lines.append('- METRIC.json: `MISSING`')
+          if source.exists():
+              src = source.read_text(encoding='utf-8', errors='replace').splitlines()
+              center = m.get('FA_first_actual_error_line',35363) if isinstance(m,dict) else 35363
+              if center and center > 0:
+                  lo, hi = max(1, center-14), min(len(src), center+30)
+                  lines += ['', f'### Exact candidate source around line {center}', '```lean', '\n'.join(f'{i}: {src[i-1]}' for i in range(lo,hi+1)), '```']
+          if log.exists():
+              tail='\n'.join(log.read_text(encoding='utf-8',errors='replace').splitlines()[-100:])
+              lines += ['', '### Tail', '```text', tail[-12000:], '```']
+          print('\n'.join(lines)[:30000])
+          PY
+          gh api "repos/${GITHUB_REPOSITORY}/issues/14/comments" -f body="$(cat /tmp/fa490-comment.md)"
+
+      - name: Preserve FA490 script result as workflow conclusion
+        if: always()
+        env:
+          SCRIPT_EXIT: ${{ steps.run.outputs.exit_code }}
+        shell: bash
+        run: |
+          test -n "$SCRIPT_EXIT"
+          exit "$SCRIPT_EXIT"

@@ -1,0 +1,151 @@
+name: GPT QYM GB76 global-batch branch archaeology
+
+on:
+  push:
+    branches:
+      - gpt/qym-gb76-global-batch-repair-20260820
+    paths:
+      - .github/workflows/gpt-qym-gb76-global-archaeology.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+env:
+  WORK_BRANCH: gpt/qym-gb76-global-batch-repair-20260820
+  BASE_BRANCH: gpt/qym-gb77-v14-right-normal-im-20260820
+  QYM: PrimalitySheafVerification/QYM.lean
+  GB76_SHA256: fada22264b6618467f89d436ddacff27453db1242769717d5e7a386682d4efb3
+  GB76_BLOB: 29d446743036dccd5d9ad8757c351b39d526cfa9
+
+jobs:
+  archaeology:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - name: Gate exact GB76 and extract historical QYM diffs
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF_NAME" = "$WORK_BRANCH"
+          test "$(sha256sum "$QYM" | awk '{print $1}')" = "$GB76_SHA256"
+          test "$(git hash-object "$QYM")" = "$GB76_BLOB"
+
+          OUT=/tmp/qym-gb76-archaeology
+          rm -rf "$OUT"
+          mkdir -p "$OUT"
+
+          branches=(
+            gpt/qym-gb78-v14-inverseeta-rebased-20260820
+            gpt/qym-gb79-v13-inverseeta-fibre-20260819
+            gpt/qym-gb79-v11-staged-repair-20260820
+            gpt/qym-gb78-v16-timeout-exact-20260820
+            gpt/qym-fixed-gb77-v16-conditional-atlas-20260820
+            gpt/qym-gb76-v16-smooth-atlas-instance-20260820
+          )
+
+          git fetch --no-tags origin \
+            "+refs/heads/$BASE_BRANCH:refs/remotes/origin/$BASE_BRANCH"
+          base="refs/remotes/origin/$BASE_BRANCH"
+
+          {
+            echo "work_branch=$WORK_BRANCH"
+            echo "work_sha=$GITHUB_SHA"
+            echo "base_branch=$BASE_BRANCH"
+            echo "base_commit=$(git rev-parse "$base")"
+            echo "qym_sha256=$(sha256sum "$QYM" | awk '{print $1}')"
+            echo "qym_blob=$(git hash-object "$QYM")"
+          } > "$OUT/IDENTITY.txt"
+
+          : > "$OUT/BRANCH_SUMMARY.tsv"
+          for branch in "${branches[@]}"; do
+            safe="${branch//\//__}"
+            ref="refs/remotes/origin/$branch"
+            if git fetch --no-tags origin "+refs/heads/$branch:$ref"; then
+              commit="$(git rev-parse "$ref")"
+              git show "$ref:$QYM" > "$OUT/$safe.QYM.lean"
+              qsha="$(sha256sum "$OUT/$safe.QYM.lean" | awk '{print $1}')"
+              qblob="$(git hash-object "$OUT/$safe.QYM.lean")"
+              printf '%s\t%s\t%s\t%s\n' "$branch" "$commit" "$qsha" "$qblob" \
+                >> "$OUT/BRANCH_SUMMARY.tsv"
+              git diff --no-ext-diff --unified=80 "$base" "$ref" -- "$QYM" \
+                > "$OUT/$safe.diff" || true
+              git log --oneline --decorate --max-count=30 "$base..$ref" \
+                > "$OUT/$safe.log" || true
+              git ls-tree -r --name-only "$ref" .github \
+                | grep -E '(qym.*(patch|probe|driver)|qym-frontier/.*(RESULT|STATUS|SELECTION|PROMOTION))' \
+                > "$OUT/$safe.github-files.txt" || true
+            else
+              printf '%s\tFETCH_FAILED\t-\t-\n' "$branch" \
+                >> "$OUT/BRANCH_SUMMARY.tsv"
+            fi
+          done
+
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          out = Path('/tmp/qym-gb76-archaeology')
+          rows = []
+          for line in (out / 'BRANCH_SUMMARY.tsv').read_text().splitlines():
+              branch, commit, sha, blob = line.split('\t')
+              safe = branch.replace('/', '__')
+              diff = out / f'{safe}.diff'
+              qym = out / f'{safe}.QYM.lean'
+              rows.append({
+                  'branch': branch,
+                  'commit': commit,
+                  'qym_sha256': sha,
+                  'qym_blob': blob,
+                  'qym_bytes': qym.stat().st_size if qym.exists() else None,
+                  'diff_bytes': diff.stat().st_size if diff.exists() else None,
+                  'diff_hunks': diff.read_text(errors='replace').count('@@ ') if diff.exists() else None,
+              })
+          (out / 'SUMMARY.json').write_text(json.dumps({
+              'schema': 'qym-gb76-global-batch-archaeology-v1',
+              'branches': rows,
+          }, indent=2, sort_keys=True) + '\n')
+          PY
+
+          find "$OUT" -maxdepth 1 -type f -printf '%f\t%s\n' | sort > "$OUT/FILE_MANIFEST.tsv"
+
+      - name: Persist compact archaeology evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          src=/tmp/qym-gb76-archaeology
+          dest=.github/qym-frontier/GB76_GLOBAL_BATCH_ARCHAEOLOGY
+          rm -rf "$dest"
+          mkdir -p "$dest"
+          cp "$src"/IDENTITY.txt "$dest"/
+          cp "$src"/SUMMARY.json "$dest"/
+          cp "$src"/BRANCH_SUMMARY.tsv "$dest"/
+          cp "$src"/FILE_MANIFEST.tsv "$dest"/
+          find "$src" -maxdepth 1 -type f \( -name '*.diff' -o -name '*.log' -o -name '*.github-files.txt' \) -size -800k -exec cp {} "$dest"/ \;
+          jq -n \
+            --arg branch "$WORK_BRANCH" \
+            --arg trigger_sha "$GITHUB_SHA" \
+            --argjson run_id "$GITHUB_RUN_ID" \
+            --arg qym_sha "$GB76_SHA256" \
+            --arg qym_blob "$GB76_BLOB" \
+            '{schema:"qym-gb76-global-batch-archaeology-v1",branch:$branch,trigger_sha:$trigger_sha,run_id:$run_id,qym_sha256:$qym_sha,qym_blob:$qym_blob,status:"COMPLETE",artifact_name:("qym-gb76-global-batch-archaeology-" + ($run_id|tostring))}' \
+            > "$dest/STATUS.json"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "$dest"
+          git commit -m "QYM GB76 global batch: persist branch archaeology ${GITHUB_RUN_ID} [skip ci]"
+          git push origin "HEAD:$WORK_BRANCH"
+
+      - name: Upload complete archaeology bundle
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-gb76-global-batch-archaeology-${{ github.run_id }}
+          path: /tmp/qym-gb76-archaeology
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 6

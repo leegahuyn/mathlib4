@@ -1,0 +1,45 @@
+{
+  "baseline_artifact_id": 9367407419,
+  "baseline_error_headers": 79,
+  "baseline_job_id": 96079286207,
+  "baseline_qym_blob": "33e4fab1130e4c17ea5d212fe2691c3e0c0eb8d3",
+  "baseline_qym_sha256": "790b40c05a8f3735dd171a135eda65de92ab68b247d13e7e2ffe2968e3798421",
+  "baseline_run_id": 32256493063,
+  "candidate_qym_blob": "029620c5d7085dbc7a11c8eaaa485a67fe9312fe",
+  "candidate_qym_sha256": "1a1abeeb248031cd91577034329944caab08fd9f9e6c70f7a913c1dd66e0e714",
+  "error_codes": {
+    "lean.synthInstanceFailed": 8,
+    "uncoded": 70
+  },
+  "error_headers": 78,
+  "exit": 1,
+  "first_blocker_advanced": true,
+  "first_error": {
+    "code": null,
+    "column": 61,
+    "file": "PrimalitySheafVerification/QYM.lean",
+    "line": 44749,
+    "message": "unsolved goals",
+    "severity": "error"
+  },
+  "gate_line": 44239,
+  "head_sha": "d24f3ef897082d3e1601024c88d76cc2ebc78634",
+  "last_error": {
+    "code": null,
+    "column": 78,
+    "file": "PrimalitySheafVerification/QYM.lean",
+    "line": 59258,
+    "message": "unsolved goals",
+    "severity": "error"
+  },
+  "log_sha256": "97a079c6f89dadc937af63903156e5fa767ae9108e832b257a34e6d822b3a6ce",
+  "panic_lines": 0,
+  "patch_candidate_blob": "029620c5d7085dbc7a11c8eaaa485a67fe9312fe",
+  "patch_candidate_sha256": "1a1abeeb248031cd91577034329944caab08fd9f9e6c70f7a913c1dd66e0e714",
+  "run_id": 32262658070,
+  "schema": "qym-gb79-v11b-result-v1",
+  "semantic_pass": false,
+  "strict_improvement": true,
+  "variant": "change_const_mul",
+  "warning_headers": 358
+}

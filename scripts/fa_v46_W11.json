@@ -1,0 +1,132 @@
+{
+  "schema": "fa-v42-declaration-local-repairs-v1",
+  "status": "PATCH_READY_STATIC_EXACT_REMOTE_TARGET_DIRECT_LEAN_REQUIRED_V46_W11",
+  "worker_id": "W11",
+  "cluster_id": "V46-IDX3928-VERTICAL-IBP-METHOD-CHAIN-AND-RING-CLOSURE",
+  "authority": {
+    "repository": "leegahuyn/mathlib4",
+    "run_id": 31728453514,
+    "head_sha": "5ec44f3d343955f3124e7efecc048b648dccc5ab",
+    "job_id": 94542617528,
+    "artifact_id": 9192669673,
+    "artifact_digest": "sha256:8f07a678145b62342aaa9cb94ebbce6c9f7cc1a45c400560918d42499e67f2f3",
+    "variant": "all_probes",
+    "source_path": "work/v45-results/run-31728453514/all_probes/Mock2_FunctionalAnalysis-candidate.lean",
+    "source_sha256": "726f40d1dd03d32f03592adf4f6b02e3f7f52e7e1f71087ee53bdb83c4bb0caf",
+    "source_bytes": 2788764,
+    "source_lines": 62383,
+    "declaration_count": 4416,
+    "diagnostics_path": "work/v45-results/run-31728453514/all_probes/FULL_DIAGNOSTICS.json",
+    "diagnostics_sha256": "1fb14600849d7281df6ff65ae9213b6671b19a396cf539041f864fea157476a1",
+    "fa_log_path": "work/v45-results/run-31728453514/all_probes/Mock2_FunctionalAnalysis.log",
+    "fa_log_sha256": "bcc92a247a531419b25677cfdd5e28ce1705e6c3fb87301b93e24510932b4888"
+  },
+  "assignment": {
+    "declaration_index": 3928,
+    "declaration": "integral_negativePlaneWave_mul_dy",
+    "requested_diagnostic_ordinals": [11, 12],
+    "authority_diagnostic_ordinals": [13, 14],
+    "ordinal_correction": "In the locked all_probes FULL_DIAGNOSTICS, ordinals 11 and 12 belong to symmetric idx3927; idx3928 is exactly ordinals 13 and 14.",
+    "diagnostic_count": 2,
+    "lines": [53379, 53391],
+    "columns": [6, 2],
+    "normalized_signatures": [
+      "Function expected at",
+      "Type mismatch: After simplification, term"
+    ],
+    "root_or_cascade": "RESIDUALS_AFTER_INCOMPLETE_V44_Q3_S04_STAGED_REPAIR",
+    "ownership": "W11-only"
+  },
+  "comparison": {
+    "v45_core": {
+      "diagnostic_count": 4,
+      "ordinals": [15, 16, 17, 18],
+      "signatures": [
+        "Application type mismatch: The argument",
+        "Unknown constant DifferentiableAt.integrable_of_hasCompactSupport",
+        "Unknown constant Exists.integrable_of_hasCompactSupport",
+        "unsolved goals"
+      ]
+    },
+    "v45_q3_probe": {
+      "diagnostic_count": 2,
+      "ordinals": [13, 14],
+      "signatures": ["Function expected at", "Type mismatch: After simplification, term"]
+    },
+    "v45_all_probes": {
+      "diagnostic_count": 2,
+      "ordinals": [13, 14],
+      "signatures": ["Function expected at", "Type mismatch: After simplification, term"]
+    },
+    "decision": "COMPLETE_THE_ADVANCED_STAGED_BODY_NOT_ROLLBACK",
+    "reason": "V44-Q3-S04 reduced four API-order/inference failures to two strictly local residuals. The repair retains all three named Integrable witnesses and fixes only their remaining method-chain boundary and the final coefficient normalization."
+  },
+  "diagnosis": {
+    "first_error": {
+      "line": 53379,
+      "exact_remote_type": "Continuous (literalStageNegativePlaneWave Y k * ⇑(HalfWeightCompactCoordinateGreen.dy v))",
+      "exact_remote_failure": "The Continuous proof is treated as a function being applied to `.integrable_of_hasCompactSupport`.",
+      "root": "The staged source closes the Continuous.mul expression before a newline-leading field projection. Lean parses the following `.integrable_of_hasCompactSupport` as a separate argument rather than a method-chain continuation.",
+      "repair": "Attach `.integrable_of_hasCompactSupport` directly to the parenthesized Continuous.mul expression, matching the already accepted hBase construction in the same declaration."
+    },
+    "second_error": {
+      "line": 53391,
+      "hIBP_rhs_after_simplification": "-(-(2 * (Real.pi * (Complex.I * (k 1)))) / literalStageFourierScale Y * integral)",
+      "expected_rhs": "(2 * Real.pi * Complex.I * (k 1) / literalStageFourierScale Y) * integral",
+      "root": "The original terminal simpa unfolds the derivative and pulls out the constant but does not run a ring normalization across the outer negation, the negative numerator and division association.",
+      "repair": "Use hIBP as the exact first calc step, then unfold only the negative-wave derivative, reassociate multiplication, pull out the constant integral, and close the displayed scalar identity with ring."
+    },
+    "exact_api_evidence": {
+      "path": "C:/Users/사용자/Desktop/mathlib4_spt2/Mathlib/Analysis/Calculus/LineDeriv/IntegrationByParts.lean",
+      "lines": "225-233",
+      "statement_shape": "integral f*g' = - integral f'*g after hf'g, hfg', hfg and differentiability witnesses",
+      "same_file_usage": "The source uses the same theorem successfully in compactPair_directionalDerivative_right at lines 15422-15432 with named f/g/v and three Integrable witnesses in the same order."
+    },
+    "required_imports": [],
+    "expected_errors_closed": 2,
+    "semantic_risk": "LOW_TO_MEDIUM_STATIC_ELABORATION_RISK",
+    "confidence": "HIGH_STATIC_EXACT_REMOTE_TYPES_AND_SAME_FILE_API_DIRECT_LEAN_REQUIRED",
+    "theorem_proposition_changed": false,
+    "disposition": "PATCH_READY"
+  },
+  "atomicity": {
+    "group": "V46-NEGATIVE-PLANE-WAVE-IBP-DX-DY",
+    "this_member": {
+      "worker": "W11",
+      "declaration_index": 3928,
+      "direction": "dy"
+    },
+    "symmetric_member_expected": {
+      "worker": "W12",
+      "declaration_index": 3927,
+      "direction": "dx"
+    },
+    "textual_overlap": false,
+    "promotion_policy": "If W12 confirms the symmetric repair, compose idx3927 and idx3928 as one atomic paired probe. W11 must be applied after the idx3926 derivative repair; W12 analogously depends on idx3925."
+  },
+  "header_policy": "NO_HEADER_CHANGES_BODY_ONLY",
+  "trust_policy": {
+    "tokens": ["sorry", "admit", "axiom", "unsafe", "native_decide", "Lean.ofReduceBool"],
+    "required_before": 0,
+    "required_after": 0
+  },
+  "repairs": [
+    {
+      "id": "V46-W11-IDX3928-complete-vertical-ibp-staged-body",
+      "owner": "integral_negativePlaneWave_mul_dy",
+      "declaration_index": 3928,
+      "diagnostics": [13, 14],
+      "kind": "body",
+      "classification": "METHOD-CHAIN-BOUNDARY-PLUS-EXPLICIT-RING-CALC",
+      "confidence": "high-static-exact-two-remote-residuals-direct-Lean-required",
+      "expected_count_in_owner": 1,
+      "old": "  have hBase : Integrable\n      (fun w : ℂ ↦ literalStageNegativePlaneWave Y k w * v w)\n      (volume : Measure ℂ) :=\n    ((literalStageNegativePlaneWave_continuous Y k).mul\n      v.continuous).integrable_of_hasCompactSupport v.hasCompactSupport.mul_left\n  have hLeft : Integrable\n      (fun w : ℂ ↦\n        (fderiv ℝ (literalStageNegativePlaneWave Y k) w) Complex.I * v w)\n      (volume : Measure ℂ) := by\n    simpa only [fderiv_literalStageNegativePlaneWave_I, mul_assoc] using\n      hBase.const_mul\n        (-2 * Real.pi * Complex.I * (k 1 : ℂ) /\n          literalStageFourierScale Y)\n  have hRight : Integrable\n      (fun w : ℂ ↦ literalStageNegativePlaneWave Y k w *\n        (fderiv ℝ (v : ℂ → ℂ) w) Complex.I)\n      (volume : Measure ℂ) := by\n    simpa only [HalfWeightCompactCoordinateGreen.dy_apply] using\n      ((literalStageNegativePlaneWave_continuous Y k).mul\n        (HalfWeightCompactCoordinateGreen.dy v).continuous)\n          .integrable_of_hasCompactSupport\n            (HalfWeightCompactCoordinateGreen.dy v).hasCompactSupport.mul_left\n  have hIBP := integral_mul_fderiv_eq_neg_fderiv_mul_of_integrable\n    (μ := (volume : Measure ℂ))\n    (f := literalStageNegativePlaneWave Y k) (g := (v : ℂ → ℂ))\n    (v := Complex.I)\n    hLeft hRight hBase\n    (fun _ _ ↦\n      (literalStageNegativePlaneWave_differentiable Y k).differentiableAt)\n    (fun _ _ ↦ v.contDiff.differentiable (by simp) _)\n  simpa only [HalfWeightCompactCoordinateGreen.dy_apply,\n    fderiv_literalStageNegativePlaneWave_I, neg_mul, neg_neg,\n    integral_const_mul, mul_assoc] using hIBP",
+      "new": "  have hBase : Integrable\n      (fun w : ℂ ↦ literalStageNegativePlaneWave Y k w * v w)\n      (volume : Measure ℂ) :=\n    ((literalStageNegativePlaneWave_continuous Y k).mul\n      v.continuous).integrable_of_hasCompactSupport v.hasCompactSupport.mul_left\n  have hLeft : Integrable\n      (fun w : ℂ ↦\n        (fderiv ℝ (literalStageNegativePlaneWave Y k) w) Complex.I * v w)\n      (volume : Measure ℂ) := by\n    simpa only [fderiv_literalStageNegativePlaneWave_I, mul_assoc] using\n      hBase.const_mul\n        (-2 * Real.pi * Complex.I * (k 1 : ℂ) /\n          literalStageFourierScale Y)\n  have hRight : Integrable\n      (fun w : ℂ ↦ literalStageNegativePlaneWave Y k w *\n        (fderiv ℝ (v : ℂ → ℂ) w) Complex.I)\n      (volume : Measure ℂ) := by\n    simpa only [HalfWeightCompactCoordinateGreen.dy_apply] using\n      ((literalStageNegativePlaneWave_continuous Y k).mul\n        (HalfWeightCompactCoordinateGreen.dy v).continuous).integrable_of_hasCompactSupport\n          (HalfWeightCompactCoordinateGreen.dy v).hasCompactSupport.mul_left\n  have hIBP := integral_mul_fderiv_eq_neg_fderiv_mul_of_integrable\n    (μ := (volume : Measure ℂ))\n    (f := literalStageNegativePlaneWave Y k) (g := (v : ℂ → ℂ))\n    (v := Complex.I)\n    hLeft hRight hBase\n    (fun _ _ ↦\n      (literalStageNegativePlaneWave_differentiable Y k).differentiableAt)\n    (fun _ _ ↦ v.contDiff.differentiable (by simp) _)\n  rw [HalfWeightCompactCoordinateGreen.dy_apply]\n  calc\n    (∫ w : ℂ, literalStageNegativePlaneWave Y k w *\n        (fderiv ℝ (v : ℂ → ℂ) w) Complex.I) =\n      - ∫ w : ℂ, (fderiv ℝ\n          (literalStageNegativePlaneWave Y k) w) Complex.I * v w := hIBP\n    _ = (2 * Real.pi * Complex.I * (k 1 : ℂ) /\n          literalStageFourierScale Y) *\n        ∫ w : ℂ, literalStageNegativePlaneWave Y k w * v w := by\n      simp only [fderiv_literalStageNegativePlaneWave_I, mul_assoc,\n        integral_const_mul]\n      ring",
+      "evidence": "The first edit is the exact method-chain parse correction shown by the Function expected diagnostic. The calc's first equality is hIBP without simplification; its second equality matches the remote displayed residual and delegates only commutative scalar normalization to ring."
+    }
+  ],
+  "promotion_rule": "Apply after the idx3926 derivative repair and preferably atomically with the symmetric W12 idx3927 body. Require direct remote Mock2=0, Mock2_Advanced=0 and full FA maxErrors=2000 execution; both idx3928 diagnostics must disappear with no new owner-local diagnostic. Recheck all 4416 headers/order/comments/attributes byte-identical and executable trust-six zero.",
+  "direct_lean_verified": false,
+  "clean_build_claimed": false,
+  "lean_lake_git_github_network_invoked_by_worker": false
+}

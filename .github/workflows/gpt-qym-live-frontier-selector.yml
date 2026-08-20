@@ -1,0 +1,233 @@
+name: GPT QYM live direct-Lean frontier selector
+
+on:
+  push:
+    branches:
+      - gpt/fa-qym-clean-final-20260816
+    paths:
+      - .github/workflows/gpt-qym-live-frontier-selector.yml
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: gpt-qym-live-frontier-selector-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  select:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      MAIN_BRANCH: gpt/fa-qym-clean-final-20260816
+      OUT: /tmp/qym-live-selector
+      FRONTIER_DIR: .github/qym-frontier/live
+      QYM: PrimalitySheafVerification/QYM.lean
+      FLOOR_ERRORS: '89'
+      FLOOR_WARNINGS: '356'
+      FLOOR_SHA: 00f2c8ba7fc0329b04ae67c5a67b5814f8118b14222a7831a0401c9d3d374e53
+      FLOOR_BLOB: ee2faeaf281215b0e9b304a96ccdce3e8cdc0ffb
+
+    steps:
+      - name: Checkout authoritative main branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ env.MAIN_BRANCH }}
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Discover and download latest direct-Lean evidence
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT/runs"
+          workflows=(
+            gpt-qym-probe41-gamma2-parity.yml
+            gpt-qym-probe42-adaptive.yml
+            gpt-qym-fastlane.yml
+            gpt-qym-fastlane-trigger-v2.yml
+            gpt-qym-fastlane-mod2.yml
+          )
+          printf '[]\n' > "$OUT/RUNS.json"
+          for attempt in $(seq 1 20); do
+            any_running=0
+            : > "$OUT/run-ids.txt"
+            for wf in "${workflows[@]}"; do
+              if ! gh workflow view "$wf" --repo leegahuyn/mathlib4 >/dev/null 2>&1; then
+                continue
+              fi
+              gh run list --repo leegahuyn/mathlib4 --workflow "$wf" --limit 8 \
+                --json databaseId,status,conclusion,headSha,headBranch,createdAt,name \
+                > "$OUT/${wf%.yml}.runs.json" || printf '[]\n' > "$OUT/${wf%.yml}.runs.json"
+              python3 - "$OUT/${wf%.yml}.runs.json" "$OUT/run-ids.txt" <<'PY'
+              import json,sys
+              rows=json.load(open(sys.argv[1],encoding='utf-8'))
+              with open(sys.argv[2],'a',encoding='utf-8') as f:
+                for r in rows:
+                  if r.get('status')=='completed' and r.get('databaseId'):
+                    f.write(str(r['databaseId'])+'\n')
+              PY
+              if python3 - "$OUT/${wf%.yml}.runs.json" <<'PY'
+              import json,sys
+              rows=json.load(open(sys.argv[1],encoding='utf-8'))
+              raise SystemExit(0 if any(r.get('status') in {'queued','in_progress','waiting','pending','requested'} for r in rows[:2]) else 1)
+              PY
+              then
+                any_running=1
+              fi
+            done
+            sort -u "$OUT/run-ids.txt" -o "$OUT/run-ids.txt"
+            if [[ "$any_running" -eq 0 || "$attempt" -eq 20 ]]; then
+              break
+            fi
+            sleep 60
+          done
+          while read -r run_id; do
+            [[ -n "$run_id" ]] || continue
+            mkdir -p "$OUT/runs/$run_id"
+            gh run view "$run_id" --repo leegahuyn/mathlib4 \
+              --json databaseId,status,conclusion,headSha,headBranch,createdAt,name,event \
+              > "$OUT/runs/$run_id/RUN.json" || true
+            gh run download "$run_id" --repo leegahuyn/mathlib4 \
+              --dir "$OUT/runs/$run_id/artifacts" || true
+          done < "$OUT/run-ids.txt"
+          find "$OUT/runs" -type f -print | sort > "$OUT/FILES.txt"
+
+      - name: Select lowest verified direct-Lean frontier
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - "$OUT" <<'PY'
+          from pathlib import Path
+          import hashlib,json,os,re,shutil,subprocess,sys
+
+          root=Path(sys.argv[1])
+          candidates=[]
+          rejected=[]
+
+          def blob(raw:bytes)->str:
+            return hashlib.sha1(b'blob '+str(len(raw)).encode()+b'\0'+raw).hexdigest()
+
+          for rp in root.rglob('PROBE_RESULT.json'):
+            try:
+              r=json.loads(rp.read_text(encoding='utf-8'))
+            except Exception as exc:
+              rejected.append({'result':str(rp),'reason':'json','detail':repr(exc)})
+              continue
+            sha=r.get('candidate_qym_sha256') or r.get('candidate_sha256')
+            git_blob=r.get('candidate_qym_blob') or r.get('candidate_blob')
+            if not sha or not git_blob:
+              rejected.append({'result':str(rp),'reason':'missing candidate hash'})
+              continue
+            possible=[]
+            for q in rp.parent.rglob('*.lean'):
+              try:
+                raw=q.read_bytes()
+              except Exception:
+                continue
+              if hashlib.sha256(raw).hexdigest()==sha and blob(raw)==git_blob:
+                possible.append(q)
+            if not possible:
+              rejected.append({'result':str(rp),'reason':'candidate bytes not found','sha':sha,'blob':git_blob})
+              continue
+            rc=r.get('exit')
+            errors=r.get('error_headers')
+            warnings=r.get('warning_headers')
+            panic=r.get('panic_lines')
+            if not isinstance(errors,int) or not isinstance(warnings,int) or not isinstance(panic,int):
+              rejected.append({'result':str(rp),'reason':'missing metrics'})
+              continue
+            semantic=bool(r.get('semantic_pass')) and rc==0 and errors==0 and panic==0
+            first=r.get('first_error') or {}
+            first_line=first.get('line') if isinstance(first,dict) else 0
+            if not isinstance(first_line,int): first_line=0
+            candidates.append({
+              'result_path':str(rp),
+              'candidate_path':str(possible[0]),
+              'schema':r.get('schema'),
+              'github_sha':r.get('github_sha'),
+              'candidate_qym_sha256':sha,
+              'candidate_qym_blob':git_blob,
+              'exit':rc,
+              'error_headers':errors,
+              'warning_headers':warnings,
+              'panic_lines':panic,
+              'semantic_pass':semantic,
+              'first_error':first,
+              'rank':[0 if semantic else 1, errors, -first_line, warnings],
+            })
+
+          floor={
+            'result_path':None,'candidate_path':None,'schema':'probe35-flat_named-floor',
+            'github_sha':None,'candidate_qym_sha256':os.environ['FLOOR_SHA'],
+            'candidate_qym_blob':os.environ['FLOOR_BLOB'],'exit':1,
+            'error_headers':int(os.environ['FLOOR_ERRORS']),
+            'warning_headers':int(os.environ['FLOOR_WARNINGS']),
+            'panic_lines':0,'semantic_pass':False,'first_error':{'line':37775},
+            'rank':[1,int(os.environ['FLOOR_ERRORS']),-37775,int(os.environ['FLOOR_WARNINGS'])],
+          }
+          all_rows=[floor]+candidates
+          all_rows.sort(key=lambda x:tuple(x['rank']))
+          best=all_rows[0]
+          best['strict_improvement_over_floor']=tuple(best['rank'])<tuple(floor['rank'])
+          selection={'schema':'qym-live-frontier-selector-v1','floor':floor,'best':best,
+                     'candidates':candidates,'rejected':rejected}
+          (root/'SELECTION.json').write_text(json.dumps(selection,indent=2,sort_keys=True)+'\n',encoding='utf-8')
+          print(json.dumps(selection,indent=2,sort_keys=True))
+
+          if best.get('candidate_path'):
+            src=Path(best['candidate_path'])
+            shutil.copy2(src,root/'QYM.GLOBAL_BEST.lean')
+            rp=Path(best['result_path'])
+            shutil.copy2(rp,root/'GLOBAL_BEST_RESULT.json')
+            for name in ['QYM.error-headers.txt','QYM.diagnostics.jsonl','QYM.panic-lines.txt','QYM.log','QYM.exit']:
+              p=rp.parent/name
+              if p.exists(): shutil.copy2(p,root/name)
+          PY
+
+      - name: Persist a strict frontier improvement or promote TRUE PASS
+        shell: bash
+        run: |
+          set -euo pipefail
+          strict=$(python3 -c 'import json; x=json.load(open("/tmp/qym-live-selector/SELECTION.json")); print(str(x["best"].get("strict_improvement_over_floor",False)).lower())')
+          semantic=$(python3 -c 'import json; x=json.load(open("/tmp/qym-live-selector/SELECTION.json")); print(str(x["best"].get("semantic_pass",False)).lower())')
+          if [[ "$strict" != true ]]; then
+            echo 'No strict direct-Lean improvement over the 89-error floor.'
+            exit 0
+          fi
+          mkdir -p "$FRONTIER_DIR"
+          cp "$OUT/SELECTION.json" "$FRONTIER_DIR/SELECTION.json"
+          cp "$OUT/QYM.GLOBAL_BEST.lean" "$FRONTIER_DIR/QYM_GLOBAL_BEST.lean"
+          cp "$OUT/GLOBAL_BEST_RESULT.json" "$FRONTIER_DIR/PROBE_RESULT.json"
+          for f in QYM.error-headers.txt QYM.diagnostics.jsonl QYM.panic-lines.txt QYM.log QYM.exit; do
+            [[ -f "$OUT/$f" ]] && cp "$OUT/$f" "$FRONTIER_DIR/$f" || true
+          done
+          if [[ "$semantic" == true ]]; then
+            cp "$OUT/QYM.GLOBAL_BEST.lean" "$QYM"
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "$FRONTIER_DIR" "$QYM"
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          if [[ "$semantic" == true ]]; then
+            git commit -m 'QYM: promote verified direct-Lean TRUE PASS'
+          else
+            git commit -m 'QYM: preserve strict direct-Lean frontier improvement'
+          fi
+          git push origin "HEAD:$MAIN_BRANCH"
+          git rev-parse HEAD | tee "$OUT/PERSISTED_COMMIT.txt"
+
+      - name: Upload selector evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-live-frontier-selector-${{ github.sha }}-attempt${{ github.run_attempt }}
+          path: /tmp/qym-live-selector/**
+          if-no-files-found: error
+          retention-days: 30

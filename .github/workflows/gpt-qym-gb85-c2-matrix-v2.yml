@@ -1,0 +1,312 @@
+name: GPT QYM GB85 C2 explicit smooth matrix v2
+
+on:
+  push:
+    branches:
+      - gpt/qym-gb85-c2-explicit-20260819
+    paths:
+      - .github/workflows/gpt-qym-gb85-c2-matrix-v2.yml
+      - .github/qym_patch_gb85_c2_matrix_v2.py
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+
+concurrency:
+  group: gpt-qym-gb85-c2-matrix-v2
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    name: GB85 C2 ${{ matrix.variant }} full direct Lean
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      matrix:
+        variant:
+          - coeff_div
+          - coeff_mul_inv
+          - sl_explicit_div
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: leegahuyn/mathlib4
+      QYM: PrimalitySheafVerification/QYM.lean
+      OLEAN: .lake/build/lib/lean/PrimalitySheafVerification
+      OUT: /tmp/qym-gb85-c2-${{ matrix.variant }}
+      BASE: /tmp/qym-gb85-authority
+      BASE_ARTIFACT_ID: "9354072137"
+      BASE_SHA256: f4c9b27a297be772cde7183526378ad42ae826053f69cf3ce521670da4f06210
+      BASE_BLOB: bd28d0436230a8f0bcb01806dac01787542256b8
+      BASE_ERRORS: "85"
+
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Recover exact verified GB85 authority
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT" "$BASE" "$OLEAN"
+          test "$GITHUB_REF_NAME" = gpt/qym-gb85-c2-explicit-20260819
+          test "$(tr -d '\r\n' < lean-toolchain)" = leanprover/lean4:v4.33.0-rc1
+          test -f .github/qym_patch_gb85_c2_matrix_v2.py
+          gh api -H 'Accept: application/vnd.github+json' \
+            "repos/$REPO/actions/artifacts/$BASE_ARTIFACT_ID/zip" \
+            > "$RUNNER_TEMP/qym-gb85.zip"
+          unzip -q -o "$RUNNER_TEMP/qym-gb85.zip" -d "$BASE"
+          python3 - "$BASE" "$QYM" "$BASE_SHA256" "$BASE_BLOB" <<'PY'
+          from pathlib import Path
+          import hashlib, json, shutil, sys
+          root, qym, expected_sha, expected_blob = Path(sys.argv[1]), Path(sys.argv[2]), sys.argv[3], sys.argv[4]
+          def blob(raw: bytes) -> str:
+              return hashlib.sha1(b"blob " + str(len(raw)).encode() + b"\0" + raw).hexdigest()
+          matches = []
+          for p in root.rglob("*.lean"):
+              raw = p.read_bytes()
+              if hashlib.sha256(raw).hexdigest() == expected_sha and blob(raw) == expected_blob:
+                  matches.append(p)
+          if len(matches) != 1:
+              raise SystemExit(f"expected one exact GB85 source, found {len(matches)}: {matches}")
+          qym.parent.mkdir(parents=True, exist_ok=True)
+          shutil.copy2(matches[0], qym)
+          result_matches = []
+          for p in root.rglob("*.json"):
+              try:
+                  r = json.loads(p.read_text(errors="replace"))
+              except Exception:
+                  continue
+              if (r.get("candidate_qym_sha256") == expected_sha and
+                  int(r.get("error_headers", -1)) == 85 and
+                  int(r.get("panic_lines", -1)) == 0 and
+                  int(r.get("run_id", -1)) == 32218198562):
+                  result_matches.append(p)
+          if not result_matches:
+              raise SystemExit("matching GB85 result JSON not found")
+          print(f"GB85_SOURCE={matches[0]}")
+          print(f"GB85_RESULT={result_matches[0]}")
+          PY
+          test "$(sha256sum "$QYM" | awk '{print $1}')" = "$BASE_SHA256"
+          python3 - "$QYM" "$BASE_BLOB" <<'PY'
+          from pathlib import Path
+          import hashlib, sys
+          raw = Path(sys.argv[1]).read_bytes()
+          got = hashlib.sha1(b"blob " + str(len(raw)).encode() + b"\0" + raw).hexdigest()
+          if got != sys.argv[2]:
+              raise SystemExit((got, sys.argv[2]))
+          PY
+
+      - name: Install pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 8 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none > "$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          tc="$(tr -d '\r\n' < lean-toolchain)"
+          for a in 1 2 3 4 5; do
+            elan toolchain install "$tc" >> "$OUT/toolchain.log" 2>&1 && break
+            sleep $((a * 5))
+          done
+          lean --version | tee "$OUT/lean-version.txt"
+          lake --version | tee "$OUT/lake-version.txt"
+          for a in 1 2 3 4 5; do
+            lake exe cache get >> "$OUT/mathlib-cache.log" 2>&1 && break
+            sleep $((a * 5))
+          done
+
+      - name: Restore dependency objects
+        id: deps-cache
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: |
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.ilean
+          key: qym-deps-v3-${{ runner.os }}-${{ hashFiles('lean-toolchain','lake-manifest.json','lakefile.lean','PrimalitySheafVerification/Mock2.lean','PrimalitySheafVerification/Mock2_Advanced.lean','PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean','PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean') }}
+          restore-keys: |
+            qym-probe4-deps-v1-${{ runner.os }}-
+
+      - name: Ensure completed dependency objects
+        shell: bash
+        run: |
+          set -euo pipefail
+          for s in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated; do
+            if [[ ! -s "$OLEAN/$s.olean" || ! -s "$OLEAN/$s.ilean" ]]; then
+              cap=1
+              if [[ "$s" = Mock2_FunctionalAnalysis || "$s" = Mock2_FunctionalAnalysis_Integrated ]]; then
+                cap=2000
+              fi
+              rm -f "$OLEAN/$s.olean" "$OLEAN/$s.ilean"
+              lake env lean "-DmaxErrors=$cap" -DwarningAsError=false \
+                -o "$OLEAN/$s.olean" -i "$OLEAN/$s.ilean" \
+                "PrimalitySheafVerification/$s.lean" > "$OUT/$s.log" 2>&1
+            fi
+            test -s "$OLEAN/$s.olean" && test -s "$OLEAN/$s.ilean"
+          done
+
+      - name: Materialize exact C2 candidate from GB85
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -B .github/qym_patch_gb85_c2_matrix_v2.py \
+            "${{ matrix.variant }}" "$QYM" | tee "$OUT/PATCH_RESULT.json"
+          cp "$QYM" "$OUT/QYM.candidate-${{ matrix.variant }}.lean"
+          test "$(jq -r '.input_sha256' "$OUT/PATCH_RESULT.json")" = "$BASE_SHA256"
+          test "$(jq -r '.input_blob' "$OUT/PATCH_RESULT.json")" = "$BASE_BLOB"
+          test "$(jq '[.forbidden[]] | add' "$OUT/PATCH_RESULT.json")" -eq 0
+
+      - name: Local direct Lean C2 gate
+        shell: bash
+        run: |
+          set +e
+          /usr/bin/time -v -o "$OUT/local.time" \
+            lake env lean -DmaxErrors=1 -DwarningAsError=false \
+              -o "$RUNNER_TEMP/QYM.local.olean" \
+              -i "$RUNNER_TEMP/QYM.local.ilean" \
+              "$QYM" > "$OUT/local.log" 2>&1
+          rc=$?
+          set -e
+          echo "$rc" > "$OUT/local.exit"
+          python3 - "$OUT" <<'PY'
+          from pathlib import Path
+          import json, re, sys
+          out = Path(sys.argv[1])
+          text = (out / "local.log").read_text(errors="replace")
+          patch = json.loads((out / "PATCH_RESULT.json").read_text())
+          m = re.search(r"^.*?\.lean:(\d+):(\d+): error(?:\([^)]*\))?:\s*(.*)$", text, re.M)
+          first = None if m is None else {
+              "line": int(m.group(1)),
+              "column": int(m.group(2)),
+              "message": m.group(3),
+          }
+          panics = re.findall(r"(?im)^.*(?:internal error|uncaught exception|panic(?:!|:|\s)).*$", text)
+          gate = int(patch["gate_line"])
+          fixed = not panics and (first is None or first["line"] >= gate)
+          result = {
+              "variant": patch["variant"],
+              "exit": int((out / "local.exit").read_text().strip()),
+              "gate_line": gate,
+              "first_error": first,
+              "panic_lines": len(panics),
+              "c2_fixed": fixed,
+          }
+          (out / "LOCAL_RESULT.json").write_text(json.dumps(result, indent=2, sort_keys=True) + "\n")
+          print(json.dumps(result, indent=2, sort_keys=True))
+          if not fixed:
+              raise SystemExit("C2 local gate failed")
+          PY
+
+      - name: Full authoritative QYM direct Lean
+        shell: bash
+        run: |
+          set +e
+          /usr/bin/time -v -o "$OUT/full.time" \
+            lake env lean -DmaxErrors=10000 -DwarningAsError=false \
+              -o "$RUNNER_TEMP/QYM.olean" \
+              -i "$RUNNER_TEMP/QYM.ilean" \
+              "$QYM" > "$OUT/full.log" 2>&1
+          rc=$?
+          set -e
+          echo "$rc" > "$OUT/full.exit"
+          if [[ "$rc" -eq 0 ]]; then
+            test -s "$RUNNER_TEMP/QYM.olean" && test -s "$RUNNER_TEMP/QYM.ilean"
+            cp "$RUNNER_TEMP/QYM.olean" "$OUT/QYM.olean"
+            cp "$RUNNER_TEMP/QYM.ilean" "$OUT/QYM.ilean"
+            sha256sum "$OUT/QYM.olean" "$OUT/QYM.ilean" > "$OUT/QYM.outputs.sha256"
+          fi
+
+      - name: Summarize actual direct Lean evidence
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - "$OUT" "$BASE_ERRORS" <<'PY'
+          from pathlib import Path
+          import collections, hashlib, json, os, re, sys
+          out, base = Path(sys.argv[1]), int(sys.argv[2])
+          raw = (out / "full.log").read_bytes() if (out / "full.log").exists() else b""
+          text = raw.decode(errors="replace")
+          pattern = re.compile(
+              r"^(?P<file>.*?\.lean):(?P<line>\d+):(?P<column>\d+): "
+              r"(?P<severity>error|warning)(?:\((?P<code>[^)]*)\))?:\s*(?P<message>.*)$",
+              re.M,
+          )
+          rows = []
+          for match in pattern.finditer(text):
+              row = match.groupdict()
+              row["line"] = int(row["line"])
+              row["column"] = int(row["column"])
+              rows.append(row)
+          errors = [r for r in rows if r["severity"] == "error"]
+          warnings = [r for r in rows if r["severity"] == "warning"]
+          panics = re.findall(r"(?im)^.*(?:internal error|uncaught exception|panic(?:!|:|\s)).*$", text)
+          patch = json.loads((out / "PATCH_RESULT.json").read_text()) if (out / "PATCH_RESULT.json").exists() else {}
+          rc = int((out / "full.exit").read_text().strip()) if (out / "full.exit").exists() else None
+          semantic_pass = rc == 0 and not errors and not panics
+          strict = semantic_pass or (not panics and len(errors) < base)
+          result = {
+              "schema": "qym-gb85-c2-direct-v2",
+              "run_id": int(os.environ["GITHUB_RUN_ID"]),
+              "trigger_sha": os.environ["GITHUB_SHA"],
+              "variant": patch.get("variant"),
+              "baseline_qym_sha256": os.environ["BASE_SHA256"],
+              "baseline_qym_blob": os.environ["BASE_BLOB"],
+              "baseline_error_headers": base,
+              "candidate_qym_sha256": patch.get("candidate_sha256"),
+              "candidate_qym_blob": patch.get("candidate_blob"),
+              "bytes": patch.get("bytes"),
+              "lf": patch.get("lf"),
+              "forbidden": patch.get("forbidden"),
+              "exit": rc,
+              "error_headers": len(errors),
+              "warning_headers": len(warnings),
+              "panic_lines": len(panics),
+              "first_error": errors[0] if errors else None,
+              "last_error": errors[-1] if errors else None,
+              "error_codes": dict(sorted(collections.Counter(r["code"] or "uncoded" for r in errors).items())),
+              "log_sha256": hashlib.sha256(raw).hexdigest(),
+              "semantic_pass": semantic_pass,
+              "strict_improvement": strict,
+          }
+          (out / "RESULT.json").write_text(json.dumps(result, indent=2, sort_keys=True) + "\n")
+          (out / "diagnostics.jsonl").write_text("".join(json.dumps(r, sort_keys=True) + "\n" for r in rows))
+          (out / "error-headers.txt").write_text("".join(
+              f"{r['file']}:{r['line']}:{r['column']}: error"
+              f"{('(' + r['code'] + ')') if r['code'] else ''}: {r['message']}\n"
+              for r in errors
+          ))
+          (out / "panic-lines.txt").write_text("".join(p + "\n" for p in panics))
+          print(json.dumps(result, indent=2, sort_keys=True))
+          if not strict:
+              raise SystemExit("candidate did not strictly improve GB85")
+          PY
+
+      - name: Restore canonical checkout
+        if: always()
+        shell: bash
+        run: |
+          git checkout -- "$QYM" || true
+
+      - name: Upload immutable candidate evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-gb85-c2-${{ matrix.variant }}-${{ github.sha }}-attempt${{ github.run_attempt }}
+          path: ${{ env.OUT }}
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 6

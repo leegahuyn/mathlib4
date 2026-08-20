@@ -1,0 +1,173 @@
+name: GPT QYM Probe35 custom sInf operator norm prefix
+
+on:
+  push:
+    branches: [gpt/fa-qym-clean-final-20260816]
+    paths:
+      - .github/workflows/gpt-qym-probe35-custom-sinf-norm.yml
+      - .github/qym_probe35_custom_sinf_norm.py
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  probe35:
+    name: exact Probe20 custom-sInf prefix direct Lean
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    env:
+      P20_RUN: '32088095860'
+      P20_ARTIFACT: qym-probe20-f728aa4e870808623454f508c01c2d5625864c1d-attempt1
+      P20_SHA: 94fceba9313ded915c6e50a17e156699eb48170595b062b1138d04b6abe31534
+      P20_BLOB: 8c2b1993954c7e913ef700246b492134fe6aa68f
+      P35_SHA: 6317b7082a71c3c6ef0fcdf56015a2561f15619546aa34384e0fd845fc9f2335
+      P35_BLOB: 26429e48400395468ec4d827ad6112b6f6df2beb
+      CACHE_KEY: qym-probe4-deps-v1-Linux-ecb9f60364b1d72200c847f9ae46918f12c8b6d05363c23cca5d361c92ea45d4
+      OLEAN: .lake/build/lib/lean/PrimalitySheafVerification
+
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Gate exact checkout and bind output
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF_NAME" = gpt/fa-qym-clean-final-20260816
+          test "$(tr -d '\r\n' < lean-toolchain)" = leanprover/lean4:v4.33.0-rc1
+          test -f .github/qym_probe35_custom_sinf_norm.py
+          test -z "$(git status --porcelain=v1 --untracked-files=all)"
+          OUT="$GITHUB_WORKSPACE/.lake/qym-probe35"
+          mkdir -p "$OUT"
+          echo "OUT=$OUT" >> "$GITHUB_ENV"
+
+      - name: Download immutable Probe20 authority
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: ${{ env.P20_ARTIFACT }}
+          path: ${{ runner.temp }}/p20
+          github-token: ${{ github.token }}
+          repository: leegahuyn/mathlib4
+          run-id: 32088095860
+
+      - name: Gate exact Probe20 bytes
+        shell: bash
+        run: |
+          set -euo pipefail
+          A="$RUNNER_TEMP/p20"
+          test "$(sha256sum "$A/QYM.candidate-probe20.lean" | awk '{print $1}')" = "$P20_SHA"
+          test "$(git hash-object --no-filters "$A/QYM.candidate-probe20.lean")" = "$P20_BLOB"
+          test "$(cat "$A/QYM.exit")" = 1
+          test "$(wc -l < "$A/QYM.error-headers.txt")" -eq 92
+          test ! -s "$A/QYM.panic-lines.txt"
+
+      - name: Install pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none > "$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" > "$OUT/toolchain.log" 2>&1
+          lake exe cache get > "$OUT/mathlib-cache.log" 2>&1
+          lean --version > "$OUT/lean-version.txt"
+          lake --version > "$OUT/lake-version.txt"
+
+      - id: depcache
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: |
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.ilean
+          key: qym-probe4-deps-v1-${{ runner.os }}-${{ hashFiles('lean-toolchain', 'lake-manifest.json', 'lakefile.lean', 'PrimalitySheafVerification/Mock2.lean', 'PrimalitySheafVerification/Mock2_Advanced.lean', 'PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean', 'PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean') }}
+
+      - name: Require exact dependency cache hit
+        shell: bash
+        env:
+          HIT: ${{ steps.depcache.outputs.cache-hit }}
+          PRIMARY: ${{ steps.depcache.outputs.cache-primary-key }}
+          MATCHED: ${{ steps.depcache.outputs.cache-matched-key }}
+        run: |
+          set -euo pipefail
+          test "$HIT" = true
+          test "$PRIMARY" = "$CACHE_KEY"
+          test "$MATCHED" = "$CACHE_KEY"
+          for s in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated; do
+            test -s "$OLEAN/$s.olean" && test -s "$OLEAN/$s.ilean"
+          done
+
+      - name: Materialize exact custom-sInf prefix
+        shell: bash
+        run: |
+          set -euo pipefail
+          SRC="$RUNNER_TEMP/p20/QYM.candidate-probe20.lean"
+          DST="$OUT/QYM.Probe35.lean"
+          python3 -B .github/qym_probe35_custom_sinf_norm.py "$SRC" "$DST" \
+            | tee "$OUT/patch-result.txt"
+          test "$(sha256sum "$DST" | awk '{print $1}')" = "$P35_SHA"
+          test "$(git hash-object --no-filters "$DST")" = "$P35_BLOB"
+
+      - name: Direct Lean compile exact custom-sInf prefix
+        shell: bash
+        run: |
+          set -euo pipefail
+          set +e
+          /usr/bin/time -v -o "$OUT/QYM.time" \
+            lake env lean -DmaxErrors=10000 -DwarningAsError=false \
+              -o "$OUT/QYM.Probe35.olean" -i "$OUT/QYM.Probe35.ilean" \
+              "$OUT/QYM.Probe35.lean" > "$OUT/QYM.log" 2>&1
+          rc=$?
+          set -e
+          echo "$rc" > "$OUT/QYM.exit"
+          exit 0
+
+      - name: Summarize exact diagnostics
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -B - "$OUT" <<'PY'
+          import collections,hashlib,json,os,re,sys
+          from pathlib import Path
+          root=Path(sys.argv[1]); raw=(root/'QYM.log').read_bytes() if (root/'QYM.log').exists() else b''; txt=raw.decode(errors='replace')
+          p=re.compile(r'^(?P<file>.*?\.lean):(?P<line>\d+):(?P<column>\d+): (?P<severity>error|warning)(?:\((?P<code>[^)]*)\))?:\s*(?P<message>.*)$',re.M)
+          rows=[]
+          for m in p.finditer(txt): x=m.groupdict(); x['line']=int(x['line']); x['column']=int(x['column']); rows.append(x)
+          es=[x for x in rows if x['severity']=='error']; ws=[x for x in rows if x['severity']=='warning']; ps=re.findall(r'(?im)^.*(?:internal error|uncaught exception|panic(?:!|:|\s)).*$',txt)
+          (root/'QYM.error-headers.txt').write_text(''.join(f"{x['file']}:{x['line']}:{x['column']}: error{('('+x['code']+')') if x['code'] else ''}: {x['message']}\n" for x in es))
+          (root/'QYM.panic-lines.txt').write_text(''.join(x+'\n' for x in ps))
+          rc=int((root/'QYM.exit').read_text().strip())
+          r={'schema':'qym-probe35-custom-sinf-prefix-v1','github_sha':os.environ['GITHUB_SHA'],'candidate_qym_sha256':os.environ['P35_SHA'],'candidate_qym_blob':os.environ['P35_BLOB'],'exit':rc,'error_headers':len(es),'warning_headers':len(ws),'error_codes':dict(sorted(collections.Counter(x['code'] or 'uncoded' for x in es).items())),'first_error':es[0] if es else None,'last_error':es[-1] if es else None,'panic_lines':len(ps),'log_sha256':hashlib.sha256(raw).hexdigest(),'semantic_pass':rc==0 and not es and not ps}
+          (root/'PROBE_RESULT.json').write_text(json.dumps(r,indent=2,sort_keys=True)+'\n'); print(json.dumps(r,indent=2,sort_keys=True))
+          PY
+
+      - name: Upload immutable Probe35 evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-probe35-${{ github.sha }}-attempt${{ github.run_attempt }}
+          path: ${{ env.OUT }}/**
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Fail closed unless prefix passes
+        if: always()
+        shell: bash
+        run: |
+          python3 - "$OUT/PROBE_RESULT.json" <<'PY'
+          import json,sys
+          r=json.load(open(sys.argv[1])); assert r['panic_lines']==0
+          if not r['semantic_pass']: raise SystemExit(r['exit'] or 1)
+          PY

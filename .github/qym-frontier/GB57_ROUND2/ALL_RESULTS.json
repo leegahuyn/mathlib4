@@ -1,0 +1,188 @@
+[
+  {
+    "schema": "qym-gb57-global-batch-round2-v1",
+    "authority": "actual full-QYM direct Lean",
+    "run_id": 32300954017,
+    "trigger_sha": "4d557092a724c4a70f7fd6f06212833060dd95b9",
+    "branch": "gpt/qym-gb57-global-batch-round2-20260820",
+    "variant": "change",
+    "previous_error_headers": 57,
+    "exit": 1,
+    "error_headers": 8,
+    "warning_headers": 258,
+    "panic_lines": 0,
+    "elapsed_seconds": 163,
+    "first_error": "PrimalitySheafVerification/QYM.lean:48101:70: error: unexpected token '/--'; expected 'lemma'",
+    "source_sha256": "c604b258541c4ec8477f0e4aa93b7fb9658d5a9f74546e85faa4b2c6add7ace4",
+    "source_blob": "d6be2245ce32bb8bce2585f9b0da5d54f8babec0",
+    "log_sha256": "f780c63e016ce24f39bc3f93c36f071bf27f9435a3c06b9033ba13f931055bf9",
+    "forbidden_zero": true,
+    "forbidden_counts": {
+      "sorry": {
+        "base": 0,
+        "candidate": 0
+      },
+      "admit": {
+        "base": 0,
+        "candidate": 0
+      },
+      "unsafe": {
+        "base": 0,
+        "candidate": 0
+      },
+      "native_decide": {
+        "base": 0,
+        "candidate": 0
+      },
+      "Lean.ofReduceBool": {
+        "base": 0,
+        "candidate": 0
+      },
+      "axiom_declaration": {
+        "base": 0,
+        "candidate": 0
+      },
+      "maxHeartbeats_zero": {
+        "base": 0,
+        "candidate": 0
+      }
+    },
+    "olean_exists": false,
+    "ilean_exists": false,
+    "error_codes": {
+      "uncoded": 8
+    },
+    "error_declarations": {
+      "inverseEtaBaseOpensMeasurableSpace": 1,
+      "inverseEtaFibreOfCoordinate": 1,
+      "inverseEtaFibreOfCoordinate_continuous": 5,
+      "currentBoundedSurrogateAcceptance_false": 1
+    },
+    "strict_improvement": true,
+    "pass": false
+  },
+  {
+    "schema": "qym-gb57-global-batch-round2-v1",
+    "authority": "actual full-QYM direct Lean",
+    "run_id": 32300954017,
+    "trigger_sha": "4d557092a724c4a70f7fd6f06212833060dd95b9",
+    "branch": "gpt/qym-gb57-global-batch-round2-20260820",
+    "variant": "norm_num",
+    "previous_error_headers": 57,
+    "exit": 1,
+    "error_headers": 8,
+    "warning_headers": 258,
+    "panic_lines": 0,
+    "elapsed_seconds": 204,
+    "first_error": "PrimalitySheafVerification/QYM.lean:48101:70: error: unexpected token '/--'; expected 'lemma'",
+    "source_sha256": "257a3988adc619dde27cb4d579c4cf8fc1d0f7ce11b62f41fdb4ad8bdfb0d87c",
+    "source_blob": "496cd6d451aa9642f0484e7e4e9b10a307724e9e",
+    "log_sha256": "e28d85f607a74ad23190d68c744400ccd659ed6ddab8644017d88be1fe403da1",
+    "forbidden_zero": true,
+    "forbidden_counts": {
+      "sorry": {
+        "base": 0,
+        "candidate": 0
+      },
+      "admit": {
+        "base": 0,
+        "candidate": 0
+      },
+      "unsafe": {
+        "base": 0,
+        "candidate": 0
+      },
+      "native_decide": {
+        "base": 0,
+        "candidate": 0
+      },
+      "Lean.ofReduceBool": {
+        "base": 0,
+        "candidate": 0
+      },
+      "axiom_declaration": {
+        "base": 0,
+        "candidate": 0
+      },
+      "maxHeartbeats_zero": {
+        "base": 0,
+        "candidate": 0
+      }
+    },
+    "olean_exists": false,
+    "ilean_exists": false,
+    "error_codes": {
+      "uncoded": 8
+    },
+    "error_declarations": {
+      "inverseEtaBaseOpensMeasurableSpace": 1,
+      "inverseEtaFibreOfCoordinate": 1,
+      "inverseEtaFibreOfCoordinate_continuous": 5,
+      "currentBoundedSurrogateAcceptance_false": 1
+    },
+    "strict_improvement": true,
+    "pass": false
+  },
+  {
+    "schema": "qym-gb57-global-batch-round2-v1",
+    "authority": "actual full-QYM direct Lean",
+    "run_id": 32300954017,
+    "trigger_sha": "4d557092a724c4a70f7fd6f06212833060dd95b9",
+    "branch": "gpt/qym-gb57-global-batch-round2-20260820",
+    "variant": "simp",
+    "previous_error_headers": 57,
+    "exit": 1,
+    "error_headers": 8,
+    "warning_headers": 258,
+    "panic_lines": 0,
+    "elapsed_seconds": 240,
+    "first_error": "PrimalitySheafVerification/QYM.lean:48101:70: error: unexpected token '/--'; expected 'lemma'",
+    "source_sha256": "487ab75ab79075ba3e0080e980b69f345c4f6474dec39634ac72c5fac0353dc8",
+    "source_blob": "b3618f46c67c1124abb47e4b77d28603d58f9dc8",
+    "log_sha256": "180aee03b9c16884dc371d52d0ce10e49b6cf0a82af9befd8221c3b4a38992e6",
+    "forbidden_zero": true,
+    "forbidden_counts": {
+      "sorry": {
+        "base": 0,
+        "candidate": 0
+      },
+      "admit": {
+        "base": 0,
+        "candidate": 0
+      },
+      "unsafe": {
+        "base": 0,
+        "candidate": 0
+      },
+      "native_decide": {
+        "base": 0,
+        "candidate": 0
+      },
+      "Lean.ofReduceBool": {
+        "base": 0,
+        "candidate": 0
+      },
+      "axiom_declaration": {
+        "base": 0,
+        "candidate": 0
+      },
+      "maxHeartbeats_zero": {
+        "base": 0,
+        "candidate": 0
+      }
+    },
+    "olean_exists": false,
+    "ilean_exists": false,
+    "error_codes": {
+      "uncoded": 8
+    },
+    "error_declarations": {
+      "inverseEtaBaseOpensMeasurableSpace": 1,
+      "inverseEtaFibreOfCoordinate": 1,
+      "inverseEtaFibreOfCoordinate_continuous": 5,
+      "currentBoundedSurrogateAcceptance_false": 1
+    },
+    "strict_improvement": true,
+    "pass": false
+  }
+]

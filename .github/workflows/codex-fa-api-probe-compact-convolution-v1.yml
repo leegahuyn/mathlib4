@@ -1,0 +1,76 @@
+name: Codex FA Fourier mode-set API probe v7
+on:
+  push:
+    branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
+    paths: [.github/workflows/codex-fa-api-probe-compact-convolution-v1.yml]
+  workflow_dispatch: {}
+permissions: {contents: read}
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with: {ref: "${{ github.sha }}", fetch-depth: 1, persist-credentials: false}
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none >/tmp/elan.log 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1
+          lake exe cache get >/tmp/cache.log 2>&1
+      - name: Compile explicit mode set and membership theorem
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          cat >/tmp/ProbeModes.lean <<'LEAN'
+          import Mathlib
+          noncomputable def modes (N : ℕ) : Finset (Fin 2 → ℤ) := by
+            classical
+            exact ((Finset.Icc (-(N : ℤ)) (N : ℤ)).product
+              (Finset.Icc (-(N : ℤ)) (N : ℤ))).image
+                (fun p => ![p.1, p.2])
+
+          theorem mem_modes_iff (N : ℕ) (k : Fin 2 → ℤ) :
+              k ∈ modes N ↔ ∀ i : Fin 2, |k i| ≤ (N : ℤ) := by
+            classical
+            constructor
+            · intro hk
+              rcases Finset.mem_image.mp hk with ⟨p, hp, hpk⟩
+              have hp' := Finset.mem_product.mp hp
+              intro i
+              fin_cases i
+              · change |k 0| ≤ (N : ℤ)
+                have hb := Finset.mem_Icc.mp hp'.1
+                have heq : k 0 = p.1 := by simpa using congrFun hpk.symm 0
+                rw [heq]
+                exact (abs_le).2 hb
+              · change |k 1| ≤ (N : ℤ)
+                have hb := Finset.mem_Icc.mp hp'.2
+                have heq : k 1 = p.2 := by simpa using congrFun hpk.symm 1
+                rw [heq]
+                exact (abs_le).2 hb
+            · intro hk
+              apply Finset.mem_image.mpr
+              refine ⟨(k 0, k 1), ?_, ?_⟩
+              · apply Finset.mem_product.mpr
+                constructor
+                · exact Finset.mem_Icc.mpr ((abs_le).1 (hk 0))
+                · exact Finset.mem_Icc.mpr ((abs_le).1 (hk 1))
+              · funext i
+                fin_cases i <;> rfl
+          LEAN
+          lake env lean -DmaxErrors=50 -DwarningAsError=false /tmp/ProbeModes.lean >/tmp/probe.log 2>&1
+          cat /tmp/probe.log
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-fourier-modes-v7-${{ github.sha }}
+          path: |
+            /tmp/ProbeModes.lean
+            /tmp/probe.log
+          retention-days: 30

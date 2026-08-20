@@ -1,0 +1,99 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Freeze the entire authoritative cumulative chain inside the runner so the
+# workflow cannot accidentally skip direct Lean because of a missing env var.
+export VARIANT=norms
+export FA473_WINNER=const_add_simp
+export FA474_WINNER=explicit_through2791
+export FA475_WINNER=clean_semicolon
+export FA476_R2_VARIANT=explicit_exp_nonneg
+export FA476_R3_VARIANT=minimal_simpa
+export FA476_R3_EVIDENCE_RUN_ID=31407777360
+export FA476_R3_EVIDENCE_ARTIFACT_ID=9070636218
+export FA476_R3_EVIDENCE_ARTIFACT_DIGEST=sha256:343607e51bea29fd2878bf6ebfcc0c1c8b1daf9826733b0cd3729e63fbbea3ca
+export FA477_VARIANT=upper_ext_h_simp_only
+export FA477_EVIDENCE_RUN_ID=31409787172
+export FA477_EVIDENCE_JOB_ID=93524786715
+export FA477_EVIDENCE_HEAD_SHA=faf902ceda7cce10ada4399326330effaa4d669b
+export FA477_EVIDENCE_ARTIFACT_ID=9071387258
+export FA477_EVIDENCE_ARTIFACT_NAME=codex-fa477-minimal_simpa-run31407777360-artifact9070636218-upper_ext_h_simp_only
+export FA477_EVIDENCE_ARTIFACT_SIZE=598253
+export FA477_EVIDENCE_ARTIFACT_DIGEST=sha256:25928120f3113f98886a469b255eec59754bfd232b4df621f4efa4e1e9940b81
+export FA478_VARIANT=real_norm_eq_abs_only
+export FA478_EVIDENCE_RUN_ID=31416050563
+export FA478_EVIDENCE_JOB_ID=93545285888
+export FA478_EVIDENCE_HEAD_SHA=46241996e61a001d498ad3e126dc8b38867bff86
+export FA478_EVIDENCE_SOURCE_SHA256=53a703d3e138ae7a964b7221c52337082cb59820595cfce877a679f024fbcf82
+export FA478_FIRST_ERROR_LINE=35133
+export FA478_FIRST_ERROR_COL=8
+export FA478_FRONTIER_DECLARATION=selectedLogHeightNaturalGauge_eventuallyEq_zero
+export FA478_FRONTIER_INDEX=2796
+export FA479_VARIANT=simp_only_hlevel
+export FA479_EVIDENCE_RUN_ID=31418190945
+export FA479_EVIDENCE_JOB_ID=93552181972
+export FA479_EVIDENCE_HEAD_SHA=23432f72b76df7a708322ad12afa4ac807fce722
+export FA479_EVIDENCE_SOURCE_SHA256=9e88d79d650d9a9a2f334aceb14f0ef14890f62785f045e03ffb073fd007eb3a
+export FA479_FIRST_ERROR_LINE=35118
+export FA479_FIRST_ERROR_COL=64
+export FA479_FRONTIER_DECLARATION=selectedLogHeightNaturalGauge_eventuallyEq_zero
+export FA479_FRONTIER_INDEX=2796
+export FA480_VARIANT=pi_zero_apply
+export FA480_EVIDENCE_RUN_ID=31419752422
+export FA480_EVIDENCE_JOB_ID=93557362741
+export FA480_EVIDENCE_HEAD_SHA=a7b882e84aa31a321e0f108b5f56ca477586ddd8
+export FA480_EVIDENCE_SOURCE_SHA256=939a4d0db78c0a7e4fadf5a1db97626aaccbb1d7258f6bf77a0ffbede83f52b9
+export FA480_FIRST_ERROR_LINE=35196
+export FA480_FIRST_ERROR_COL=2
+export FA480_FRONTIER_DECLARATION=selectedHeightBasePoint_of_pos
+export FA480_FRONTIER_INDEX=2802
+export FA481_VARIANT=upper_half_plane_ext
+export FA481_EVIDENCE_RUN_ID=31420785622
+export FA481_EVIDENCE_JOB_ID=93560723204
+export FA481_EVIDENCE_HEAD_SHA=058fe008a54c3fc1b170a27320a41eb942a1d409
+export FA481_EVIDENCE_SOURCE_SHA256=bf1f5f64a53662e9c583e8af37aef603d0b96119a6623f029979ceda1a721614
+export FA481_FIRST_ERROR_LINE=35198
+export FA481_FIRST_ERROR_COL=46
+export FA481_FRONTIER_DECLARATION=selectedHeightBasePoint_of_pos
+export FA481_FRONTIER_INDEX=2802
+export FA482_VARIANT=remove_complex_mk_im
+export FA482_EVIDENCE_RUN_ID=31450425677
+export FA482_EVIDENCE_JOB_ID=93653492331
+export FA482_EVIDENCE_HEAD_SHA=a0a19ee27ba6c07d30bdd347150bd71550c80f69
+export FA482_EVIDENCE_SOURCE_SHA256=daeb276e2c3886ebd9cd93c752e813dc7b288ceb4a872ba734c7634bd0c807ca
+export FA482_FIRST_ERROR_LINE=35203
+export FA482_FIRST_ERROR_COL=2
+export FA482_FRONTIER_DECLARATION=selectedHeightBasePoint_exp
+export FA482_FRONTIER_INDEX=2803
+export FA483_VARIANT=upper_ext_remove_mk_im
+export FA483_EVIDENCE_RUN_ID=31451101943
+export FA483_EVIDENCE_JOB_ID=93655461634
+export FA483_EVIDENCE_HEAD_SHA=9ff7ac197487de1f38f63c28d5e52382718738b3
+export FA483_EVIDENCE_SOURCE_SHA256=34756fc6e6c20dab3d2ff5a125934dde7a065fdee57a9c5b6f2381240ee8481d
+export FA483_FIRST_ERROR_LINE=35255
+export FA483_FIRST_ERROR_COL=37
+export FA483_FRONTIER_DECLARATION=selectedLogHeightEnergyDensity_le_exp_mul_heightGraphDensity
+export FA483_FRONTIER_INDEX=2805
+export FA484_VARIANT=real_norm_eq_abs
+export HORIZONTAL_STYLE=calc_four
+export MAX_ERRORS=32
+
+python3 - <<'PY'
+from pathlib import Path
+src = Path("scripts/fa483_selected_height_exp_candidate_ci.sh")
+dst = Path("/tmp/fa484_energy_real_norm_abs_candidate_ci.sh")
+text = src.read_text(encoding="utf-8")
+
+def once(old, new):
+    global text
+    count = text.count(old)
+    if count != 1:
+        raise RuntimeError(f"expected one occurrence of {old!r}, found {count}")
+    text = text.replace(old, new, 1)
+
+once("build-logs/codex-fa483-selected-height-exp", "build-logs/codex-fa484-energy-real-norm-abs")
+once("scripts/fa483_prepare_selected_height_exp.py", "scripts/fa484_prepare_energy_real_norm_abs.py")
+dst.write_text(text, encoding="utf-8")
+PY
+
+exec bash /tmp/fa484_energy_real_norm_abs_candidate_ci.sh

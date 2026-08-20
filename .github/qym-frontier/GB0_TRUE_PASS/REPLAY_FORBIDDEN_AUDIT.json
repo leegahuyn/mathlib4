@@ -1,0 +1,13 @@
+{
+  "Lean.ofReduceBool": 0,
+  "admit": 0,
+  "forbidden_count": 0,
+  "global_axiom": 0,
+  "maxHeartbeats_zero": 0,
+  "native_decide": 0,
+  "parser_clean": true,
+  "sorry": 0,
+  "unclosed_block_comment_depth": 0,
+  "unsafe": 0,
+  "unterminated_string": 0
+}

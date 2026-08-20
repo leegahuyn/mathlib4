@@ -1,0 +1,137 @@
+utc=2026-08-07T12:56:12Z
+result=FAIL
+authority_run=31159696948
+authority_job=92827136991
+
+stage,exit_code,error_count,warning_count,source_sha256
+Mock2-pass1,0,0,386,36a034721c389888b2c235d856753e5f2e38f9f6a258fddabbb70fe751ae3594
+Mock2-pass2,0,0,386,36a034721c389888b2c235d856753e5f2e38f9f6a258fddabbb70fe751ae3594
+Advanced-pass1,0,0,803,cf44063abca1d5b47331a9001a3cff45a86b5e889865812fe4e7826c6af41526
+Advanced-pass2,0,0,803,cf44063abca1d5b47331a9001a3cff45a86b5e889865812fe4e7826c6af41526
+FunctionalAnalysis-pass1,1,318,247,5f2d7615aaad7bb3a232d19829f0f801278e7ab2fa2f66ccb68408b87647e620
+
+===== /tmp/pr9-final-branch-health/logs/Advanced-pass1.errors.txt =====
+===== /tmp/pr9-final-branch-health/logs/Advanced-pass2.errors.txt =====
+===== /tmp/pr9-final-branch-health/logs/FunctionalAnalysis-pass1.errors.txt =====
+818:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:18908:4: error: Type mismatch: After simplification, term
+836:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:18914:4: error: Type mismatch: After simplification, term
+854:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:18920:4: error: Type mismatch: After simplification, term
+860:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:18952:8: error: typeclass instance problem is stuck
+866:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:18957:2: error: Type mismatch
+872:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:18969:6: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+895:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:18973:40: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+918:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:18981:4: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+941:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:18986:2: error: Type mismatch
+947:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:18992:2: error: Type mismatch
+953:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19005:2: error: Type mismatch
+961:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19008:0: error: Not a definitional equality: the left-hand side
+965:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19011:2: error: Type mismatch
+971:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19023:2: error: 'change' tactic failed, pattern
+975:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19047:2: error: (deterministic) timeout at `isDefEq`, maximum number of heartbeats (200000) has been reached
+990:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19222:7: error: Application type mismatch: The argument
+998:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19223:2: error: Type mismatch: After simplification, term
+1004:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19245:6: error: Function expected at
+1011:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19228:20: error: unsolved goals
+1031:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19346:37: error: Invalid field notation: Function `graphRange_le` does not have a usable parameter of type `CompatibleCoreInclusion ...` for which to substitute `I`
+1034:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19353:2: error: (deterministic) timeout at `whnf`, maximum number of heartbeats (200000) has been reached
+1039:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19357:15: error: Invalid field notation: Function `DFunLike.coe` (coerced from `graphRangeIsometry`) does not have a usable parameter of type `CompatibleCoreInclusion ...` for which to substitute `I`
+1049:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19365:20: error: Invalid field notation: Function `DFunLike.coe` (coerced from `graphRangeIsometry`) does not have a usable parameter of type `CompatibleCoreInclusion ...` for which to substitute `I`
+1055:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19368:5: error: Invalid field notation: Function `denseRange_graphRange_iff_completion_surjective` does not have a usable parameter of type `CompatibleCoreInclusion ...` for which to substitute `I`
+1058:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19372:20: error: Invalid field notation: Function `DFunLike.coe` (coerced from `graphRangeIsometry`) does not have a usable parameter of type `CompatibleCoreInclusion ...` for which to substitute `I`
+1067:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19440:5: error: invalid binder annotation, type is not a class instance
+1079:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19616:37: error: Function expected at
+1088:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19621:49: error: Function expected at
+1097:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19622:9: error: Invalid argument: Variable `coreMap` is not a proposition or let-declaration
+1098:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19626:56: error: Function expected at
+1107:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19626:70: error: unsolved goals
+1112:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19634:20: error: Function expected at
+1121:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19653:5: error: Function expected at
+1130:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19666:5: error: Function expected at
+1137:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19670:13: error: Invalid argument: Variable `coreMap` is not a proposition or let-declaration
+1138:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19678:4: error: Function expected at
+1147:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19683:4: error: Function expected at
+1156:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19688:4: error: Function expected at
+1165:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19696:4: error: Function expected at
+1174:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19697:9: error: Invalid argument: Variable `baseExtension` is not a proposition or let-declaration
+1176:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19705:4: error: Function expected at
+1185:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19707:9: error: Invalid argument: Variable `raiseExtension` is not a proposition or let-declaration
+1187:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19715:4: error: Function expected at
+1196:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19717:9: error: Invalid argument: Variable `lowerExtension` is not a proposition or let-declaration
+1198:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19721:43: error: Function expected at
+1207:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19722:5: error: Function expected at
+1216:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19723:9: error: Invalid argument: Variable `baseExtension` is not a proposition or let-declaration
+1217:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19725:44: error: Function expected at
+1226:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19726:5: error: Function expected at
+1235:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19727:9: error: Invalid argument: Variable `raiseExtension` is not a proposition or let-declaration
+1236:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19729:44: error: Function expected at
+1245:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19730:5: error: Function expected at
+1254:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19731:9: error: Invalid argument: Variable `lowerExtension` is not a proposition or let-declaration
+1255:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19735:45: error: Function expected at
+1264:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19736:9: error: Invalid argument: Variable `baseExtension` is not a proposition or let-declaration
+1265:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19738:46: error: Function expected at
+1274:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19739:9: error: Invalid argument: Variable `raiseExtension` is not a proposition or let-declaration
+1275:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19741:46: error: Function expected at
+1284:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19742:9: error: Invalid argument: Variable `lowerExtension` is not a proposition or let-declaration
+1285:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19745:40: error: Function expected at
+1294:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19746:15: error: Function expected at
+1303:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19747:7: error: Function expected at
+1312:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19747:34: error: Function expected at
+1321:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19748:9: error: Invalid argument: Variable `baseExtension` is not a proposition or let-declaration
+1322:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19748:24: error: Invalid argument: Variable `raiseExtension` is not a proposition or let-declaration
+1323:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19748:40: error: Invalid argument: Variable `lowerExtension` is not a proposition or let-declaration
+1326:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19772:4: error: Function expected at
+1335:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19772:31: error: Function expected at
+1345:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19777:17: error: Function expected at
+1354:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19778:4: error: Function expected at
+1363:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19784:17: error: Function expected at
+1372:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19785:15: error: Function expected at
+1381:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19786:7: error: Function expected at
+1390:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19786:34: error: Function expected at
+1421:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19852:2: error: Type mismatch: After simplification, term
+1431:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19892:2: error: Type mismatch: After simplification, term
+1443:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19932:2: error: Type mismatch: After simplification, term
+1477:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20075:17: error: expected token
+1485:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20106:2: error: Type mismatch: After simplification, term
+1503:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20119:2: error: Type mismatch: After simplification, term
+1514:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20126:17: error: expected token
+1515:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20157:14: error: type expected, got
+1517:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20157:27: error: expected token
+1518:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20192:5: error: don't know how to synthesize implicit argument `n`
+1524:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20192:28: error: don't know how to synthesize placeholder
+1527:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20190:73: error: unsolved goals
+1529:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20242:4: error: Type mismatch: After simplification, term
+1535:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20269:4: error: Function expected at
+1542:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20271:20: error: type expected, got
+1544:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20271:33: error: expected token
+1549:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20307:46: error: unsolved goals
+1557:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20346:59: error: unsolved goals
+1574:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20431:60: error: unsolved goals
+1581:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20444:50: error: unsolved goals
+1588:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20459:56: error: unsolved goals
+1608:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20604:12: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+1620:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20636:2: error: Type mismatch: After simplification, term
+1632:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20660:2: error: Type mismatch: After simplification, term
+1644:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20720:45: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+1664:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20815:8: error: Tactic `simp` failed with a nested error:
+1670:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20824:19: error: (deterministic) timeout at `«synthesize pending MVars»`, maximum number of heartbeats (200000) has been reached
+1675:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20833:4: error: Function expected at
+1685:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20846:0: error: Not a definitional equality: the left-hand side
+1689:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20852:2: error: Type mismatch
+1697:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20857:8: error: (deterministic) timeout at `whnf`, maximum number of heartbeats (200000) has been reached
+1702:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20870:31: error: Function expected at
+1711:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20874:16: error: Function expected at
+1720:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20875:14: error: Invalid argument: Variable `peterssonCompletionEmbedding` is not a proposition or let-declaration
+1722:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20879:23: error: Function expected at
+1731:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20880:14: error: Invalid argument: Variable `peterssonCompletionEmbedding` is not a proposition or let-declaration
+1733:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20888:22: error: Function expected at
+1742:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20888:52: error: Application type mismatch: The argument
+1750:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20915:5: error: Function expected at
+1760:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20930:22: error: Function expected at
+1770:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20938:4: error: Function expected at
+1781:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20947:5: error: Function expected at
+1792:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20956:22: error: Function expected at
+1802:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20960:5: error: Function expected at
+1811:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20962:5: error: Function expected at
+1822:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20976:22: error: Function expected at
+===== /tmp/pr9-final-branch-health/logs/Mock2-pass1.errors.txt =====
+===== /tmp/pr9-final-branch-health/logs/Mock2-pass2.errors.txt =====

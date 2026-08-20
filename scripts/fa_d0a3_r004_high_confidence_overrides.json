@@ -1,0 +1,601 @@
+{
+  "schema": "fa-fragment-repair-overrides-v1",
+  "source_sha256": "d0a3decee1c0a7a781d14fdf122e235d71d8f210bb65a894dc4e518821bf03ec",
+  "status": "STATIC_ONLY_UNVERIFIED",
+  "batch_id": "R004",
+  "scope": {
+    "start_declaration_index": 3249,
+    "end_declaration_index": 3314,
+    "selected_repair_indices": [
+      3250,
+      3251,
+      3258,
+      3260,
+      3264,
+      3266,
+      3267,
+      3292,
+      3293,
+      3308,
+      3309
+    ],
+    "explicit_exclusions": {
+      "idx3268": "owned by remote_state cross-root",
+      "FullPlaneTest_dependents": "not hydrated here",
+      "tail_open": "not selected"
+    },
+    "batch_authority_path": "work/fa_full_compile_independent_root_batches.json",
+    "batch_authority_sha256": "dcfd721e0b3653d48d430a448f52aec2766c5fbe97cf7b8f00860830b29f7b1c"
+  },
+  "current_full_inventory_authority": {
+    "path": "work/fa_full_compile_error_inventory.json",
+    "sha256": "3692fd155f6029ad30678668ff83fd5f092facebd9e35829cd680b1644d59648",
+    "artifact_id": 9103368138,
+    "run_id": 31495034235,
+    "error_count": 1157,
+    "warning_count": 659,
+    "cap_reached": false,
+    "parser_sha256": "4804d0d73a01ca1600080f892bbd391bffd092b5a2b529ac302e06fd82079a76"
+  },
+  "repairs": [
+    {
+      "declaration_index": 3250,
+      "declaration_name": "support_friedrichsUnitMollifierReal",
+      "header_sha256": "5f21af8095105b5172db69e9558bcbb601ae530a7277133d3e26fcb002a9ca7d",
+      "status": "STATIC_ONLY_UNVERIFIED",
+      "proof_body_only": true,
+      "analysis_note": "UNVERIFIED: Replace ASCII mu with the exact pinned Unicode μ named argument suggested by Lean.",
+      "confidence": "HIGH_COMPILER_EXACT_ARGUMENT_HINT",
+      "root_selector_ids": [
+        "E0202"
+      ],
+      "replacements": [
+        {
+          "old_fragment": "      (friedrichsUnitBump.support_normed_eq\n        (mu := (volume : Measure ℂ)))",
+          "new_fragment": "      (friedrichsUnitBump.support_normed_eq\n        (μ := (volume : Measure ℂ)))",
+          "old_sha256": "1e2f5ea9569626b8ae5e2e8616e6aa31377ce5784023a06a569b61752d494ca4",
+          "new_sha256": "ce3fbea92294e3e55ccd762a2e20c9e2adead2747186a05c9be3eeb18cab26f1",
+          "old_bytes": 83,
+          "new_bytes": 83,
+          "target_old_count": 1,
+          "global_old_count": 1,
+          "target_new_count_before": 0,
+          "global_new_count_before": 0
+        }
+      ],
+      "standalone_candidate": {
+        "sha256": "3bcb883f5a0ed28d1dc69abc9280612163c8392bdce42eed4604dce4bdb4df9a",
+        "bytes": 2702252,
+        "lines": 60573,
+        "direct_lean_verified": false
+      },
+      "evidence": {
+        "artifact_id": 9103368138,
+        "run_id": 31495034235,
+        "fragment_status": "STATIC_ONLY_PENDING_DIRECT_LEAN",
+        "current_full_inventory_roots": [
+          {
+            "id": "E0202",
+            "classification": "root_candidate",
+            "category": "other",
+            "line": 42780,
+            "column": 8,
+            "diagnostic_code": null,
+            "message_sha256": "2a5c0b6d8c90023e49f80a63153642cfa02b2e5ffd3b51b450d9282db0c48c79"
+          }
+        ]
+      }
+    },
+    {
+      "declaration_index": 3251,
+      "declaration_name": "tsupport_friedrichsUnitMollifierReal",
+      "header_sha256": "c265aa65ddf3ff944e6431e486ba7a06cf03fa716ce2f2b636b1ec58ce60398d",
+      "status": "STATIC_ONLY_UNVERIFIED",
+      "proof_body_only": true,
+      "analysis_note": "UNVERIFIED: Symmetric exact Unicode μ named-argument correction for tsupport_normed_eq.",
+      "confidence": "HIGH_COMPILER_EXACT_ARGUMENT_HINT",
+      "root_selector_ids": [
+        "E0203"
+      ],
+      "replacements": [
+        {
+          "old_fragment": "      (friedrichsUnitBump.tsupport_normed_eq\n        (mu := (volume : Measure ℂ)))",
+          "new_fragment": "      (friedrichsUnitBump.tsupport_normed_eq\n        (μ := (volume : Measure ℂ)))",
+          "old_sha256": "e82243737fb9c1c5fe4c6724fe3c35d651b006fdb6d859f9f146ee00109ff02b",
+          "new_sha256": "31e3d1525ecc1e24e44c6fc6c37bbb3048520a6f8c0ba1d00eca5e85094fecd4",
+          "old_bytes": 84,
+          "new_bytes": 84,
+          "target_old_count": 1,
+          "global_old_count": 1,
+          "target_new_count_before": 0,
+          "global_new_count_before": 0
+        }
+      ],
+      "standalone_candidate": {
+        "sha256": "2f6999c0f229f1eac1d101bf4011d1fc0d6bad375ab6a3b1a334fdace89a6c91",
+        "bytes": 2702252,
+        "lines": 60573,
+        "direct_lean_verified": false
+      },
+      "evidence": {
+        "artifact_id": 9103368138,
+        "run_id": 31495034235,
+        "fragment_status": "STATIC_ONLY_PENDING_DIRECT_LEAN",
+        "current_full_inventory_roots": [
+          {
+            "id": "E0203",
+            "classification": "root_candidate",
+            "category": "other",
+            "line": 42787,
+            "column": 8,
+            "diagnostic_code": null,
+            "message_sha256": "b731abc91ec0d1ff0fdcdacef65abaa653b913223b62e028ce4af86aa27d3b96"
+          }
+        ]
+      }
+    },
+    {
+      "declaration_index": 3258,
+      "declaration_name": "friedrichsMollifierReal_contDiff",
+      "header_sha256": "ec10dc8f783f20c5d25f85a5cbe50588341a15f57a6a66acaf19753fae074611",
+      "status": "STATIC_ONLY_UNVERIFIED",
+      "proof_body_only": true,
+      "analysis_note": "UNVERIFIED: Change the opaque named target to the literal defining lambda before using ContDiff.const_smul.",
+      "confidence": "HIGH_EXACT_DEFINITIONAL_TARGET_BRIDGE",
+      "root_selector_ids": [
+        "E0204"
+      ],
+      "replacements": [
+        {
+          "old_fragment": "  simpa only [friedrichsMollifierReal, smul_eq_mul] using\n    hcomp.const_smul (friedrichsScale j ^ 2)",
+          "new_fragment": "  change ContDiff ℝ ∞ (fun t : ℂ ↦ friedrichsScale j ^ 2 *\n    friedrichsUnitMollifierReal (friedrichsScale j • t))\n  simpa only [smul_eq_mul] using\n    hcomp.const_smul (friedrichsScale j ^ 2)",
+          "old_sha256": "8636bb9688360d1adb93c1919ae5feb250442b3f10d25b37498015139a75c2c7",
+          "new_sha256": "666af766f27fcbb4b1fb5dd2572c0fb524c98b15967ee722d2e6ffcf08536800",
+          "old_bytes": 102,
+          "new_bytes": 203,
+          "target_old_count": 1,
+          "global_old_count": 1,
+          "target_new_count_before": 0,
+          "global_new_count_before": 0
+        }
+      ],
+      "standalone_candidate": {
+        "sha256": "acd8509c2a9471878b93c14804b060d9654498a6391e85aba9fc172f95ec51d7",
+        "bytes": 2702353,
+        "lines": 60575,
+        "direct_lean_verified": false
+      },
+      "evidence": {
+        "artifact_id": 9103368138,
+        "run_id": 31495034235,
+        "fragment_status": "STATIC_ONLY_PENDING_DIRECT_LEAN",
+        "current_full_inventory_roots": [
+          {
+            "id": "E0204",
+            "classification": "root_candidate",
+            "category": "type_mismatch",
+            "line": 42824,
+            "column": 2,
+            "diagnostic_code": null,
+            "message_sha256": "f662c0ee855188d04f9479d4441f2d3cb1c993ee73446890f755babb8b45dc4e"
+          }
+        ]
+      }
+    },
+    {
+      "declaration_index": 3260,
+      "declaration_name": "friedrichsMollifierReal_integrable",
+      "header_sha256": "322dc977733ce73b1197421a71ade1e9f2705e83281e0e8f49531bde5e125407",
+      "status": "STATIC_ONLY_UNVERIFIED",
+      "proof_body_only": true,
+      "analysis_note": "UNVERIFIED: Expose the Integrable target as the defining scaled lambda before applying const_mul.",
+      "confidence": "HIGH_EXACT_DEFINITIONAL_TARGET_BRIDGE",
+      "root_selector_ids": [
+        "E0205"
+      ],
+      "replacements": [
+        {
+          "old_fragment": "  simpa only [friedrichsMollifierReal, smul_eq_mul] using\n    hcomp.const_mul (friedrichsScale j ^ 2)",
+          "new_fragment": "  change Integrable (fun t : ℂ ↦ friedrichsScale j ^ 2 *\n    friedrichsUnitMollifierReal (friedrichsScale j • t))\n    (volume : Measure ℂ)\n  simpa only [smul_eq_mul] using\n    hcomp.const_mul (friedrichsScale j ^ 2)",
+          "old_sha256": "3d22e98c8ad3a632fa2f1d8888851e2a3e91b9c122eb025850a63214e0f91f1d",
+          "new_sha256": "184f16c1639b36332b159d624179dfcd638cdc7d58e9914a7cf0b293b9488072",
+          "old_bytes": 101,
+          "new_bytes": 223,
+          "target_old_count": 1,
+          "global_old_count": 1,
+          "target_new_count_before": 0,
+          "global_new_count_before": 0
+        }
+      ],
+      "standalone_candidate": {
+        "sha256": "eaecd4602edf184b7c02adb7f8ae048c751b01b69de7fd624c7f629b44965187",
+        "bytes": 2702374,
+        "lines": 60576,
+        "direct_lean_verified": false
+      },
+      "evidence": {
+        "artifact_id": 9103368138,
+        "run_id": 31495034235,
+        "fragment_status": "STATIC_ONLY_PENDING_DIRECT_LEAN",
+        "current_full_inventory_roots": [
+          {
+            "id": "E0205",
+            "classification": "root_candidate",
+            "category": "type_mismatch",
+            "line": 42839,
+            "column": 2,
+            "diagnostic_code": null,
+            "message_sha256": "4c9fc350d267c7903c1d7bfefaef3f836cf4263cd3b631a753f528b3e5502c4f"
+          }
+        ]
+      }
+    },
+    {
+      "declaration_index": 3264,
+      "declaration_name": "friedrichsMollifier_l1",
+      "header_sha256": "78885bf834e2de56d9f34470ccd35dc53ef4b3cc27258f6b3ae836ed28261870",
+      "status": "STATIC_ONLY_UNVERIFIED",
+      "proof_body_only": true,
+      "analysis_note": "UNVERIFIED: Normalize the real norm to abs before applying nonnegativity.",
+      "confidence": "HIGH_EXACT_NORM_NORMALIZATION",
+      "root_selector_ids": [
+        "E0208"
+      ],
+      "replacements": [
+        {
+          "old_fragment": "      simp only [friedrichsMollifier, Complex.norm_real,\n        abs_of_nonneg (friedrichsMollifierReal_nonneg j t)]",
+          "new_fragment": "      simp only [friedrichsMollifier, Complex.norm_real,\n        Real.norm_eq_abs,\n        abs_of_nonneg (friedrichsMollifierReal_nonneg j t)]",
+          "old_sha256": "a185d6610271b1528fe9f01d8c4159b21492b28ee35a2c108d5b5b91b7bfbef2",
+          "new_sha256": "ba2bae216908dc17566fda80c5c7a40f4aca8ac7ee0ad0e07b836f52a7479ad0",
+          "old_bytes": 116,
+          "new_bytes": 142,
+          "target_old_count": 1,
+          "global_old_count": 1,
+          "target_new_count_before": 0,
+          "global_new_count_before": 0
+        }
+      ],
+      "standalone_candidate": {
+        "sha256": "db38c55b2ace4cbe0bcea268478eab506df470ce9bec9eeac66fae5098bfc641",
+        "bytes": 2702278,
+        "lines": 60574,
+        "direct_lean_verified": false
+      },
+      "evidence": {
+        "artifact_id": 9103368138,
+        "run_id": 31495034235,
+        "fragment_status": "STATIC_ONLY_PENDING_DIRECT_LEAN",
+        "current_full_inventory_roots": [
+          {
+            "id": "E0208",
+            "classification": "root_candidate",
+            "category": "unsolved_goals",
+            "line": 42872,
+            "column": 48,
+            "diagnostic_code": null,
+            "message_sha256": "78fb8552c28a489c3620ec0c55a7c0c94844eccd120595fdf97afc9860c1dbc4"
+          }
+        ]
+      }
+    },
+    {
+      "declaration_index": 3266,
+      "declaration_name": "friedrichsMollifier_support_bound",
+      "header_sha256": "69c1348cd0d454b92024f65bfb53fbe22b8c062e75c347b88ee96cf342503ac5",
+      "status": "STATIC_ONLY_UNVERIFIED",
+      "proof_body_only": true,
+      "analysis_note": "UNVERIFIED: Reorder the exact product in hlt before passing it to lt_div_iff.",
+      "confidence": "HIGH_EXACT_COMMUTATIVITY_ADAPTER",
+      "root_selector_ids": [
+        "E0209"
+      ],
+      "replacements": [
+        {
+          "old_fragment": "  exact ((lt_div_iff₀ ha).2 hlt).le",
+          "new_fragment": "  have hlt' : ‖t‖ * friedrichsScale j < 2 := by\n    simpa only [mul_comm] using hlt\n  exact ((lt_div_iff₀ ha).2 hlt').le",
+          "old_sha256": "e352c05fd5ee5a1e3700810df0cd2224df08372e4eba198b5b29b2461fbc1e52",
+          "new_sha256": "dcf1f75580174f9f27aec90bbda341f24c77bc5597f2fa0802a5b5bb26adc7b2",
+          "old_bytes": 37,
+          "new_bytes": 126,
+          "target_old_count": 1,
+          "global_old_count": 1,
+          "target_new_count_before": 0,
+          "global_new_count_before": 0
+        }
+      ],
+      "standalone_candidate": {
+        "sha256": "a4560b6aae816970875a412bb6d9b86e82f076c29118e98bd9432cc79b5bd8da",
+        "bytes": 2702341,
+        "lines": 60575,
+        "direct_lean_verified": false
+      },
+      "evidence": {
+        "artifact_id": 9103368138,
+        "run_id": 31495034235,
+        "fragment_status": "STATIC_ONLY_PENDING_DIRECT_LEAN",
+        "current_full_inventory_roots": [
+          {
+            "id": "E0209",
+            "classification": "root_candidate",
+            "category": "application_type_mismatch",
+            "line": 42900,
+            "column": 28,
+            "diagnostic_code": null,
+            "message_sha256": "19feed5a1835188a379c08a5c9c012fd48019b0c9d08d41205ce350fe9be72f1"
+          }
+        ]
+      }
+    },
+    {
+      "declaration_index": 3267,
+      "declaration_name": "friedrichsRadius_tendsto_zero",
+      "header_sha256": "1c67789e4f1473373f73f43a0568936c15b23052c663d99258403569ab43deb3",
+      "status": "STATIC_ONLY_UNVERIFIED",
+      "proof_body_only": true,
+      "analysis_note": "UNVERIFIED: Expose friedrichsRadius and normalize division/mul-zero explicitly before reusing hmul.",
+      "confidence": "HIGH_EXACT_TENDSTO_TARGET_BRIDGE",
+      "root_selector_ids": [
+        "E0210"
+      ],
+      "replacements": [
+        {
+          "old_fragment": "  simpa only [friedrichsRadius, friedrichsScale,\n    mul_div_assoc, mul_one] using hmul",
+          "new_fragment": "  change Filter.Tendsto (fun j : ℕ ↦ 2 / ((j : ℝ) + 1))\n    Filter.atTop (𝓝 0)\n  simpa only [div_eq_mul_inv, one_mul, mul_zero] using hmul",
+          "old_sha256": "562142bd58884fe24c35b322d63e14357aa770b7fb8678fa568e9c7e27923a74",
+          "new_sha256": "c042dfba2c814a2833845483401b1016ceb9c72cb9c8e8d5a9f1a75a89d47301",
+          "old_bytes": 87,
+          "new_bytes": 147,
+          "target_old_count": 1,
+          "global_old_count": 1,
+          "target_new_count_before": 0,
+          "global_new_count_before": 0
+        }
+      ],
+      "standalone_candidate": {
+        "sha256": "767168674b14a7fa67bc4cfb377222229bde0bbb51db4982fb55eb75c78b4205",
+        "bytes": 2702312,
+        "lines": 60574,
+        "direct_lean_verified": false
+      },
+      "evidence": {
+        "artifact_id": 9103368138,
+        "run_id": 31495034235,
+        "fragment_status": "STATIC_ONLY_PENDING_DIRECT_LEAN",
+        "current_full_inventory_roots": [
+          {
+            "id": "E0210",
+            "classification": "root_candidate",
+            "category": "type_mismatch",
+            "line": 42909,
+            "column": 2,
+            "diagnostic_code": null,
+            "message_sha256": "0f85aa6e55116fdeebd3d3a2af92657a39bb5a9b3665ed364f51eaf3b2001909"
+          }
+        ]
+      }
+    },
+    {
+      "declaration_index": 3292,
+      "declaration_name": "integrable_kernel_smul_translation_sub",
+      "header_sha256": "2b60a2d6d96057eeebd8d11fd798091c31a93177163261a59427665f1b59ba46",
+      "status": "STATIC_ONLY_UNVERIFIED",
+      "proof_body_only": true,
+      "analysis_note": "UNVERIFIED: Expose pointwise subtraction of functions with Pi.sub_apply before smul_sub.",
+      "confidence": "HIGH_EXACT_PI_SUB_NORMALIZATION",
+      "root_selector_ids": [
+        "E0261"
+      ],
+      "replacements": [
+        {
+          "old_fragment": "  simpa only [smul_sub] using hTranslate.sub hConst",
+          "new_fragment": "  simpa only [Pi.sub_apply, smul_sub] using hTranslate.sub hConst",
+          "old_sha256": "77f014d509300618c823788f89780bab57affdb30edc2e459eb89775192218b0",
+          "new_sha256": "e5d501ed0664e1e45b11ac8a842c4eca583c0faa898b8d7a758b49a1d67c52ec",
+          "old_bytes": 51,
+          "new_bytes": 65,
+          "target_old_count": 1,
+          "global_old_count": 1,
+          "target_new_count_before": 0,
+          "global_new_count_before": 0
+        }
+      ],
+      "standalone_candidate": {
+        "sha256": "a7d32bd63711ffe4eb1bde18472b7ff6f022ed45286e4742cf33f8cd626834aa",
+        "bytes": 2702266,
+        "lines": 60573,
+        "direct_lean_verified": false
+      },
+      "evidence": {
+        "artifact_id": 9103368138,
+        "run_id": 31495034235,
+        "fragment_status": "STATIC_ONLY_PENDING_DIRECT_LEAN",
+        "current_full_inventory_roots": [
+          {
+            "id": "E0261",
+            "classification": "root_candidate",
+            "category": "type_mismatch",
+            "line": 43250,
+            "column": 2,
+            "diagnostic_code": null,
+            "message_sha256": "f2eeca7d8f3d74a69cc92e33387c2eabf0fdf2a660b3eb5df05f7a3cb6c8e86c"
+          }
+        ]
+      }
+    },
+    {
+      "declaration_index": 3293,
+      "declaration_name": "integral_kernel_smul_translation_eq_base_add_error",
+      "header_sha256": "025042a8a846dec91e63a57357487ae70ae06fd599107800a69e1b230fd4735f",
+      "status": "STATIC_ONLY_UNVERIFIED",
+      "proof_body_only": true,
+      "analysis_note": "UNVERIFIED: Replace brittle rewrite matching by an explicit sub_add_cancel then smul_add calculation.",
+      "confidence": "HIGH_EXACT_ALGEBRA_CALC",
+      "root_selector_ids": [
+        "E0262"
+      ],
+      "replacements": [
+        {
+          "old_fragment": "    funext t\n    rw [smul_sub, sub_add_cancel]",
+          "new_fragment": "    funext t\n    calc\n      K t • (DomAddAct.mk (-t) +ᵥ f) =\n          K t • ((DomAddAct.mk (-t) +ᵥ f - f) + f) := by\n        rw [sub_add_cancel]\n      _ = K t • (DomAddAct.mk (-t) +ᵥ f - f) + K t • f :=\n        smul_add _ _ _",
+          "old_sha256": "34577bc98616e518ade6626b7b3cc24652874ea59be87650bbba31c0edf0e464",
+          "new_sha256": "3d2010737b503928afebe01033260c165e3021c6544b78d976d40239d354d000",
+          "old_bytes": 46,
+          "new_bytes": 240,
+          "target_old_count": 1,
+          "global_old_count": 1,
+          "target_new_count_before": 0,
+          "global_new_count_before": 0
+        }
+      ],
+      "standalone_candidate": {
+        "sha256": "72d609ad1f5a7e1542c365168c10c0aa6a615ecee0dd1eeebe6cca0e80c27f47",
+        "bytes": 2702446,
+        "lines": 60578,
+        "direct_lean_verified": false
+      },
+      "evidence": {
+        "artifact_id": 9103368138,
+        "run_id": 31495034235,
+        "fragment_status": "STATIC_ONLY_PENDING_DIRECT_LEAN",
+        "current_full_inventory_roots": [
+          {
+            "id": "E0262",
+            "classification": "root_candidate",
+            "category": "rewrite_pattern_miss",
+            "line": 43269,
+            "column": 8,
+            "diagnostic_code": null,
+            "message_sha256": "421154ef1d4365b22914e4f2a54a421ad827cc1a44dec7072a74e2d372fee022"
+          }
+        ]
+      }
+    },
+    {
+      "declaration_index": 3308,
+      "declaration_name": "friedrichsMollifiedRepresentative",
+      "header_sha256": "3307f21a30985235c76c8d5748249e1cff0958392c4316b0a55ada430953444b",
+      "status": "STATIC_ONLY_UNVERIFIED",
+      "proof_body_only": true,
+      "analysis_note": "UNVERIFIED: Qualify the pinned owner ContinuousLinearMap.lsmul at the exact use; no tail open.",
+      "confidence": "HIGH_EXACT_NAMESPACE_QUALIFICATION",
+      "root_selector_ids": [
+        "E0264"
+      ],
+      "replacements": [
+        {
+          "old_fragment": "  friedrichsMollifierReal j ⋆[lsmul ℝ ℂ, volume]\n    (f : ℂ → ℂ)",
+          "new_fragment": "  friedrichsMollifierReal j ⋆[ContinuousLinearMap.lsmul ℝ ℂ, volume]\n    (f : ℂ → ℂ)",
+          "old_sha256": "f5d9831ef9b0d37902a2341de50b851f58d64f8cfdbbc7603a6795df9b61eec7",
+          "new_sha256": "874c537a60ae82236bd4abed9ae0706705fd3e47ce9d29a7f7727ecb60843794",
+          "old_bytes": 76,
+          "new_bytes": 96,
+          "target_old_count": 1,
+          "global_old_count": 1,
+          "target_new_count_before": 0,
+          "global_new_count_before": 0
+        }
+      ],
+      "standalone_candidate": {
+        "sha256": "aa1ae9324a59e237b4a2fb995305acec284c850861a4f45df2cb9f1111e821aa",
+        "bytes": 2702272,
+        "lines": 60573,
+        "direct_lean_verified": false
+      },
+      "evidence": {
+        "artifact_id": 9103368138,
+        "run_id": 31495034235,
+        "fragment_status": "STATIC_ONLY_PENDING_DIRECT_LEAN",
+        "current_full_inventory_roots": [
+          {
+            "id": "E0264",
+            "classification": "root_candidate",
+            "category": "unknown_identifier",
+            "line": 43614,
+            "column": 30,
+            "diagnostic_code": "lean.unknownIdentifier",
+            "message_sha256": "75969f2a4fee3cc78962f522310e7aeb0d80a300fa85677ab4abfe9e53117e85"
+          }
+        ]
+      }
+    },
+    {
+      "declaration_index": 3309,
+      "declaration_name": "friedrichsMollifiedRepresentative_contDiff",
+      "header_sha256": "a5857fd94ed21f018f6a11f8683b22d0e30fb6b94fed1edd11f4202f466f28a7",
+      "status": "STATIC_ONLY_UNVERIFIED",
+      "proof_body_only": true,
+      "analysis_note": "UNVERIFIED: Qualify the second exact ContinuousLinearMap.lsmul use while preserving the later independent occurrence.",
+      "confidence": "HIGH_EXACT_NAMESPACE_QUALIFICATION",
+      "root_selector_ids": [
+        "E0265"
+      ],
+      "replacements": [
+        {
+          "old_fragment": "  exact (friedrichsMollifierReal_hasCompactSupport j).contDiff_convolution_left (lsmul ℝ ℂ)\n      (friedrichsMollifierReal_contDiff j)\n      ((MeasureTheory.Lp.memLp f).locallyIntegrable (by norm_num))",
+          "new_fragment": "  exact (friedrichsMollifierReal_hasCompactSupport j).contDiff_convolution_left\n      (ContinuousLinearMap.lsmul ℝ ℂ)\n      (friedrichsMollifierReal_contDiff j)\n      ((MeasureTheory.Lp.memLp f).locallyIntegrable (by norm_num))",
+          "old_sha256": "b306f367b898f078d70b4b1c1024a7f130ce8c495ee0cab12d541b0c977219b7",
+          "new_sha256": "f1b67ab0bab14f9c9b92226d60b1a4282c8c93a19fd74af46a11fd388fd4368e",
+          "old_bytes": 205,
+          "new_bytes": 231,
+          "target_old_count": 1,
+          "global_old_count": 1,
+          "target_new_count_before": 0,
+          "global_new_count_before": 0
+        }
+      ],
+      "standalone_candidate": {
+        "sha256": "f86f9ae851904be54c8805b6952b094e6585095bc8c901a2326ed6e285f96d4d",
+        "bytes": 2702278,
+        "lines": 60574,
+        "direct_lean_verified": false
+      },
+      "evidence": {
+        "artifact_id": 9103368138,
+        "run_id": 31495034235,
+        "fragment_status": "STATIC_ONLY_PENDING_DIRECT_LEAN",
+        "current_full_inventory_roots": [
+          {
+            "id": "E0265",
+            "classification": "root_candidate",
+            "category": "unknown_identifier",
+            "line": 43620,
+            "column": 81,
+            "diagnostic_code": "lean.unknownIdentifier",
+            "message_sha256": "75969f2a4fee3cc78962f522310e7aeb0d80a300fa85677ab4abfe9e53117e85"
+          }
+        ]
+      }
+    }
+  ],
+  "library_candidate_evidence": {
+    "sha256": "aa13787b910441ac65381346efcddeabe87fdf42c591717b585bc949149a4122",
+    "bytes": 2702904,
+    "lines": 60588,
+    "direct_lean_verified": false,
+    "not_full_all_error_candidate": true
+  },
+  "preservation_contract": {
+    "all_existing_documentation_and_comments_byte_preserved": true,
+    "all_existing_at_attributes_byte_preserved": true,
+    "new_declarations": 0,
+    "all_theorem_headers_and_claims_byte_preserved": true,
+    "declaration_sequence_preserved": true,
+    "all_unselected_source_bytes_preserved": true,
+    "executable_forbidden_six_zero_before_and_after": true,
+    "raw_forbidden_mention_ledger_unchanged": true
+  },
+  "application_contract": {
+    "apply_only_to_exact_d0a3": true,
+    "repairs_in_ascending_declaration_order": true,
+    "replacement_order_within_each_repair_is_list_order": true,
+    "direct_lean_required_before_promotion": true
+  },
+  "local_execution": {
+    "lean": false,
+    "lake": false,
+    "git": false,
+    "github_read": false,
+    "github_write": false,
+    "remote_upload": false
+  }
+}

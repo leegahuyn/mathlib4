@@ -1,0 +1,6 @@
+Run the strict categorized direct Lean matrix from the actual first error.
+
+Authoritative historical baseline: 71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0 / 60453 / 31726:2.
+Current checked-in source baseline: 1f0a7e6c95691a89b3099a829da3e11fbbc731332f87e7c63d24eadade5692eb / 60450.
+Strict categorized direct first error to reproduce: 32035:79 in nativeActualEdgeFluxIntegral_paired_circular.
+Every candidate must execute actual pinned lake env lean for Mock2, Mock2_Advanced, and Mock2_FunctionalAnalysis.

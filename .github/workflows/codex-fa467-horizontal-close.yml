@@ -1,0 +1,75 @@
+name: Codex FA467 horizontal closure direct matrix
+
+on:
+  push:
+    branches:
+      - codex/fa-qym-cleanbuild-final-20260810
+    paths:
+      - scripts/fa467_prepare_horizontal_close.py
+      - scripts/fa467_candidate_ci.sh
+      - .github/workflows/codex-fa467-horizontal-close.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: codex-fa-qym-cleanbuild-final
+  cancel-in-progress: false
+
+jobs:
+  candidate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        style: [calc_close, calc_four, ring_i]
+    env:
+      VARIANT: confirmed_norm
+      HORIZONTAL_STYLE: ${{ matrix.style }}
+      MAX_ERRORS: "12"
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Generate candidate and directly compile prerequisites and full FA
+        run: bash scripts/fa467_candidate_ci.sh
+
+      - name: Upload exact candidate and direct evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa467-${{ matrix.style }}
+          path: build-logs/codex-fa467-horizontal/candidates/confirmed_norm
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Require an actual direct Lean pass
+        if: always()
+        run: |
+          python3 - "build-logs/codex-fa467-horizontal/candidates/confirmed_norm/METRIC.json" <<'PY'
+          import json
+          import sys
+          metric = json.load(open(sys.argv[1], encoding="utf-8"))
+          print(json.dumps(metric, indent=2, ensure_ascii=False))
+          ok = (
+              metric.get("classification") != "INFRA_FAILURE"
+              and metric.get("all_required_lean_executed") is True
+              and metric.get("source_metadata_identity") is True
+              and metric.get("Mock2_exit") == 0
+              and metric.get("Mock2_Advanced_exit") == 0
+              and metric.get("FA_executed") is True
+              and metric.get("FA_exit") == 0
+              and metric.get("FA_error_headers_captured") == 0
+              and metric.get("forbidden_clean") is True
+              and metric.get("diagnostic_parser") == "strict_error_and_error_category_v1"
+          )
+          if not ok:
+              raise SystemExit("candidate is not a direct full-source Lean PASS")
+          PY

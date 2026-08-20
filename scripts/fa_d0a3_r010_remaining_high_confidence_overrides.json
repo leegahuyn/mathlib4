@@ -1,0 +1,493 @@
+{
+  "schema": "fa-fragment-repair-overrides-v1",
+  "source_sha256": "d0a3decee1c0a7a781d14fdf122e235d71d8f210bb65a894dc4e518821bf03ec",
+  "status": "STATIC_ONLY_UNVERIFIED",
+  "batch_id": "R010_REMAINING",
+  "scope": {
+    "start_declaration_index": 3890,
+    "end_declaration_index": 3987,
+    "selected_repair_indices": [
+      3924,
+      3935,
+      3941,
+      3959,
+      3960,
+      3962,
+      3963
+    ],
+    "owned_indices_excluded": [
+      3898,
+      3900,
+      3901,
+      3904,
+      3906,
+      3907,
+      3908,
+      3909,
+      3910,
+      3911,
+      3919,
+      3920,
+      3921,
+      3922,
+      3926,
+      3927,
+      3928,
+      3930,
+      3932,
+      3933,
+      3936,
+      3937,
+      3942,
+      3944,
+      3987
+    ],
+    "staged_not_selected": {
+      "idx3912_3913": "mFourierCoeff of an Lp scalar multiple requires an AE-congruence API proof; not promoted without direct elaboration",
+      "idx3914": "global-to-box integral restriction and plane-wave representative support bridge remain nonlocal",
+      "idx3929": "resource-limit diagnostic",
+      "idx3959_3963_downstream": "idx3965/3967/3968 are expected cascades from the selected definition/measurability roots and receive no redundant fragments"
+    },
+    "batch_authority_path": "work/fa_full_compile_independent_root_batches.json",
+    "batch_authority_sha256": "dcfd721e0b3653d48d430a448f52aec2766c5fbe97cf7b8f00860830b29f7b1c"
+  },
+  "current_full_inventory_authority": {
+    "path": "work/fa_full_compile_error_inventory.json",
+    "sha256": "3692fd155f6029ad30678668ff83fd5f092facebd9e35829cd680b1644d59648",
+    "artifact_id": 9103368138,
+    "run_id": 31495034235,
+    "error_count": 1157,
+    "warning_count": 659,
+    "cap_reached": false,
+    "parser_sha256": "4804d0d73a01ca1600080f892bbd391bffd092b5a2b529ac302e06fd82079a76"
+  },
+  "repairs": [
+    {
+      "declaration_index": 3924,
+      "declaration_name": "norm_planeFourierRemainder_le_derivatives",
+      "header_sha256": "26190b38738a78d5acd04aff6f2861b9e6bd16d1cf27f786df9917a923ef81b2",
+      "status": "STATIC_ONLY_UNVERIFIED",
+      "proof_body_only": true,
+      "analysis_note": "UNVERIFIED: prove each squared norm inequality with sq_le_sq₀.mpr, lift their sum through Real.sqrt_le_sqrt, and multiply by the explicitly nonnegative common outer factor.",
+      "confidence": "HIGH_EXACT_MONOTONE_SQRT_AND_OUTER_FACTOR",
+      "root_selector_ids": [
+        "E0679",
+        "E0680",
+        "E0681"
+      ],
+      "replacements": [
+        {
+          "old_fragment": "    _ ≤ literalStageFourierScale Y /\n          (2 * Real.pi * ((N : ℝ) + 1)) *\n        Real.sqrt\n          (‖ambientTestCoreToPlaneL2Linear\n              (HalfWeightCompactCoordinateGreen.dx v)‖ ^ 2 +\n           ‖ambientTestCoreToPlaneL2Linear\n              (HalfWeightCompactCoordinateGreen.dy v)‖ ^ 2) := by\n      rw [div_eq_mul_inv]\n      gcongr\n      · exact norm_scale_smul_torusTest_dx_le_plane Y v\n      · exact norm_scale_smul_torusTest_dy_le_plane Y v",
+          "new_fragment": "    _ ≤ literalStageFourierScale Y /\n          (2 * Real.pi * ((N : ℝ) + 1)) *\n        Real.sqrt\n          (‖ambientTestCoreToPlaneL2Linear\n              (HalfWeightCompactCoordinateGreen.dx v)‖ ^ 2 +\n           ‖ambientTestCoreToPlaneL2Linear\n              (HalfWeightCompactCoordinateGreen.dy v)‖ ^ 2) := by\n      have hdxSq :\n          ‖(literalStageFourierScale Y : ℂ) •\n              literalStageTorusTest Y\n                (HalfWeightCompactCoordinateGreen.dx v)‖ ^ 2 ≤\n            ‖ambientTestCoreToPlaneL2Linear\n              (HalfWeightCompactCoordinateGreen.dx v)‖ ^ 2 :=\n        (sq_le_sq₀ (norm_nonneg _) (norm_nonneg _)).mpr\n          (norm_scale_smul_torusTest_dx_le_plane Y v)\n      have hdySq :\n          ‖(literalStageFourierScale Y : ℂ) •\n              literalStageTorusTest Y\n                (HalfWeightCompactCoordinateGreen.dy v)‖ ^ 2 ≤\n            ‖ambientTestCoreToPlaneL2Linear\n              (HalfWeightCompactCoordinateGreen.dy v)‖ ^ 2 :=\n        (sq_le_sq₀ (norm_nonneg _) (norm_nonneg _)).mpr\n          (norm_scale_smul_torusTest_dy_le_plane Y v)\n      have hSqrt :\n          Real.sqrt\n              (‖(literalStageFourierScale Y : ℂ) •\n                    literalStageTorusTest Y\n                      (HalfWeightCompactCoordinateGreen.dx v)‖ ^ 2 +\n               ‖(literalStageFourierScale Y : ℂ) •\n                    literalStageTorusTest Y\n                      (HalfWeightCompactCoordinateGreen.dy v)‖ ^ 2) ≤\n            Real.sqrt\n              (‖ambientTestCoreToPlaneL2Linear\n                    (HalfWeightCompactCoordinateGreen.dx v)‖ ^ 2 +\n               ‖ambientTestCoreToPlaneL2Linear\n                    (HalfWeightCompactCoordinateGreen.dy v)‖ ^ 2) :=\n        Real.sqrt_le_sqrt (add_le_add hdxSq hdySq)\n      have hOuter :\n          0 ≤ literalStageFourierScale Y *\n            (2 * Real.pi * ((N : ℝ) + 1))⁻¹ :=\n        mul_nonneg (literalStageFourierScale_pos Y).le\n          (inv_nonneg.mpr (by positivity))\n      have hMul := mul_le_mul_of_nonneg_left hSqrt hOuter\n      simpa only [div_eq_mul_inv, one_mul, mul_assoc] using hMul",
+          "old_sha256": "38b36a31a74ce330f48c4ebea5978b85b7baa5c320b3c407832947b87d60f15f",
+          "new_sha256": "701a9a73c84709dabf2a64171c0b502d584789d644282f3dadfa0de1729fd761",
+          "old_bytes": 474,
+          "new_bytes": 2152,
+          "target_old_count": 1,
+          "global_old_count": 1,
+          "target_new_count_before": 0,
+          "global_new_count_before": 0
+        }
+      ],
+      "standalone_candidate": {
+        "sha256": "20f7c758ea0d51c3445a9c5030120f710e6c8743c573f91254382ea69d5e113f",
+        "bytes": 2703930,
+        "lines": 60606,
+        "direct_lean_verified": false
+      },
+      "evidence": {
+        "artifact_id": 9103368138,
+        "run_id": 31495034235,
+        "fragment_status": "STATIC_ONLY_PENDING_DIRECT_LEAN",
+        "current_full_inventory_roots": [
+          {
+            "id": "E0679",
+            "classification": "root_candidate",
+            "category": "type_mismatch",
+            "line": 52811,
+            "column": 8,
+            "diagnostic_code": null,
+            "message_sha256": "2000a8d2e6de946bed8e96820e1efad3ab5497a982e7a068cc6cf938c5deecda"
+          },
+          {
+            "id": "E0680",
+            "classification": "root_candidate",
+            "category": "type_mismatch",
+            "line": 52812,
+            "column": 8,
+            "diagnostic_code": null,
+            "message_sha256": "2a35a78daaa59fbf0f2f13f90f3d69ca84671e3424f36ab681b237b072cfca78"
+          },
+          {
+            "id": "E0681",
+            "classification": "root_candidate",
+            "category": "unsolved_goals",
+            "line": 52808,
+            "column": 63,
+            "diagnostic_code": null,
+            "message_sha256": "f7e6a50a8e5bd615e76b4a1260910df524c977383637cac798a4ebcc6ade6bb5"
+          }
+        ]
+      }
+    },
+    {
+      "declaration_index": 3935,
+      "declaration_name": "ambientPlane_comp_upper_memLp",
+      "header_sha256": "8ca3de9f65a5a22bee6ef986b8db997662b39bb15788cef69a6aad7fec63d116",
+      "status": "STATIC_ONLY_UNVERIFIED",
+      "proof_body_only": true,
+      "analysis_note": "UNVERIFIED: expose the squared-norm integrand as an explicit composition with the subtype coercion before applying integrableOn_iff_comap_subtypeVal.",
+      "confidence": "HIGH_EXACT_COMPOSITION_SHAPE_BRIDGE",
+      "root_selector_ids": [
+        "E0690"
+      ],
+      "replacements": [
+        {
+          "old_fragment": "  apply (memLp_two_iff_integrable_sq_norm\n    ((Lp.aestronglyMeasurable F).comp_quasiMeasurePreserving\n      upperHalfPlaneCoe_quasiMeasurePreserving)).2\n  rw [← integrableOn_iff_comap_subtypeVal\n    UpperHalfPlane.isOpen_upperHalfPlaneSet.measurableSet]",
+          "new_fragment": "  apply (memLp_two_iff_integrable_sq_norm\n    ((Lp.aestronglyMeasurable F).comp_quasiMeasurePreserving\n      upperHalfPlaneCoe_quasiMeasurePreserving)).2\n  change Integrable\n    ((fun w : ℂ ↦ ‖F w‖ ^ 2) ∘ fun z : ℍ ↦ (z : ℂ))\n    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.upperEuclideanMeasure\n  rw [← integrableOn_iff_comap_subtypeVal\n    UpperHalfPlane.isOpen_upperHalfPlaneSet.measurableSet]",
+          "old_sha256": "515fa218826f06daf11dccc0b4b15cd80e94f2ea7cd0ba2c56f0aa5c3daa4dbb",
+          "new_sha256": "04701c09ff045964e08c0e0c683a84b2dcf373c8ea3f38892e18225002576bdc",
+          "old_bytes": 256,
+          "new_bytes": 456,
+          "target_old_count": 1,
+          "global_old_count": 1,
+          "target_new_count_before": 0,
+          "global_new_count_before": 0
+        }
+      ],
+      "standalone_candidate": {
+        "sha256": "ff1351122bdd44b673dca2823c1795436c50177ae56e18d97dbefdb14e179a59",
+        "bytes": 2702452,
+        "lines": 60576,
+        "direct_lean_verified": false
+      },
+      "evidence": {
+        "artifact_id": 9103368138,
+        "run_id": 31495034235,
+        "fragment_status": "STATIC_ONLY_PENDING_DIRECT_LEAN",
+        "current_full_inventory_roots": [
+          {
+            "id": "E0690",
+            "classification": "root_candidate",
+            "category": "rewrite_pattern_miss",
+            "line": 52953,
+            "column": 6,
+            "diagnostic_code": null,
+            "message_sha256": "30b8f0e0a414ca3ddce88a091f5abece103e68129c4513367d23d514d0586f35"
+          }
+        ]
+      }
+    },
+    {
+      "declaration_index": 3941,
+      "declaration_name": "ambientPlaneToLiteralStage_completedPlaneBase_core",
+      "header_sha256": "3161e074b0ffa4e61e71d5566dc7018a850ace96916c8424354d3c595db684b3",
+      "status": "STATIC_ONLY_UNVERIFIED",
+      "proof_body_only": true,
+      "analysis_note": "UNVERIFIED: move the narrowed AE equalities into filter_upwards, where the final restricted measure is known, and use the current Lp.ext eventual-equality API.",
+      "confidence": "HIGH_EXACT_AE_FILTER_INFERENCE_REPAIR",
+      "root_selector_ids": [
+        "E0697",
+        "E0698",
+        "E0699",
+        "E0700",
+        "E0701"
+      ],
+      "replacements": [
+        {
+          "old_fragment": "  have hcarrier :=\n    (MeasureTheory.LpToLpRestrictCLM_coeFn ℂ\n      chosenGammaTwoFundamentalDomain.carrier\n      (ambientPlaneToUpper\n        (completedLiteralStagePlaneBase Y n (coreMap n u)))).filter_mono\n      (ae_mono Measure.restrict_le_self)\n  have hupper :=\n    (MemLp.coeFn_toLp\n      (ambientPlane_comp_upper_memLp\n        (completedLiteralStagePlaneBase Y n (coreMap n u)))).filter_mono\n      (ae_mono (Measure.restrict_le_self.trans Measure.restrict_le_self))\n  have hplaneUpper :\n      (fun z : ℍ ↦\n        ambientTestCoreToPlaneL2Linear\n          (literalStageLocalizedGauge Y n u) (z : ℂ)) =ᵐ[\n            Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.upperEuclideanMeasure]\n        fun z : ℍ ↦ literalStageLocalizedGauge Y n u (z : ℂ) := by\n    simpa only [Function.comp_apply] using\n      upperHalfPlaneCoe_quasiMeasurePreserving.ae_eq_comp\n        (coeFn_ambientTestCoreToPlaneL2Linear\n          (literalStageLocalizedGauge Y n u))\n  have hplane := hplaneUpper.filter_mono\n    (ae_mono (Measure.restrict_le_self.trans Measure.restrict_le_self))\n  apply Lp.ext fun z ↦ ?_\n  filter_upwards [\n    coeFn_graphLiteralStageRestriction_core Y n u,\n    MeasureTheory.LpToLpRestrictCLM_coeFn ℂ\n      (gammaTwoThreeCuspTruncation Y)\n      (MeasureTheory.LpToLpRestrictCLM ℍ ℂ ℂ\n        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.upperEuclideanMeasure 2\n        chosenGammaTwoFundamentalDomain.carrier\n        (ambientPlaneToUpper\n          (completedLiteralStagePlaneBase Y n (coreMap n u)))),\n    hcarrier, hupper, hplane,\n    ae_restrict_mem\n      (gammaTwoThreeCuspTruncation_isCompact Y).measurableSet]\n      with z hgraph hstage hcarrier hupper hplane hzStage",
+          "new_fragment": "  have hplaneUpper :\n      (fun z : ℍ ↦\n        ambientTestCoreToPlaneL2Linear\n          (literalStageLocalizedGauge Y n u) (z : ℂ)) =ᵐ[\n            Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.upperEuclideanMeasure]\n        fun z : ℍ ↦ literalStageLocalizedGauge Y n u (z : ℂ) := by\n    simpa only [Function.comp_apply] using\n      upperHalfPlaneCoe_quasiMeasurePreserving.ae_eq_comp\n        (coeFn_ambientTestCoreToPlaneL2Linear\n          (literalStageLocalizedGauge Y n u))\n  apply Lp.ext\n  filter_upwards [\n    coeFn_graphLiteralStageRestriction_core Y n u,\n    MeasureTheory.LpToLpRestrictCLM_coeFn ℂ\n      (gammaTwoThreeCuspTruncation Y)\n      (MeasureTheory.LpToLpRestrictCLM ℍ ℂ ℂ\n        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.upperEuclideanMeasure 2\n        chosenGammaTwoFundamentalDomain.carrier\n        (ambientPlaneToUpper\n          (completedLiteralStagePlaneBase Y n (coreMap n u)))),\n    (MeasureTheory.LpToLpRestrictCLM_coeFn ℂ\n      chosenGammaTwoFundamentalDomain.carrier\n      (ambientPlaneToUpper\n        (completedLiteralStagePlaneBase Y n (coreMap n u)))).filter_mono\n      (ae_mono Measure.restrict_le_self),\n    (MemLp.coeFn_toLp\n      (ambientPlane_comp_upper_memLp\n        (completedLiteralStagePlaneBase Y n (coreMap n u)))).filter_mono\n      (ae_mono (Measure.restrict_le_self.trans Measure.restrict_le_self)),\n    hplaneUpper.filter_mono\n      (ae_mono (Measure.restrict_le_self.trans Measure.restrict_le_self)),\n    ae_restrict_mem\n      (gammaTwoThreeCuspTruncation_isCompact Y).measurableSet]\n      with z hgraph hstage hcarrier hupper hplane hzStage",
+          "old_sha256": "54c40537fe2a52aec9097406763ca26650886f176714041d75de001027b9dbde",
+          "new_sha256": "45f34842f016f1bc28a07c575a256638818dafafe91e23df10a59c5bbbbc7a5b",
+          "old_bytes": 1783,
+          "new_bytes": 1696,
+          "target_old_count": 1,
+          "global_old_count": 1,
+          "target_new_count_before": 0,
+          "global_new_count_before": 0
+        }
+      ],
+      "standalone_candidate": {
+        "sha256": "536d25d494104b05424fb27fc86b8e5dc3e16210f7182f89a363e2524cca2328",
+        "bytes": 2702165,
+        "lines": 60570,
+        "direct_lean_verified": false
+      },
+      "evidence": {
+        "artifact_id": 9103368138,
+        "run_id": 31495034235,
+        "fragment_status": "STATIC_ONLY_PENDING_DIRECT_LEAN",
+        "current_full_inventory_roots": [
+          {
+            "id": "E0697",
+            "classification": "root_candidate",
+            "category": "other",
+            "line": 53037,
+            "column": 4,
+            "diagnostic_code": null,
+            "message_sha256": "4527e0d13752094a59b500cad13a025cc4981ae2fb7196056619bf64bdf8ca68"
+          },
+          {
+            "id": "E0698",
+            "classification": "root_candidate",
+            "category": "other",
+            "line": 53041,
+            "column": 7,
+            "diagnostic_code": null,
+            "message_sha256": "aabb836af1470c7fa14aaea72bddcf585025fedbd6cd9f2c0d09004a3c3aca78"
+          },
+          {
+            "id": "E0699",
+            "classification": "root_candidate",
+            "category": "other",
+            "line": 53041,
+            "column": 15,
+            "diagnostic_code": null,
+            "message_sha256": "9634679c4b537c18e02a141f4f4a6bf41418751d6f334c8c0375a3f194d3301a"
+          },
+          {
+            "id": "E0700",
+            "classification": "root_candidate",
+            "category": "other",
+            "line": 53036,
+            "column": 7,
+            "diagnostic_code": null,
+            "message_sha256": "9894b526bbd5fba8b08b2ab6a726365b24a568129a57801a7cf3816e9f929cfd"
+          },
+          {
+            "id": "E0701",
+            "classification": "root_candidate",
+            "category": "unsolved_goals",
+            "line": 53035,
+            "column": 56,
+            "diagnostic_code": null,
+            "message_sha256": "3758acbaaf6c3e2b22f2252a65e327be2039460d09e590d5a3cfdbe12ff0557a"
+          }
+        ]
+      }
+    },
+    {
+      "declaration_index": 3959,
+      "declaration_name": "discriminantHardStageWeight",
+      "header_sha256": "ba5e4776c31bcb08a1ee22e5b0d445142b39132270fafdb5d1e61c5a2d9eb2d4",
+      "status": "STATIC_ONLY_UNVERIFIED",
+      "proof_body_only": true,
+      "analysis_note": "UNVERIFIED: introduce classical Prop decidability inside the noncomputable definition body without changing its header or claim.",
+      "confidence": "HIGH_EXACT_LOCAL_CLASSICAL_DECIDABILITY",
+      "root_selector_ids": [
+        "E0705"
+      ],
+      "replacements": [
+        {
+          "old_fragment": "  if gammaTwoQuotientMk z ∈ discriminantHardQuotientStage N then\n    (upstairsPotential z : ℂ)\n  else 0",
+          "new_fragment": "  by\n    classical\n    exact if gammaTwoQuotientMk z ∈ discriminantHardQuotientStage N then\n      (upstairsPotential z : ℂ)\n    else 0",
+          "old_sha256": "89ffb7b7ae41e8aeb997ef2b2f4caa2a9c18a4fcd146271398378c140352358e",
+          "new_sha256": "ba5cb113677b06a8d59a16d56a55a4f0e34492ebcf8e4c668399524d265540e1",
+          "old_bytes": 107,
+          "new_bytes": 138,
+          "target_old_count": 1,
+          "global_old_count": 1,
+          "target_new_count_before": 0,
+          "global_new_count_before": 0
+        }
+      ],
+      "standalone_candidate": {
+        "sha256": "65aceaea32985a84942178f84faf3a80d7482d53705f150e147820e03edc8315",
+        "bytes": 2702283,
+        "lines": 60575,
+        "direct_lean_verified": false
+      },
+      "evidence": {
+        "artifact_id": 9103368138,
+        "run_id": 31495034235,
+        "fragment_status": "STATIC_ONLY_PENDING_DIRECT_LEAN",
+        "current_full_inventory_roots": [
+          {
+            "id": "E0705",
+            "classification": "root_candidate",
+            "category": "typeclass_synthesis",
+            "line": 53233,
+            "column": 2,
+            "diagnostic_code": "lean.synthInstanceFailed",
+            "message_sha256": "516fcafa10a76fd5fee8ad56925ab85f1af74e01862854202b0f639300074235"
+          }
+        ]
+      }
+    },
+    {
+      "declaration_index": 3960,
+      "declaration_name": "discriminantTailCarrierWeight",
+      "header_sha256": "60192d85858c20f1a68ff76d0a89b9cf4c77176efb3ac58662397d8c71454d5c",
+      "status": "STATIC_ONLY_UNVERIFIED",
+      "proof_body_only": true,
+      "analysis_note": "UNVERIFIED: introduce classical Prop decidability inside the complementary noncomputable definition body.",
+      "confidence": "HIGH_EXACT_LOCAL_CLASSICAL_DECIDABILITY",
+      "root_selector_ids": [
+        "E0706"
+      ],
+      "replacements": [
+        {
+          "old_fragment": "  if gammaTwoQuotientMk z ∈ discriminantHardQuotientStage N then\n    0\n  else (upstairsPotential z : ℂ)",
+          "new_fragment": "  by\n    classical\n    exact if gammaTwoQuotientMk z ∈ discriminantHardQuotientStage N then\n      0\n    else (upstairsPotential z : ℂ)",
+          "old_sha256": "941501619a9a1b03abd8879639264d1e50dedbfd5be02646d571338d282b086c",
+          "new_sha256": "4cbfe1365d7686b58e0a86e8c8c6fa3378c8e2ff8cd99959939d969a15b9f4bc",
+          "old_bytes": 107,
+          "new_bytes": 138,
+          "target_old_count": 1,
+          "global_old_count": 1,
+          "target_new_count_before": 0,
+          "global_new_count_before": 0
+        }
+      ],
+      "standalone_candidate": {
+        "sha256": "97b336114a2e92b2c845602b21d804f45b41aef0dd6863152e44f406673c9f00",
+        "bytes": 2702283,
+        "lines": 60575,
+        "direct_lean_verified": false
+      },
+      "evidence": {
+        "artifact_id": 9103368138,
+        "run_id": 31495034235,
+        "fragment_status": "STATIC_ONLY_PENDING_DIRECT_LEAN",
+        "current_full_inventory_roots": [
+          {
+            "id": "E0706",
+            "classification": "root_candidate",
+            "category": "typeclass_synthesis",
+            "line": 53240,
+            "column": 2,
+            "diagnostic_code": "lean.synthInstanceFailed",
+            "message_sha256": "516fcafa10a76fd5fee8ad56925ab85f1af74e01862854202b0f639300074235"
+          }
+        ]
+      }
+    },
+    {
+      "declaration_index": 3962,
+      "declaration_name": "discriminantHardStageWeight_measurable",
+      "header_sha256": "bea7168f339e71b1793b55c5b2dcd8e26aaa6f656a36f195529f0c58c13c00c0",
+      "status": "STATIC_ONLY_UNVERIFIED",
+      "proof_body_only": true,
+      "analysis_note": "UNVERIFIED: use the already established measurable_quotient_mk'' API directly, avoiding an unnecessary BorelSpace synthesis through Continuous.measurable.",
+      "confidence": "HIGH_EXACT_PINNED_MEASURABLE_QUOTIENT_MAP",
+      "root_selector_ids": [
+        "E0707"
+      ],
+      "replacements": [
+        {
+          "old_fragment": "      ((discriminantHardQuotientStage_measurableSet N).preimage\n        gammaTwoQuotientMk_isOpenQuotientMap.continuous.measurable)\n      measurable_const",
+          "new_fragment": "      ((discriminantHardQuotientStage_measurableSet N).preimage\n        measurable_quotient_mk'')\n      measurable_const",
+          "old_sha256": "c3352b8b48f64639b33aa586b6a5b678e22011cd6adfde529ee712cfac974f61",
+          "new_sha256": "351791092dfb495225d10407d9c12c0326eddc8767c4e2ef6bec0ead6ba8b6cd",
+          "old_bytes": 154,
+          "new_bytes": 120,
+          "target_old_count": 1,
+          "global_old_count": 1,
+          "target_new_count_before": 0,
+          "global_new_count_before": 0
+        }
+      ],
+      "standalone_candidate": {
+        "sha256": "723577a477a184f25331110cbb380bbd9fe4002a46ca3b96563c83fc7f771dce",
+        "bytes": 2702218,
+        "lines": 60573,
+        "direct_lean_verified": false
+      },
+      "evidence": {
+        "artifact_id": 9103368138,
+        "run_id": 31495034235,
+        "fragment_status": "STATIC_ONLY_PENDING_DIRECT_LEAN",
+        "current_full_inventory_roots": [
+          {
+            "id": "E0707",
+            "classification": "root_candidate",
+            "category": "typeclass_synthesis",
+            "line": 53254,
+            "column": 8,
+            "diagnostic_code": "lean.synthInstanceFailed",
+            "message_sha256": "ca4d83b77e5e8d90cff907f9410c1e69ccacd26b09809bf0a4a8a049d53f00c7"
+          }
+        ]
+      }
+    },
+    {
+      "declaration_index": 3963,
+      "declaration_name": "discriminantTailCarrierWeight_measurable",
+      "header_sha256": "edc404431495a92ddd4421a5ad3ad83030494d9e5d5b6d6d1c4dfa264fbb494b",
+      "status": "STATIC_ONLY_UNVERIFIED",
+      "proof_body_only": true,
+      "analysis_note": "UNVERIFIED: use measurable_quotient_mk'' directly for the complementary weight's measurable if-branch.",
+      "confidence": "HIGH_EXACT_PINNED_MEASURABLE_QUOTIENT_MAP",
+      "root_selector_ids": [
+        "E0708"
+      ],
+      "replacements": [
+        {
+          "old_fragment": "  exact measurable_const.ite\n      ((discriminantHardQuotientStage_measurableSet N).preimage\n        gammaTwoQuotientMk_isOpenQuotientMap.continuous.measurable)\n      (Complex.ofRealCLM.measurable.comp",
+          "new_fragment": "  exact measurable_const.ite\n      ((discriminantHardQuotientStage_measurableSet N).preimage\n        measurable_quotient_mk'')\n      (Complex.ofRealCLM.measurable.comp",
+          "old_sha256": "f0c3a044cd18f0b9937b34005b9af4bc318a3042db1dd40afa2f02fc765ee0d2",
+          "new_sha256": "eb778aa24bb54aa258bde356ef3de964245e714af97b1b8ed2fa688a3ac29f5b",
+          "old_bytes": 201,
+          "new_bytes": 167,
+          "target_old_count": 1,
+          "global_old_count": 1,
+          "target_new_count_before": 0,
+          "global_new_count_before": 0
+        }
+      ],
+      "standalone_candidate": {
+        "sha256": "29619e242f5263fee27c6da0eaeafc077ca9a826ccfd2f6e09ea4a0178b35237",
+        "bytes": 2702218,
+        "lines": 60573,
+        "direct_lean_verified": false
+      },
+      "evidence": {
+        "artifact_id": 9103368138,
+        "run_id": 31495034235,
+        "fragment_status": "STATIC_ONLY_PENDING_DIRECT_LEAN",
+        "current_full_inventory_roots": [
+          {
+            "id": "E0708",
+            "classification": "root_candidate",
+            "category": "typeclass_synthesis",
+            "line": 53262,
+            "column": 8,
+            "diagnostic_code": "lean.synthInstanceFailed",
+            "message_sha256": "ca4d83b77e5e8d90cff907f9410c1e69ccacd26b09809bf0a4a8a049d53f00c7"
+          }
+        ]
+      }
+    }
+  ],
+  "library_candidate_evidence": {
+    "sha256": "1c1d89903a82d6fe971d4862d0b2ae5a2b69a2d82f7cad7346051b91292913a1",
+    "bytes": 2704037,
+    "lines": 60610,
+    "direct_lean_verified": false,
+    "not_full_all_error_candidate": true
+  },
+  "preservation_contract": {
+    "all_existing_documentation_and_comments_byte_preserved": true,
+    "all_existing_at_attributes_byte_preserved": true,
+    "new_declarations": 0,
+    "all_theorem_headers_and_claims_byte_preserved": true,
+    "declaration_sequence_preserved": true,
+    "all_unselected_source_bytes_preserved": true,
+    "executable_forbidden_six_zero_before_and_after": true,
+    "raw_forbidden_mention_ledger_unchanged": true
+  },
+  "application_contract": {
+    "apply_only_to_exact_d0a3": true,
+    "repairs_in_ascending_declaration_order": true,
+    "no_overlap_with_selected_r010_libraries": true,
+    "direct_lean_required_before_promotion": true
+  },
+  "local_execution": {
+    "lean": false,
+    "lake": false,
+    "git": false,
+    "github_read": false,
+    "github_write": false,
+    "remote_upload": false
+  }
+}

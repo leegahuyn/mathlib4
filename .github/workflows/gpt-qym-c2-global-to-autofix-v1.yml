@@ -1,0 +1,48 @@
+name: GPT QYM C2 global best to autofix
+
+on:
+  push:
+    branches: [gpt/qym-gb85-c2-explicit-20260819]
+    paths:
+      - .github/qym-frontier/QYM_C2_GLOBAL_BEST.lean
+      - .github/qym-frontier/C2_GLOBAL_RESULT.json
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  bridge:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      TARGET_BRANCH: gpt/qym-gb85-autofix-20260819
+      OUT: /tmp/qym-c2-global-bridge
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: true
+      - name: Verify unified C2 global identity
+        shell: bash
+        run: |
+          set -euo pipefail;mkdir -p "$OUT";cp .github/qym-frontier/QYM_C2_GLOBAL_BEST.lean "$OUT/QYM.lean";cp .github/qym-frontier/C2_GLOBAL_RESULT.json "$OUT/RESULT.json"
+          python3 - "$OUT/QYM.lean" "$OUT/RESULT.json" <<'PY'
+          from pathlib import Path
+          import hashlib,json,sys
+          s,rp=Path(sys.argv[1]),Path(sys.argv[2]);raw=s.read_bytes();r=json.loads(rp.read_text());blob=hashlib.sha1(b'blob '+str(len(raw)).encode()+b'\0'+raw).hexdigest()
+          assert hashlib.sha256(raw).hexdigest()==r['candidate_qym_sha256'];assert blob==r['candidate_qym_blob'];assert int(r['error_headers'])<85;assert int(r['panic_lines'])==0;assert not any((r.get('forbidden') or {}).values())
+          PY
+      - name: Seed autofix if globally lower
+        shell: bash
+        run: |
+          set -euo pipefail;git fetch origin "$TARGET_BRANCH";git worktree add "$OUT/target" "origin/$TARGET_BRANCH";mkdir -p "$OUT/target/.github/qym-frontier";incoming="$(jq -r '.error_headers' "$OUT/RESULT.json")";current=999999;if [[ -s "$OUT/target/.github/qym-frontier/AUTOFIX_RESULT.json" ]];then current="$(jq -r '.error_headers' "$OUT/target/.github/qym-frontier/AUTOFIX_RESULT.json")";fi;if (( incoming >= current ));then jq -n --argjson incoming "$incoming" --argjson current "$current" '{transferred:false,incoming_errors:$incoming,current_errors:$current}' > "$OUT/TRANSFER.json";exit 0;fi;cp "$OUT/QYM.lean" "$OUT/target/.github/qym-frontier/QYM_AUTOFIX_BEST.lean";cp "$OUT/RESULT.json" "$OUT/target/.github/qym-frontier/AUTOFIX_RESULT.json";cd "$OUT/target";git config user.name 'github-actions[bot]';git config user.email '41898282+github-actions[bot]@users.noreply.github.com';git add .github/qym-frontier;git commit -m "QYM bridge: transfer C2 global verified ${incoming}-error frontier";git push origin "HEAD:$TARGET_BRANCH";jq -n --argjson incoming "$incoming" --argjson current "$current" '{transferred:true,incoming_errors:$incoming,previous_errors:$current}' > "$OUT/TRANSFER.json"
+      - name: Upload bridge evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-c2-global-autofix-${{ github.sha }}-attempt${{ github.run_attempt }}
+          path: ${{ env.OUT }}
+          if-no-files-found: error
+          retention-days: 30

@@ -1,0 +1,69 @@
+name: GPT QYM verified C2 v2-v4 to autofix bridge
+
+on:
+  push:
+    branches: [gpt/qym-gb85-c2-explicit-20260819]
+    paths:
+      - .github/qym-frontier/QYM_GB85_C2_BEST.lean
+      - .github/qym-frontier/GB85_C2_RESULT.json
+      - .github/qym-frontier/QYM_GB85_C2_V3_BEST.lean
+      - .github/qym-frontier/GB85_C2_V3_RESULT.json
+      - .github/qym-frontier/QYM_GB85_C2_V4_BEST.lean
+      - .github/qym-frontier/GB85_C2_V4_RESULT.json
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: gpt-qym-c2-to-autofix-bridge-v2
+  cancel-in-progress: false
+
+jobs:
+  bridge:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      TARGET_BRANCH: gpt/qym-gb85-autofix-20260819
+      OUT: /tmp/qym-c2-bridge-v2
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: true
+      - name: Select and validate lowest C2 frontier
+        shell: bash
+        run: |
+          set -euo pipefail;mkdir -p "$OUT"
+          python3 - "$OUT" <<'PY'
+          from pathlib import Path
+          import hashlib,json,shutil,sys
+          out=Path(sys.argv[1]);root=Path('.github/qym-frontier')
+          pairs=[(root/'QYM_GB85_C2_BEST.lean',root/'GB85_C2_RESULT.json','v2'),(root/'QYM_GB85_C2_V3_BEST.lean',root/'GB85_C2_V3_RESULT.json','v3'),(root/'QYM_GB85_C2_V4_BEST.lean',root/'GB85_C2_V4_RESULT.json','v4')]
+          def blob(raw):return hashlib.sha1(b'blob '+str(len(raw)).encode()+b'\0'+raw).hexdigest()
+          rows=[]
+          for src,rp,label in pairs:
+              if not src.is_file() or not rp.is_file():continue
+              r=json.loads(rp.read_text());raw=src.read_bytes()
+              if hashlib.sha256(raw).hexdigest()!=r.get('candidate_qym_sha256') or blob(raw)!=r.get('candidate_qym_blob'):raise SystemExit(f'{label} identity mismatch')
+              if int(r.get('panic_lines',1))!=0 or int(r.get('error_headers',10**9))>=85 or any((r.get('forbidden') or {}).values()):raise SystemExit(f'{label} invalid strict frontier')
+              rows.append((0 if r.get('semantic_pass') else 1,int(r['error_headers']),-int((r.get('first_error') or {}).get('line') or 0),label,src,rp,r))
+          if not rows:raise SystemExit('no valid C2 frontier')
+          rows.sort();b=rows[0];shutil.copy2(b[4],out/'QYM.lean');shutil.copy2(b[5],out/'RESULT.json');(out/'SELECTION.json').write_text(json.dumps({'label':b[3],'result':b[6]},indent=2,sort_keys=True)+'\n')
+          PY
+      - name: Seed target only if strictly lower
+        shell: bash
+        run: |
+          set -euo pipefail;git fetch origin "$TARGET_BRANCH";git worktree add "$OUT/target" "origin/$TARGET_BRANCH";mkdir -p "$OUT/target/.github/qym-frontier";incoming="$(jq -r '.error_headers' "$OUT/RESULT.json")";current=999999
+          if [[ -s "$OUT/target/.github/qym-frontier/AUTOFIX_RESULT.json" ]];then current="$(jq -r '.error_headers' "$OUT/target/.github/qym-frontier/AUTOFIX_RESULT.json")";fi
+          if (( incoming >= current ));then jq -n --argjson incoming "$incoming" --argjson current "$current" '{transferred:false,incoming_errors:$incoming,current_errors:$current}' > "$OUT/TRANSFER.json";exit 0;fi
+          cp "$OUT/QYM.lean" "$OUT/target/.github/qym-frontier/QYM_AUTOFIX_BEST.lean";cp "$OUT/RESULT.json" "$OUT/target/.github/qym-frontier/AUTOFIX_RESULT.json";cp "$OUT/SELECTION.json" "$OUT/target/.github/qym-frontier/C2_BRIDGE_SELECTION.json";cd "$OUT/target";git config user.name 'github-actions[bot]';git config user.email '41898282+github-actions[bot]@users.noreply.github.com';git add .github/qym-frontier;git commit -m "QYM bridge: seed autofix with verified ${incoming}-error C2 frontier";git push origin "HEAD:$TARGET_BRANCH";jq -n --argjson incoming "$incoming" --argjson current "$current" '{transferred:true,incoming_errors:$incoming,previous_errors:$current}' > "$OUT/TRANSFER.json"
+      - name: Upload bridge evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-c2-autofix-bridge-v2-${{ github.sha }}-attempt${{ github.run_attempt }}
+          path: ${{ env.OUT }}
+          if-no-files-found: error
+          retention-days: 30

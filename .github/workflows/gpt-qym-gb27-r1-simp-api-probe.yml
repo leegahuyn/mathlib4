@@ -1,0 +1,90 @@
+name: GPT QYM GB27 R1 simp API probe
+
+on:
+  push:
+    branches:
+      - gpt/qym-gb57-global-batch-round2-20260820
+    paths:
+      - .github/workflows/gpt-qym-gb27-r1-simp-api-probe.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - name: Install Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/qym-r1-api
+          curl --retry 8 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none > /tmp/qym-r1-api/elan.log 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >> /tmp/qym-r1-api/toolchain.log 2>&1
+          lake exe cache get >> /tmp/qym-r1-api/cache.log 2>&1
+      - name: Compile API examples
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > /tmp/qym-r1-api/Probe.lean <<'LEAN'
+          import Mathlib
+
+          open Set Topology Manifold
+          open scoped ComplexConjugate ENNReal InnerProduct
+
+          #check ContMDiff.congr
+          #check extChartAt_comp
+          #check mem_extChartAt_target
+
+          universe u
+          variable {E : Type u} [NormedAddCommGroup E] [InnerProductSpace ℂ E]
+
+          example (u : E) : ((↑‖u‖ : ℂ) ^ 2).re = 0 ↔ u = 0 := by
+            simp [sq_eq_zero_iff]
+
+          example (a b : ℝ) :
+              RCLike.re ((a : ℂ) ^ 2 + (((1 : ℝ) / 4 : ℝ) : ℂ) * (b : ℂ) ^ 2) =
+                a ^ 2 + (1 / 4 : ℝ) * b ^ 2 := by
+            norm_num
+          LEAN
+          set +e
+          lake env lean /tmp/qym-r1-api/Probe.lean > /tmp/qym-r1-api/probe.log 2>&1
+          rc=$?
+          set -e
+          echo "$rc" > /tmp/qym-r1-api/exit.txt
+          cat /tmp/qym-r1-api/probe.log
+      - name: Persist
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          dest=.github/qym-probes/GB27_R1_SIMP_API
+          rm -rf "$dest" && mkdir -p "$dest"
+          cp /tmp/qym-r1-api/Probe.lean "$dest/"
+          cp /tmp/qym-r1-api/probe.log "$dest/"
+          cp /tmp/qym-r1-api/exit.txt "$dest/"
+          cat > "$dest/STATUS.json" <<JSON
+          {"run_id":${GITHUB_RUN_ID},"trigger_sha":"${GITHUB_SHA}","exit":$(cat /tmp/qym-r1-api/exit.txt)}
+          JSON
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "$dest"
+          git commit -m "QYM GB27 R1: persist simp API probe ${GITHUB_RUN_ID} [skip ci]"
+          for attempt in 1 2 3 4 5; do
+            git fetch origin gpt/qym-gb57-global-batch-round2-20260820
+            if git rebase origin/gpt/qym-gb57-global-batch-round2-20260820 && \
+               git push origin HEAD:gpt/qym-gb57-global-batch-round2-20260820; then exit 0; fi
+            git rebase --abort || true
+            sleep $((attempt*5))
+          done
+          exit 1

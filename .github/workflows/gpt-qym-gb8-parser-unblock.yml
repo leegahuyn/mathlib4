@@ -1,0 +1,236 @@
+name: GPT QYM GB8 parser-unblock direct Lean
+
+on:
+  push:
+    branches:
+      - gpt/qym-gb57-global-batch-round2-20260820
+    paths:
+      - .github/qym_patch_gb8_parser_unblock.py
+      - .github/workflows/gpt-qym-gb8-parser-unblock.yml
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: gpt-qym-gb8-parser-unblock
+  cancel-in-progress: true
+
+env:
+  BRANCH: gpt/qym-gb57-global-batch-round2-20260820
+  QYM: PrimalitySheafVerification/QYM.lean
+  OLEAN: .lake/build/lib/lean/PrimalitySheafVerification
+  BASE_ERRORS: 8
+  BASE_SHA256: c604b258541c4ec8477f0e4aa93b7fb9658d5a9f74546e85faa4b2c6add7ace4
+  BASE_BLOB: d6be2245ce32bb8bce2585f9b0da5d54f8babec0
+  CANDIDATE_SHA256: 8abc23b49c1cabed88fac0a67c3958d4dec7411d9c078ff555e137a1c19560d7
+
+jobs:
+  direct:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - name: Gate exact parser-truncated GB8
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/qym-gb8-parser "$OLEAN"
+          test "$GITHUB_REF_NAME" = "$BRANCH"
+          test "$(tr -d '\r\n' < lean-toolchain)" = leanprover/lean4:v4.33.0-rc1
+          test "$(sha256sum "$QYM" | awk '{print $1}')" = "$BASE_SHA256"
+          test "$(git hash-object "$QYM")" = "$BASE_BLOB"
+          python3 -m py_compile .github/qym_patch_gb8_parser_unblock.py
+          git rev-parse HEAD | tee /tmp/qym-gb8-parser/trigger-commit.txt
+
+      - name: Install pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 8 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none > /tmp/qym-gb8-parser/elan.log 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          tc="$(tr -d '\r\n' < lean-toolchain)"
+          for attempt in 1 2 3 4 5; do
+            elan toolchain install "$tc" >> /tmp/qym-gb8-parser/toolchain.log 2>&1 && break
+            test "$attempt" != 5
+            sleep $((attempt * 5))
+          done
+          lean --version | tee /tmp/qym-gb8-parser/lean-version.txt
+          lake --version | tee /tmp/qym-gb8-parser/lake-version.txt
+          for attempt in 1 2 3 4 5; do
+            lake exe cache get >> /tmp/qym-gb8-parser/mathlib-cache.log 2>&1 && break
+            test "$attempt" != 5
+            sleep $((attempt * 5))
+          done
+
+      - name: Restore completed dependency objects
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: |
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.ilean
+          key: qym-deps-v4-${{ runner.os }}-${{ hashFiles('lean-toolchain','lake-manifest.json','lakefile.lean','PrimalitySheafVerification/Mock2.lean','PrimalitySheafVerification/Mock2_Advanced.lean','PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean','PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean') }}
+          restore-keys: |
+            qym-deps-v3-${{ runner.os }}-
+            qym-probe4-deps-v1-${{ runner.os }}-
+
+      - name: Ensure dependency objects by actual Lean
+        shell: bash
+        run: |
+          set -euo pipefail
+          for source in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated; do
+            if [[ ! -s "$OLEAN/$source.olean" || ! -s "$OLEAN/$source.ilean" ]]; then
+              max_errors=1
+              [[ "$source" = Mock2_FunctionalAnalysis* ]] && max_errors=2000
+              rm -f "$OLEAN/$source.olean" "$OLEAN/$source.ilean"
+              lake env lean "-DmaxErrors=$max_errors" -DwarningAsError=false \
+                -o "$OLEAN/$source.olean" -i "$OLEAN/$source.ilean" \
+                "PrimalitySheafVerification/$source.lean" > "/tmp/qym-gb8-parser/$source.log" 2>&1
+            fi
+            test -s "$OLEAN/$source.olean"
+            test -s "$OLEAN/$source.ilean"
+          done
+
+      - name: Apply deterministic parser-unblock repair and audit
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp "$QYM" /tmp/qym-gb8-parser/QYM.GB8.lean
+          python3 -B .github/qym_patch_gb8_parser_unblock.py \
+            /tmp/qym-gb8-parser/QYM.GB8.lean /tmp/qym-gb8-parser/QYM.candidate.lean
+          test "$(sha256sum /tmp/qym-gb8-parser/QYM.candidate.lean | awk '{print $1}')" = "$CANDIDATE_SHA256"
+          export CAND=/tmp/qym-gb8-parser/QYM.candidate.lean
+          python3 - <<'PY'
+          from pathlib import Path
+          import json, os, re
+          text=Path(os.environ['CAND']).read_text()
+          out=[]; i=0; depth=0; string=False; line=False
+          while i < len(text):
+              if line:
+                  if text[i]=='\n': line=False; out.append('\n')
+                  else: out.append(' ')
+                  i+=1; continue
+              if depth:
+                  if text.startswith('/-',i): depth+=1; out.extend('  '); i+=2
+                  elif text.startswith('-/',i): depth-=1; out.extend('  '); i+=2
+                  else: out.append('\n' if text[i]=='\n' else ' '); i+=1
+                  continue
+              if string:
+                  if text[i]=='\\' and i+1<len(text): out.extend('  '); i+=2
+                  elif text[i]=='"': string=False; out.append(' '); i+=1
+                  else: out.append('\n' if text[i]=='\n' else ' '); i+=1
+                  continue
+              if text.startswith('--',i): line=True; out.extend('  '); i+=2
+              elif text.startswith('/-',i): depth=1; out.extend('  '); i+=2
+              elif text[i]=='"': string=True; out.append(' '); i+=1
+              else: out.append(text[i]); i+=1
+          code=''.join(out)
+          patterns={'sorry':r'\bsorry\b','admit':r'\badmit\b','unsafe':r'\bunsafe\b',
+            'native_decide':r'\bnative_decide\b','Lean.ofReduceBool':r'\bLean\.ofReduceBool\b',
+            'axiom':r'(?m)^\s*(?:public\s+|private\s+)?axiom\b',
+            'maxHeartbeats_zero':r'\bmaxHeartbeats\s*(?::=|=)\s*0\b'}
+          counts={k:len(re.findall(v,code)) for k,v in patterns.items()}
+          ok=depth==0 and all(v==0 for v in counts.values())
+          Path('/tmp/qym-gb8-parser/FORBIDDEN_AUDIT.json').write_text(json.dumps({'forbidden_zero':ok,'counts':counts,'comment_depth':depth},indent=2)+'\n')
+          if not ok: raise SystemExit(json.dumps(counts))
+          PY
+
+      - name: Run authoritative full-QYM direct Lean
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp /tmp/qym-gb8-parser/QYM.candidate.lean "$QYM"
+          rm -f /tmp/qym-gb8-parser/QYM.olean /tmp/qym-gb8-parser/QYM.ilean
+          set +e
+          started="$(date +%s)"
+          lake env lean -DmaxErrors=10000 -DwarningAsError=false \
+            -o /tmp/qym-gb8-parser/QYM.olean -i /tmp/qym-gb8-parser/QYM.ilean \
+            "$QYM" > /tmp/qym-gb8-parser/full.log 2>&1
+          rc=$?
+          ended="$(date +%s)"
+          set -e
+          export rc started ended
+          python3 - <<'PY'
+          import bisect, hashlib, json, os, pathlib, re, subprocess
+          out=pathlib.Path('/tmp/qym-gb8-parser'); src=out/'QYM.candidate.lean'; log=out/'full.log'
+          text=src.read_text(); lines=text.splitlines()
+          decl_re=re.compile(r'^\s*(?:(?:noncomputable|private|protected|public)\s+)*(?:theorem|lemma|def|abbrev|instance|structure|class|inductive|opaque)\s+([^\s({:\[]+)')
+          dl=[]; dn=[]
+          for no,line in enumerate(lines,1):
+              m=decl_re.match(line)
+              if m: dl.append(no); dn.append(m.group(1))
+          hdr=re.compile(r'^(.*\.lean):(\d+):(\d+): error(?:\(([^)]+)\))?:\s*(.*)$')
+          errors=[]
+          log_text=log.read_text(errors='replace')
+          for line in log_text.splitlines():
+              m=hdr.match(line)
+              if m:
+                  ln=int(m.group(2)); k=bisect.bisect_right(dl,ln)-1
+                  errors.append({'file':m.group(1),'line':ln,'column':int(m.group(3)),'code':m.group(4),'message':m.group(5),'enclosing_declaration':dn[k] if k>=0 else None})
+          warnings=sum(1 for line in log_text.splitlines() if re.match(r'^.*\.lean:\d+:\d+: warning',line))
+          panic=sum(1 for line in log_text.splitlines() if re.search(r'internal error|uncaught exception|panic(!|:| )',line,re.I))
+          audit=json.loads((out/'FORBIDDEN_AUDIT.json').read_text())
+          d={'schema':'qym-gb8-parser-unblock-v1','authority':'actual full-QYM direct Lean','run_id':int(os.environ['GITHUB_RUN_ID']),
+             'trigger_sha':os.environ['GITHUB_SHA'],'base_error_headers':8,'exit':int(os.environ['rc']),
+             'error_headers':len(errors),'warning_headers':warnings,'panic_lines':panic,
+             'elapsed_seconds':int(os.environ['ended'])-int(os.environ['started']),
+             'first_error':errors[0] if errors else None,'source_sha256':hashlib.sha256(src.read_bytes()).hexdigest(),
+             'source_blob':subprocess.check_output(['git','hash-object',str(src)],text=True).strip(),
+             'log_sha256':hashlib.sha256(log.read_bytes()).hexdigest(),'forbidden_zero':audit['forbidden_zero'],
+             'olean_exists':(out/'QYM.olean').is_file() and (out/'QYM.olean').stat().st_size>0,
+             'ilean_exists':(out/'QYM.ilean').is_file() and (out/'QYM.ilean').stat().st_size>0,
+             'errors':errors}
+          d['strict_improvement']=len(errors)<8 and panic==0 and audit['forbidden_zero']
+          d['pass']=int(os.environ['rc'])==0 and not errors and panic==0 and audit['forbidden_zero'] and d['olean_exists'] and d['ilean_exists']
+          (out/'FULL_RESULT.json').write_text(json.dumps(d,indent=2)+'\n')
+          (out/'RESULT.json').write_text(json.dumps({k:v for k,v in d.items() if k!='errors'},indent=2)+'\n')
+          print(json.dumps({k:v for k,v in d.items() if k!='errors'},indent=2))
+          PY
+
+      - name: Upload immutable evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-gb8-parser-unblock-${{ github.run_id }}
+          path: /tmp/qym-gb8-parser
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Persist parser-unblocked frontier evidence
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s /tmp/qym-gb8-parser/RESULT.json
+          rm -rf .github/qym-frontier/GB8_PARSER_UNBLOCK
+          mkdir -p .github/qym-frontier/GB8_PARSER_UNBLOCK
+          cp /tmp/qym-gb8-parser/RESULT.json .github/qym-frontier/GB8_PARSER_UNBLOCK/
+          cp /tmp/qym-gb8-parser/FULL_RESULT.json .github/qym-frontier/GB8_PARSER_UNBLOCK/
+          cp /tmp/qym-gb8-parser/QYM.candidate.lean .github/qym-frontier/GB8_PARSER_UNBLOCK/QYM_GB8_PARSER_UNBLOCK.lean
+          strict="$(python3 -c 'import json; print(str(json.load(open("/tmp/qym-gb8-parser/RESULT.json"))["strict_improvement"]).lower())')"
+          if [[ "$strict" != true ]]; then git checkout "$GITHUB_SHA" -- "$QYM"; fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .github/qym-frontier/GB8_PARSER_UNBLOCK "$QYM"
+          git commit -m "QYM GB8: persist parser-unblocked direct Lean result ${GITHUB_RUN_ID} [skip ci]"
+          for attempt in 1 2 3 4 5; do
+            git fetch origin "$BRANCH"
+            if git rebase "origin/$BRANCH" && git push origin "HEAD:$BRANCH"; then exit 0; fi
+            git rebase --abort || true
+            sleep $((attempt * 5))
+          done
+          exit 1

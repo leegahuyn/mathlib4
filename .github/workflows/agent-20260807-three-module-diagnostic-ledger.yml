@@ -1,0 +1,208 @@
+name: Agent diagnostic ledger — Advanced FunctionalAnalysis Integrated QYM
+
+on:
+  push:
+    branches:
+      - fix/primality-sheaf-clean-build
+    paths:
+      - '.github/workflows/agent-20260807-three-module-diagnostic-ledger.yml'
+      - 'PrimalitySheafVerification/Mock2.lean'
+      - 'PrimalitySheafVerification/Mock2_Advanced.lean'
+      - 'PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'
+      - 'PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean'
+      - 'PrimalitySheafVerification/QYM.lean'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: agent-three-module-diagnostic-ledger
+  cancel-in-progress: true
+
+jobs:
+  collect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    env:
+      BRANCH: fix/primality-sheaf-clean-build
+      GITHUB_TOKEN: ${{ github.token }}
+      LEDGER: build-evidence/three-module-latest-diagnostics.json
+
+    steps:
+      - name: Fetch exact triggering commit without checkout action
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir repo
+          cd repo
+          git init
+          git remote add origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git fetch --depth=1 origin "${GITHUB_SHA}"
+          git checkout --detach FETCH_HEAD
+
+      - name: Install exact Lean toolchain without setup action
+        shell: bash
+        working-directory: repo
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          "$HOME/.elan/bin/elan" toolchain install "$(cat lean-toolchain)"
+
+      - name: Restore Mathlib cache
+        shell: bash
+        working-directory: repo
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          lake exe cache get
+
+      - name: Compile the complete requested dependency chain without early exit
+        shell: bash
+        working-directory: repo
+        run: |
+          set -uo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          outdir='.lake/build/lib/lean/PrimalitySheafVerification'
+          logdir='/tmp/three-module-ledger'
+          mkdir -p "$outdir" "$logdir"
+          modules=(Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated QYM)
+          for module in "${modules[@]}"; do
+            rm -f "$outdir/${module}.olean" "$outdir/${module}.ilean" "$outdir/${module}.olean.private"
+            echo "===== ${module} diagnostic direct compile ====="
+            lake env lean "PrimalitySheafVerification/${module}.lean" \
+              -o "$outdir/${module}.olean" -i "$outdir/${module}.ilean" 2>&1 \
+              | tee "$logdir/${module}.log"
+            code=${PIPESTATUS[0]}
+            echo "$code" > "$logdir/${module}.exit"
+            echo "${module} exit_code=${code}"
+          done
+          exit 0
+
+      - name: Build compact diagnostic ledger
+        shell: bash
+        working-directory: repo
+        run: |
+          set -euo pipefail
+          mkdir -p "$(dirname "${LEDGER}")"
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib,json,os,re,subprocess
+
+          modules=['Mock2','Mock2_Advanced','Mock2_FunctionalAnalysis',
+                   'Mock2_FunctionalAnalysis_Integrated','QYM']
+          logs=Path('/tmp/three-module-ledger')
+          root=Path('.')
+          outdir=root/'.lake/build/lib/lean/PrimalitySheafVerification'
+          forbidden={
+            'sorry':r'\bsorry\b','admit':r'\badmit\b',
+            'line_start_axiom':r'(?m)^\s*axiom\b','unsafe':r'\bunsafe\b',
+            'native_decide':r'\bnative_decide\b','Lean.ofReduceBool':r'\bLean\.ofReduceBool\b',
+            'by_contra!':r'\bby_contra!\b'}
+          def sha(path):
+            p=Path(path)
+            return hashlib.sha256(p.read_bytes()).hexdigest() if p.exists() else None
+          def executable(src):
+            out=[];i=0;depth=0;string=False;esc=False
+            while i<len(src):
+              if depth:
+                if src.startswith('/-',i):depth+=1;out+=[' ',' '];i+=2
+                elif src.startswith('-/',i):depth-=1;out+=[' ',' '];i+=2
+                else:out.append('\n' if src[i]=='\n' else ' ');i+=1
+              elif string:
+                c=src[i];out.append('\n' if c=='\n' else ' ')
+                if esc:esc=False
+                elif c=='\\':esc=True
+                elif c=='"':string=False
+                i+=1
+              elif src.startswith('/-',i):depth=1;out+=[' ',' '];i+=2
+              elif src.startswith('--',i):
+                while i<len(src) and src[i]!='\n':out.append(' ');i+=1
+              elif src[i]=='"':string=True;out.append(' ');i+=1
+              else:out.append(src[i]);i+=1
+            return ''.join(out)
+          data={
+            'schema':'three-module-diagnostic-ledger-v1',
+            'commit':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),
+            'toolchain':(root/'lean-toolchain').read_text().strip(),
+            'overall_pass':True,
+            'modules':{}
+          }
+          for m in modules:
+            source=root/'PrimalitySheafVerification'/f'{m}.lean'
+            log=(logs/f'{m}.log').read_text(errors='replace')
+            code=int((logs/f'{m}.exit').read_text().strip())
+            error_lines=[line.strip() for line in log.splitlines() if 'error:' in line]
+            # Deduplicate diagnostics while preserving order.
+            independent=[]
+            seen=set()
+            for line in error_lines:
+              normalized=re.sub(r'^.*?\.lean:\d+:\d+:\s*','',line)
+              normalized=re.sub(r'\s+',' ',normalized)
+              if normalized not in seen:
+                seen.add(normalized);independent.append(line)
+              if len(independent)>=20:break
+            code_src=executable(source.read_text(encoding='utf-8')) if source.exists() else ''
+            trust={name:len(re.findall(pat,code_src)) for name,pat in forbidden.items()}
+            item={
+              'source_exists':source.exists(),
+              'source_sha256':sha(source),
+              'source_lines':len(source.read_text(encoding='utf-8').splitlines()) if source.exists() else None,
+              'exit_code':code,
+              'error_count':len(error_lines),
+              'warning_count':sum('warning:' in line for line in log.splitlines()),
+              'first_error':error_lines[0] if error_lines else None,
+              'independent_errors':independent,
+              'last_error':error_lines[-1] if error_lines else None,
+              'maximum_errors_reached':bool(re.search(r'maximum number of errors',log,re.I)),
+              'missing_object_mentions':[line.strip() for line in log.splitlines() if 'object file' in line.lower() or 'missing object' in line.lower()][:20],
+              'sorryAx_in_log':bool(re.search(r'sorryAx',log)),
+              'olean_exists':(outdir/f'{m}.olean').is_file(),
+              'ilean_exists':(outdir/f'{m}.ilean').is_file(),
+              'olean_sha256':sha(outdir/f'{m}.olean'),
+              'ilean_sha256':sha(outdir/f'{m}.ilean'),
+              'trust_scan':trust,
+            }
+            data['modules'][m]=item
+            data['overall_pass'] &= (code==0 and len(error_lines)==0 and item['olean_exists'] and item['ilean_exists'] and not any(trust.values()) and not item['sorryAx_in_log'])
+          Path(os.environ['LEDGER']).write_text(json.dumps(data,ensure_ascii=False,indent=2,sort_keys=True)+'\n',encoding='utf-8')
+          print(Path(os.environ['LEDGER']).read_text())
+          PY
+
+      - name: Persist ledger if this is still the branch head
+        shell: bash
+        working-directory: repo
+        run: |
+          set -euo pipefail
+          remote_head="$(git ls-remote origin "refs/heads/${BRANCH}" | awk '{print $1}')"
+          echo "trigger head=${GITHUB_SHA}"
+          echo "remote head=${remote_head}"
+          if [[ "${remote_head}" != "${GITHUB_SHA}" ]]; then
+            echo 'Branch moved; a newer source push will trigger a fresh ledger.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "${LEDGER}"
+          if git diff --cached --quiet; then
+            echo 'Diagnostic ledger is unchanged.'
+            exit 0
+          fi
+          git commit -m 'ci: record latest Advanced FunctionalAnalysis and QYM diagnostics'
+          git push origin "HEAD:${BRANCH}"
+
+      - name: Fail the workflow when the ledger is not a full PASS
+        shell: bash
+        working-directory: repo
+        run: |
+          python3 - <<'PY'
+          import json,os
+          from pathlib import Path
+          data=json.loads(Path(os.environ['LEDGER']).read_text())
+          if not data['overall_pass']:
+            raise SystemExit('one or more requested modules failed; see diagnostic ledger')
+          print('PASS: complete requested dependency chain compiled with trust gates')
+          PY

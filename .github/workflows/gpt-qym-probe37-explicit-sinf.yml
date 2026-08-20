@@ -1,0 +1,191 @@
+name: GPT QYM Probe37 explicit sInf operator norm
+
+on:
+  push:
+    branches: [gpt/fa-qym-clean-final-20260816]
+    paths:
+      - .github/workflows/gpt-qym-probe37-explicit-sinf.yml
+      - .github/qym_probe37_explicit_sinf.py
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  probe37:
+    name: Probe34 to explicit-sInf prefix then full direct Lean
+    runs-on: ubuntu-24.04
+    timeout-minutes: 300
+    env:
+      P34_RUN: '32094322123'
+      P34_ARTIFACT: qym-probe34-3de9a1e411572007f43601ac226154e3c1aff5b0-attempt1
+      P34_SHA: 5b944b2332e3d0aa2816009a0cd1c8eb172bbb0861cb5e387c2ce26c6aeb3094
+      P34_BLOB: 3c6a660c3658dfb13a256162bde2fc96737d2b1d
+      PREFIX_SHA: 1fce4f041ca76a27c317706909ca044f28254a24a68e2055fe3534312ef57812
+      PREFIX_BLOB: 831d2805022f79b544762b3498805e04ec46d23d
+      FULL_SHA: 54a1861c5cb9b35ca5f71c6665a76b3d4f76a3d75a4b01a37242f70005603638
+      FULL_BLOB: ad278b20db3aaecf5ec693efcacd4a4a45af9095
+      CACHE_KEY: qym-probe4-deps-v1-Linux-ecb9f60364b1d72200c847f9ae46918f12c8b6d05363c23cca5d361c92ea45d4
+      OLEAN: .lake/build/lib/lean/PrimalitySheafVerification
+
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Gate checkout and bind output
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF_NAME" = gpt/fa-qym-clean-final-20260816
+          test "$(tr -d '\r\n' < lean-toolchain)" = leanprover/lean4:v4.33.0-rc1
+          test -f .github/qym_probe37_explicit_sinf.py
+          test -z "$(git status --porcelain=v1 --untracked-files=all)"
+          OUT="$GITHUB_WORKSPACE/.lake/qym-probe37"
+          mkdir -p "$OUT"
+          echo "OUT=$OUT" >> "$GITHUB_ENV"
+
+      - name: Download immutable Probe34 authority
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: ${{ env.P34_ARTIFACT }}
+          path: ${{ runner.temp }}/p34
+          github-token: ${{ github.token }}
+          repository: leegahuyn/mathlib4
+          run-id: 32094322123
+
+      - name: Gate exact Probe34 direct authority
+        shell: bash
+        run: |
+          set -euo pipefail
+          A="$RUNNER_TEMP/p34"
+          for f in QYM.candidate-probe34.lean QYM.exit QYM.error-headers.txt QYM.panic-lines.txt PROBE_RESULT.json; do test -f "$A/$f"; done
+          test "$(sha256sum "$A/QYM.candidate-probe34.lean" | awk '{print $1}')" = "$P34_SHA"
+          test "$(git hash-object --no-filters "$A/QYM.candidate-probe34.lean")" = "$P34_BLOB"
+          test "$(cat "$A/QYM.exit")" = 1
+          test "$(wc -l < "$A/QYM.error-headers.txt")" -eq 91
+          test ! -s "$A/QYM.panic-lines.txt"
+          cp "$A/PROBE_RESULT.json" "$OUT/PROBE34_RESULT.json"
+
+      - name: Install pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none > "$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" > "$OUT/toolchain.log" 2>&1
+          lake exe cache get > "$OUT/mathlib-cache.log" 2>&1
+          lean --version > "$OUT/lean-version.txt"
+          lake --version > "$OUT/lake-version.txt"
+
+      - id: depcache
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: |
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.ilean
+          key: qym-probe4-deps-v1-${{ runner.os }}-${{ hashFiles('lean-toolchain', 'lake-manifest.json', 'lakefile.lean', 'PrimalitySheafVerification/Mock2.lean', 'PrimalitySheafVerification/Mock2_Advanced.lean', 'PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean', 'PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean') }}
+
+      - name: Require exact dependency cache hit
+        shell: bash
+        env:
+          HIT: ${{ steps.depcache.outputs.cache-hit }}
+          PRIMARY: ${{ steps.depcache.outputs.cache-primary-key }}
+          MATCHED: ${{ steps.depcache.outputs.cache-matched-key }}
+        run: |
+          set -euo pipefail
+          test "$HIT" = true
+          test "$PRIMARY" = "$CACHE_KEY"
+          test "$MATCHED" = "$CACHE_KEY"
+          for s in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated; do
+            test -s "$OLEAN/$s.olean" && test -s "$OLEAN/$s.ilean"
+          done
+
+      - name: Materialize and compile exact prefix
+        shell: bash
+        run: |
+          set -euo pipefail
+          SRC="$RUNNER_TEMP/p34/QYM.candidate-probe34.lean"
+          PREFIX="$OUT/QYM.Probe37.Prefix.lean"
+          python3 -B .github/qym_probe37_explicit_sinf.py prefix "$SRC" "$PREFIX" \
+            > "$OUT/prefix-patch.txt"
+          test "$(sha256sum "$PREFIX" | awk '{print $1}')" = "$PREFIX_SHA"
+          test "$(git hash-object --no-filters "$PREFIX")" = "$PREFIX_BLOB"
+          set +e
+          /usr/bin/time -v -o "$OUT/PREFIX.time" \
+            lake env lean -DmaxErrors=10000 -DwarningAsError=false \
+              -o "$OUT/PREFIX.olean" -i "$OUT/PREFIX.ilean" "$PREFIX" \
+              > "$OUT/PREFIX.log" 2>&1
+          rc=$?
+          set -e
+          echo "$rc" > "$OUT/PREFIX.exit"
+          test "$rc" -eq 0
+          test -s "$OUT/PREFIX.olean" && test -s "$OUT/PREFIX.ilean"
+
+      - name: Materialize and full direct-compile exact Probe37
+        shell: bash
+        run: |
+          set -euo pipefail
+          SRC="$RUNNER_TEMP/p34/QYM.candidate-probe34.lean"
+          FULL="$OUT/QYM.candidate-probe37.lean"
+          python3 -B .github/qym_probe37_explicit_sinf.py full "$SRC" "$FULL" \
+            > "$OUT/full-patch.txt"
+          test "$(sha256sum "$FULL" | awk '{print $1}')" = "$FULL_SHA"
+          test "$(git hash-object --no-filters "$FULL")" = "$FULL_BLOB"
+          cp PrimalitySheafVerification/QYM.lean "$OUT/QYM.canonical.lean"
+          cp "$FULL" PrimalitySheafVerification/QYM.lean
+          set +e
+          /usr/bin/time -v -o "$OUT/QYM.time" \
+            lake env lean -DmaxErrors=10000 -DwarningAsError=false \
+              -o "$RUNNER_TEMP/QYM.probe37.olean" -i "$RUNNER_TEMP/QYM.probe37.ilean" \
+              PrimalitySheafVerification/QYM.lean > "$OUT/QYM.log" 2>&1
+          rc=$?
+          set -e
+          echo "$rc" > "$OUT/QYM.exit"
+          if [[ "$rc" -eq 0 ]]; then
+            test -s "$RUNNER_TEMP/QYM.probe37.olean" && test -s "$RUNNER_TEMP/QYM.probe37.ilean"
+            cp "$RUNNER_TEMP/QYM.probe37.olean" "$OUT/QYM.probe37.olean"
+            cp "$RUNNER_TEMP/QYM.probe37.ilean" "$OUT/QYM.probe37.ilean"
+            sha256sum "$OUT/QYM.probe37.olean" "$OUT/QYM.probe37.ilean" > "$OUT/QYM.outputs.sha256"
+          fi
+          cp "$OUT/QYM.canonical.lean" PrimalitySheafVerification/QYM.lean
+          exit 0
+
+      - name: Summarize exact full diagnostics
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -B .github/qym_probe_summarize.py \
+            "$OUT" qym-probe37-explicit-sinf-v1 "$FULL_SHA" "$FULL_BLOB" "$P34_SHA"
+          test -z "$(git status --porcelain=v1 --untracked-files=all)"
+
+      - name: Upload immutable Probe37 evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-probe37-${{ github.sha }}-attempt${{ github.run_attempt }}
+          path: ${{ env.OUT }}/**
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Fail closed unless full direct Lean TRUE PASS
+        if: always()
+        shell: bash
+        run: |
+          python3 - "$OUT/PROBE_RESULT.json" <<'PY'
+          import json,sys
+          r=json.load(open(sys.argv[1])); assert r['panic_lines']==0
+          if not r['semantic_pass']: raise SystemExit(r['exit'] or 1)
+          PY

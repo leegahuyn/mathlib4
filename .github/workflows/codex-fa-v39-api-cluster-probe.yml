@@ -1,0 +1,72 @@
+name: Codex FA v39 derivative and spectral API clusters v2
+on:
+  push:
+    branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
+    paths: [.github/workflows/codex-fa-v39-api-cluster-probe.yml]
+  workflow_dispatch: {}
+permissions: {contents: read}
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with: {ref: "${{ github.sha }}", fetch-depth: 1, persist-credentials: false}
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none >/tmp/elan.log 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1
+          lake exe cache get >/tmp/cache.log 2>&1
+      - name: Inspect and compile API signatures
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          {
+            echo '=== IBP ==='
+            grep -R -n "integral_mul_fderiv_eq_neg_fderiv_mul_of_integrable" Mathlib | head -20 || true
+            echo '=== Fourier differentiability ==='
+            grep -R -n -E "hasDerivAt_fourier|fourier.*[Cc]ontDiff|fourier.*[Dd]ifferenti|Differentiable.*fourier" Mathlib | head -100 || true
+            echo '=== HasEigenvalue ==='
+            grep -R -n -E "HasEigenvalue|exists_hasEigenvector|mem_eigenspace_iff" Mathlib/LinearAlgebra/Eigenspace Mathlib/Analysis/InnerProductSpace | head -120 || true
+            echo '=== measure smul ==='
+            grep -R -n -E "theorem MeasurableSet.const_smul|MeasurableSet.const_smul" Mathlib | head -40 || true
+          } >/tmp/grep.txt
+          cat >/tmp/Api.lean <<'LEAN'
+          import Mathlib
+          open MeasureTheory
+          #check integral_mul_fderiv_eq_neg_fderiv_mul_of_integrable
+          #check Differentiable.differentiableAt
+          #check Continuous.integrable_of_hasCompactSupport
+          #check Complex.finrank_real_complex
+          #check Module.End.eigenspace
+          #check Module.End.HasEigenvalue
+          #check Module.End.HasEigenvector
+          #check Module.End.mem_eigenspace_iff
+          #check Module.End.HasEigenvalue.exists_hasEigenvector
+          #check MeasurableSet.const_smul
+          #check hasDerivAt_fourier_neg
+          #check hasDerivAt_fourier
+          LEAN
+          set +e
+          lake env lean -DmaxErrors=100 -DwarningAsError=false /tmp/Api.lean >/tmp/api.log 2>&1
+          rc=$?
+          set -e
+          echo "$rc" >/tmp/api.exit
+          cat /tmp/grep.txt
+          cat /tmp/api.log
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-v39-api-clusters-v2-${{ github.sha }}
+          path: |
+            /tmp/grep.txt
+            /tmp/Api.lean
+            /tmp/api.log
+            /tmp/api.exit
+          retention-days: 30

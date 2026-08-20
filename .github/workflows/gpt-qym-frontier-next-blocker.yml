@@ -1,0 +1,199 @@
+name: GPT QYM verified frontier next-blocker analyzer
+
+on:
+  push:
+    branches:
+      - gpt/fa-qym-clean-final-20260816
+    paths:
+      - .github/qym-frontier/GLOBAL_BEST.json
+      - .github/qym-frontier/QYM_GLOBAL_BEST.lean
+      - .github/qym-frontier/QYM_GLOBAL_BEST.diagnostics.jsonl
+      - .github/workflows/gpt-qym-frontier-next-blocker.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  analyze:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      FRONTIER: .github/qym-frontier/QYM_GLOBAL_BEST.lean
+      RESULT: .github/qym-frontier/GLOBAL_BEST.json
+      DIAG: .github/qym-frontier/QYM_GLOBAL_BEST.diagnostics.jsonl
+      OUT: /tmp/qym-next-blocker
+
+    steps:
+      - name: Checkout exact trigger
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Gate immutable frontier evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT"
+          test -s "$FRONTIER"
+          test -s "$RESULT"
+          test -s "$DIAG"
+          test -z "$(git status --porcelain=v1 --untracked-files=all)"
+          python3 - "$FRONTIER" "$RESULT" <<'PY'
+          from pathlib import Path
+          import hashlib, json, sys
+          source = Path(sys.argv[1]).read_bytes()
+          result = json.loads(Path(sys.argv[2]).read_text(encoding='utf-8'))
+          sha = hashlib.sha256(source).hexdigest()
+          assert sha == result['candidate_qym_sha256'], (sha, result['candidate_qym_sha256'])
+          assert result['panic_lines'] == 0
+          assert result['error_headers'] > 0
+          assert result['semantic_pass'] is False
+          PY
+
+      - name: Analyze first producer and diagnostic clusters
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - "$FRONTIER" "$RESULT" "$DIAG" "$OUT" <<'PY'
+          from pathlib import Path
+          import collections, hashlib, json, re, sys
+
+          source_path, result_path, diag_path, out_path = map(Path, sys.argv[1:])
+          out_path.mkdir(parents=True, exist_ok=True)
+          source = source_path.read_text(encoding='utf-8')
+          lines = source.splitlines()
+          result = json.loads(result_path.read_text(encoding='utf-8'))
+          diagnostics = []
+          for line in diag_path.read_text(encoding='utf-8').splitlines():
+              try:
+                  diagnostics.append(json.loads(line))
+              except Exception:
+                  pass
+          errors = [d for d in diagnostics if d.get('severity') == 'error']
+          first = result.get('first_error') or (errors[0] if errors else {})
+          first_line = int(first.get('line') or 0)
+
+          decl_re = re.compile(
+              r'(?m)^(?:set_option[^\n]* in\n)*(?P<kind>theorem|lemma|def|abbrev|instance|'
+              r'noncomputable\s+def|noncomputable\s+instance)\s+(?P<name>[^\s:(]+)')
+          declarations = []
+          for m in decl_re.finditer(source):
+              line_no = source.count('\n', 0, m.start()) + 1
+              declarations.append((line_no, m.group('kind'), m.group('name'), m.start()))
+          owners = []
+          for d in errors:
+              ln = int(d.get('line') or 0)
+              prior = [x for x in declarations if x[0] <= ln]
+              owner = prior[-1] if prior else (0, 'unknown', 'unknown', 0)
+              owners.append((owner[2], ln, d))
+          owner_counts = collections.Counter(x[0] for x in owners)
+          code_counts = collections.Counter((d.get('code') or 'uncoded') for d in errors)
+          def normalize(msg):
+              msg = re.sub(r'\d+', '<n>', msg or '')
+              msg = re.sub(r'\s+', ' ', msg).strip()
+              return msg[:300]
+          signature_counts = collections.Counter(normalize(d.get('message')) for d in errors)
+
+          first_decl = None
+          for item in declarations:
+              if item[0] <= first_line:
+                  first_decl = item
+              else:
+                  break
+          if first_decl:
+              idx = declarations.index(first_decl)
+              next_line = declarations[idx + 1][0] if idx + 1 < len(declarations) else len(lines) + 1
+              start = max(1, first_decl[0] - 12)
+              end = min(len(lines), next_line + 8)
+          else:
+              start = max(1, first_line - 100)
+              end = min(len(lines), first_line + 150)
+          context = '\n'.join(f'{i:6d}: {lines[i-1]}' for i in range(start, end + 1)) + '\n'
+          (out_path / 'FIRST_PRODUCER_CONTEXT.txt').write_text(context, encoding='utf-8')
+
+          top_owner_contexts = []
+          for owner, count in owner_counts.most_common(15):
+              decl = next((x for x in declarations if x[2] == owner), None)
+              if not decl:
+                  continue
+              idx = declarations.index(decl)
+              next_line = declarations[idx + 1][0] if idx + 1 < len(declarations) else len(lines) + 1
+              s = max(1, decl[0] - 3); e = min(len(lines), min(next_line + 2, decl[0] + 180))
+              body = '\n'.join(f'{i:6d}: {lines[i-1]}' for i in range(s, e + 1))
+              top_owner_contexts.append(f'===== {owner} ({count} errors) =====\n{body}')
+          (out_path / 'TOP_OWNER_CONTEXTS.txt').write_text('\n\n'.join(top_owner_contexts), encoding='utf-8')
+
+          identifiers = collections.Counter()
+          for d in errors[:40]:
+              for ident in re.findall(r'\b[A-Za-z_][A-Za-z0-9_\.]+\b', d.get('message') or ''):
+                  if '.' in ident and len(ident) > 5:
+                      identifiers[ident] += 1
+          api_hits = []
+          roots = [Path('Mathlib'), Path('PrimalitySheafVerification')]
+          for ident, _ in identifiers.most_common(40):
+              needle = ident.split('.')[-1]
+              found = []
+              for root in roots:
+                  if not root.exists():
+                      continue
+                  for p in root.rglob('*.lean'):
+                      try:
+                          for i, line in enumerate(p.read_text(encoding='utf-8', errors='ignore').splitlines(), 1):
+                              if needle in line:
+                                  found.append(f'{p}:{i}:{line.strip()}')
+                                  if len(found) >= 8:
+                                      break
+                      except Exception:
+                          continue
+                      if len(found) >= 8:
+                          break
+                  if len(found) >= 8:
+                      break
+              if found:
+                  api_hits.append(f'## {ident}\n' + '\n'.join(found))
+          (out_path / 'API_SEARCH.txt').write_text('\n\n'.join(api_hits), encoding='utf-8')
+
+          summary = {
+              'schema': 'qym-next-blocker-analysis-v1',
+              'candidate_qym_sha256': result.get('candidate_qym_sha256'),
+              'candidate_qym_blob': result.get('candidate_qym_blob'),
+              'error_headers': result.get('error_headers'),
+              'warning_headers': result.get('warning_headers'),
+              'panic_lines': result.get('panic_lines'),
+              'first_error': first,
+              'first_owner': {
+                  'line': first_decl[0], 'kind': first_decl[1], 'name': first_decl[2]
+              } if first_decl else None,
+              'owner_error_counts': dict(owner_counts.most_common()),
+              'code_counts': dict(code_counts.most_common()),
+              'signature_counts': dict(signature_counts.most_common(50)),
+              'source_sha256': hashlib.sha256(source_path.read_bytes()).hexdigest(),
+          }
+          (out_path / 'NEXT_BLOCKER.json').write_text(
+              json.dumps(summary, indent=2, sort_keys=True) + '\n', encoding='utf-8')
+          md = [
+              '# QYM Verified Frontier — Next Blocker', '',
+              f"- candidate SHA256: `{summary['candidate_qym_sha256']}`",
+              f"- errors: `{summary['error_headers']}`",
+              f"- warnings: `{summary['warning_headers']}`",
+              f"- panic: `{summary['panic_lines']}`",
+              f"- first owner: `{(summary['first_owner'] or {}).get('name')}`",
+              f"- first error: `{summary['first_error']}`", '',
+              '## Highest-error owners', ''
+          ]
+          md += [f'- `{name}`: {count}' for name, count in owner_counts.most_common(15)]
+          md += ['', '## Diagnostic codes', '']
+          md += [f'- `{name}`: {count}' for name, count in code_counts.most_common()]
+          (out_path / 'NEXT_BLOCKER.md').write_text('\n'.join(md) + '\n', encoding='utf-8')
+          print(json.dumps(summary, indent=2, sort_keys=True))
+          PY
+
+      - name: Upload immutable next-blocker analysis
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-next-blocker-${{ github.sha }}
+          path: /tmp/qym-next-blocker/**
+          if-no-files-found: error
+          retention-days: 30

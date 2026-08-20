@@ -1,0 +1,187 @@
+name: GPT QYM Probe27 inferred opNorm direct runner
+
+on:
+  push:
+    branches:
+      - gpt/fa-qym-clean-final-20260816
+    paths:
+      - .github/workflows/gpt-qym-probe18-run.yml
+      - .github/qym_probe27_infer_opnorm.py
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+
+concurrency:
+  group: gpt-qym-probe27-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  probe27:
+    name: verified Probe20 to inferred opNorm Probe27
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+    env:
+      BRANCH: gpt/fa-qym-clean-final-20260816
+      CANONICAL_SHA: 698c7625628ccc654ca7be713944930fdccf12dd78a26937d3f45c9b6982a9f0
+      CANONICAL_BLOB: 4b394b2709af88b8cd8eac8b432e535aaf19b64c
+      P20_RUN: '32088095860'
+      P20_ARTIFACT: qym-probe20-f728aa4e870808623454f508c01c2d5625864c1d-attempt1
+      P20_SHA: 94fceba9313ded915c6e50a17e156699eb48170595b062b1138d04b6abe31534
+      P20_BLOB: 8c2b1993954c7e913ef700246b492134fe6aa68f
+      P27_SHA: 500b982d97c0922c3d8345906637ebb44f07d54f54a7069812086596b9839776
+      P27_BLOB: bdd3064f6deebb92dc03387c03f152190024165c
+      QYM: PrimalitySheafVerification/QYM.lean
+      OLEAN: .lake/build/lib/lean/PrimalitySheafVerification
+      OUT: /tmp/qym-probe27
+
+    steps:
+      - name: Checkout exact trigger
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Gate canonical checkout and pinned environment
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT"
+          test "$GITHUB_REF_NAME" = "$BRANCH"
+          test "$(sha256sum "$QYM" | awk '{print $1}')" = "$CANONICAL_SHA"
+          test "$(git hash-object --no-filters "$QYM")" = "$CANONICAL_BLOB"
+          test "$(tr -d '\r\n' < lean-toolchain)" = leanprover/lean4:v4.33.0-rc1
+          test -z "$(git status --porcelain=v1 --untracked-files=all)"
+
+      - name: Download immutable Probe20 authority
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: ${{ env.P20_ARTIFACT }}
+          path: ${{ runner.temp }}/p20
+          github-token: ${{ github.token }}
+          repository: leegahuyn/mathlib4
+          run-id: 32088095860
+
+      - name: Gate Probe20 direct Lean authority
+        shell: bash
+        run: |
+          set -euo pipefail
+          A="$RUNNER_TEMP/p20"
+          for f in QYM.candidate-probe20.lean QYM.exit QYM.error-headers.txt QYM.panic-lines.txt PROBE_RESULT.json; do test -f "$A/$f"; done
+          test "$(sha256sum "$A/QYM.candidate-probe20.lean" | awk '{print $1}')" = "$P20_SHA"
+          test "$(git hash-object --no-filters "$A/QYM.candidate-probe20.lean")" = "$P20_BLOB"
+          test "$(cat "$A/QYM.exit")" = 1
+          test "$(wc -l < "$A/QYM.error-headers.txt")" -eq 92
+          test ! -s "$A/QYM.panic-lines.txt"
+          python3 - "$A/PROBE_RESULT.json" <<'PY'
+          import json, os, sys
+          r=json.load(open(sys.argv[1],encoding='utf-8'))
+          assert r['candidate_qym_sha256']==os.environ['P20_SHA']
+          assert r['candidate_qym_blob']==os.environ['P20_BLOB']
+          assert r['exit']==1 and r['error_headers']==92 and r['warning_headers']==356
+          assert r['panic_lines']==0 and r['semantic_pass'] is False
+          PY
+          cp "$A/QYM.candidate-probe20.lean" "$OUT/QYM.probe20.lean"
+          cp "$A/PROBE_RESULT.json" "$OUT/PROBE20_RESULT.json"
+
+      - name: Install pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none > "$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" > "$OUT/toolchain.log" 2>&1
+          lake exe cache get > "$OUT/mathlib-cache.log" 2>&1
+          lean --version | tee "$OUT/lean-version.txt"
+          lake --version | tee "$OUT/lake-version.txt"
+
+      - name: Restore verified dependency objects
+        id: depcache
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: |
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.ilean
+          key: qym-probe4-deps-v1-${{ runner.os }}-${{ hashFiles('lean-toolchain', 'lake-manifest.json', 'lakefile.lean', 'PrimalitySheafVerification/Mock2.lean', 'PrimalitySheafVerification/Mock2_Advanced.lean', 'PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean', 'PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean') }}
+
+      - name: Ensure dependency objects
+        shell: bash
+        env:
+          HIT: ${{ steps.depcache.outputs.cache-hit }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$OLEAN"
+          if [[ "$HIT" != true ]]; then
+            for s in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated; do
+              cap=1
+              [[ "$s" = Mock2_FunctionalAnalysis || "$s" = Mock2_FunctionalAnalysis_Integrated ]] && cap=2000
+              rm -f "$OLEAN/$s.olean" "$OLEAN/$s.ilean"
+              lake env lean "-DmaxErrors=$cap" -DwarningAsError=false -o "$OLEAN/$s.olean" -i "$OLEAN/$s.ilean" "PrimalitySheafVerification/$s.lean" > "$OUT/$s.log" 2>&1
+            done
+          fi
+          for s in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated; do test -s "$OLEAN/$s.olean" && test -s "$OLEAN/$s.ilean"; done
+
+      - name: Materialize exact Probe27 candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp "$QYM" "$OUT/QYM.canonical.lean"
+          cp "$OUT/QYM.probe20.lean" "$QYM"
+          python3 .github/qym_probe27_infer_opnorm.py "$QYM" | tee "$OUT/patch-result.txt"
+          test "$(sha256sum "$QYM" | awk '{print $1}')" = "$P27_SHA"
+          test "$(git hash-object --no-filters "$QYM")" = "$P27_BLOB"
+          cp "$QYM" "$OUT/QYM.candidate-probe27.lean"
+
+      - name: Direct Lean compile Probe27
+        shell: bash
+        run: |
+          set -euo pipefail
+          set +e
+          /usr/bin/time -v -o "$OUT/QYM.time" lake env lean -DmaxErrors=10000 -DwarningAsError=false -o "$RUNNER_TEMP/QYM.probe27.olean" -i "$RUNNER_TEMP/QYM.probe27.ilean" "$QYM" > "$OUT/QYM.log" 2>&1
+          rc=$?
+          set -e
+          echo "$rc" > "$OUT/QYM.exit"
+          if [[ "$rc" -eq 0 ]]; then test -s "$RUNNER_TEMP/QYM.probe27.olean" && test -s "$RUNNER_TEMP/QYM.probe27.ilean"; sha256sum "$RUNNER_TEMP/QYM.probe27.olean" "$RUNNER_TEMP/QYM.probe27.ilean" > "$OUT/QYM.outputs.sha256"; fi
+          exit 0
+
+      - name: Restore canonical and summarize
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ -f "$OUT/QYM.canonical.lean" ]] && cp "$OUT/QYM.canonical.lean" "$QYM" || true
+          python3 .github/qym_probe_summarize.py "$OUT" qym-probe27-v1 "$P27_SHA" "$P27_BLOB" "$P20_SHA"
+          test "$(sha256sum "$QYM" | awk '{print $1}')" = "$CANONICAL_SHA"
+          test -z "$(git status --porcelain=v1 --untracked-files=all)"
+
+      - name: Upload Probe27 evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-probe27-${{ github.sha }}-attempt${{ github.run_attempt }}
+          path: /tmp/qym-probe27/**
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Fail closed unless first blocker is eliminated
+        if: always()
+        shell: bash
+        run: |
+          python3 - "$OUT/PROBE_RESULT.json" <<'PY'
+          import json, os, sys
+          r=json.load(open(sys.argv[1],encoding='utf-8'))
+          assert r['candidate_qym_sha256']==os.environ['P27_SHA']
+          assert r['candidate_qym_blob']==os.environ['P27_BLOB']
+          assert r['panic_lines']==0
+          first=r.get('first_error') or {}
+          if first.get('line',0) <= 37221: raise SystemExit(1)
+          PY

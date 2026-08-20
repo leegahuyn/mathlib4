@@ -1,0 +1,5 @@
+Trigger the repaired FA442 baseline plus 16-candidate direct Lean matrix through the recognized pre-commit workflow path.
+
+Required baseline SHA256: 71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0
+Required first error: 31726:2
+Required declaration: actualEdgeAmbientParam_hasDerivAt

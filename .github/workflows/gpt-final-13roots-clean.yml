@@ -1,0 +1,289 @@
+name: GPT final 13 roots and two clean reproducibility passes
+
+on:
+  push:
+    branches:
+      - gpt/fa-qym-clean-final-20260816
+    paths:
+      - .github/qym-final/QYM_TRUE_PASS.json
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: gpt-final-13roots-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  final-build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 720
+    env:
+      BRANCH: gpt/fa-qym-clean-final-20260816
+      SRC: PrimalitySheafVerification
+      OLEAN: .lake/build/lib/lean/PrimalitySheafVerification
+      OUT: /tmp/final-13roots
+
+    steps:
+      - name: Checkout exact QYM TRUE PASS commit
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Gate QYM TRUE PASS marker and canonical roots
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT" "$OLEAN"
+          test "$GITHUB_REF_NAME" = "$BRANCH"
+          test "$(tr -d '\r\n' < lean-toolchain)" = leanprover/lean4:v4.33.0-rc1
+          test -s .github/qym-final/QYM_TRUE_PASS.json
+          python3 - .github/qym-final/QYM_TRUE_PASS.json <<'PY'
+          import json, sys
+          r=json.load(open(sys.argv[1],encoding='utf-8'))
+          assert r['semantic_pass'] is True
+          assert r['exit']==0 and r['error_headers']==0 and r['panic_lines']==0
+          assert r['olean_exists'] and r['ilean_exists']
+          assert r['runtime_patch_required'] is False
+          PY
+          roots=(Spt1 Spt2 Spt3 Spt4 Spt5 Spt6 Spt7 Mock1 Mock1_Advanced Mock2 Mock2_Advanced Mock2_FunctionalAnalysis QYM)
+          printf '%s\n' "${roots[@]}" > "$OUT/roots.txt"
+          for s in "${roots[@]}"; do test -s "$SRC/$s.lean"; done
+          test -s "$SRC/Mock2_FunctionalAnalysis_Integrated.lean"
+          if [[ -s "$SRC/BuildAll.lean" ]]; then
+            echo "$SRC/BuildAll.lean" > "$OUT/buildall-source.txt"
+          elif [[ -s BuildAll.lean ]]; then
+            echo BuildAll.lean > "$OUT/buildall-source.txt"
+          else
+            echo 'BuildAll source missing' >&2
+            exit 1
+          fi
+          test -z "$(git status --porcelain=v1 --untracked-files=all)"
+          git rev-parse HEAD > "$OUT/FINAL_SHA"
+          git show -s --format='%H%n%P%n%an%n%ae%n%aI%n%s' HEAD > "$OUT/FINAL_COMMIT.txt"
+          sha256sum lean-toolchain lake-manifest.json lakefile.lean > "$OUT/environment-inputs.sha256"
+
+      - name: Install pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none > "$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" > "$OUT/toolchain.log" 2>&1
+          lake exe cache get > "$OUT/mathlib-cache.log" 2>&1
+          lean --version | tee "$OUT/lean-version.txt"
+          lake --version | tee "$OUT/lake-version.txt"
+
+      - name: Create deterministic direct-build driver
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > "$OUT/direct_build.py" <<'PY'
+          from __future__ import annotations
+          from pathlib import Path
+          import hashlib, json, os, re, shutil, subprocess, sys, time
+
+          repo=Path.cwd()
+          src=repo/'PrimalitySheafVerification'
+          out=Path(os.environ['OUT'])
+          olean=repo/'.lake/build/lib/lean/PrimalitySheafVerification'
+          roots=['Spt1','Spt2','Spt3','Spt4','Spt5','Spt6','Spt7',
+                 'Mock1','Mock1_Advanced','Mock2','Mock2_Advanced',
+                 'Mock2_FunctionalAnalysis','QYM']
+          internal=['Mock2_FunctionalAnalysis_Integrated']
+
+          def sha(path: Path):
+              return hashlib.sha256(path.read_bytes()).hexdigest() if path.is_file() else None
+
+          def remove_project_objects():
+              stems=set(roots+internal+['BuildAll'])
+              for stem in stems:
+                  for suffix in ('.olean','.ilean','.olean.private'):
+                      for p in [olean/f'{stem}{suffix}', repo/f'{stem}{suffix}',
+                                repo/'.lake/build/lib/lean'/f'{stem}{suffix}']:
+                          p.unlink(missing_ok=True)
+
+          def parse_log(text: str):
+              errors=re.findall(r'(?m)^.*\.lean:\d+:\d+: error(?:\([^)]*\))?:.*$',text)
+              warnings=re.findall(r'(?m)^.*\.lean:\d+:\d+: warning(?:\([^)]*\))?:.*$',text)
+              panics=re.findall(r'(?im)^.*(?:internal error|uncaught exception|panic(?:!|:|\s)).*$',text)
+              return errors,warnings,panics
+
+          def compile_source(source: Path, stem: str, pass_dir: Path):
+              target_dir=olean if source.parent==src else repo/'.lake/build/lib/lean'
+              target_dir.mkdir(parents=True,exist_ok=True)
+              op=target_dir/f'{stem}.olean'; ip=target_dir/f'{stem}.ilean'
+              op.unlink(missing_ok=True); ip.unlink(missing_ok=True)
+              cmd=['lake','env','lean','-DmaxErrors=10000','-DwarningAsError=false',
+                   '-o',str(op),'-i',str(ip),str(source)]
+              start=time.time()
+              proc=subprocess.run(cmd,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True)
+              elapsed=time.time()-start
+              log=pass_dir/f'{stem}.log'; log.write_text(proc.stdout,encoding='utf-8')
+              errors,warnings,panics=parse_log(proc.stdout)
+              result={
+                  'stem':stem,'source':str(source),'command':cmd,'exit':proc.returncode,
+                  'error_headers':len(errors),'warning_headers':len(warnings),
+                  'panic_lines':len(panics),'elapsed_seconds':elapsed,
+                  'source_sha256':sha(source),'olean_exists':op.is_file() and op.stat().st_size>0,
+                  'ilean_exists':ip.is_file() and ip.stat().st_size>0,
+                  'olean_sha256':sha(op),'ilean_sha256':sha(ip),'log_sha256':sha(log),
+                  'semantic_pass':proc.returncode==0 and not errors and not panics and
+                    op.is_file() and op.stat().st_size>0 and ip.is_file() and ip.stat().st_size>0,
+              }
+              (pass_dir/f'{stem}.json').write_text(json.dumps(result,indent=2,sort_keys=True)+'\n')
+              if not result['semantic_pass']:
+                  raise SystemExit(f'{stem} direct build failed: {result}')
+              return result
+
+          label=sys.argv[1]
+          clean=sys.argv[2]=='clean'
+          pass_dir=out/label
+          pass_dir.mkdir(parents=True,exist_ok=True)
+          if clean: remove_project_objects()
+          results=[]
+          # Build canonical roots in explicit order, inserting the internal integration object
+          # immediately before QYM.
+          for stem in roots:
+              if stem=='QYM':
+                  for dep in internal:
+                      results.append(compile_source(src/f'{dep}.lean',dep,pass_dir))
+              results.append(compile_source(src/f'{stem}.lean',stem,pass_dir))
+          buildall_line=(out/'buildall-source.txt').read_text().strip()
+          buildall=repo/buildall_line
+          results.append(compile_source(buildall,'BuildAll',pass_dir))
+          status=subprocess.check_output(['git','status','--porcelain=v1','--untracked-files=all'],text=True)
+          summary={
+              'schema':'final-13roots-direct-build-v1','label':label,'clean_started':clean,
+              'final_sha':(out/'FINAL_SHA').read_text().strip(),'results':results,
+              'all_semantic_pass':all(r['semantic_pass'] for r in results),
+              'git_status_clean':status=='',
+          }
+          (pass_dir/'SUMMARY.json').write_text(json.dumps(summary,indent=2,sort_keys=True)+'\n')
+          if not summary['all_semantic_pass'] or not summary['git_status_clean']:
+              raise SystemExit(summary)
+          print(json.dumps(summary,indent=2,sort_keys=True))
+          PY
+          chmod +x "$OUT/direct_build.py"
+
+      - name: Final direct build at FINAL_SHA
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 "$OUT/direct_build.py" final-pass retain
+
+      - name: Delete project artifacts before clean pass 1
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          stems=['Spt1','Spt2','Spt3','Spt4','Spt5','Spt6','Spt7','Mock1','Mock1_Advanced',
+                 'Mock2','Mock2_Advanced','Mock2_FunctionalAnalysis',
+                 'Mock2_FunctionalAnalysis_Integrated','QYM','BuildAll']
+          roots=[Path('.lake/build/lib/lean/PrimalitySheafVerification'),Path('.lake/build/lib/lean')]
+          for root in roots:
+              for stem in stems:
+                  for suffix in ('.olean','.ilean','.olean.private'):
+                      (root/f'{stem}{suffix}').unlink(missing_ok=True)
+          PY
+
+      - name: Clean reproducibility pass 1
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 "$OUT/direct_build.py" clean-pass-1 retain
+
+      - name: Delete project artifacts before clean pass 2
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          stems=['Spt1','Spt2','Spt3','Spt4','Spt5','Spt6','Spt7','Mock1','Mock1_Advanced',
+                 'Mock2','Mock2_Advanced','Mock2_FunctionalAnalysis',
+                 'Mock2_FunctionalAnalysis_Integrated','QYM','BuildAll']
+          roots=[Path('.lake/build/lib/lean/PrimalitySheafVerification'),Path('.lake/build/lib/lean')]
+          for root in roots:
+              for stem in stems:
+                  for suffix in ('.olean','.ilean','.olean.private'):
+                      (root/f'{stem}{suffix}').unlink(missing_ok=True)
+          PY
+
+      - name: Clean reproducibility pass 2
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 "$OUT/direct_build.py" clean-pass-2 retain
+
+      - name: Cross-pass reproducibility manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - "$OUT" <<'PY'
+          from pathlib import Path
+          import json, sys
+          out=Path(sys.argv[1])
+          labels=['final-pass','clean-pass-1','clean-pass-2']
+          summaries={x:json.loads((out/x/'SUMMARY.json').read_text()) for x in labels}
+          by_stem={}
+          for label,summary in summaries.items():
+              for r in summary['results']:
+                  by_stem.setdefault(r['stem'],{})[label]={
+                      'source_sha256':r['source_sha256'],'olean_sha256':r['olean_sha256'],
+                      'ilean_sha256':r['ilean_sha256'],'log_sha256':r['log_sha256'],
+                      'warning_headers':r['warning_headers'],'elapsed_seconds':r['elapsed_seconds']}
+          source_stable=all(len({v['source_sha256'] for v in passes.values()})==1
+                            for passes in by_stem.values())
+          object_stable=all(len({v['olean_sha256'] for v in passes.values()})==1 and
+                            len({v['ilean_sha256'] for v in passes.values()})==1
+                            for passes in by_stem.values())
+          manifest={
+              'schema':'final-clean-reproducibility-v1',
+              'final_sha':(out/'FINAL_SHA').read_text().strip(),
+              'labels':labels,'source_stable':source_stable,
+              'object_byte_stable':object_stable,'stems':by_stem,
+              'all_pass':all(s['all_semantic_pass'] and s['git_status_clean'] for s in summaries.values()),
+          }
+          (out/'REPRODUCIBILITY.json').write_text(json.dumps(manifest,indent=2,sort_keys=True)+'\n')
+          print(json.dumps(manifest,indent=2,sort_keys=True))
+          if not manifest['all_pass'] or not manifest['source_stable']:
+              raise SystemExit(manifest)
+          PY
+
+      - name: Upload complete build evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: final-13roots-${{ github.sha }}-attempt${{ github.run_attempt }}
+          path: /tmp/final-13roots/**
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Commit final clean-build marker
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s "$OUT/REPRODUCIBILITY.json"
+          python3 - "$OUT/REPRODUCIBILITY.json" <<'PY'
+          import json,sys
+          r=json.load(open(sys.argv[1],encoding='utf-8'))
+          assert r['all_pass'] and r['source_stable']
+          PY
+          mkdir -p .github/final-evidence
+          cp "$OUT/FINAL_SHA" .github/final-evidence/FINAL_SHA
+          cp "$OUT/REPRODUCIBILITY.json" .github/final-evidence/REPRODUCIBILITY.json
+          cp "$OUT/final-pass/SUMMARY.json" .github/final-evidence/final-pass.json
+          cp "$OUT/clean-pass-1/SUMMARY.json" .github/final-evidence/clean-pass-1.json
+          cp "$OUT/clean-pass-2/SUMMARY.json" .github/final-evidence/clean-pass-2.json
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add .github/final-evidence
+          git commit -m "Build: record 13 roots, BuildAll and two clean passes"
+          git push origin "HEAD:$BRANCH"

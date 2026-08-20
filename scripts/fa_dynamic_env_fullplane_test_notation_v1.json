@@ -1,0 +1,9 @@
+{
+  "schema": "fa-dynamic-env-fullplane-test-notation-v1",
+  "status": "SOURCE_DIAGNOSTIC_DERIVED_PENDING_DIRECT_LEAN",
+  "environment_replacement": {
+    "id": "open-topological-space-for-fullplane-test",
+    "old_fragment": "namespace FixedPhaseNormalizedFriedrichs\n\nopen Set Function Topology Filter MeasureTheory Metric\nopen scoped Convolution ContDiff Distributions\nopen FixedPhaseAffineFriedrichs\n\nnoncomputable section\n\n/-- Full-plane compact smooth tests.",
+    "new_fragment": "namespace FixedPhaseNormalizedFriedrichs\n\nopen Set Function Topology Filter MeasureTheory Metric\nopen scoped Convolution ContDiff Distributions\nopen FixedPhaseAffineFriedrichs\nopen TopologicalSpace\n\nnoncomputable section\n\n/-- Full-plane compact smooth tests."
+  }
+}

@@ -1,0 +1,198 @@
+name: Codex FA506 complex height strip coercions direct Lean
+
+on:
+  push:
+    branches:
+      - codex/fa-qym-cleanbuild-final-20260811-fast
+    paths:
+      - .github/workflows/codex-fa506-complex-height-strip-coe.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: codex-fa506-complex-height-strip-coe
+  cancel-in-progress: true
+
+env:
+  FA_COMPILE_MAX_ERRORS: "32"
+  # Exact completed FA505 direct-Lean evidence (run 31491148625).
+  FA505_EVIDENCE_STATUS: "VERIFIED"
+  FA505_EVIDENCE_RUN_ID: "31491148625"
+  FA505_EVIDENCE_JOB_ID: "93777709713"
+  FA505_EVIDENCE_HEAD_SHA: "c028874f5fbec87834cb1d88813e0709eca6a156"
+  FA505_EVIDENCE_SOURCE_SHA256: "c56e320e31dbb4c2d80a7b6c05e3417b9683fe982a9f006bbd6166add95ea9e7"
+  FA505_CLASSIFICATION: "LEAN_FAILURE"
+  FA505_INFRA_REASONS: "[]"
+  FA505_MOCK2_EXIT: "0"
+  FA505_MOCK2_ADVANCED_EXIT: "0"
+  FA505_FA_EXIT: "1"
+  FA505_PREVIOUS_FRONTIER_DECLARATION: "integral_selectedHeightGraphDensity_stripTail_eq_iterated"
+  FA505_PREVIOUS_FRONTIER_INDEX: "2835"
+  FA505_FIRST_ERROR_DECLARATION: "complex_image_heightStrip_eq_coe_image_selectedBaseCuspStrip"
+  FA505_FIRST_ERROR_INDEX: "2839"
+  FA505_FIRST_ERROR_LINE: "36111"
+  FA505_FIRST_ERROR_COL: "4"
+
+jobs:
+  observe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Gate exact FA505 direct evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$FA505_EVIDENCE_STATUS" == VERIFIED ]]
+          [[ "$FA505_EVIDENCE_RUN_ID" =~ ^[1-9][0-9]*$ ]]
+          [[ "$FA505_EVIDENCE_JOB_ID" =~ ^[1-9][0-9]*$ ]]
+          [[ "$FA505_EVIDENCE_HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$FA505_EVIDENCE_HEAD_SHA" != 0000000000000000000000000000000000000000 ]]
+          [[ "$FA505_EVIDENCE_SOURCE_SHA256" == c56e320e31dbb4c2d80a7b6c05e3417b9683fe982a9f006bbd6166add95ea9e7 ]]
+          [[ "$FA505_CLASSIFICATION" == LEAN_FAILURE ]]
+          [[ "$FA505_INFRA_REASONS" == '[]' ]]
+          [[ "$FA505_MOCK2_EXIT" == 0 ]]
+          [[ "$FA505_MOCK2_ADVANCED_EXIT" == 0 ]]
+          [[ "$FA505_FA_EXIT" == 1 ]]
+          [[ "$FA505_PREVIOUS_FRONTIER_DECLARATION" == integral_selectedHeightGraphDensity_stripTail_eq_iterated ]]
+          [[ "$FA505_PREVIOUS_FRONTIER_INDEX" == 2835 ]]
+          [[ "$FA505_FIRST_ERROR_DECLARATION" == complex_image_heightStrip_eq_coe_image_selectedBaseCuspStrip ]]
+          [[ "$FA505_FIRST_ERROR_INDEX" == 2839 ]]
+          [[ "$FA505_FIRST_ERROR_LINE" =~ ^[1-9][0-9]*$ ]]
+          [[ "$FA505_FIRST_ERROR_COL" =~ ^[1-9][0-9]*$ ]]
+      - name: Publish FA506 start identity
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          body="## FA506 direct Lean started\n\n- run_id: \`${GITHUB_RUN_ID}\`\n- head_sha: \`${GITHUB_SHA}\`\n- upstream_FA505_run: \`${FA505_EVIDENCE_RUN_ID}\`\n- upstream_FA505_job: \`${FA505_EVIDENCE_JOB_ID}\`\n- upstream_FA505_head: \`${FA505_EVIDENCE_HEAD_SHA}\`\n- upstream_FA505_source: \`${FA505_EVIDENCE_SOURCE_SHA256}\`\n- closed_frontier: \`${FA505_PREVIOUS_FRONTIER_DECLARATION} / index ${FA505_PREVIOUS_FRONTIER_INDEX}\`\n- frontier: \`${FA505_FIRST_ERROR_LINE}:${FA505_FIRST_ERROR_COL} ${FA505_FIRST_ERROR_DECLARATION} / index ${FA505_FIRST_ERROR_INDEX}\`\n- patch: \`explicit UpperHalfPlane.coe_re/coe_im in both image directions\`\n- expected_candidate: \`fbf76ffa75885c76492c6795ac907d47693d964d30043fd8cced93ca71719611\`\n- expected_bytes: \`2700268\`\n- expected_lines: \`60541\`\n- maxErrors: \`32\`\n- theorem statements: \`preserved\`\n- later repairs: \`0\`"
+          gh api "repos/${GITHUB_REPOSITORY}/issues/14/comments" -f body="$body"
+      - name: Run exact FA506 candidate direct Lean
+        id: run
+        shell: bash
+        run: |
+          set +e
+          bash scripts/fa506_complex_height_strip_coe_candidate_ci.sh 2>&1 | tee /tmp/fa506.log
+          code=${PIPESTATUS[0]}
+          set -e
+          echo "script_exit=$code" >> "$GITHUB_OUTPUT"
+          exit 0
+      - name: Report FA506 evidence and error harvest
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SCRIPT_EXIT: ${{ steps.run.outputs.script_exit }}
+        shell: bash
+        run: |
+          python3 - <<'PY' >/tmp/fa506.md
+          from pathlib import Path
+          import json, os, re
+
+          root = Path('build-logs/codex-fa506-complex-height-strip-coe')
+          metric_path = root / 'candidates/norms/METRIC.json'
+          source = Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean')
+          outer = Path('/tmp/fa506.log')
+          lines = [
+              '## FA506 actual direct Lean',
+              '',
+              f"- run_id: `{os.environ.get('GITHUB_RUN_ID', '')}`",
+              f"- head_sha: `{os.environ.get('GITHUB_SHA', '')}`",
+              f"- script_exit: `{os.environ.get('SCRIPT_EXIT', '')}`",
+          ]
+          metric = None
+          if metric_path.exists():
+              metric = json.loads(metric_path.read_text())
+              for key in [
+                  'classification', 'source_sha256', 'line_count', 'maxErrors_cap',
+                  'Mock2_exit', 'Mock2_Advanced_exit', 'FA_exit',
+                  'FA_error_headers_captured', 'FA_first_actual_error_line',
+                  'FA_first_actual_error_col', 'FA_first_error_declaration',
+                  'FA_error_declaration_index', 'infra_reasons',
+              ]:
+                  lines.append(f'- {key}: `{metric.get(key)}`')
+              lines += ['', '### first error', '```text',
+                        str(metric.get('FA_first_error_message', ''))[:8000], '```']
+          else:
+              lines.append('- METRIC.json: `MISSING`')
+
+          texts = []
+          if outer.exists():
+              texts.append(('outer', outer.read_text(encoding='utf-8', errors='replace')))
+          if root.exists():
+              for path in root.rglob('*'):
+                  try:
+                      if (path.is_file() and path.stat().st_size <= 50_000_000 and
+                              path.suffix.lower() not in {'.olean', '.ilean', '.zip'}):
+                          texts.append((str(path), path.read_text(
+                              encoding='utf-8', errors='replace')))
+                  except Exception:
+                      pass
+          pattern = re.compile(
+              r'[^\n]*Mock2_FunctionalAnalysis\.lean:(\d+):(\d+)[^\n]*'
+          )
+          seen = set()
+          hits = []
+          for name, text in texts:
+              for match in pattern.finditer(text):
+                  line = match.group(0).strip()
+                  key = (match.group(1), match.group(2), line)
+                  if key not in seen:
+                      seen.add(key)
+                      hits.append((int(match.group(1)), int(match.group(2)), name, line))
+          hits.sort(key=lambda item: (item[0], item[1]))
+          errors = [hit for hit in hits if 'error' in hit[3].lower()]
+          chosen = errors if errors else hits
+          if chosen:
+              lines += ['', '### captured FA diagnostic locations', '```text']
+              lines += [
+                  f'{line}:{col} [{name}] {text}'
+                  for line, col, name, text in chosen[:96]
+              ]
+              lines += ['```']
+          if (source.exists() and isinstance(metric, dict) and
+                  metric.get('FA_first_actual_error_line', 0)):
+              source_lines = source.read_text(
+                  encoding='utf-8', errors='replace').splitlines()
+              center = int(metric['FA_first_actual_error_line'])
+              low = max(1, center - 18)
+              high = min(len(source_lines), center + 70)
+              lines += ['', f'### candidate source around line {center}', '```lean']
+              lines += [f'{i}: {source_lines[i - 1]}' for i in range(low, high + 1)]
+              lines += ['```']
+          print('\n'.join(lines)[:60000])
+          PY
+          gh api "repos/${GITHUB_REPOSITORY}/issues/14/comments" -f body="$(cat /tmp/fa506.md)"
+      - name: Upload exact FA506 source and direct evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa506-complex-height-strip-coe-${{ github.sha }}
+          path: |
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+            build-logs/codex-fa506-complex-height-strip-coe
+            /tmp/fa506.log
+          if-no-files-found: warn
+          retention-days: 30
+      - name: Preserve FA direct exit
+        if: always()
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+
+          path = Path(
+              'build-logs/codex-fa506-complex-height-strip-coe/'
+              'candidates/norms/METRIC.json'
+          )
+          if not path.exists():
+              raise SystemExit(2)
+          raise SystemExit(int(json.loads(path.read_text()).get('FA_exit', 2)))
+          PY

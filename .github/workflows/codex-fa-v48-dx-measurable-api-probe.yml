@@ -1,0 +1,162 @@
+name: Codex FA v48 dx measurable API probe
+run-name: "Codex: probe pinned dx/fderiv measurable-space bridges"
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - codex/fa-qym-cleanbuild-final-20260811-fast
+    paths:
+      - .github/workflows/codex-fa-v48-dx-measurable-api-probe.yml
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    name: probe-${{ matrix.variant }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        variant:
+          - current_simpa
+          - direct_change
+          - integrable_congr
+          - function_rw
+          - local_complex_measurable
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Install pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none >/tmp/elan.log 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          echo "$HOME/.elan/bin" >>"$GITHUB_PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1
+          lake exe cache get >/tmp/cache.log 2>&1
+          lean --version
+
+      - name: Directly compile exact prerequisites
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          mkdir -p .lake/build/lib/lean/PrimalitySheafVerification
+          rm -f .lake/build/lib/lean/PrimalitySheafVerification/Mock2.{olean,ilean}
+          lake env lean -DwarningAsError=false \
+            -o .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean \
+            -i .lake/build/lib/lean/PrimalitySheafVerification/Mock2.ilean \
+            PrimalitySheafVerification/Mock2.lean >/tmp/Mock2.log 2>&1
+          rm -f .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.{olean,ilean}
+          lake env lean -DwarningAsError=false \
+            -o .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean \
+            -i .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.ilean \
+            PrimalitySheafVerification/Mock2_Advanced.lean >/tmp/Mock2_Advanced.log 2>&1
+
+      - name: Materialize exact bridge probe
+        shell: bash
+        env:
+          VARIANT: ${{ matrix.variant }}
+        run: |
+          set -euo pipefail
+          mkdir -p "build-logs/fa-v48-dx-probe/${VARIANT}"
+          python3 - <<'PY'
+          from pathlib import Path
+          import os, textwrap
+          bodies = {
+            "current_simpa": r'''
+              simpa only [HalfWeightCompactCoordinateGreen.dx_apply] using
+                ((hg.mul (HalfWeightCompactCoordinateGreen.dx v).continuous).integrable_of_hasCompactSupport
+                  (HalfWeightCompactCoordinateGreen.dx v).hasCompactSupport.mul_left)
+            ''',
+            "direct_change": r'''
+              change Integrable
+                (fun w : ℂ ↦ g w * HalfWeightCompactCoordinateGreen.dx v w)
+                (volume : Measure ℂ)
+              exact (hg.mul (HalfWeightCompactCoordinateGreen.dx v).continuous).integrable_of_hasCompactSupport
+                (HalfWeightCompactCoordinateGreen.dx v).hasCompactSupport.mul_left
+            ''',
+            "integrable_congr": r'''
+              have h : Integrable
+                  (fun w : ℂ ↦ g w * HalfWeightCompactCoordinateGreen.dx v w)
+                  (volume : Measure ℂ) :=
+                (hg.mul (HalfWeightCompactCoordinateGreen.dx v).continuous).integrable_of_hasCompactSupport
+                  (HalfWeightCompactCoordinateGreen.dx v).hasCompactSupport.mul_left
+              refine h.congr ?_
+              filter_upwards with w
+              rw [HalfWeightCompactCoordinateGreen.dx_apply]
+            ''',
+            "function_rw": r'''
+              have hdx : (HalfWeightCompactCoordinateGreen.dx v : ℂ → ℂ) =
+                  fun w : ℂ ↦ (fderiv ℝ (v : ℂ → ℂ) w) 1 := by
+                funext w
+                exact HalfWeightCompactCoordinateGreen.dx_apply v w
+              rw [← hdx]
+              exact (hg.mul (HalfWeightCompactCoordinateGreen.dx v).continuous).integrable_of_hasCompactSupport
+                (HalfWeightCompactCoordinateGreen.dx v).hasCompactSupport.mul_left
+            ''',
+            "local_complex_measurable": r'''
+              letI : MeasurableSpace ℂ := Complex.measurableSpace
+              have hdx : (HalfWeightCompactCoordinateGreen.dx v : ℂ → ℂ) =
+                  fun w : ℂ ↦ (fderiv ℝ (v : ℂ → ℂ) w) 1 := by
+                funext w
+                exact HalfWeightCompactCoordinateGreen.dx_apply v w
+              rw [← hdx]
+              exact (hg.mul (HalfWeightCompactCoordinateGreen.dx v).continuous).integrable_of_hasCompactSupport
+                (HalfWeightCompactCoordinateGreen.dx v).hasCompactSupport.mul_left
+            ''',
+          }
+          variant = os.environ['VARIANT']
+          body = textwrap.dedent(bodies[variant]).strip('\n')
+          src = f'''import PrimalitySheafVerification.Mock2_Advanced
+
+          open Set Function Topology Filter MeasureTheory Metric
+          open Mock2FA.PaperCorrections.AutomorphicSobolev
+          open Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators
+          open Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2
+
+          noncomputable section
+
+          example (g : ℂ → ℂ) (hg : Continuous g)
+              (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore) :
+              Integrable
+                (fun w : ℂ ↦ g w * (fderiv ℝ (v : ℂ → ℂ) w) 1)
+                (volume : Measure ℂ) := by
+          {body}
+          '''
+          Path('/tmp/ProbeDxBridge.lean').write_text(textwrap.dedent(src))
+          PY
+          cp /tmp/ProbeDxBridge.lean "build-logs/fa-v48-dx-probe/${VARIANT}/ProbeDxBridge.lean"
+
+      - name: Compile exact bridge probe
+        shell: bash
+        env:
+          VARIANT: ${{ matrix.variant }}
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          set +e
+          lake env lean -DwarningAsError=false /tmp/ProbeDxBridge.lean \
+            >"build-logs/fa-v48-dx-probe/${VARIANT}/probe.log" 2>&1
+          rc=$?
+          set -e
+          printf '%s\n' "$rc" >"build-logs/fa-v48-dx-probe/${VARIANT}/exit.txt"
+          cat "build-logs/fa-v48-dx-probe/${VARIANT}/probe.log"
+          exit "$rc"
+
+      - name: Upload probe evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-v48-dx-probe-${{ matrix.variant }}-${{ github.sha }}
+          path: build-logs/fa-v48-dx-probe/${{ matrix.variant }}
+          retention-days: 14

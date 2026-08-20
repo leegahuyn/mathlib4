@@ -1,0 +1,1939 @@
+{
+  "schema": "fa-v46-cumulative-selection-v1",
+  "status": "READY",
+  "runtime_path": "scripts/fa_v46_selection.json",
+  "target_branch": "codex/fa-qym-cleanbuild-final-20260811-fast",
+  "authority": {
+    "run_id": 31728453514,
+    "head_sha": "5ec44f3d343955f3124e7efecc048b648dccc5ab",
+    "job_id": 94542617528,
+    "artifact_id": 9192669673,
+    "artifact_digest": "sha256:8f07a678145b62342aaa9cb94ebbce6c9f7cc1a45c400560918d42499e67f2f3",
+    "variant": "all_probes",
+    "source_path": "work/v45-results/run-31728453514/all_probes/Mock2_FunctionalAnalysis-candidate.lean",
+    "source_sha256": "726f40d1dd03d32f03592adf4f6b02e3f7f52e7e1f71087ee53bdb83c4bb0caf",
+    "source_bytes": 2788764,
+    "source_lines": 62383,
+    "declaration_count": 4416
+  },
+  "builder": {
+    "path": "scripts/fa_v46_build_cumulative.py",
+    "source_path": "work/v46-cumulative/fa_v46_build_cumulative.py",
+    "sha256": "d1b02c4ac63723e0630fa513ccea61bbb6bff23abe1123b47a64579ba0e9c044",
+    "bytes": 18023
+  },
+  "composer": {
+    "path": "scripts/fa_v42_validate_local_repairs.py",
+    "source_path": "work/v42-workers/validate_local_repairs.py",
+    "sha256": "3f4dc4a83a994cd3d014ef7d458fce515bbb59ca0ec80965cdb176a27f266ef7",
+    "bytes": 13583
+  },
+  "queue": {
+    "path": "scripts/fa_v46_worker_queue.json",
+    "source_path": "work/v46-workers/worker-queue.json",
+    "sha256": "531a58db77a7bfb10c10db9db613a4f35110472245237e257f60632f9c3a1881",
+    "bytes": 6703
+  },
+  "all_34_workers_terminal": true,
+  "source_moves": [],
+  "deferred_workers": [
+    "W13",
+    "W17",
+    "W22",
+    "W23",
+    "W30"
+  ],
+  "atomic_groups": [
+    {
+      "id": "V46-PAIR-3925-3926-ALIGN-SCOMP-BASEPOINT",
+      "repair_ids": [
+        "V46-W08-IDX3925-align-outer-fourier-basepoint-before-scomp",
+        "V46-W09-IDX3926-align-outer-fourier-basepoint-before-scomp"
+      ]
+    },
+    {
+      "id": "V46-PAIR-3927-3928-NEGATIVE-PLANE-WAVE-IBP",
+      "repair_ids": [
+        "V46-W12-IDX3927-attach-integrability-method-to-horizontal-product",
+        "V46-W12-IDX3927-isolate-horizontal-IBP-sign-ring-normalization",
+        "V46-W11-IDX3928-complete-vertical-ibp-staged-body"
+      ]
+    },
+    {
+      "id": "V46-PAIR-4296-4297-ORDERED-CONJUGATE-DERIVATIVES",
+      "repair_ids": [
+        "V46-W26-IDX4296-order-specialized-conjugate-derivatives-before-general-fderiv",
+        "V46-W33-IDX4297-order-specialized-conjugate-derivatives-before-general-fderiv"
+      ]
+    },
+    {
+      "id": "V46-PAIR-4298-4299-EXPOSE-COMPOSED-SUBTYPE-NEGATION",
+      "repair_ids": [
+        "V46-W29-IDX4298-expose-composed-subtype-negation",
+        "V46-W34-IDX4299-expose-composed-subtype-negation"
+      ]
+    },
+    {
+      "id": "V46-W15-THREE-FRAGMENTS",
+      "repair_ids": [
+        "V46-W15-IDX3939-direct-complex-self-inner-scale",
+        "V46-W15-IDX3939-deterministic-star-scale-square-normalization",
+        "V46-W15-IDX3939-explicit-real-inner-to-norm-square-calc"
+      ]
+    },
+    {
+      "id": "V46-W24-TWO-FRAGMENTS",
+      "repair_ids": [
+        "V46-W24-IDX3960-unfold-bare-function-compositions-in-ae-equality",
+        "V46-W24-IDX3960-expose-two-lp-restriction-compositions-before-hstage"
+      ]
+    },
+    {
+      "id": "V46-W27-TWO-FRAGMENTS",
+      "repair_ids": [
+        "V46-W27-IDX4015-pin-linfinity-l2-l2-holder-exponents",
+        "V46-W27-IDX4015-normalize-nnreal-and-real-actions-before-ring"
+      ]
+    }
+  ],
+  "variant_order": [
+    "core",
+    "w06_probe",
+    "w27_probe",
+    "w29_w34_probe",
+    "all_probes"
+  ],
+  "variants": [
+    {
+      "name": "core",
+      "classification": "ALL_PATCH_READY",
+      "manifests": [
+        {
+          "worker_id": "W01",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W01.json",
+          "source_path": "work/v46-workers/W01-idx3653/idx3653-repair.json",
+          "sha256": "71ea4da7fb7e0e07df557a011e23b2dac2976f5f4675ec831737b05d4bed2dec",
+          "bytes": 4793,
+          "repair_ids": [
+            "V46-W01-3653-untransport-energy-before-predecessor-index-substitution"
+          ]
+        },
+        {
+          "worker_id": "W04",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W04.json",
+          "source_path": "work/v46-workers/W04-idx3669/idx3669-repair.json",
+          "sha256": "6e95f22dd7753c7e58ea43e5712bc6be3dcbc43859d2a59544b0b8d83ac8ecb3",
+          "bytes": 4211,
+          "repair_ids": [
+            "V46-W04-3669-transport-measurability-by-explicit-associativity-equality"
+          ]
+        },
+        {
+          "worker_id": "W02",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W02.json",
+          "source_path": "work/v46-workers/W02-idx3690/W02-idx3690-repair.json",
+          "sha256": "a6f563b7f9a35c9f63e653341cb2c5016a0fe0245c2ff8bebfeb2bb4dd1aa15c",
+          "bytes": 4178,
+          "repair_ids": [
+            "V46-W02-3690-reconstruct-ambient-endpoint-before-withlp-tendsto"
+          ]
+        },
+        {
+          "worker_id": "W05",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W05.json",
+          "source_path": "work/v46-workers/W05-idx3883/W05-idx3883-repair-manifest.json",
+          "sha256": "5bf2221cfa7b97603f10525ba5526fdf54f7f96dca0ffc6f62ef383fc5d54e77",
+          "bytes": 6001,
+          "repair_ids": [
+            "V46-W05-IDX3883-prove-projection-coefficient-in-E-before-repr"
+          ]
+        },
+        {
+          "worker_id": "W03",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W03.json",
+          "source_path": "work/v46-workers/W03-idx3899/W03-idx3899-repair-manifest.json",
+          "sha256": "48ca808542a51de29f2d8c337af10670e4bbc9cc8267a812f1da76581f376227",
+          "bytes": 5442,
+          "repair_ids": [
+            "V46-W03-IDX3899-restrict-coordinate-normalization-to-unit-box"
+          ]
+        },
+        {
+          "worker_id": "W07",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W07.json",
+          "source_path": "work/v46-workers/W07-idx3920/W07-idx3920-repair-manifest.json",
+          "sha256": "9ed5bc02f25afef2486656766b195f983433c45e7fe160d83a2a292fe28207cc",
+          "bytes": 6228,
+          "repair_ids": [
+            "V46-W07-IDX3920-normalize-addcircle-ioc-endpoint-at-api-boundary"
+          ]
+        },
+        {
+          "worker_id": "W10",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W10.json",
+          "source_path": "work/v46-workers/W10-idx3924/W10-idx3924-repair-manifest.json",
+          "sha256": "a7bdec17e024f4c7acb1c2d1bd5950ec53b050747d6667f0e2e9cb90241c9c3a",
+          "bytes": 7344,
+          "repair_ids": [
+            "V46-W10-IDX3924-apply-mFourier-neg-before-unfold"
+          ]
+        },
+        {
+          "worker_id": "W08",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W08.json",
+          "source_path": "work/v46-workers/W08-idx3925/W08-idx3925-repair-manifest.json",
+          "sha256": "a6edd52ed24165ad49c76b5e36a9ced463a6c3c96c55c803e8a2870c6dc5e4d1",
+          "bytes": 5654,
+          "repair_ids": [
+            "V46-W08-IDX3925-align-outer-fourier-basepoint-before-scomp"
+          ]
+        },
+        {
+          "worker_id": "W09",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W09.json",
+          "source_path": "work/v46-workers/W09-idx3926/W09-idx3926-repair-manifest.json",
+          "sha256": "ae971f36a74b32c042a5f9e68a7767b20bf46917d8e6559bf5bb0c405c711653",
+          "bytes": 7425,
+          "repair_ids": [
+            "V46-W09-IDX3926-align-outer-fourier-basepoint-before-scomp"
+          ]
+        },
+        {
+          "worker_id": "W12",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W12.json",
+          "source_path": "work/v46-workers/W12-idx3927/W12-idx3927-repair-manifest.json",
+          "sha256": "e4db76ee0a75f1986e42934c781bd0fea5a66d94f702b61df6f00effd85ba117",
+          "bytes": 7797,
+          "repair_ids": [
+            "V46-W12-IDX3927-attach-integrability-method-to-horizontal-product",
+            "V46-W12-IDX3927-isolate-horizontal-IBP-sign-ring-normalization"
+          ]
+        },
+        {
+          "worker_id": "W11",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W11.json",
+          "source_path": "work/v46-workers/W11-idx3928/W11-idx3928-repair-manifest.json",
+          "sha256": "d108e35cfd1a196de02bed1bb7d05d1a3725cfb31600a4309e3615747bfd2057",
+          "bytes": 10845,
+          "repair_ids": [
+            "V46-W11-IDX3928-complete-vertical-ibp-staged-body"
+          ]
+        },
+        {
+          "worker_id": "W14",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W14.json",
+          "source_path": "work/v46-workers/W14-idx3932/W14-idx3932-repair-manifest.json",
+          "sha256": "05b17b24c8607afe68170ce5116ff8946ae54c3592c57a52687da042cb07e87c",
+          "bytes": 6635,
+          "repair_ids": [
+            "V46-W14-IDX3932-drop-redundant-dy-ring-after-field-simp"
+          ]
+        },
+        {
+          "worker_id": "W15",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W15.json",
+          "source_path": "work/v46-workers/W15-idx3939/W15-idx3939-repair-manifest.json",
+          "sha256": "5a069f53e7557488a273d32ddf86b9b025e15499ec0a1720823114e5aba8be6c",
+          "bytes": 12247,
+          "repair_ids": [
+            "V46-W15-IDX3939-direct-complex-self-inner-scale",
+            "V46-W15-IDX3939-deterministic-star-scale-square-normalization",
+            "V46-W15-IDX3939-explicit-real-inner-to-norm-square-calc"
+          ]
+        },
+        {
+          "worker_id": "W18",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W18.json",
+          "source_path": "work/v46-workers/W18-idx3948/W18-idx3948-repair-manifest.json",
+          "sha256": "4ea580eca48daee14cf1620dc475429aaeb63f2582c33e869446c21086c0c336",
+          "bytes": 8857,
+          "repair_ids": [
+            "V46-W18-IDX3948-explicit-opNorm-difference-map"
+          ]
+        },
+        {
+          "worker_id": "W21",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W21.json",
+          "source_path": "work/v46-workers/W21-idx3949/W21-idx3949-repair-manifest.json",
+          "sha256": "a4a4cf20d066921e9890ef6c72e61a943215df6191e1be9cc7a5d61a6b89d974",
+          "bytes": 5510,
+          "repair_ids": [
+            "V46-W21-IDX3949-close-squeeze-third-argument-after-h13-decontamination"
+          ]
+        },
+        {
+          "worker_id": "W16",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W16.json",
+          "source_path": "work/v46-workers/W16-idx3956/W16-idx3956-repair-manifest.json",
+          "sha256": "48237bc4e2f7dda5ed66fce5e596b2eeb79f78dd057bafc7d199a5c32d1187e1",
+          "bytes": 7248,
+          "repair_ids": [
+            "V46-W16-IDX3956-transport-upper-integral-through-measurable-embedding"
+          ]
+        },
+        {
+          "worker_id": "W24",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W24.json",
+          "source_path": "work/v46-workers/W24-idx3960/W24-idx3960-repair-manifest.json",
+          "sha256": "8511083371fb48828c938c362b99c455ef262d7c06d1622ad786d22de4484f37",
+          "bytes": 7311,
+          "repair_ids": [
+            "V46-W24-IDX3960-unfold-bare-function-compositions-in-ae-equality",
+            "V46-W24-IDX3960-expose-two-lp-restriction-compositions-before-hstage"
+          ]
+        },
+        {
+          "worker_id": "W20",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W20.json",
+          "source_path": "work/v46-workers/W20-idx4012/W20-idx4012-repair-manifest.json",
+          "sha256": "5bb73d4e10ccd7e2554b0d83d4dadf1d36a50118ba0e8a279d85ace4bab3fe8d",
+          "bytes": 6836,
+          "repair_ids": [
+            "V46-W20-IDX4012-lower-strong-antidual-values-before-mkContinuous2"
+          ]
+        },
+        {
+          "worker_id": "W19",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W19.json",
+          "source_path": "work/v46-workers/W19-idx4017/W19-idx4017-repair-manifest.json",
+          "sha256": "5ac07b3585ad60df06910d2105413a836f82c882b8d696509f07f88a0e9058ed",
+          "bytes": 12955,
+          "repair_ids": [
+            "V46-W19-IDX4017-evaluate-mkContinuous2-before-inner-rewrite"
+          ]
+        },
+        {
+          "worker_id": "W25",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W25.json",
+          "source_path": "work/v46-workers/W25-idx4288/W25-idx4288-repair-manifest.json",
+          "sha256": "d22f4f7d5f1309963f772d0a3b1b7f910ce819160af8dce7ddd6acd29eeab7d9",
+          "bytes": 10335,
+          "repair_ids": [
+            "V46-W25-IDX4288-simp-upperLift-after-equality-set-membership-bridge"
+          ]
+        },
+        {
+          "worker_id": "W26",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W26.json",
+          "source_path": "work/v46-workers/W26-idx4296/W26-idx4296-repair-manifest.json",
+          "sha256": "4b1b4b598a3fcbb1831c57b90d709d24db4e8113fbbf9a7fc35ff6c2d81db505",
+          "bytes": 9495,
+          "repair_ids": [
+            "V46-W26-IDX4296-order-specialized-conjugate-derivatives-before-general-fderiv"
+          ]
+        },
+        {
+          "worker_id": "W33",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W33.json",
+          "source_path": "work/v46-workers/W33-idx4297/W33-idx4297-repair-manifest.json",
+          "sha256": "3a1104bb10b8f1d4b37195d3073910c0ef5651911639f2d4b5141828fc27cccf",
+          "bytes": 8024,
+          "repair_ids": [
+            "V46-W33-IDX4297-order-specialized-conjugate-derivatives-before-general-fderiv"
+          ]
+        },
+        {
+          "worker_id": "W28",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W28.json",
+          "source_path": "work/v46-workers/W28-idx4389/W28-idx4389-repair-manifest.json",
+          "sha256": "76d66e29b6a683e0e0145f6e1d7f0549a66ba08d2f82bc14669951e23decde9c",
+          "bytes": 9293,
+          "repair_ids": [
+            "V46-W28-IDX4389-use-Pi-pointwise-function-smul-apply-prime"
+          ]
+        },
+        {
+          "worker_id": "W31",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W31.json",
+          "source_path": "work/v46-workers/W31-idx4391/W31-idx4391-repair-manifest.json",
+          "sha256": "1b31d6a3a84b5614b1690e320095a1627c1be66aef95aeefa7ddab4d50c3dcec",
+          "bytes": 6382,
+          "repair_ids": [
+            "V46-W31-IDX4391-type-ascribe-pointwise-Lp-coercions"
+          ]
+        },
+        {
+          "worker_id": "W32",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W32.json",
+          "source_path": "work/v46-workers/W32-idx4395/W32-idx4395-repair-manifest.json",
+          "sha256": "7ce0d4c30d497dd1567fc39776ee40820a539206fbb460b131a9981200561c1d",
+          "bytes": 7656,
+          "repair_ids": [
+            "V46-W32-IDX4395-use-generic-smul-apply-without-ambiguous-double-coercions"
+          ]
+        }
+      ],
+      "atomic_groups": [
+        {
+          "id": "V46-PAIR-3925-3926-ALIGN-SCOMP-BASEPOINT",
+          "repair_ids": [
+            "V46-W08-IDX3925-align-outer-fourier-basepoint-before-scomp",
+            "V46-W09-IDX3926-align-outer-fourier-basepoint-before-scomp"
+          ]
+        },
+        {
+          "id": "V46-PAIR-3927-3928-NEGATIVE-PLANE-WAVE-IBP",
+          "repair_ids": [
+            "V46-W12-IDX3927-attach-integrability-method-to-horizontal-product",
+            "V46-W12-IDX3927-isolate-horizontal-IBP-sign-ring-normalization",
+            "V46-W11-IDX3928-complete-vertical-ibp-staged-body"
+          ]
+        },
+        {
+          "id": "V46-PAIR-4296-4297-ORDERED-CONJUGATE-DERIVATIVES",
+          "repair_ids": [
+            "V46-W26-IDX4296-order-specialized-conjugate-derivatives-before-general-fderiv",
+            "V46-W33-IDX4297-order-specialized-conjugate-derivatives-before-general-fderiv"
+          ]
+        },
+        {
+          "id": "V46-PAIR-4298-4299-EXPOSE-COMPOSED-SUBTYPE-NEGATION",
+          "repair_ids": [
+            "V46-W29-IDX4298-expose-composed-subtype-negation",
+            "V46-W34-IDX4299-expose-composed-subtype-negation"
+          ]
+        },
+        {
+          "id": "V46-W15-THREE-FRAGMENTS",
+          "repair_ids": [
+            "V46-W15-IDX3939-direct-complex-self-inner-scale",
+            "V46-W15-IDX3939-deterministic-star-scale-square-normalization",
+            "V46-W15-IDX3939-explicit-real-inner-to-norm-square-calc"
+          ]
+        },
+        {
+          "id": "V46-W24-TWO-FRAGMENTS",
+          "repair_ids": [
+            "V46-W24-IDX3960-unfold-bare-function-compositions-in-ae-equality",
+            "V46-W24-IDX3960-expose-two-lp-restriction-compositions-before-hstage"
+          ]
+        },
+        {
+          "id": "V46-W27-TWO-FRAGMENTS",
+          "repair_ids": [
+            "V46-W27-IDX4015-pin-linfinity-l2-l2-holder-exponents",
+            "V46-W27-IDX4015-normalize-nnreal-and-real-actions-before-ring"
+          ]
+        }
+      ],
+      "selected_worker_count": 25,
+      "selected_repair_count": 29,
+      "expected_candidate": {
+        "sha256": "57e0845615a212b3e02e498f4a76a83dace0f08cb903dc41ba6b91d85f89f39b",
+        "bytes": 2793186,
+        "lines": 62486
+      }
+    },
+    {
+      "name": "w06_probe",
+      "classification": "CORE_PLUS_STAGED_PROBE",
+      "manifests": [
+        {
+          "worker_id": "W01",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W01.json",
+          "source_path": "work/v46-workers/W01-idx3653/idx3653-repair.json",
+          "sha256": "71ea4da7fb7e0e07df557a011e23b2dac2976f5f4675ec831737b05d4bed2dec",
+          "bytes": 4793,
+          "repair_ids": [
+            "V46-W01-3653-untransport-energy-before-predecessor-index-substitution"
+          ]
+        },
+        {
+          "worker_id": "W04",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W04.json",
+          "source_path": "work/v46-workers/W04-idx3669/idx3669-repair.json",
+          "sha256": "6e95f22dd7753c7e58ea43e5712bc6be3dcbc43859d2a59544b0b8d83ac8ecb3",
+          "bytes": 4211,
+          "repair_ids": [
+            "V46-W04-3669-transport-measurability-by-explicit-associativity-equality"
+          ]
+        },
+        {
+          "worker_id": "W02",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W02.json",
+          "source_path": "work/v46-workers/W02-idx3690/W02-idx3690-repair.json",
+          "sha256": "a6f563b7f9a35c9f63e653341cb2c5016a0fe0245c2ff8bebfeb2bb4dd1aa15c",
+          "bytes": 4178,
+          "repair_ids": [
+            "V46-W02-3690-reconstruct-ambient-endpoint-before-withlp-tendsto"
+          ]
+        },
+        {
+          "worker_id": "W05",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W05.json",
+          "source_path": "work/v46-workers/W05-idx3883/W05-idx3883-repair-manifest.json",
+          "sha256": "5bf2221cfa7b97603f10525ba5526fdf54f7f96dca0ffc6f62ef383fc5d54e77",
+          "bytes": 6001,
+          "repair_ids": [
+            "V46-W05-IDX3883-prove-projection-coefficient-in-E-before-repr"
+          ]
+        },
+        {
+          "worker_id": "W03",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W03.json",
+          "source_path": "work/v46-workers/W03-idx3899/W03-idx3899-repair-manifest.json",
+          "sha256": "48ca808542a51de29f2d8c337af10670e4bbc9cc8267a812f1da76581f376227",
+          "bytes": 5442,
+          "repair_ids": [
+            "V46-W03-IDX3899-restrict-coordinate-normalization-to-unit-box"
+          ]
+        },
+        {
+          "worker_id": "W07",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W07.json",
+          "source_path": "work/v46-workers/W07-idx3920/W07-idx3920-repair-manifest.json",
+          "sha256": "9ed5bc02f25afef2486656766b195f983433c45e7fe160d83a2a292fe28207cc",
+          "bytes": 6228,
+          "repair_ids": [
+            "V46-W07-IDX3920-normalize-addcircle-ioc-endpoint-at-api-boundary"
+          ]
+        },
+        {
+          "worker_id": "W10",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W10.json",
+          "source_path": "work/v46-workers/W10-idx3924/W10-idx3924-repair-manifest.json",
+          "sha256": "a7bdec17e024f4c7acb1c2d1bd5950ec53b050747d6667f0e2e9cb90241c9c3a",
+          "bytes": 7344,
+          "repair_ids": [
+            "V46-W10-IDX3924-apply-mFourier-neg-before-unfold"
+          ]
+        },
+        {
+          "worker_id": "W08",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W08.json",
+          "source_path": "work/v46-workers/W08-idx3925/W08-idx3925-repair-manifest.json",
+          "sha256": "a6edd52ed24165ad49c76b5e36a9ced463a6c3c96c55c803e8a2870c6dc5e4d1",
+          "bytes": 5654,
+          "repair_ids": [
+            "V46-W08-IDX3925-align-outer-fourier-basepoint-before-scomp"
+          ]
+        },
+        {
+          "worker_id": "W09",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W09.json",
+          "source_path": "work/v46-workers/W09-idx3926/W09-idx3926-repair-manifest.json",
+          "sha256": "ae971f36a74b32c042a5f9e68a7767b20bf46917d8e6559bf5bb0c405c711653",
+          "bytes": 7425,
+          "repair_ids": [
+            "V46-W09-IDX3926-align-outer-fourier-basepoint-before-scomp"
+          ]
+        },
+        {
+          "worker_id": "W12",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W12.json",
+          "source_path": "work/v46-workers/W12-idx3927/W12-idx3927-repair-manifest.json",
+          "sha256": "e4db76ee0a75f1986e42934c781bd0fea5a66d94f702b61df6f00effd85ba117",
+          "bytes": 7797,
+          "repair_ids": [
+            "V46-W12-IDX3927-attach-integrability-method-to-horizontal-product",
+            "V46-W12-IDX3927-isolate-horizontal-IBP-sign-ring-normalization"
+          ]
+        },
+        {
+          "worker_id": "W11",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W11.json",
+          "source_path": "work/v46-workers/W11-idx3928/W11-idx3928-repair-manifest.json",
+          "sha256": "d108e35cfd1a196de02bed1bb7d05d1a3725cfb31600a4309e3615747bfd2057",
+          "bytes": 10845,
+          "repair_ids": [
+            "V46-W11-IDX3928-complete-vertical-ibp-staged-body"
+          ]
+        },
+        {
+          "worker_id": "W14",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W14.json",
+          "source_path": "work/v46-workers/W14-idx3932/W14-idx3932-repair-manifest.json",
+          "sha256": "05b17b24c8607afe68170ce5116ff8946ae54c3592c57a52687da042cb07e87c",
+          "bytes": 6635,
+          "repair_ids": [
+            "V46-W14-IDX3932-drop-redundant-dy-ring-after-field-simp"
+          ]
+        },
+        {
+          "worker_id": "W15",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W15.json",
+          "source_path": "work/v46-workers/W15-idx3939/W15-idx3939-repair-manifest.json",
+          "sha256": "5a069f53e7557488a273d32ddf86b9b025e15499ec0a1720823114e5aba8be6c",
+          "bytes": 12247,
+          "repair_ids": [
+            "V46-W15-IDX3939-direct-complex-self-inner-scale",
+            "V46-W15-IDX3939-deterministic-star-scale-square-normalization",
+            "V46-W15-IDX3939-explicit-real-inner-to-norm-square-calc"
+          ]
+        },
+        {
+          "worker_id": "W18",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W18.json",
+          "source_path": "work/v46-workers/W18-idx3948/W18-idx3948-repair-manifest.json",
+          "sha256": "4ea580eca48daee14cf1620dc475429aaeb63f2582c33e869446c21086c0c336",
+          "bytes": 8857,
+          "repair_ids": [
+            "V46-W18-IDX3948-explicit-opNorm-difference-map"
+          ]
+        },
+        {
+          "worker_id": "W21",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W21.json",
+          "source_path": "work/v46-workers/W21-idx3949/W21-idx3949-repair-manifest.json",
+          "sha256": "a4a4cf20d066921e9890ef6c72e61a943215df6191e1be9cc7a5d61a6b89d974",
+          "bytes": 5510,
+          "repair_ids": [
+            "V46-W21-IDX3949-close-squeeze-third-argument-after-h13-decontamination"
+          ]
+        },
+        {
+          "worker_id": "W16",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W16.json",
+          "source_path": "work/v46-workers/W16-idx3956/W16-idx3956-repair-manifest.json",
+          "sha256": "48237bc4e2f7dda5ed66fce5e596b2eeb79f78dd057bafc7d199a5c32d1187e1",
+          "bytes": 7248,
+          "repair_ids": [
+            "V46-W16-IDX3956-transport-upper-integral-through-measurable-embedding"
+          ]
+        },
+        {
+          "worker_id": "W24",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W24.json",
+          "source_path": "work/v46-workers/W24-idx3960/W24-idx3960-repair-manifest.json",
+          "sha256": "8511083371fb48828c938c362b99c455ef262d7c06d1622ad786d22de4484f37",
+          "bytes": 7311,
+          "repair_ids": [
+            "V46-W24-IDX3960-unfold-bare-function-compositions-in-ae-equality",
+            "V46-W24-IDX3960-expose-two-lp-restriction-compositions-before-hstage"
+          ]
+        },
+        {
+          "worker_id": "W20",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W20.json",
+          "source_path": "work/v46-workers/W20-idx4012/W20-idx4012-repair-manifest.json",
+          "sha256": "5bb73d4e10ccd7e2554b0d83d4dadf1d36a50118ba0e8a279d85ace4bab3fe8d",
+          "bytes": 6836,
+          "repair_ids": [
+            "V46-W20-IDX4012-lower-strong-antidual-values-before-mkContinuous2"
+          ]
+        },
+        {
+          "worker_id": "W19",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W19.json",
+          "source_path": "work/v46-workers/W19-idx4017/W19-idx4017-repair-manifest.json",
+          "sha256": "5ac07b3585ad60df06910d2105413a836f82c882b8d696509f07f88a0e9058ed",
+          "bytes": 12955,
+          "repair_ids": [
+            "V46-W19-IDX4017-evaluate-mkContinuous2-before-inner-rewrite"
+          ]
+        },
+        {
+          "worker_id": "W25",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W25.json",
+          "source_path": "work/v46-workers/W25-idx4288/W25-idx4288-repair-manifest.json",
+          "sha256": "d22f4f7d5f1309963f772d0a3b1b7f910ce819160af8dce7ddd6acd29eeab7d9",
+          "bytes": 10335,
+          "repair_ids": [
+            "V46-W25-IDX4288-simp-upperLift-after-equality-set-membership-bridge"
+          ]
+        },
+        {
+          "worker_id": "W26",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W26.json",
+          "source_path": "work/v46-workers/W26-idx4296/W26-idx4296-repair-manifest.json",
+          "sha256": "4b1b4b598a3fcbb1831c57b90d709d24db4e8113fbbf9a7fc35ff6c2d81db505",
+          "bytes": 9495,
+          "repair_ids": [
+            "V46-W26-IDX4296-order-specialized-conjugate-derivatives-before-general-fderiv"
+          ]
+        },
+        {
+          "worker_id": "W33",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W33.json",
+          "source_path": "work/v46-workers/W33-idx4297/W33-idx4297-repair-manifest.json",
+          "sha256": "3a1104bb10b8f1d4b37195d3073910c0ef5651911639f2d4b5141828fc27cccf",
+          "bytes": 8024,
+          "repair_ids": [
+            "V46-W33-IDX4297-order-specialized-conjugate-derivatives-before-general-fderiv"
+          ]
+        },
+        {
+          "worker_id": "W28",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W28.json",
+          "source_path": "work/v46-workers/W28-idx4389/W28-idx4389-repair-manifest.json",
+          "sha256": "76d66e29b6a683e0e0145f6e1d7f0549a66ba08d2f82bc14669951e23decde9c",
+          "bytes": 9293,
+          "repair_ids": [
+            "V46-W28-IDX4389-use-Pi-pointwise-function-smul-apply-prime"
+          ]
+        },
+        {
+          "worker_id": "W31",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W31.json",
+          "source_path": "work/v46-workers/W31-idx4391/W31-idx4391-repair-manifest.json",
+          "sha256": "1b31d6a3a84b5614b1690e320095a1627c1be66aef95aeefa7ddab4d50c3dcec",
+          "bytes": 6382,
+          "repair_ids": [
+            "V46-W31-IDX4391-type-ascribe-pointwise-Lp-coercions"
+          ]
+        },
+        {
+          "worker_id": "W32",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W32.json",
+          "source_path": "work/v46-workers/W32-idx4395/W32-idx4395-repair-manifest.json",
+          "sha256": "7ce0d4c30d497dd1567fc39776ee40820a539206fbb460b131a9981200561c1d",
+          "bytes": 7656,
+          "repair_ids": [
+            "V46-W32-IDX4395-use-generic-smul-apply-without-ambiguous-double-coercions"
+          ]
+        },
+        {
+          "worker_id": "W06",
+          "disposition": "STAGED_PROBE",
+          "path": "scripts/fa_v46_W06.json",
+          "source_path": "work/v46-workers/W06-idx3923/W06-idx3923-staged-probe.json",
+          "sha256": "04f4be68e9e6ebab8027fe4d8a0632d2c3d79e97bfbf5b1e87d9091a2b6a29e2",
+          "bytes": 6457,
+          "repair_ids": [
+            "V46-W06-IDX3923-pin-complex-instance-and-compose-fourier-derivatives"
+          ]
+        }
+      ],
+      "atomic_groups": [
+        {
+          "id": "V46-PAIR-3925-3926-ALIGN-SCOMP-BASEPOINT",
+          "repair_ids": [
+            "V46-W08-IDX3925-align-outer-fourier-basepoint-before-scomp",
+            "V46-W09-IDX3926-align-outer-fourier-basepoint-before-scomp"
+          ]
+        },
+        {
+          "id": "V46-PAIR-3927-3928-NEGATIVE-PLANE-WAVE-IBP",
+          "repair_ids": [
+            "V46-W12-IDX3927-attach-integrability-method-to-horizontal-product",
+            "V46-W12-IDX3927-isolate-horizontal-IBP-sign-ring-normalization",
+            "V46-W11-IDX3928-complete-vertical-ibp-staged-body"
+          ]
+        },
+        {
+          "id": "V46-PAIR-4296-4297-ORDERED-CONJUGATE-DERIVATIVES",
+          "repair_ids": [
+            "V46-W26-IDX4296-order-specialized-conjugate-derivatives-before-general-fderiv",
+            "V46-W33-IDX4297-order-specialized-conjugate-derivatives-before-general-fderiv"
+          ]
+        },
+        {
+          "id": "V46-PAIR-4298-4299-EXPOSE-COMPOSED-SUBTYPE-NEGATION",
+          "repair_ids": [
+            "V46-W29-IDX4298-expose-composed-subtype-negation",
+            "V46-W34-IDX4299-expose-composed-subtype-negation"
+          ]
+        },
+        {
+          "id": "V46-W15-THREE-FRAGMENTS",
+          "repair_ids": [
+            "V46-W15-IDX3939-direct-complex-self-inner-scale",
+            "V46-W15-IDX3939-deterministic-star-scale-square-normalization",
+            "V46-W15-IDX3939-explicit-real-inner-to-norm-square-calc"
+          ]
+        },
+        {
+          "id": "V46-W24-TWO-FRAGMENTS",
+          "repair_ids": [
+            "V46-W24-IDX3960-unfold-bare-function-compositions-in-ae-equality",
+            "V46-W24-IDX3960-expose-two-lp-restriction-compositions-before-hstage"
+          ]
+        },
+        {
+          "id": "V46-W27-TWO-FRAGMENTS",
+          "repair_ids": [
+            "V46-W27-IDX4015-pin-linfinity-l2-l2-holder-exponents",
+            "V46-W27-IDX4015-normalize-nnreal-and-real-actions-before-ring"
+          ]
+        }
+      ],
+      "selected_worker_count": 26,
+      "selected_repair_count": 30,
+      "expected_candidate": {
+        "sha256": "aaf64388e13cec95d20f822ed09cde511e61da4f2666227747bc81e9478effdb",
+        "bytes": 2794283,
+        "lines": 62509
+      }
+    },
+    {
+      "name": "w27_probe",
+      "classification": "CORE_PLUS_STAGED_PROBE",
+      "manifests": [
+        {
+          "worker_id": "W01",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W01.json",
+          "source_path": "work/v46-workers/W01-idx3653/idx3653-repair.json",
+          "sha256": "71ea4da7fb7e0e07df557a011e23b2dac2976f5f4675ec831737b05d4bed2dec",
+          "bytes": 4793,
+          "repair_ids": [
+            "V46-W01-3653-untransport-energy-before-predecessor-index-substitution"
+          ]
+        },
+        {
+          "worker_id": "W04",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W04.json",
+          "source_path": "work/v46-workers/W04-idx3669/idx3669-repair.json",
+          "sha256": "6e95f22dd7753c7e58ea43e5712bc6be3dcbc43859d2a59544b0b8d83ac8ecb3",
+          "bytes": 4211,
+          "repair_ids": [
+            "V46-W04-3669-transport-measurability-by-explicit-associativity-equality"
+          ]
+        },
+        {
+          "worker_id": "W02",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W02.json",
+          "source_path": "work/v46-workers/W02-idx3690/W02-idx3690-repair.json",
+          "sha256": "a6f563b7f9a35c9f63e653341cb2c5016a0fe0245c2ff8bebfeb2bb4dd1aa15c",
+          "bytes": 4178,
+          "repair_ids": [
+            "V46-W02-3690-reconstruct-ambient-endpoint-before-withlp-tendsto"
+          ]
+        },
+        {
+          "worker_id": "W05",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W05.json",
+          "source_path": "work/v46-workers/W05-idx3883/W05-idx3883-repair-manifest.json",
+          "sha256": "5bf2221cfa7b97603f10525ba5526fdf54f7f96dca0ffc6f62ef383fc5d54e77",
+          "bytes": 6001,
+          "repair_ids": [
+            "V46-W05-IDX3883-prove-projection-coefficient-in-E-before-repr"
+          ]
+        },
+        {
+          "worker_id": "W03",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W03.json",
+          "source_path": "work/v46-workers/W03-idx3899/W03-idx3899-repair-manifest.json",
+          "sha256": "48ca808542a51de29f2d8c337af10670e4bbc9cc8267a812f1da76581f376227",
+          "bytes": 5442,
+          "repair_ids": [
+            "V46-W03-IDX3899-restrict-coordinate-normalization-to-unit-box"
+          ]
+        },
+        {
+          "worker_id": "W07",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W07.json",
+          "source_path": "work/v46-workers/W07-idx3920/W07-idx3920-repair-manifest.json",
+          "sha256": "9ed5bc02f25afef2486656766b195f983433c45e7fe160d83a2a292fe28207cc",
+          "bytes": 6228,
+          "repair_ids": [
+            "V46-W07-IDX3920-normalize-addcircle-ioc-endpoint-at-api-boundary"
+          ]
+        },
+        {
+          "worker_id": "W10",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W10.json",
+          "source_path": "work/v46-workers/W10-idx3924/W10-idx3924-repair-manifest.json",
+          "sha256": "a7bdec17e024f4c7acb1c2d1bd5950ec53b050747d6667f0e2e9cb90241c9c3a",
+          "bytes": 7344,
+          "repair_ids": [
+            "V46-W10-IDX3924-apply-mFourier-neg-before-unfold"
+          ]
+        },
+        {
+          "worker_id": "W08",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W08.json",
+          "source_path": "work/v46-workers/W08-idx3925/W08-idx3925-repair-manifest.json",
+          "sha256": "a6edd52ed24165ad49c76b5e36a9ced463a6c3c96c55c803e8a2870c6dc5e4d1",
+          "bytes": 5654,
+          "repair_ids": [
+            "V46-W08-IDX3925-align-outer-fourier-basepoint-before-scomp"
+          ]
+        },
+        {
+          "worker_id": "W09",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W09.json",
+          "source_path": "work/v46-workers/W09-idx3926/W09-idx3926-repair-manifest.json",
+          "sha256": "ae971f36a74b32c042a5f9e68a7767b20bf46917d8e6559bf5bb0c405c711653",
+          "bytes": 7425,
+          "repair_ids": [
+            "V46-W09-IDX3926-align-outer-fourier-basepoint-before-scomp"
+          ]
+        },
+        {
+          "worker_id": "W12",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W12.json",
+          "source_path": "work/v46-workers/W12-idx3927/W12-idx3927-repair-manifest.json",
+          "sha256": "e4db76ee0a75f1986e42934c781bd0fea5a66d94f702b61df6f00effd85ba117",
+          "bytes": 7797,
+          "repair_ids": [
+            "V46-W12-IDX3927-attach-integrability-method-to-horizontal-product",
+            "V46-W12-IDX3927-isolate-horizontal-IBP-sign-ring-normalization"
+          ]
+        },
+        {
+          "worker_id": "W11",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W11.json",
+          "source_path": "work/v46-workers/W11-idx3928/W11-idx3928-repair-manifest.json",
+          "sha256": "d108e35cfd1a196de02bed1bb7d05d1a3725cfb31600a4309e3615747bfd2057",
+          "bytes": 10845,
+          "repair_ids": [
+            "V46-W11-IDX3928-complete-vertical-ibp-staged-body"
+          ]
+        },
+        {
+          "worker_id": "W14",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W14.json",
+          "source_path": "work/v46-workers/W14-idx3932/W14-idx3932-repair-manifest.json",
+          "sha256": "05b17b24c8607afe68170ce5116ff8946ae54c3592c57a52687da042cb07e87c",
+          "bytes": 6635,
+          "repair_ids": [
+            "V46-W14-IDX3932-drop-redundant-dy-ring-after-field-simp"
+          ]
+        },
+        {
+          "worker_id": "W15",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W15.json",
+          "source_path": "work/v46-workers/W15-idx3939/W15-idx3939-repair-manifest.json",
+          "sha256": "5a069f53e7557488a273d32ddf86b9b025e15499ec0a1720823114e5aba8be6c",
+          "bytes": 12247,
+          "repair_ids": [
+            "V46-W15-IDX3939-direct-complex-self-inner-scale",
+            "V46-W15-IDX3939-deterministic-star-scale-square-normalization",
+            "V46-W15-IDX3939-explicit-real-inner-to-norm-square-calc"
+          ]
+        },
+        {
+          "worker_id": "W18",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W18.json",
+          "source_path": "work/v46-workers/W18-idx3948/W18-idx3948-repair-manifest.json",
+          "sha256": "4ea580eca48daee14cf1620dc475429aaeb63f2582c33e869446c21086c0c336",
+          "bytes": 8857,
+          "repair_ids": [
+            "V46-W18-IDX3948-explicit-opNorm-difference-map"
+          ]
+        },
+        {
+          "worker_id": "W21",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W21.json",
+          "source_path": "work/v46-workers/W21-idx3949/W21-idx3949-repair-manifest.json",
+          "sha256": "a4a4cf20d066921e9890ef6c72e61a943215df6191e1be9cc7a5d61a6b89d974",
+          "bytes": 5510,
+          "repair_ids": [
+            "V46-W21-IDX3949-close-squeeze-third-argument-after-h13-decontamination"
+          ]
+        },
+        {
+          "worker_id": "W16",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W16.json",
+          "source_path": "work/v46-workers/W16-idx3956/W16-idx3956-repair-manifest.json",
+          "sha256": "48237bc4e2f7dda5ed66fce5e596b2eeb79f78dd057bafc7d199a5c32d1187e1",
+          "bytes": 7248,
+          "repair_ids": [
+            "V46-W16-IDX3956-transport-upper-integral-through-measurable-embedding"
+          ]
+        },
+        {
+          "worker_id": "W24",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W24.json",
+          "source_path": "work/v46-workers/W24-idx3960/W24-idx3960-repair-manifest.json",
+          "sha256": "8511083371fb48828c938c362b99c455ef262d7c06d1622ad786d22de4484f37",
+          "bytes": 7311,
+          "repair_ids": [
+            "V46-W24-IDX3960-unfold-bare-function-compositions-in-ae-equality",
+            "V46-W24-IDX3960-expose-two-lp-restriction-compositions-before-hstage"
+          ]
+        },
+        {
+          "worker_id": "W20",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W20.json",
+          "source_path": "work/v46-workers/W20-idx4012/W20-idx4012-repair-manifest.json",
+          "sha256": "5bb73d4e10ccd7e2554b0d83d4dadf1d36a50118ba0e8a279d85ace4bab3fe8d",
+          "bytes": 6836,
+          "repair_ids": [
+            "V46-W20-IDX4012-lower-strong-antidual-values-before-mkContinuous2"
+          ]
+        },
+        {
+          "worker_id": "W19",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W19.json",
+          "source_path": "work/v46-workers/W19-idx4017/W19-idx4017-repair-manifest.json",
+          "sha256": "5ac07b3585ad60df06910d2105413a836f82c882b8d696509f07f88a0e9058ed",
+          "bytes": 12955,
+          "repair_ids": [
+            "V46-W19-IDX4017-evaluate-mkContinuous2-before-inner-rewrite"
+          ]
+        },
+        {
+          "worker_id": "W25",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W25.json",
+          "source_path": "work/v46-workers/W25-idx4288/W25-idx4288-repair-manifest.json",
+          "sha256": "d22f4f7d5f1309963f772d0a3b1b7f910ce819160af8dce7ddd6acd29eeab7d9",
+          "bytes": 10335,
+          "repair_ids": [
+            "V46-W25-IDX4288-simp-upperLift-after-equality-set-membership-bridge"
+          ]
+        },
+        {
+          "worker_id": "W26",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W26.json",
+          "source_path": "work/v46-workers/W26-idx4296/W26-idx4296-repair-manifest.json",
+          "sha256": "4b1b4b598a3fcbb1831c57b90d709d24db4e8113fbbf9a7fc35ff6c2d81db505",
+          "bytes": 9495,
+          "repair_ids": [
+            "V46-W26-IDX4296-order-specialized-conjugate-derivatives-before-general-fderiv"
+          ]
+        },
+        {
+          "worker_id": "W33",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W33.json",
+          "source_path": "work/v46-workers/W33-idx4297/W33-idx4297-repair-manifest.json",
+          "sha256": "3a1104bb10b8f1d4b37195d3073910c0ef5651911639f2d4b5141828fc27cccf",
+          "bytes": 8024,
+          "repair_ids": [
+            "V46-W33-IDX4297-order-specialized-conjugate-derivatives-before-general-fderiv"
+          ]
+        },
+        {
+          "worker_id": "W28",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W28.json",
+          "source_path": "work/v46-workers/W28-idx4389/W28-idx4389-repair-manifest.json",
+          "sha256": "76d66e29b6a683e0e0145f6e1d7f0549a66ba08d2f82bc14669951e23decde9c",
+          "bytes": 9293,
+          "repair_ids": [
+            "V46-W28-IDX4389-use-Pi-pointwise-function-smul-apply-prime"
+          ]
+        },
+        {
+          "worker_id": "W31",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W31.json",
+          "source_path": "work/v46-workers/W31-idx4391/W31-idx4391-repair-manifest.json",
+          "sha256": "1b31d6a3a84b5614b1690e320095a1627c1be66aef95aeefa7ddab4d50c3dcec",
+          "bytes": 6382,
+          "repair_ids": [
+            "V46-W31-IDX4391-type-ascribe-pointwise-Lp-coercions"
+          ]
+        },
+        {
+          "worker_id": "W32",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W32.json",
+          "source_path": "work/v46-workers/W32-idx4395/W32-idx4395-repair-manifest.json",
+          "sha256": "7ce0d4c30d497dd1567fc39776ee40820a539206fbb460b131a9981200561c1d",
+          "bytes": 7656,
+          "repair_ids": [
+            "V46-W32-IDX4395-use-generic-smul-apply-without-ambiguous-double-coercions"
+          ]
+        },
+        {
+          "worker_id": "W27",
+          "disposition": "STAGED_PROBE",
+          "path": "scripts/fa_v46_W27.json",
+          "source_path": "work/v46-workers/W27-idx4015/W27-idx4015-repair-manifest.json",
+          "sha256": "89aa544ddb6c245c4f25e4c0774271d98731f06066d4f4dd8520c36e348375c3",
+          "bytes": 8906,
+          "repair_ids": [
+            "V46-W27-IDX4015-pin-linfinity-l2-l2-holder-exponents",
+            "V46-W27-IDX4015-normalize-nnreal-and-real-actions-before-ring"
+          ]
+        }
+      ],
+      "atomic_groups": [
+        {
+          "id": "V46-PAIR-3925-3926-ALIGN-SCOMP-BASEPOINT",
+          "repair_ids": [
+            "V46-W08-IDX3925-align-outer-fourier-basepoint-before-scomp",
+            "V46-W09-IDX3926-align-outer-fourier-basepoint-before-scomp"
+          ]
+        },
+        {
+          "id": "V46-PAIR-3927-3928-NEGATIVE-PLANE-WAVE-IBP",
+          "repair_ids": [
+            "V46-W12-IDX3927-attach-integrability-method-to-horizontal-product",
+            "V46-W12-IDX3927-isolate-horizontal-IBP-sign-ring-normalization",
+            "V46-W11-IDX3928-complete-vertical-ibp-staged-body"
+          ]
+        },
+        {
+          "id": "V46-PAIR-4296-4297-ORDERED-CONJUGATE-DERIVATIVES",
+          "repair_ids": [
+            "V46-W26-IDX4296-order-specialized-conjugate-derivatives-before-general-fderiv",
+            "V46-W33-IDX4297-order-specialized-conjugate-derivatives-before-general-fderiv"
+          ]
+        },
+        {
+          "id": "V46-PAIR-4298-4299-EXPOSE-COMPOSED-SUBTYPE-NEGATION",
+          "repair_ids": [
+            "V46-W29-IDX4298-expose-composed-subtype-negation",
+            "V46-W34-IDX4299-expose-composed-subtype-negation"
+          ]
+        },
+        {
+          "id": "V46-W15-THREE-FRAGMENTS",
+          "repair_ids": [
+            "V46-W15-IDX3939-direct-complex-self-inner-scale",
+            "V46-W15-IDX3939-deterministic-star-scale-square-normalization",
+            "V46-W15-IDX3939-explicit-real-inner-to-norm-square-calc"
+          ]
+        },
+        {
+          "id": "V46-W24-TWO-FRAGMENTS",
+          "repair_ids": [
+            "V46-W24-IDX3960-unfold-bare-function-compositions-in-ae-equality",
+            "V46-W24-IDX3960-expose-two-lp-restriction-compositions-before-hstage"
+          ]
+        },
+        {
+          "id": "V46-W27-TWO-FRAGMENTS",
+          "repair_ids": [
+            "V46-W27-IDX4015-pin-linfinity-l2-l2-holder-exponents",
+            "V46-W27-IDX4015-normalize-nnreal-and-real-actions-before-ring"
+          ]
+        }
+      ],
+      "selected_worker_count": 26,
+      "selected_repair_count": 31,
+      "expected_candidate": {
+        "sha256": "eeab4bc39e80fca416a2d577a29e681d368e4c448e724c93b3ea15ae2d23388f",
+        "bytes": 2793009,
+        "lines": 62483
+      }
+    },
+    {
+      "name": "w29_w34_probe",
+      "classification": "CORE_PLUS_STAGED_PROBE",
+      "manifests": [
+        {
+          "worker_id": "W01",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W01.json",
+          "source_path": "work/v46-workers/W01-idx3653/idx3653-repair.json",
+          "sha256": "71ea4da7fb7e0e07df557a011e23b2dac2976f5f4675ec831737b05d4bed2dec",
+          "bytes": 4793,
+          "repair_ids": [
+            "V46-W01-3653-untransport-energy-before-predecessor-index-substitution"
+          ]
+        },
+        {
+          "worker_id": "W04",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W04.json",
+          "source_path": "work/v46-workers/W04-idx3669/idx3669-repair.json",
+          "sha256": "6e95f22dd7753c7e58ea43e5712bc6be3dcbc43859d2a59544b0b8d83ac8ecb3",
+          "bytes": 4211,
+          "repair_ids": [
+            "V46-W04-3669-transport-measurability-by-explicit-associativity-equality"
+          ]
+        },
+        {
+          "worker_id": "W02",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W02.json",
+          "source_path": "work/v46-workers/W02-idx3690/W02-idx3690-repair.json",
+          "sha256": "a6f563b7f9a35c9f63e653341cb2c5016a0fe0245c2ff8bebfeb2bb4dd1aa15c",
+          "bytes": 4178,
+          "repair_ids": [
+            "V46-W02-3690-reconstruct-ambient-endpoint-before-withlp-tendsto"
+          ]
+        },
+        {
+          "worker_id": "W05",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W05.json",
+          "source_path": "work/v46-workers/W05-idx3883/W05-idx3883-repair-manifest.json",
+          "sha256": "5bf2221cfa7b97603f10525ba5526fdf54f7f96dca0ffc6f62ef383fc5d54e77",
+          "bytes": 6001,
+          "repair_ids": [
+            "V46-W05-IDX3883-prove-projection-coefficient-in-E-before-repr"
+          ]
+        },
+        {
+          "worker_id": "W03",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W03.json",
+          "source_path": "work/v46-workers/W03-idx3899/W03-idx3899-repair-manifest.json",
+          "sha256": "48ca808542a51de29f2d8c337af10670e4bbc9cc8267a812f1da76581f376227",
+          "bytes": 5442,
+          "repair_ids": [
+            "V46-W03-IDX3899-restrict-coordinate-normalization-to-unit-box"
+          ]
+        },
+        {
+          "worker_id": "W07",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W07.json",
+          "source_path": "work/v46-workers/W07-idx3920/W07-idx3920-repair-manifest.json",
+          "sha256": "9ed5bc02f25afef2486656766b195f983433c45e7fe160d83a2a292fe28207cc",
+          "bytes": 6228,
+          "repair_ids": [
+            "V46-W07-IDX3920-normalize-addcircle-ioc-endpoint-at-api-boundary"
+          ]
+        },
+        {
+          "worker_id": "W10",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W10.json",
+          "source_path": "work/v46-workers/W10-idx3924/W10-idx3924-repair-manifest.json",
+          "sha256": "a7bdec17e024f4c7acb1c2d1bd5950ec53b050747d6667f0e2e9cb90241c9c3a",
+          "bytes": 7344,
+          "repair_ids": [
+            "V46-W10-IDX3924-apply-mFourier-neg-before-unfold"
+          ]
+        },
+        {
+          "worker_id": "W08",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W08.json",
+          "source_path": "work/v46-workers/W08-idx3925/W08-idx3925-repair-manifest.json",
+          "sha256": "a6edd52ed24165ad49c76b5e36a9ced463a6c3c96c55c803e8a2870c6dc5e4d1",
+          "bytes": 5654,
+          "repair_ids": [
+            "V46-W08-IDX3925-align-outer-fourier-basepoint-before-scomp"
+          ]
+        },
+        {
+          "worker_id": "W09",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W09.json",
+          "source_path": "work/v46-workers/W09-idx3926/W09-idx3926-repair-manifest.json",
+          "sha256": "ae971f36a74b32c042a5f9e68a7767b20bf46917d8e6559bf5bb0c405c711653",
+          "bytes": 7425,
+          "repair_ids": [
+            "V46-W09-IDX3926-align-outer-fourier-basepoint-before-scomp"
+          ]
+        },
+        {
+          "worker_id": "W12",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W12.json",
+          "source_path": "work/v46-workers/W12-idx3927/W12-idx3927-repair-manifest.json",
+          "sha256": "e4db76ee0a75f1986e42934c781bd0fea5a66d94f702b61df6f00effd85ba117",
+          "bytes": 7797,
+          "repair_ids": [
+            "V46-W12-IDX3927-attach-integrability-method-to-horizontal-product",
+            "V46-W12-IDX3927-isolate-horizontal-IBP-sign-ring-normalization"
+          ]
+        },
+        {
+          "worker_id": "W11",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W11.json",
+          "source_path": "work/v46-workers/W11-idx3928/W11-idx3928-repair-manifest.json",
+          "sha256": "d108e35cfd1a196de02bed1bb7d05d1a3725cfb31600a4309e3615747bfd2057",
+          "bytes": 10845,
+          "repair_ids": [
+            "V46-W11-IDX3928-complete-vertical-ibp-staged-body"
+          ]
+        },
+        {
+          "worker_id": "W14",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W14.json",
+          "source_path": "work/v46-workers/W14-idx3932/W14-idx3932-repair-manifest.json",
+          "sha256": "05b17b24c8607afe68170ce5116ff8946ae54c3592c57a52687da042cb07e87c",
+          "bytes": 6635,
+          "repair_ids": [
+            "V46-W14-IDX3932-drop-redundant-dy-ring-after-field-simp"
+          ]
+        },
+        {
+          "worker_id": "W15",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W15.json",
+          "source_path": "work/v46-workers/W15-idx3939/W15-idx3939-repair-manifest.json",
+          "sha256": "5a069f53e7557488a273d32ddf86b9b025e15499ec0a1720823114e5aba8be6c",
+          "bytes": 12247,
+          "repair_ids": [
+            "V46-W15-IDX3939-direct-complex-self-inner-scale",
+            "V46-W15-IDX3939-deterministic-star-scale-square-normalization",
+            "V46-W15-IDX3939-explicit-real-inner-to-norm-square-calc"
+          ]
+        },
+        {
+          "worker_id": "W18",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W18.json",
+          "source_path": "work/v46-workers/W18-idx3948/W18-idx3948-repair-manifest.json",
+          "sha256": "4ea580eca48daee14cf1620dc475429aaeb63f2582c33e869446c21086c0c336",
+          "bytes": 8857,
+          "repair_ids": [
+            "V46-W18-IDX3948-explicit-opNorm-difference-map"
+          ]
+        },
+        {
+          "worker_id": "W21",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W21.json",
+          "source_path": "work/v46-workers/W21-idx3949/W21-idx3949-repair-manifest.json",
+          "sha256": "a4a4cf20d066921e9890ef6c72e61a943215df6191e1be9cc7a5d61a6b89d974",
+          "bytes": 5510,
+          "repair_ids": [
+            "V46-W21-IDX3949-close-squeeze-third-argument-after-h13-decontamination"
+          ]
+        },
+        {
+          "worker_id": "W16",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W16.json",
+          "source_path": "work/v46-workers/W16-idx3956/W16-idx3956-repair-manifest.json",
+          "sha256": "48237bc4e2f7dda5ed66fce5e596b2eeb79f78dd057bafc7d199a5c32d1187e1",
+          "bytes": 7248,
+          "repair_ids": [
+            "V46-W16-IDX3956-transport-upper-integral-through-measurable-embedding"
+          ]
+        },
+        {
+          "worker_id": "W24",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W24.json",
+          "source_path": "work/v46-workers/W24-idx3960/W24-idx3960-repair-manifest.json",
+          "sha256": "8511083371fb48828c938c362b99c455ef262d7c06d1622ad786d22de4484f37",
+          "bytes": 7311,
+          "repair_ids": [
+            "V46-W24-IDX3960-unfold-bare-function-compositions-in-ae-equality",
+            "V46-W24-IDX3960-expose-two-lp-restriction-compositions-before-hstage"
+          ]
+        },
+        {
+          "worker_id": "W20",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W20.json",
+          "source_path": "work/v46-workers/W20-idx4012/W20-idx4012-repair-manifest.json",
+          "sha256": "5bb73d4e10ccd7e2554b0d83d4dadf1d36a50118ba0e8a279d85ace4bab3fe8d",
+          "bytes": 6836,
+          "repair_ids": [
+            "V46-W20-IDX4012-lower-strong-antidual-values-before-mkContinuous2"
+          ]
+        },
+        {
+          "worker_id": "W19",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W19.json",
+          "source_path": "work/v46-workers/W19-idx4017/W19-idx4017-repair-manifest.json",
+          "sha256": "5ac07b3585ad60df06910d2105413a836f82c882b8d696509f07f88a0e9058ed",
+          "bytes": 12955,
+          "repair_ids": [
+            "V46-W19-IDX4017-evaluate-mkContinuous2-before-inner-rewrite"
+          ]
+        },
+        {
+          "worker_id": "W25",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W25.json",
+          "source_path": "work/v46-workers/W25-idx4288/W25-idx4288-repair-manifest.json",
+          "sha256": "d22f4f7d5f1309963f772d0a3b1b7f910ce819160af8dce7ddd6acd29eeab7d9",
+          "bytes": 10335,
+          "repair_ids": [
+            "V46-W25-IDX4288-simp-upperLift-after-equality-set-membership-bridge"
+          ]
+        },
+        {
+          "worker_id": "W26",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W26.json",
+          "source_path": "work/v46-workers/W26-idx4296/W26-idx4296-repair-manifest.json",
+          "sha256": "4b1b4b598a3fcbb1831c57b90d709d24db4e8113fbbf9a7fc35ff6c2d81db505",
+          "bytes": 9495,
+          "repair_ids": [
+            "V46-W26-IDX4296-order-specialized-conjugate-derivatives-before-general-fderiv"
+          ]
+        },
+        {
+          "worker_id": "W33",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W33.json",
+          "source_path": "work/v46-workers/W33-idx4297/W33-idx4297-repair-manifest.json",
+          "sha256": "3a1104bb10b8f1d4b37195d3073910c0ef5651911639f2d4b5141828fc27cccf",
+          "bytes": 8024,
+          "repair_ids": [
+            "V46-W33-IDX4297-order-specialized-conjugate-derivatives-before-general-fderiv"
+          ]
+        },
+        {
+          "worker_id": "W28",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W28.json",
+          "source_path": "work/v46-workers/W28-idx4389/W28-idx4389-repair-manifest.json",
+          "sha256": "76d66e29b6a683e0e0145f6e1d7f0549a66ba08d2f82bc14669951e23decde9c",
+          "bytes": 9293,
+          "repair_ids": [
+            "V46-W28-IDX4389-use-Pi-pointwise-function-smul-apply-prime"
+          ]
+        },
+        {
+          "worker_id": "W31",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W31.json",
+          "source_path": "work/v46-workers/W31-idx4391/W31-idx4391-repair-manifest.json",
+          "sha256": "1b31d6a3a84b5614b1690e320095a1627c1be66aef95aeefa7ddab4d50c3dcec",
+          "bytes": 6382,
+          "repair_ids": [
+            "V46-W31-IDX4391-type-ascribe-pointwise-Lp-coercions"
+          ]
+        },
+        {
+          "worker_id": "W32",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W32.json",
+          "source_path": "work/v46-workers/W32-idx4395/W32-idx4395-repair-manifest.json",
+          "sha256": "7ce0d4c30d497dd1567fc39776ee40820a539206fbb460b131a9981200561c1d",
+          "bytes": 7656,
+          "repair_ids": [
+            "V46-W32-IDX4395-use-generic-smul-apply-without-ambiguous-double-coercions"
+          ]
+        },
+        {
+          "worker_id": "W29",
+          "disposition": "STAGED_PROBE",
+          "path": "scripts/fa_v46_W29.json",
+          "source_path": "work/v46-workers/W29-idx4298/W29-idx4298-repair-manifest.json",
+          "sha256": "2841aa1a5caef76e2d5faf958c1a19b267011dab5d264f319b3fd677caa6262e",
+          "bytes": 10525,
+          "repair_ids": [
+            "V46-W29-IDX4298-expose-composed-subtype-negation"
+          ]
+        },
+        {
+          "worker_id": "W34",
+          "disposition": "STAGED_PROBE",
+          "path": "scripts/fa_v46_W34.json",
+          "source_path": "work/v46-workers/W34-idx4299/W34-idx4299-repair-manifest.json",
+          "sha256": "abe881eb015464801b5d60202fa97edeb806a89e1b8c1a0d375344d010a1df5b",
+          "bytes": 10070,
+          "repair_ids": [
+            "V46-W34-IDX4299-expose-composed-subtype-negation"
+          ]
+        }
+      ],
+      "atomic_groups": [
+        {
+          "id": "V46-PAIR-3925-3926-ALIGN-SCOMP-BASEPOINT",
+          "repair_ids": [
+            "V46-W08-IDX3925-align-outer-fourier-basepoint-before-scomp",
+            "V46-W09-IDX3926-align-outer-fourier-basepoint-before-scomp"
+          ]
+        },
+        {
+          "id": "V46-PAIR-3927-3928-NEGATIVE-PLANE-WAVE-IBP",
+          "repair_ids": [
+            "V46-W12-IDX3927-attach-integrability-method-to-horizontal-product",
+            "V46-W12-IDX3927-isolate-horizontal-IBP-sign-ring-normalization",
+            "V46-W11-IDX3928-complete-vertical-ibp-staged-body"
+          ]
+        },
+        {
+          "id": "V46-PAIR-4296-4297-ORDERED-CONJUGATE-DERIVATIVES",
+          "repair_ids": [
+            "V46-W26-IDX4296-order-specialized-conjugate-derivatives-before-general-fderiv",
+            "V46-W33-IDX4297-order-specialized-conjugate-derivatives-before-general-fderiv"
+          ]
+        },
+        {
+          "id": "V46-PAIR-4298-4299-EXPOSE-COMPOSED-SUBTYPE-NEGATION",
+          "repair_ids": [
+            "V46-W29-IDX4298-expose-composed-subtype-negation",
+            "V46-W34-IDX4299-expose-composed-subtype-negation"
+          ]
+        },
+        {
+          "id": "V46-W15-THREE-FRAGMENTS",
+          "repair_ids": [
+            "V46-W15-IDX3939-direct-complex-self-inner-scale",
+            "V46-W15-IDX3939-deterministic-star-scale-square-normalization",
+            "V46-W15-IDX3939-explicit-real-inner-to-norm-square-calc"
+          ]
+        },
+        {
+          "id": "V46-W24-TWO-FRAGMENTS",
+          "repair_ids": [
+            "V46-W24-IDX3960-unfold-bare-function-compositions-in-ae-equality",
+            "V46-W24-IDX3960-expose-two-lp-restriction-compositions-before-hstage"
+          ]
+        },
+        {
+          "id": "V46-W27-TWO-FRAGMENTS",
+          "repair_ids": [
+            "V46-W27-IDX4015-pin-linfinity-l2-l2-holder-exponents",
+            "V46-W27-IDX4015-normalize-nnreal-and-real-actions-before-ring"
+          ]
+        }
+      ],
+      "selected_worker_count": 27,
+      "selected_repair_count": 31,
+      "expected_candidate": {
+        "sha256": "233538124c10727fb00a88d62685f133a604da6a414c00493baa05c21a2f1a7a",
+        "bytes": 2795006,
+        "lines": 62532
+      }
+    },
+    {
+      "name": "all_probes",
+      "classification": "CORE_PLUS_STAGED_PROBE",
+      "manifests": [
+        {
+          "worker_id": "W01",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W01.json",
+          "source_path": "work/v46-workers/W01-idx3653/idx3653-repair.json",
+          "sha256": "71ea4da7fb7e0e07df557a011e23b2dac2976f5f4675ec831737b05d4bed2dec",
+          "bytes": 4793,
+          "repair_ids": [
+            "V46-W01-3653-untransport-energy-before-predecessor-index-substitution"
+          ]
+        },
+        {
+          "worker_id": "W04",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W04.json",
+          "source_path": "work/v46-workers/W04-idx3669/idx3669-repair.json",
+          "sha256": "6e95f22dd7753c7e58ea43e5712bc6be3dcbc43859d2a59544b0b8d83ac8ecb3",
+          "bytes": 4211,
+          "repair_ids": [
+            "V46-W04-3669-transport-measurability-by-explicit-associativity-equality"
+          ]
+        },
+        {
+          "worker_id": "W02",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W02.json",
+          "source_path": "work/v46-workers/W02-idx3690/W02-idx3690-repair.json",
+          "sha256": "a6f563b7f9a35c9f63e653341cb2c5016a0fe0245c2ff8bebfeb2bb4dd1aa15c",
+          "bytes": 4178,
+          "repair_ids": [
+            "V46-W02-3690-reconstruct-ambient-endpoint-before-withlp-tendsto"
+          ]
+        },
+        {
+          "worker_id": "W05",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W05.json",
+          "source_path": "work/v46-workers/W05-idx3883/W05-idx3883-repair-manifest.json",
+          "sha256": "5bf2221cfa7b97603f10525ba5526fdf54f7f96dca0ffc6f62ef383fc5d54e77",
+          "bytes": 6001,
+          "repair_ids": [
+            "V46-W05-IDX3883-prove-projection-coefficient-in-E-before-repr"
+          ]
+        },
+        {
+          "worker_id": "W03",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W03.json",
+          "source_path": "work/v46-workers/W03-idx3899/W03-idx3899-repair-manifest.json",
+          "sha256": "48ca808542a51de29f2d8c337af10670e4bbc9cc8267a812f1da76581f376227",
+          "bytes": 5442,
+          "repair_ids": [
+            "V46-W03-IDX3899-restrict-coordinate-normalization-to-unit-box"
+          ]
+        },
+        {
+          "worker_id": "W07",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W07.json",
+          "source_path": "work/v46-workers/W07-idx3920/W07-idx3920-repair-manifest.json",
+          "sha256": "9ed5bc02f25afef2486656766b195f983433c45e7fe160d83a2a292fe28207cc",
+          "bytes": 6228,
+          "repair_ids": [
+            "V46-W07-IDX3920-normalize-addcircle-ioc-endpoint-at-api-boundary"
+          ]
+        },
+        {
+          "worker_id": "W10",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W10.json",
+          "source_path": "work/v46-workers/W10-idx3924/W10-idx3924-repair-manifest.json",
+          "sha256": "a7bdec17e024f4c7acb1c2d1bd5950ec53b050747d6667f0e2e9cb90241c9c3a",
+          "bytes": 7344,
+          "repair_ids": [
+            "V46-W10-IDX3924-apply-mFourier-neg-before-unfold"
+          ]
+        },
+        {
+          "worker_id": "W08",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W08.json",
+          "source_path": "work/v46-workers/W08-idx3925/W08-idx3925-repair-manifest.json",
+          "sha256": "a6edd52ed24165ad49c76b5e36a9ced463a6c3c96c55c803e8a2870c6dc5e4d1",
+          "bytes": 5654,
+          "repair_ids": [
+            "V46-W08-IDX3925-align-outer-fourier-basepoint-before-scomp"
+          ]
+        },
+        {
+          "worker_id": "W09",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W09.json",
+          "source_path": "work/v46-workers/W09-idx3926/W09-idx3926-repair-manifest.json",
+          "sha256": "ae971f36a74b32c042a5f9e68a7767b20bf46917d8e6559bf5bb0c405c711653",
+          "bytes": 7425,
+          "repair_ids": [
+            "V46-W09-IDX3926-align-outer-fourier-basepoint-before-scomp"
+          ]
+        },
+        {
+          "worker_id": "W12",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W12.json",
+          "source_path": "work/v46-workers/W12-idx3927/W12-idx3927-repair-manifest.json",
+          "sha256": "e4db76ee0a75f1986e42934c781bd0fea5a66d94f702b61df6f00effd85ba117",
+          "bytes": 7797,
+          "repair_ids": [
+            "V46-W12-IDX3927-attach-integrability-method-to-horizontal-product",
+            "V46-W12-IDX3927-isolate-horizontal-IBP-sign-ring-normalization"
+          ]
+        },
+        {
+          "worker_id": "W11",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W11.json",
+          "source_path": "work/v46-workers/W11-idx3928/W11-idx3928-repair-manifest.json",
+          "sha256": "d108e35cfd1a196de02bed1bb7d05d1a3725cfb31600a4309e3615747bfd2057",
+          "bytes": 10845,
+          "repair_ids": [
+            "V46-W11-IDX3928-complete-vertical-ibp-staged-body"
+          ]
+        },
+        {
+          "worker_id": "W14",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W14.json",
+          "source_path": "work/v46-workers/W14-idx3932/W14-idx3932-repair-manifest.json",
+          "sha256": "05b17b24c8607afe68170ce5116ff8946ae54c3592c57a52687da042cb07e87c",
+          "bytes": 6635,
+          "repair_ids": [
+            "V46-W14-IDX3932-drop-redundant-dy-ring-after-field-simp"
+          ]
+        },
+        {
+          "worker_id": "W15",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W15.json",
+          "source_path": "work/v46-workers/W15-idx3939/W15-idx3939-repair-manifest.json",
+          "sha256": "5a069f53e7557488a273d32ddf86b9b025e15499ec0a1720823114e5aba8be6c",
+          "bytes": 12247,
+          "repair_ids": [
+            "V46-W15-IDX3939-direct-complex-self-inner-scale",
+            "V46-W15-IDX3939-deterministic-star-scale-square-normalization",
+            "V46-W15-IDX3939-explicit-real-inner-to-norm-square-calc"
+          ]
+        },
+        {
+          "worker_id": "W18",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W18.json",
+          "source_path": "work/v46-workers/W18-idx3948/W18-idx3948-repair-manifest.json",
+          "sha256": "4ea580eca48daee14cf1620dc475429aaeb63f2582c33e869446c21086c0c336",
+          "bytes": 8857,
+          "repair_ids": [
+            "V46-W18-IDX3948-explicit-opNorm-difference-map"
+          ]
+        },
+        {
+          "worker_id": "W21",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W21.json",
+          "source_path": "work/v46-workers/W21-idx3949/W21-idx3949-repair-manifest.json",
+          "sha256": "a4a4cf20d066921e9890ef6c72e61a943215df6191e1be9cc7a5d61a6b89d974",
+          "bytes": 5510,
+          "repair_ids": [
+            "V46-W21-IDX3949-close-squeeze-third-argument-after-h13-decontamination"
+          ]
+        },
+        {
+          "worker_id": "W16",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W16.json",
+          "source_path": "work/v46-workers/W16-idx3956/W16-idx3956-repair-manifest.json",
+          "sha256": "48237bc4e2f7dda5ed66fce5e596b2eeb79f78dd057bafc7d199a5c32d1187e1",
+          "bytes": 7248,
+          "repair_ids": [
+            "V46-W16-IDX3956-transport-upper-integral-through-measurable-embedding"
+          ]
+        },
+        {
+          "worker_id": "W24",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W24.json",
+          "source_path": "work/v46-workers/W24-idx3960/W24-idx3960-repair-manifest.json",
+          "sha256": "8511083371fb48828c938c362b99c455ef262d7c06d1622ad786d22de4484f37",
+          "bytes": 7311,
+          "repair_ids": [
+            "V46-W24-IDX3960-unfold-bare-function-compositions-in-ae-equality",
+            "V46-W24-IDX3960-expose-two-lp-restriction-compositions-before-hstage"
+          ]
+        },
+        {
+          "worker_id": "W20",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W20.json",
+          "source_path": "work/v46-workers/W20-idx4012/W20-idx4012-repair-manifest.json",
+          "sha256": "5bb73d4e10ccd7e2554b0d83d4dadf1d36a50118ba0e8a279d85ace4bab3fe8d",
+          "bytes": 6836,
+          "repair_ids": [
+            "V46-W20-IDX4012-lower-strong-antidual-values-before-mkContinuous2"
+          ]
+        },
+        {
+          "worker_id": "W19",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W19.json",
+          "source_path": "work/v46-workers/W19-idx4017/W19-idx4017-repair-manifest.json",
+          "sha256": "5ac07b3585ad60df06910d2105413a836f82c882b8d696509f07f88a0e9058ed",
+          "bytes": 12955,
+          "repair_ids": [
+            "V46-W19-IDX4017-evaluate-mkContinuous2-before-inner-rewrite"
+          ]
+        },
+        {
+          "worker_id": "W25",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W25.json",
+          "source_path": "work/v46-workers/W25-idx4288/W25-idx4288-repair-manifest.json",
+          "sha256": "d22f4f7d5f1309963f772d0a3b1b7f910ce819160af8dce7ddd6acd29eeab7d9",
+          "bytes": 10335,
+          "repair_ids": [
+            "V46-W25-IDX4288-simp-upperLift-after-equality-set-membership-bridge"
+          ]
+        },
+        {
+          "worker_id": "W26",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W26.json",
+          "source_path": "work/v46-workers/W26-idx4296/W26-idx4296-repair-manifest.json",
+          "sha256": "4b1b4b598a3fcbb1831c57b90d709d24db4e8113fbbf9a7fc35ff6c2d81db505",
+          "bytes": 9495,
+          "repair_ids": [
+            "V46-W26-IDX4296-order-specialized-conjugate-derivatives-before-general-fderiv"
+          ]
+        },
+        {
+          "worker_id": "W33",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W33.json",
+          "source_path": "work/v46-workers/W33-idx4297/W33-idx4297-repair-manifest.json",
+          "sha256": "3a1104bb10b8f1d4b37195d3073910c0ef5651911639f2d4b5141828fc27cccf",
+          "bytes": 8024,
+          "repair_ids": [
+            "V46-W33-IDX4297-order-specialized-conjugate-derivatives-before-general-fderiv"
+          ]
+        },
+        {
+          "worker_id": "W28",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W28.json",
+          "source_path": "work/v46-workers/W28-idx4389/W28-idx4389-repair-manifest.json",
+          "sha256": "76d66e29b6a683e0e0145f6e1d7f0549a66ba08d2f82bc14669951e23decde9c",
+          "bytes": 9293,
+          "repair_ids": [
+            "V46-W28-IDX4389-use-Pi-pointwise-function-smul-apply-prime"
+          ]
+        },
+        {
+          "worker_id": "W31",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W31.json",
+          "source_path": "work/v46-workers/W31-idx4391/W31-idx4391-repair-manifest.json",
+          "sha256": "1b31d6a3a84b5614b1690e320095a1627c1be66aef95aeefa7ddab4d50c3dcec",
+          "bytes": 6382,
+          "repair_ids": [
+            "V46-W31-IDX4391-type-ascribe-pointwise-Lp-coercions"
+          ]
+        },
+        {
+          "worker_id": "W32",
+          "disposition": "PATCH_READY",
+          "path": "scripts/fa_v46_W32.json",
+          "source_path": "work/v46-workers/W32-idx4395/W32-idx4395-repair-manifest.json",
+          "sha256": "7ce0d4c30d497dd1567fc39776ee40820a539206fbb460b131a9981200561c1d",
+          "bytes": 7656,
+          "repair_ids": [
+            "V46-W32-IDX4395-use-generic-smul-apply-without-ambiguous-double-coercions"
+          ]
+        },
+        {
+          "worker_id": "W06",
+          "disposition": "STAGED_PROBE",
+          "path": "scripts/fa_v46_W06.json",
+          "source_path": "work/v46-workers/W06-idx3923/W06-idx3923-staged-probe.json",
+          "sha256": "04f4be68e9e6ebab8027fe4d8a0632d2c3d79e97bfbf5b1e87d9091a2b6a29e2",
+          "bytes": 6457,
+          "repair_ids": [
+            "V46-W06-IDX3923-pin-complex-instance-and-compose-fourier-derivatives"
+          ]
+        },
+        {
+          "worker_id": "W27",
+          "disposition": "STAGED_PROBE",
+          "path": "scripts/fa_v46_W27.json",
+          "source_path": "work/v46-workers/W27-idx4015/W27-idx4015-repair-manifest.json",
+          "sha256": "89aa544ddb6c245c4f25e4c0774271d98731f06066d4f4dd8520c36e348375c3",
+          "bytes": 8906,
+          "repair_ids": [
+            "V46-W27-IDX4015-pin-linfinity-l2-l2-holder-exponents",
+            "V46-W27-IDX4015-normalize-nnreal-and-real-actions-before-ring"
+          ]
+        },
+        {
+          "worker_id": "W29",
+          "disposition": "STAGED_PROBE",
+          "path": "scripts/fa_v46_W29.json",
+          "source_path": "work/v46-workers/W29-idx4298/W29-idx4298-repair-manifest.json",
+          "sha256": "2841aa1a5caef76e2d5faf958c1a19b267011dab5d264f319b3fd677caa6262e",
+          "bytes": 10525,
+          "repair_ids": [
+            "V46-W29-IDX4298-expose-composed-subtype-negation"
+          ]
+        },
+        {
+          "worker_id": "W34",
+          "disposition": "STAGED_PROBE",
+          "path": "scripts/fa_v46_W34.json",
+          "source_path": "work/v46-workers/W34-idx4299/W34-idx4299-repair-manifest.json",
+          "sha256": "abe881eb015464801b5d60202fa97edeb806a89e1b8c1a0d375344d010a1df5b",
+          "bytes": 10070,
+          "repair_ids": [
+            "V46-W34-IDX4299-expose-composed-subtype-negation"
+          ]
+        }
+      ],
+      "atomic_groups": [
+        {
+          "id": "V46-PAIR-3925-3926-ALIGN-SCOMP-BASEPOINT",
+          "repair_ids": [
+            "V46-W08-IDX3925-align-outer-fourier-basepoint-before-scomp",
+            "V46-W09-IDX3926-align-outer-fourier-basepoint-before-scomp"
+          ]
+        },
+        {
+          "id": "V46-PAIR-3927-3928-NEGATIVE-PLANE-WAVE-IBP",
+          "repair_ids": [
+            "V46-W12-IDX3927-attach-integrability-method-to-horizontal-product",
+            "V46-W12-IDX3927-isolate-horizontal-IBP-sign-ring-normalization",
+            "V46-W11-IDX3928-complete-vertical-ibp-staged-body"
+          ]
+        },
+        {
+          "id": "V46-PAIR-4296-4297-ORDERED-CONJUGATE-DERIVATIVES",
+          "repair_ids": [
+            "V46-W26-IDX4296-order-specialized-conjugate-derivatives-before-general-fderiv",
+            "V46-W33-IDX4297-order-specialized-conjugate-derivatives-before-general-fderiv"
+          ]
+        },
+        {
+          "id": "V46-PAIR-4298-4299-EXPOSE-COMPOSED-SUBTYPE-NEGATION",
+          "repair_ids": [
+            "V46-W29-IDX4298-expose-composed-subtype-negation",
+            "V46-W34-IDX4299-expose-composed-subtype-negation"
+          ]
+        },
+        {
+          "id": "V46-W15-THREE-FRAGMENTS",
+          "repair_ids": [
+            "V46-W15-IDX3939-direct-complex-self-inner-scale",
+            "V46-W15-IDX3939-deterministic-star-scale-square-normalization",
+            "V46-W15-IDX3939-explicit-real-inner-to-norm-square-calc"
+          ]
+        },
+        {
+          "id": "V46-W24-TWO-FRAGMENTS",
+          "repair_ids": [
+            "V46-W24-IDX3960-unfold-bare-function-compositions-in-ae-equality",
+            "V46-W24-IDX3960-expose-two-lp-restriction-compositions-before-hstage"
+          ]
+        },
+        {
+          "id": "V46-W27-TWO-FRAGMENTS",
+          "repair_ids": [
+            "V46-W27-IDX4015-pin-linfinity-l2-l2-holder-exponents",
+            "V46-W27-IDX4015-normalize-nnreal-and-real-actions-before-ring"
+          ]
+        }
+      ],
+      "selected_worker_count": 29,
+      "selected_repair_count": 34,
+      "expected_candidate": {
+        "sha256": "c508cf57c4e0d2cb2ae97a8124a11c876cb6a7674bc6624aa31bfb0b6e62c386",
+        "bytes": 2795926,
+        "lines": 62552
+      }
+    }
+  ],
+  "direct_compile_chain": [
+    {
+      "source": "Mock2",
+      "max_errors": 1
+    },
+    {
+      "source": "Mock2_Advanced",
+      "max_errors": 1
+    },
+    {
+      "source": "Mock2_FunctionalAnalysis",
+      "max_errors": 2000
+    }
+  ],
+  "direct_lean_verified": false,
+  "clean_build_claimed": false
+}

@@ -1,0 +1,245 @@
+name: Codex FA v18 exact-candidate highcap2000 diagnostic v1
+
+on:
+  push:
+    branches:
+      - codex/fa-qym-cleanbuild-final-20260811-fast
+    paths:
+      - .github/workflows/codex-fa-v18-highcap2000-diagnostic-v1.yml
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  diagnostic:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    steps:
+      - name: Checkout exact trigger commit
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Attest and materialize exact authoritative v18 candidate
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT=build-logs/codex-fa-v18-highcap2000-diagnostic-v1
+          mkdir -p "$OUT" /tmp/v18-artifact
+          BASE_RUN_ID=31607268982
+          BASE_JOB_ID=94149335617
+          BASE_HEAD_SHA=f35400f019dde4a1b11eb77cfc441f311197cb31
+          BASE_ARTIFACT_ID=9146032276
+          BASE_ARTIFACT_NAME=codex-fa-after3519-cusp-rankin-v18-f35400f019dde4a1b11eb77cfc441f311197cb31
+          BASE_ARTIFACT_DIGEST=sha256:971043ef5f3f50c54af1554420052494f35d2856d0f9bfb33ede7a491692a1cd
+          BASE_SOURCE_SHA256=12208d1092dc018df613f21aa532969fb450598b9c481e734e6692832a1e2b7f
+
+          gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${BASE_RUN_ID}" >"$OUT/base-run.json"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/jobs/${BASE_JOB_ID}" >"$OUT/base-job.json"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${BASE_ARTIFACT_ID}" >"$OUT/base-artifact.json"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${BASE_ARTIFACT_ID}/zip" >/tmp/v18.zip
+          test "sha256:$(sha256sum /tmp/v18.zip | awk '{print $1}')" = "$BASE_ARTIFACT_DIGEST"
+          unzip -q /tmp/v18.zip -d /tmp/v18-artifact
+
+          BASE_RUN_ID="$BASE_RUN_ID" BASE_JOB_ID="$BASE_JOB_ID" BASE_HEAD_SHA="$BASE_HEAD_SHA" \
+          BASE_ARTIFACT_ID="$BASE_ARTIFACT_ID" BASE_ARTIFACT_NAME="$BASE_ARTIFACT_NAME" \
+          BASE_ARTIFACT_DIGEST="$BASE_ARTIFACT_DIGEST" BASE_SOURCE_SHA256="$BASE_SOURCE_SHA256" \
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib, json, os, shutil
+
+          out = Path('build-logs/codex-fa-v18-highcap2000-diagnostic-v1')
+          root = Path('/tmp/v18-artifact')
+          run = json.loads((out/'base-run.json').read_text())
+          job = json.loads((out/'base-job.json').read_text())
+          art = json.loads((out/'base-artifact.json').read_text())
+          metrics = list(root.rglob('METRIC.json'))
+          assert len(metrics) == 1, metrics
+          m = json.loads(metrics[0].read_text())
+
+          assert run['id'] == int(os.environ['BASE_RUN_ID'])
+          assert run['head_sha'] == os.environ['BASE_HEAD_SHA']
+          assert run['status'] == 'completed'
+          assert job['id'] == int(os.environ['BASE_JOB_ID'])
+          assert job['run_id'] == int(os.environ['BASE_RUN_ID'])
+          assert art['id'] == int(os.environ['BASE_ARTIFACT_ID'])
+          assert art['name'] == os.environ['BASE_ARTIFACT_NAME']
+          assert art['digest'] == os.environ['BASE_ARTIFACT_DIGEST']
+          assert not art['expired']
+          assert m['Mock2_exit'] == 0
+          assert m['Mock2_Advanced_exit'] == 0
+          assert m['FA_exit'] == 1
+          assert m['all_required_lean_executed'] is True
+          assert m['FA_error_declaration_index'] == 3555
+          assert m['FA_first_error_declaration'] == 'qParam_two_periodic'
+          assert m['source_sha256'] == os.environ['BASE_SOURCE_SHA256']
+          assert m['source_identity_locked_after_materialization'] is True
+          assert m['public_proposition_changes_explicitly_audited'] is True
+          assert m['existing_declaration_relative_order_preserved'] is True
+
+          hits = []
+          for p in root.rglob('Mock2_FunctionalAnalysis.lean'):
+              b = p.read_bytes()
+              if 'PrimalitySheafVerification' in p.as_posix() and hashlib.sha256(b).hexdigest() == os.environ['BASE_SOURCE_SHA256']:
+                  hits.append(p)
+          assert len(hits) == 1, hits
+          target = Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean')
+          shutil.copy2(hits[0], target)
+          assert hashlib.sha256(target.read_bytes()).hexdigest() == os.environ['BASE_SOURCE_SHA256']
+          (out/'BASE_METRIC.json').write_text(json.dumps(m, indent=2, sort_keys=True) + '\n')
+          (out/'candidate.sha256').write_text(os.environ['BASE_SOURCE_SHA256'] + '\n')
+          PY
+
+      - name: Install pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT=build-logs/codex-fa-v18-highcap2000-diagnostic-v1
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none >"$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >"$OUT/toolchain.log" 2>&1
+          lake exe cache get >"$OUT/cache.log" 2>&1
+
+      - name: Directly compile prerequisites and full exact FA with maxErrors 2000
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          OUT=build-logs/codex-fa-v18-highcap2000-diagnostic-v1
+          mkdir -p .lake/build/lib/lean/PrimalitySheafVerification
+          one(){
+            local s="$1" cap="$2"
+            local o=.lake/build/lib/lean/PrimalitySheafVerification/$s.olean
+            local i=.lake/build/lib/lean/PrimalitySheafVerification/$s.ilean
+            rm -f "$o" "$i"
+            :>"$OUT/$s.executed"
+            printf 'lake env lean -DmaxErrors=%s -DwarningAsError=false -o %s -i %s PrimalitySheafVerification/%s.lean\n' "$cap" "$o" "$i" "$s" >"$OUT/$s.command"
+            set +e
+            lake env lean "-DmaxErrors=$cap" -DwarningAsError=false -o "$o" -i "$i" "PrimalitySheafVerification/$s.lean" >"$OUT/$s.log" 2>&1
+            local x=$?
+            set -e
+            echo "$x" >"$OUT/$s.exit"
+          }
+          one Mock2 1
+          one Mock2_Advanced 1
+          test "$(sha256sum PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | awk '{print $1}')" = "$(cat "$OUT/candidate.sha256")"
+          one Mock2_FunctionalAnalysis 2000
+
+      - name: Build complete normalized diagnostic inventory
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT=build-logs/codex-fa-v18-highcap2000-diagnostic-v1
+          python3 - <<'PY'
+          from pathlib import Path
+          from bisect import bisect_right
+          import collections, hashlib, json, os, re
+
+          out = Path('build-logs/codex-fa-v18-highcap2000-diagnostic-v1')
+          p = Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean')
+          if not p.exists():
+              raise SystemExit('FA source missing')
+          s = p.read_text(errors='replace')
+          b = p.read_bytes()
+          decl_rx = re.compile(r'(?m)^(?:protected\s+|private\s+|noncomputable\s+|local\s+)*(?:theorem|lemma|def|abbrev|instance|structure|class)\s+(?P<name>[^\s(:]+)')
+          ds = list(decl_rx.finditer(s))
+          starts = [s.count('\n', 0, m.start()) + 1 for m in ds]
+          error_rx = re.compile(r'^.+?\.lean:(\d+):(\d+): error(?:\([^)]+\))?:(.*)$')
+          diagnostics = []
+          log_path = out/'Mock2_FunctionalAnalysis.log'
+          lines = log_path.read_text(errors='replace').splitlines() if log_path.exists() else []
+          for raw in lines:
+              m = error_rx.match(raw)
+              if not m:
+                  continue
+              ln = int(m.group(1)); col = int(m.group(2)); msg = m.group(3).strip()
+              idx = bisect_right(starts, ln) - 1
+              decl = ds[idx].group('name') if idx >= 0 else None
+              # Preserve raw message while adding a stable-ish normalization key for grouping.
+              sig = re.sub(r'\b\d+\b', '<N>', msg)
+              sig = re.sub(r'\s+', ' ', sig).strip()
+              diagnostics.append({
+                  'ordinal': len(diagnostics) + 1,
+                  'line': ln,
+                  'column': col,
+                  'declaration': decl,
+                  'declaration_index': idx if idx >= 0 else None,
+                  'message': msg,
+                  'normalized_message_signature': sig,
+                  'is_max_errors_sentinel': 'maximum number of errors' in msg,
+              })
+
+          exits = {}
+          executed = {}
+          for stem in ('Mock2','Mock2_Advanced','Mock2_FunctionalAnalysis'):
+              ep = out/f'{stem}.exit'
+              exits[stem] = int(ep.read_text()) if ep.exists() else None
+              executed[stem] = (out/f'{stem}.executed').exists()
+
+          actual = [d for d in diagnostics if not d['is_max_errors_sentinel']]
+          first = actual[0] if actual else (diagnostics[0] if diagnostics else {})
+          by_sig = collections.Counter(d['normalized_message_signature'] for d in actual)
+          by_decl = collections.Counter((d['declaration_index'], d['declaration']) for d in actual)
+          summary = {
+              'schema': 'fa-v18-highcap2000-diagnostic-v1',
+              'run_id': os.environ.get('GITHUB_RUN_ID'),
+              'head_sha': os.environ.get('GITHUB_SHA'),
+              'source_sha256': hashlib.sha256(b).hexdigest(),
+              'source_bytes': len(b),
+              'source_lines': len(s.splitlines()),
+              'expected_source_sha256': (out/'candidate.sha256').read_text().strip() if (out/'candidate.sha256').exists() else None,
+              'source_identity_locked_after_materialization': (out/'candidate.sha256').exists() and hashlib.sha256(b).hexdigest() == (out/'candidate.sha256').read_text().strip(),
+              'Mock2_exit': exits['Mock2'],
+              'Mock2_Advanced_exit': exits['Mock2_Advanced'],
+              'FA_exit': exits['Mock2_FunctionalAnalysis'],
+              'Mock2_executed': executed['Mock2'],
+              'Mock2_Advanced_executed': executed['Mock2_Advanced'],
+              'FA_executed': executed['Mock2_FunctionalAnalysis'],
+              'all_required_lean_executed': all(executed.values()),
+              'FA_compile_max_errors': 2000,
+              'FA_error_headers_captured': len(diagnostics),
+              'FA_actual_error_headers_excluding_maxErrors_sentinel': len(actual),
+              'FA_first_actual_error_line': first.get('line'),
+              'FA_first_actual_error_col': first.get('column'),
+              'FA_first_error_declaration': first.get('declaration'),
+              'FA_error_declaration_index': first.get('declaration_index'),
+              'FA_first_error_message': first.get('message'),
+              'unique_normalized_message_signatures': len(by_sig),
+              'unique_declarations_with_actual_errors': len(by_decl),
+          }
+          (out/'FULL_DIAGNOSTICS.json').write_text(json.dumps(diagnostics, indent=2, sort_keys=True) + '\n')
+          (out/'DIAGNOSTIC_SIGNATURE_COUNTS.json').write_text(json.dumps([
+              {'normalized_message_signature': k, 'count': v} for k,v in by_sig.most_common()
+          ], indent=2, sort_keys=True) + '\n')
+          (out/'DIAGNOSTIC_DECLARATION_COUNTS.json').write_text(json.dumps([
+              {'declaration_index': k[0], 'declaration': k[1], 'count': v}
+              for k,v in sorted(by_decl.items(), key=lambda kv: (kv[0][0] if kv[0][0] is not None else -1, kv[0][1] or ''))
+          ], indent=2, sort_keys=True) + '\n')
+          (out/'METRIC.json').write_text(json.dumps(summary, indent=2, sort_keys=True) + '\n')
+          print(json.dumps(summary, indent=2, sort_keys=True))
+          PY
+
+      - name: Upload exact source and high-cap evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-v18-highcap2000-diagnostic-v1-${{ github.sha }}
+          path: |
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+            build-logs/codex-fa-v18-highcap2000-diagnostic-v1
+          retention-days: 30
+
+      - name: Preserve real FA direct exit
+        if: always()
+        shell: bash
+        run: |
+          test -f build-logs/codex-fa-v18-highcap2000-diagnostic-v1/Mock2_FunctionalAnalysis.exit || exit 86
+          exit "$(cat build-logs/codex-fa-v18-highcap2000-diagnostic-v1/Mock2_FunctionalAnalysis.exit)"

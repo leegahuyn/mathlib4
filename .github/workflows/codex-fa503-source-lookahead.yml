@@ -1,0 +1,71 @@
+name: Codex FA503 source lookahead
+
+on:
+  push:
+    branches:
+      - fix/fa503-joint-basepoint-complex-mk-20260811
+    paths:
+      - .github/workflows/codex-fa503-source-lookahead.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  capture:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Capture declaration bodies and risky proof patterns
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          python3 - <<'PY' >/tmp/lookahead.md
+          from pathlib import Path
+          import re, os
+          p=Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean')
+          s=p.read_text(encoding='utf-8',errors='replace')
+          lines=s.splitlines()
+          names=[
+            'selectedHeightBasePoint_joint_continuousOn_positive',
+            'selectedHeightGraphDensity_continuousOn_positive',
+            'selectedHeightGraphDensity_integrableOn_stripTail',
+            'selectedHeightGraphEnergy_iterated_integrableOn',
+            'integral_selectedHeightGraphDensity_stripTail_eq_iterated',
+            'norm_selectedCuspCoreTrace_sq_le_heightGraphStrip',
+            'selectedBaseCuspStrip',
+            'selectedBaseCuspStrip_measurable',
+            'complex_image_heightStrip_eq_coe_image_selectedBaseCuspStrip',
+          ]
+          decl=re.compile(r'(?m)^(?:(?:noncomputable|private|protected|local)\s+)*(?:theorem|lemma|def|abbrev|instance)\s+([A-Za-z_][A-Za-z0-9_\'.]*)\b')
+          ms=list(decl.finditer(s))
+          pos={m.group(1):(i,m) for i,m in enumerate(ms)}
+          out=['## FA503 source lookahead (checked-in body; no Lean verdict)','',
+               f'- run_id: `{os.environ.get("GITHUB_RUN_ID","")}`',
+               f'- head_sha: `{os.environ.get("GITHUB_SHA","")}`',
+               '- purpose: inspect post-35912 proof API shapes while authoritative FA503 compiles','']
+          for n in names:
+              if n not in pos: continue
+              i,m=pos[n]; a=m.start(); b=ms[i+1].start() if i+1<len(ms) else len(s)
+              la=s[:a].count('\n')+1
+              region=s[a:b].rstrip()
+              out += [f'### {n} @ checked-in line {la}','```lean',region[:12000],'```','']
+          # Risky proof/API forms in the surrounding checked-in region.
+          starts=[s[:pos[n][1].start()].count('\n')+1 for n in names if n in pos]
+          if starts:
+              lo=max(1,min(starts)-10); hi=min(len(lines),max(starts)+500)
+              rx=re.compile(r'fun_prop|Complex\.mk|rw \[|Subtype\.ext|continuous_subtype_mk|\.comp_continuousOn|integral_prod|prod_restrict|Measure\.prod')
+              hits=[]
+              for i in range(lo,hi+1):
+                  if rx.search(lines[i-1]): hits.append(f'{i}: {lines[i-1]}')
+              out += ['### risky/API-shape lines','```text','\n'.join(hits[:220]),'```']
+          print('\n'.join(out)[:60000])
+          PY
+          gh api "repos/${GITHUB_REPOSITORY}/issues/14/comments" -f body="$(cat /tmp/lookahead.md)"

@@ -1,0 +1,109 @@
+name: Codex FA504 joint source membership direct Lean
+
+on:
+  push:
+    branches:
+      - fix/fa504-joint-basepoint-source-membership-20260811
+    paths:
+      - .github/workflows/codex-fa504-observe.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: codex-fa504-observe
+  cancel-in-progress: true
+
+env:
+  FA_COMPILE_MAX_ERRORS: "32"
+
+jobs:
+  observe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Publish FA504 start identity
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          body="## FA504 direct Lean started\n\n- run_id: \`${GITHUB_RUN_ID}\`\n- head_sha: \`${GITHUB_SHA}\`\n- sequence: \`FA475 -> ... -> FA503 -> FA504\`\n- upstream_FA503_run: \`31475061266\`\n- upstream_FA503_job: \`93726750556\`\n- upstream_FA503_source: \`46d208e7893993190355c092623882dd3df8c4e36b9df3d21a0b28db1a583a2f\`\n- frontier: \`35917:2 selectedHeightBasePoint_joint_continuousOn_positive / index 2831\`\n- patch: \`explicit UpperHalfPlane.ofComplex source/range witness from hp.2\`\n- maxErrors: \`32\`\n- theorem statements: \`preserved\`\n- line-count lock: \`disabled\`"
+          gh api "repos/${GITHUB_REPOSITORY}/issues/14/comments" -f body="$body"
+      - name: Run exact FA504 candidate direct Lean
+        id: run
+        shell: bash
+        run: |
+          set +e
+          bash scripts/fa504_joint_basepoint_source_membership_candidate_ci.sh 2>&1 | tee /tmp/fa504.log
+          code=${PIPESTATUS[0]}
+          set -e
+          echo "script_exit=$code" >> "$GITHUB_OUTPUT"
+          exit 0
+      - name: Report FA504 evidence and error harvest
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SCRIPT_EXIT: ${{ steps.run.outputs.script_exit }}
+        shell: bash
+        run: |
+          python3 - <<'PY' >/tmp/fa504.md
+          from pathlib import Path
+          import json, os, re
+          root=Path('build-logs/codex-fa504-joint-basepoint-source-membership')
+          p=root/'candidates/norms/METRIC.json'
+          src=Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean')
+          outer=Path('/tmp/fa504.log')
+          xs=['## FA504 actual direct Lean','',f"- run_id: `{os.environ.get('GITHUB_RUN_ID','')}`",f"- head_sha: `{os.environ.get('GITHUB_SHA','')}`",f"- script_exit: `{os.environ.get('SCRIPT_EXIT','')}`"]
+          m=None
+          if p.exists():
+              m=json.loads(p.read_text())
+              for k in ['classification','source_sha256','line_count','maxErrors_cap','Mock2_exit','Mock2_Advanced_exit','FA_exit','FA_error_headers_captured','FA_first_actual_error_line','FA_first_actual_error_col','FA_first_error_declaration','FA_error_declaration_index','infra_reasons']:
+                  xs.append(f'- {k}: `{m.get(k)}`')
+              xs += ['', '### first error','```text',str(m.get('FA_first_error_message',''))[:8000],'```']
+          else: xs.append('- METRIC.json: `MISSING`')
+          texts=[]
+          if outer.exists(): texts.append(('outer',outer.read_text(encoding='utf-8',errors='replace')))
+          if root.exists():
+              for f in root.rglob('*'):
+                  try:
+                      if f.is_file() and f.stat().st_size<=50_000_000 and f.suffix.lower() not in {'.olean','.ilean','.zip'}:
+                          texts.append((str(f),f.read_text(encoding='utf-8',errors='replace')))
+                  except Exception: pass
+          pat=re.compile(r'[^\n]*Mock2_FunctionalAnalysis\.lean:(\d+):(\d+)[^\n]*')
+          seen=set(); hits=[]
+          for name,text in texts:
+              for mm in pat.finditer(text):
+                  line=mm.group(0).strip(); key=(mm.group(1),mm.group(2),line)
+                  if key not in seen:
+                      seen.add(key); hits.append((int(mm.group(1)),int(mm.group(2)),name,line))
+          hits.sort(key=lambda x:(x[0],x[1]))
+          errors=[h for h in hits if 'error' in h[3].lower()]
+          chosen=errors if errors else hits
+          if chosen:
+              xs += ['', '### captured FA diagnostic locations','```text']
+              xs += [f'{ln}:{col} [{name}] {line}' for ln,col,name,line in chosen[:96]]
+              xs += ['```']
+          if src.exists() and isinstance(m,dict) and m.get('FA_first_actual_error_line',0):
+              a=src.read_text(encoding='utf-8',errors='replace').splitlines(); c=int(m['FA_first_actual_error_line']); lo=max(1,c-18); hi=min(len(a),c+70)
+              xs += ['',f'### candidate source around line {c}','```lean','\n'.join(f'{i}: {a[i-1]}' for i in range(lo,hi+1)),'```']
+          print('\n'.join(xs)[:60000])
+          PY
+          gh api "repos/${GITHUB_REPOSITORY}/issues/14/comments" -f body="$(cat /tmp/fa504.md)"
+      - name: Preserve FA direct exit
+        if: always()
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          p=Path('build-logs/codex-fa504-joint-basepoint-source-membership/candidates/norms/METRIC.json')
+          if not p.exists(): raise SystemExit(2)
+          raise SystemExit(int(json.loads(p.read_text()).get('FA_exit',2)))
+          PY

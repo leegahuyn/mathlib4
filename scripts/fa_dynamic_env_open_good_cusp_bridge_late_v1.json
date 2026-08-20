@@ -1,0 +1,16 @@
+{
+  "schema": "fa-dynamic-env-open-good-cusp-bridge-late-v1",
+  "status": "STATIC_STAGED_PENDING_DIRECT_LEAN",
+  "environment_replacements": [
+    {
+      "id": "open-good-cusp-bridge-uniform-commutators",
+      "old_fragment": "open FixedPhaseEssentialCoreRoute\nopen FixedPhaseAdjointCutoffCore\n\nnoncomputable def intrinsicRaiseCuspCutoffCommutator",
+      "new_fragment": "open FixedPhaseEssentialCoreRoute\nopen FixedPhaseAdjointCutoffCore\nopen FixedPhaseGoodCuspCutoffBridge\n\nnoncomputable def intrinsicRaiseCuspCutoffCommutator"
+    },
+    {
+      "id": "open-good-cusp-bridge-compact-carrier",
+      "old_fragment": "open FixedPhaseEssentialCoreRoute\nopen FixedPhaseAdjointCutoffCore\n\n/-- A completed operator which is a quotient-compact scalar multiplier",
+      "new_fragment": "open FixedPhaseEssentialCoreRoute\nopen FixedPhaseAdjointCutoffCore\nopen FixedPhaseGoodCuspCutoffBridge\n\n/-- A completed operator which is a quotient-compact scalar multiplier"
+    }
+  ]
+}

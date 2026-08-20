@@ -1,0 +1,1 @@
+Select the highest directly reproducible checked-in champion. Preserve every declaration header, allow longer historical proof bodies only when direct Lean moves the first error to a genuinely later declaration and raw line, then require FA/Integrated/Mock3/QYM x2.

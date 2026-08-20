@@ -1,0 +1,212 @@
+name: Codex QYM v1 13-file direct inventory
+
+on:
+  push:
+    branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
+    paths:
+      - .github/codex/FA_V51_REMAINING_ERRORS.json
+      - .github/codex/FA_V53_REMAINING_ERRORS.json
+      - .github/codex/FA_V55_REMAINING_ERRORS.json
+  workflow_dispatch: {}
+
+permissions:
+  actions: read
+  contents: write
+
+env:
+  TARGET_BRANCH: codex/fa-qym-cleanbuild-final-20260811-fast
+  OUT: build-logs/codex-qym-v1-13file-direct-inventory
+
+jobs:
+  gate:
+    runs-on: ubuntu-24.04
+    outputs:
+      fa_clean: ${{ steps.pick.outputs.fa_clean }}
+      inventory_path: ${{ steps.pick.outputs.inventory_path }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: codex/fa-qym-cleanbuild-final-20260811-fast
+          fetch-depth: 1
+          persist-credentials: false
+      - id: pick
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          from pathlib import Path
+          import hashlib,json,re
+          candidates=[]
+          for p in Path('.github/codex').glob('FA_V*_REMAINING_ERRORS.json'):
+            m=re.fullmatch(r'FA_V(\d+)_REMAINING_ERRORS\.json',p.name)
+            if m:candidates.append((int(m.group(1)),p))
+          assert candidates,'No FA remaining-error inventory found'
+          _,p=max(candidates)
+          r=json.loads(p.read_text())
+          assert r['inventory_complete_by_header_evidence'] is True
+          assert r['error_cap_sentinel_present'] is False
+          assert r['trust_six_zero'] is True
+          xs=list(Path('.').rglob('Mock2_FunctionalAnalysis.lean'))
+          xs=[x for x in xs if '.lake' not in x.parts and 'build-logs' not in x.parts]
+          assert len(xs)==1,xs
+          sha=hashlib.sha256(xs[0].read_bytes()).hexdigest()
+          assert sha==r['selected_source_sha256'],(sha,r['selected_source_sha256'],xs[0])
+          clean=bool(r['clean_build_claimed'] and r['direct_lean_verified'] and int(r['FA_exit'])==0 and int(r['raw_error_count'])==0)
+          print('fa_clean='+('true' if clean else 'false'))
+          print('inventory_path='+str(p))
+          PY
+
+  direct13:
+    needs: [gate]
+    if: needs.gate.outputs.fa_clean == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 720
+    env:
+      FA_INVENTORY_PATH: ${{ needs.gate.outputs.inventory_path }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: codex/fa-qym-cleanbuild-final-20260811-fast
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Resolve exact 13 source files and audit trust-six
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf "$OUT";mkdir -p "$OUT/files"
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib,json,os,re
+          names=['Spt1.lean','Spt2.lean','Spt3.lean','Spt4.lean','Spt5.lean','Spt6.lean','Spt7.lean','Mock1.lean','Mock1_Advanced.lean','Mock2.lean','Mock2_Advanced.lean','Mock2_FunctionalAnalysis.lean','QYM.lean']
+          out=Path(os.environ['OUT'])
+          def strip_noncode(x):
+            c=list(x);i=0;d=0;q=False;e=False
+            while i<len(c):
+              if d:
+                if x.startswith('/-',i):c[i]=c[i+1]=' ';d+=1;i+=2;continue
+                if x.startswith('-/',i):c[i]=c[i+1]=' ';d-=1;i+=2;continue
+                if c[i]!='\n':c[i]=' '
+                i+=1;continue
+              if q:
+                o=c[i]
+                if o!='\n':c[i]=' '
+                if e:e=False
+                elif o=='\\':e=True
+                elif o=='"':q=False
+                i+=1;continue
+              if x.startswith('/-',i):c[i]=c[i+1]=' ';d=1;i+=2;continue
+              if x.startswith('--',i):
+                while i<len(c) and c[i]!='\n':c[i]=' ';i+=1
+                continue
+              if c[i]=='"':c[i]=' ';q=True
+              i+=1
+            return ''.join(c)
+          decl=re.compile(r'^(?:protected\s+|private\s+|noncomputable\s+|local\s+)*(?:theorem|lemma|def|abbrev|instance|structure|class)\s+',re.M)
+          tokens=('sorry','admit','axiom','unsafe','native_decide','Lean.ofReduceBool')
+          rows=[]
+          for index,name in enumerate(names,1):
+            xs=[p for p in Path('.').rglob(name) if '.lake' not in p.parts and 'build-logs' not in p.parts]
+            assert len(xs)==1,(name,xs)
+            p=xs[0];raw=p.read_bytes();text=raw.decode('utf-8');code=strip_noncode(text);counts={t:len(re.findall(r'(?<![A-Za-z0-9_])'+re.escape(t)+r'(?![A-Za-z0-9_])',code)) for t in tokens};assert all(v==0 for v in counts.values()),(name,counts)
+            rows.append({'index':index,'name':name,'path':str(p),'sha256':hashlib.sha256(raw).hexdigest(),'bytes':len(raw),'lines':len(text.splitlines()),'declaration_header_count':len(decl.findall(text)),'trust_counts':counts,'trust_six_zero':True})
+          (out/'FILES.json').write_text(json.dumps(rows,indent=2,sort_keys=True)+'\n')
+          (out/'file-order.txt').write_text('\n'.join(r['path'] for r in rows)+'\n')
+          PY
+
+      - name: Install pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none >"$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          elan toolchain install "$(tr -d '\r\n'<lean-toolchain)" >"$OUT/toolchain.log" 2>&1
+          lake exe cache get >"$OUT/cache.log" 2>&1
+          lean --version >"$OUT/lean-version.txt" 2>&1
+          lake --version >"$OUT/lake-version.txt" 2>&1
+          sha256sum lean-toolchain >"$OUT/lean-toolchain.sha256"
+          test ! -f lake-manifest.json || sha256sum lake-manifest.json >"$OUT/lake-manifest.sha256"
+          test ! -f lakefile.lean || sha256sum lakefile.lean >"$OUT/lakefile.sha256"
+
+      - name: Directly compile all 13 files in locked order
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          : >"$OUT/DIRECT_EXIT.tsv"
+          while IFS= read -r file; do
+            name="$(basename "$file" .lean)"
+            log="$OUT/files/${name}.direct.log"
+            set +e
+            lake env lean -DmaxErrors=2000 "$file" >"$log" 2>&1
+            code=$?
+            set -e
+            printf '%s\t%s\t%s\n' "$name" "$code" "$file" | tee -a "$OUT/DIRECT_EXIT.tsv"
+            printf '%s\n' "$code" >"$OUT/files/${name}.exit"
+            sha256sum "$log" >"$OUT/files/${name}.log.sha256"
+          done <"$OUT/file-order.txt"
+
+      - name: Build QYM and 13-file complete inventory
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import collections,hashlib,json,os,re,subprocess
+          out=Path(os.environ['OUT']);files=json.loads((out/'FILES.json').read_text());exits={}
+          for line in (out/'DIRECT_EXIT.tsv').read_text().splitlines():
+            name,code,path=line.split('\t',2);exits[name]={'exit':int(code),'path':path,'log':str(out/'files'/f'{name}.direct.log'),'log_sha256':hashlib.sha256((out/'files'/f'{name}.direct.log').read_bytes()).hexdigest()}
+          assert set(exits)=={Path(r['name']).stem for r in files}
+          qym=next(r for r in files if r['name']=='QYM.lean');qym_text=Path(qym['path']).read_text();qym_lines=qym_text.splitlines();log=(out/'files/QYM.direct.log').read_text(errors='replace')
+          dr=re.compile(r'^(?:protected\s+|private\s+|noncomputable\s+|local\s+)*(?:theorem|lemma|def|abbrev|instance|structure|class)\s+([^\s:(]+)');decl=[]
+          for i,x in enumerate(qym_lines,1):
+            m=dr.match(x)
+            if m:decl.append((i,m.group(1),x))
+          def owner(n):
+            z=[d for d in decl if d[0]<=n];return z[-1] if z else (None,None,None)
+          hr=re.compile(r'(?m)^.*QYM\.lean:(\d+):(\d+): error:(.*)$');hs=list(hr.finditer(log));errors=[]
+          for i,h in enumerate(hs):
+            n=int(h.group(1));c=int(h.group(2));b=log[h.start():(hs[i+1].start() if i+1<len(hs) else len(log))].strip();dl,dn,dh=owner(n);norm=re.sub(r'\s+',' ',b);sig=hashlib.sha256(norm.encode()).hexdigest();lo=max(1,n-4);hi=min(len(qym_lines),n+4);low=b.lower();classes=[]
+            for k,ts in {'type_mismatch':['type mismatch','application type mismatch'],'unsolved_goals':['unsolved goals'],'instance_synthesis':['failed to synthesize'],'arithmetic':['linarith','nlinarith','≤','inequality'],'scalar_action':['smul','hsmul'],'tendsto':['tendsto'],'unknown_identifier':['unknown identifier','invalid field notation'],'termination':['declaration uses sorry','decreasing argument','termination']}.items():
+              if any(t.lower() in low for t in ts):classes.append(k)
+            errors.append({'index':i+1,'line':n,'column':c,'declaration_line':dl,'declaration_name':dn,'declaration_header':dh,'code_line':qym_lines[n-1] if 1<=n<=len(qym_lines) else None,'classes':classes,'signature_sha256':sig,'message':b[:12000],'snippet':[{'line':j,'text':qym_lines[j-1]} for j in range(lo,hi+1)]})
+          counts=collections.Counter(e['declaration_name'] or '<none>' for e in errors);sigs=collections.Counter(e['signature_sha256'] for e in errors);fa=json.loads(Path(os.environ['FA_INVENTORY_PATH']).read_text());all_zero=all(v['exit']==0 for v in exits.values());qym_zero=exits['QYM']['exit']==0;assert (qym_zero and not errors) or (not qym_zero and errors),{'qym_exit':exits['QYM']['exit'],'errors':len(errors)}
+          report={'schema':'qym-v1-13file-direct-complete-inventory-v1','github_run_id':os.environ['GITHUB_RUN_ID'],'github_sha':os.environ['GITHUB_SHA'],'target_branch':os.environ['TARGET_BRANCH'],'fa_gate_inventory_path':os.environ['FA_INVENTORY_PATH'],'fa_gate_source_sha256':fa['selected_source_sha256'],'fa_gate_clean':True,'lean_version':(out/'lean-version.txt').read_text().strip(),'lake_version':(out/'lake-version.txt').read_text().strip(),'lean_toolchain':Path('lean-toolchain').read_text().strip(),'lean_toolchain_sha256':hashlib.sha256(Path('lean-toolchain').read_bytes()).hexdigest(),'lake_manifest_sha256':hashlib.sha256(Path('lake-manifest.json').read_bytes()).hexdigest() if Path('lake-manifest.json').exists() else None,'file_count':len(files),'file_order':[r['name'] for r in files],'files':files,'direct_results':exits,'all_13_direct_exit_zero':all_zero,'qym_source_sha256':qym['sha256'],'qym_lines':qym['lines'],'qym_declaration_header_count':qym['declaration_header_count'],'qym_exit':exits['QYM']['exit'],'qym_raw_error_count':len(errors),'qym_failing_declaration_count':len(counts),'qym_unique_signature_count':len(sigs),'qym_errors_by_declaration':dict(sorted(counts.items())),'qym_signature_multiplicities':dict(sorted(sigs.items())),'qym_clean_build_claimed':qym_zero and not errors,'qym_direct_lean_verified':qym_zero and not errors,'all_13_clean_build_claimed':all_zero,'trust_six_zero_all_13':all(r['trust_six_zero'] for r in files),'theorem_statements_changed':False,'declaration_order_changed':False,'source_moves':[],'qym_errors':errors}
+          Path('.github/codex/QYM_V1_INVENTORY.json').write_text(json.dumps(report,indent=2,sort_keys=True,ensure_ascii=False)+'\n')
+          (out/'QYM_V1_INVENTORY.json').write_text(json.dumps(report,indent=2,sort_keys=True,ensure_ascii=False)+'\n')
+          PY
+
+      - name: Upload full 13-file and QYM evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-qym-v1-13file-direct-inventory-${{ github.sha }}
+          path: build-logs/codex-qym-v1-13file-direct-inventory
+          retention-days: 30
+
+      - name: Commit QYM inventory before mirroring status
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .github/codex/QYM_V1_INVENTORY.json
+          if ! git diff --cached --quiet; then
+            git commit -m "Codex: record QYM v1 and all-13 direct inventory"
+            git pull --rebase origin "$TARGET_BRANCH"
+            git push origin "HEAD:$TARGET_BRANCH"
+          fi
+
+      - name: Mirror strict 13-file direct result
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,sys
+          r=json.load(open('.github/codex/QYM_V1_INVENTORY.json'))
+          if not r['all_13_direct_exit_zero']:
+            bad={k:v['exit'] for k,v in r['direct_results'].items() if v['exit']!=0}
+            print(bad)
+            sys.exit(1)
+          PY

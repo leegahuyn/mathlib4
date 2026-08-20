@@ -1,0 +1,66 @@
+{
+  "schema": "fa-fragment-repair-overrides-v1",
+  "status": "FULL_INVENTORY_ROOTS_CONFIRMED_STATIC_ONLY_UNVERIFIED",
+  "source_sha256": "d0a3decee1c0a7a781d14fdf122e235d71d8f210bb65a894dc4e518821bf03ec",
+  "analysis_note": "The implicit torus dimension remains a metavariable and consequently chooses the generic UnitAddCircle measure-space instance instead of the concrete Fin 2 instance in TwoTorusL2. Pin d := Fin 2 in the basis value and its coercion theorem; this is proof/RHS only and leaves both declaration headers unchanged.",
+  "repairs": [
+    {
+      "declaration_index": 3429,
+      "declaration_name": "twoTorusFourierBasis",
+      "header_sha256": "7eea8b3d93c2390b712dc59a1499fe3776542a18189ca8547c01529dd57c0147",
+      "diagnostic_ids": ["E0349"],
+      "replacements": [
+        {
+          "old_fragment": "  UnitAddTorus.mFourierBasis",
+          "new_fragment": "  UnitAddTorus.mFourierBasis (d := Fin 2)",
+          "old_sha256": "92305a40b58938141753382ed887c19574ae1bb3c2947611bb14b3d9e4ea230a",
+          "new_sha256": "28fedb26795c3b8be51e5228ba6167e87a0d0da4a06544376fa6fa5aeac5ae07",
+          "old_bytes": 28,
+          "new_bytes": 41,
+          "target_old_count": 1,
+          "global_old_count": 7
+        }
+      ]
+    },
+    {
+      "declaration_index": 3430,
+      "declaration_name": "coe_twoTorusFourierBasis",
+      "header_sha256": "b81233648fe9150f960ad8834237e8f30d1d5fc1f6f689fcacde83de1c3bce9b",
+      "diagnostic_ids": ["E0350"],
+      "replacements": [
+        {
+          "old_fragment": "  UnitAddTorus.coe_mFourierBasis",
+          "new_fragment": "  UnitAddTorus.coe_mFourierBasis (d := Fin 2)",
+          "old_sha256": "0174b305fe767595b6fc2df5e80bee921d22a16cdff2730920e579b8bf41dd93",
+          "new_sha256": "c481eacdc72e58f2329fe53b8363f646978e24df3e2f7fd2b89fc29e5cef895e",
+          "old_bytes": 32,
+          "new_bytes": 45,
+          "target_old_count": 1,
+          "global_old_count": 2
+        }
+      ]
+    }
+  ],
+  "standalone_candidate": {
+    "sha256": "6a4c60abe97a93db51558b3a25cc804f81c072700fbbe8fc081c1f507f286aef",
+    "bytes": 2702278,
+    "splitlines": 60573,
+    "changed_declaration_indices": [3429, 3430],
+    "direct_lean_verified": false
+  },
+  "static_validation": {
+    "all_old_fragments_unique_in_target": true,
+    "target_region_replacement_required_for_nonunique_global_fragments": true,
+    "declaration_sequence_preserved": true,
+    "all_existing_declaration_headers_preserved": true,
+    "documentation_and_comments_preserved": true,
+    "existing_at_attributes_preserved": true,
+    "executable_forbidden_six_zero": true
+  },
+  "local_execution": {
+    "lean": false,
+    "lake": false,
+    "git": false,
+    "github_write": false
+  }
+}

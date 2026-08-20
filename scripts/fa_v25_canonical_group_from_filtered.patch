@@ -1,0 +1,11 @@
+--- a/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
++++ b/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+@@ -19659,7 +19659,7 @@
+ 
+ noncomputable local instance fixedPhaseGraphCoreAddCommGroup (n : ℤ) :
+     AddCommGroup (InverseEtaFixedPhaseCore n) := by
+-  exact Module.addCommMonoidToAddCommGroup ℂ
++  exact Submodule.addCommGroup (inverseEtaFixedPhaseStableCoreSubmodule n)
+ 
+ /-- The three concrete shifted Petersson coordinates on the canonical
+ fixed-phase differential core. -/

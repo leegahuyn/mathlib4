@@ -1,0 +1,109 @@
+{
+  "schema": "fa-v42-declaration-local-repairs-v1",
+  "status": "PATCH_READY_STATIC_ORDERED_CONJUGATE_DERIVATIVE_NORMALIZATION_ATOMIC_W33_DIRECT_LEAN_REQUIRED_V46_W26",
+  "worker_id": "W26",
+  "cluster_id": "V46-IDX4296-ORDER-SPECIALIZED-CONJUGATE-DERIVATIVES-BEFORE-GENERAL-FDERIV",
+  "authority": {
+    "repository": "leegahuyn/mathlib4",
+    "run_id": 31728453514,
+    "head_sha": "5ec44f3d343955f3124e7efecc048b648dccc5ab",
+    "job_id": 94542617528,
+    "artifact_id": 9192669673,
+    "artifact_digest": "sha256:8f07a678145b62342aaa9cb94ebbce6c9f7cc1a45c400560918d42499e67f2f3",
+    "variant": "all_probes",
+    "source_path": "work/v45-results/run-31728453514/all_probes/Mock2_FunctionalAnalysis-candidate.lean",
+    "source_sha256": "726f40d1dd03d32f03592adf4f6b02e3f7f52e7e1f71087ee53bdb83c4bb0caf",
+    "source_bytes": 2788764,
+    "source_lines": 62383,
+    "declaration_count": 4416,
+    "diagnostics_path": "work/v45-results/run-31728453514/all_probes/FULL_DIAGNOSTICS.json",
+    "diagnostics_sha256": "1fb14600849d7281df6ff65ae9213b6671b19a396cf539041f864fea157476a1",
+    "fa_log_path": "work/v45-results/run-31728453514/all_probes/Mock2_FunctionalAnalysis.log",
+    "fa_log_sha256": "bcc92a247a531419b25677cfdd5e28ce1705e6c3fb87301b93e24510932b4888"
+  },
+  "assignment": {
+    "declaration_index": 4296,
+    "declaration": "euclideanRaiseTestAdjoint_conjugate_eq_conj_affineTranspose",
+    "requested_ordinal_label": [37, 38],
+    "v45_error_ordinals": [38],
+    "diagnostic_count": 1,
+    "lines": [59225],
+    "columns": [18],
+    "normalized_signatures": ["unsolved goals"],
+    "ordinal_reconciliation": "The locked all_probes FULL_DIAGNOSTICS.json assigns idx4296 ordinal 38. Ordinal 37 belongs to the preceding idx4288 owner and is a stale alternative label for this assignment.",
+    "baseline_status": "persisting",
+    "root_or_cascade": "INDEPENDENT_OWNER_LOCAL_SIMPLIFICATION_ORDER_ROOT_SYMMETRIC_WITH_IDX4297",
+    "ownership": "W26-only-with-W33-atomic-promotion-contract"
+  },
+  "diagnosis": {
+    "exact_residual_shape": "Both left derivatives remain fderiv of HalfWeightCompactCoordinateGreen.conjugate (reducedChartAmbientTest v hv), while the right side contains star of the corresponding fderiv terms of v.",
+    "root_cause": "The v45 broad simp set exposes reducedChartConjugateAmbientTest and contains both specialized dx_conjugate_apply/dy_conjugate_apply and general dx_apply/dy_apply. The general pointwise derivative rules fire first, converting the derivative of the bundled conjugate to raw fderiv. The specialized conjugation rules then have no matching dx/dy application and are reported unused; ring cannot relate opaque fderiv of the conjugated bundle to star of fderiv of v.",
+    "repair_strategy": "Separate exposure into ordered phases. First unfold only reducedChartConjugateAmbientTest. Then expose the outer adjoint/rpow algebra without general derivative rules. Rewrite the specialized dx/dy conjugation lemmas and conjugate_apply while their exact bundled patterns remain. Only afterward unfold reducedChartAmbientTest/fullPlaneTestToAmbientTestCore, reduce the now-unconjugated dx/dy to fderiv, normalize star algebra, and ring-close.",
+    "same_file_api_evidence": [
+      "directionalDerivative_conjugate_apply proves differentiation commutes with conjugation by a real-linear fderiv composition and is used by dx_conjugate_apply/dy_conjugate_apply.",
+      "weightedConjugate derivative proofs in the same source order specialized conjugation rewrites before subsequent coefficient algebra.",
+      "star_add, star_mul, star_neg, Complex.conj_I, and Complex.conj_ofReal are established same-file normalization APIs used in nearby Green identities."
+    ],
+    "remote_progression": [
+      {
+        "stage": "V40-G3 / V42-Q1-Q2",
+        "effect": "A coerced-function equality hfun could not rewrite the bundled AmbientTestCore argument below the adjoint derivatives."
+      },
+      {
+        "stage": "V43 late probe artifact 9189379230",
+        "effect": "Unfolding the bundle removed the rewrite failure and exposed the current algebra/derivative goal; the log marked dx_conjugate_apply and dy_conjugate_apply unused because general derivative simp won first."
+      },
+      {
+        "stage": "V44-Q2 / V45 all_probes",
+        "effect": "The bundle-unfold repair was retained, but a single broad simp still fires in the wrong order. The exact unsolved goal and unused-argument warnings persist in all six v45 variants."
+      }
+    ],
+    "required_imports": [],
+    "merge_dependencies": [],
+    "expected_owner_errors_closed": 1,
+    "semantic_risk": "LOW",
+    "confidence": "HIGH_STATIC_EXACT_REMOTE_PROGRESSION_AND_API_ORDER_DIRECT_LEAN_REQUIRED",
+    "theorem_proposition_changed": false,
+    "disposition": "PATCH_READY"
+  },
+  "symmetric_atomic_pair": {
+    "pair_id": "V46-PAIR-4296-4297-ORDERED-CONJUGATE-DERIVATIVES",
+    "selection_policy": "ALL_OR_NONE",
+    "application_order": [
+      "V46-W26-IDX4296-order-specialized-conjugate-derivatives-before-general-fderiv",
+      "V46-W33-IDX4297-order-specialized-conjugate-derivatives-before-general-fderiv"
+    ],
+    "owners": [
+      {"declaration_index": 4296, "declaration": "euclideanRaiseTestAdjoint_conjugate_eq_conj_affineTranspose", "worker": "W26"},
+      {"declaration_index": 4297, "declaration": "euclideanLowerFromSuccTestAdjoint_conjugate_eq_conj_affineTranspose", "worker": "W33"}
+    ],
+    "W33_mirror_contract": "Reuse W26's ordered phases and exact local constructor/derivative/star normalizers. Replace only the outer adjoint definition by euclideanLowerFromSuccTestAdjoint and anchor to idx4297's exact old body. Do not edit idx4296 from W33.",
+    "reason": "The two theorem bodies are structural raising/lowering mirrors, all six v45 variants preserve both exact bodies, and both emit the same one unsolved conjugate-fderiv goal with the same specialized-conjugation simp arguments unused. Downstream idx4298 and idx4299 consume the respective siblings, so promotion must keep their proof-trust surface symmetric."
+  },
+  "header_policy": "NO_HEADER_CHANGES_BODY_ONLY",
+  "trust_policy": {
+    "tokens": ["sorry", "admit", "axiom", "unsafe", "native_decide", "Lean.ofReduceBool"],
+    "required_before": 0,
+    "required_after": 0
+  },
+  "repairs": [
+    {
+      "id": "V46-W26-IDX4296-order-specialized-conjugate-derivatives-before-general-fderiv",
+      "owner": "euclideanRaiseTestAdjoint_conjugate_eq_conj_affineTranspose",
+      "declaration_index": 4296,
+      "diagnostics": [38],
+      "kind": "body",
+      "classification": "ORDERED_OUTER_EXPOSURE_THEN_SPECIALIZED_CONJUGATE_DERIVATIVE_REWRITE",
+      "confidence": "high-static-exact-v45-residual-and-v43-remote-progression-direct-Lean-required",
+      "expected_count_in_owner": 1,
+      "old": " := by\n  simp only [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanRaiseTestAdjoint,\n    reducedChartConjugateAmbientTest, fullPlaneAffineTranspose_apply, add_apply,\n    sub_apply, smul_apply,\n    HalfWeightCompactCoordinateGreen.rpowMul_apply,\n    HalfWeightCompactCoordinateGreen.rpowScale, Real.rpow_one,\n    HalfWeightCompactCoordinateGreen.dx_conjugate_apply,\n    HalfWeightCompactCoordinateGreen.dy_conjugate_apply,\n    HalfWeightCompactCoordinateGreen.dx_apply,\n    HalfWeightCompactCoordinateGreen.dy_apply,\n    reducedChartAmbientTest_apply, map_sub, map_add, map_mul,\n    map_neg, Complex.conj_I, Complex.conj_ofReal, smul_eq_mul]\n  ring",
+      "new": " := by\n  unfold reducedChartConjugateAmbientTest\n  simp only [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanRaiseTestAdjoint,\n    fullPlaneAffineTranspose_apply, add_apply, sub_apply, smul_apply,\n    HalfWeightCompactCoordinateGreen.rpowMul_apply,\n    HalfWeightCompactCoordinateGreen.rpowScale, Real.rpow_one]\n  rw [HalfWeightCompactCoordinateGreen.dx_conjugate_apply,\n    HalfWeightCompactCoordinateGreen.dy_conjugate_apply,\n    HalfWeightCompactCoordinateGreen.conjugate_apply]\n  unfold reducedChartAmbientTest fullPlaneTestToAmbientTestCore\n  simp only [HalfWeightCompactCoordinateGreen.dx_apply,\n    HalfWeightCompactCoordinateGreen.dy_apply, sub_eq_add_neg,\n    star_add, star_mul, star_neg, Complex.conj_I,\n    Complex.conj_ofReal, smul_eq_mul]\n  ring",
+      "evidence": "The authority goal contains exactly the conjugated raw fderivs, and its warnings prove the specialized dx/dy conjugation rules lost the simplifier race. This replacement preserves those structured dx/dy terms until explicit specialized rewrites have fired, then performs only algebraic normalization.",
+      "expected_effect": "Remove authoritative ordinal 38 at idx4296 and eliminate its obsolete specialized-simp warnings. Direct paired Lean replay with W33 is required before promotion."
+    }
+  ],
+  "promotion_rule": "Compose only against exact v45 all_probes SHA 726f40d1 and select the W26/W33 pair ALL_OR_NONE in declaration order. Require direct remote disappearance of idx4296 ordinal 38 and idx4297 ordinal 39 with no new sibling diagnostics or synthetic-sorry warnings, then verify downstream idx4298/idx4299, Mock2=0, Mock2_Advanced=0, full FA maxErrors=2000 exit 0, complete inventory comparison, 4416 byte-identical headers/order/comments/attributes, and trust-six zero.",
+  "direct_lean_verified": false,
+  "clean_build_claimed": false,
+  "lean_lake_git_github_network_invoked_by_worker": false
+}

@@ -1,0 +1,512 @@
+{
+  "activation_gate": {
+    "blockers": [
+      "PRIMARY_DIRECT_LEAN_UNVERIFIED",
+      "RFL_ALTERNATIVE_DIRECT_LEAN_UNVERIFIED"
+    ],
+    "direct_lean_required": true,
+    "official_v64_ready_index_path": "work/v64-prep/v64-artifact-inputs.json",
+    "official_v64_ready_index_present_at_build": true,
+    "official_v64_winner_authority_required": true,
+    "official_v64_winner_authority_satisfied": true,
+    "official_v64_winner_locked": true,
+    "promotion_allowed": false,
+    "state": "BLOCKED_DIRECT_LEAN_UNVERIFIED",
+    "supersede_allowed": false
+  },
+  "alternative_policy": {
+    "commutativity": "NOT_APPLICABLE_SINGLE_MUTUALLY_EXCLUSIVE_INSERTION",
+    "primary": "idx4017_after_full_literal_graph_base_simp",
+    "reverse_replay": "EXACT_FOR_BOTH_ALTERNATIVES",
+    "rfl_only_included": true,
+    "rfl_only_justification": "exact definitional CLM composition evidence",
+    "typed_change_included": false,
+    "typed_change_omission_reason": "No exact evidence requires a broader typed change; bounded simp directly targets the observed definitional residual."
+  },
+  "authority": {
+    "artifact": {
+      "api": {
+        "bytes": 763,
+        "path": "work/v63-results/run-31871876992/w4017_full/artifact-api.json",
+        "sha256": "825ea7af63ee7d7ba024224e5cb819cf1142b1a719327ffa4e36e6474351673b"
+      },
+      "digest": "sha256:51a74664e6bfa180b97ba97ddd8e3f1226c57125429ac90a09e3e9d3d1fdb7b5",
+      "id": 9244032070,
+      "name": "codex-fa-v63-w4017_full-highcap2000-336899ee618c4db5e88cf5c41b3a2195c3d61ba3",
+      "size_in_bytes": 1687279,
+      "zip": {
+        "bytes": 1687279,
+        "path": "work/v63-results/run-31871876992/w4017_full/artifact-9244032070.zip",
+        "sha256": "51a74664e6bfa180b97ba97ddd8e3f1226c57125429ac90a09e3e9d3d1fdb7b5"
+      }
+    },
+    "base_candidate": {
+      "bytes": 2813021,
+      "lines": 62944,
+      "path": "work/v63-results/run-31871876992/w4017_full/root/Mock2_FunctionalAnalysis-candidate.lean",
+      "sha256": "20ad5b01e774f1c388d2d16991e34840fdafe0f9d033038652311b29d84ae3f5"
+    },
+    "branch": "codex/fa-exclusive-focus-20260814",
+    "official_v64_winner_authority": {
+      "hydrated_ready_inputs": {
+        "bytes": 207063,
+        "path": "work/v64-prep/v64-artifact-inputs.json",
+        "sha256": "ade268f16ba52c293cd38317bf34598aa2dd181aff93260a98ee8d99208d752a"
+      },
+      "ranking_replays": [
+        {
+          "bytes": 3352,
+          "path": "work/v64-prep/v64-compare-a/ranking.json",
+          "sha256": "737c628ebe9684dddcb819e1e0939c80698288835ee2920279dd71ac64b85590"
+        },
+        {
+          "bytes": 3352,
+          "path": "work/v64-prep/v64-compare-b/ranking.json",
+          "sha256": "737c628ebe9684dddcb819e1e0939c80698288835ee2920279dd71ac64b85590"
+        }
+      ],
+      "replay_byte_identical": true,
+      "terminal_final_audit": {
+        "bytes": 7794,
+        "path": "work/v63-results/run-31871876992/FINAL_AUDIT.json",
+        "sha256": "1d112cca286b0296e070f82e1ce9aae4c7c952ca9d286cca4de7bc29e58d5615"
+      },
+      "winner": "w4017_full",
+      "winner_clean": false,
+      "winner_queue_replays": [
+        {
+          "bytes": 8149,
+          "path": "work/v64-prep/v64-compare-a/winner-residual-queues.json",
+          "sha256": "e5f0faae2f3ef00bbbb384362c8954dec2e2470fdd34fd01d8f7f3090327ccf7"
+        },
+        {
+          "bytes": 8149,
+          "path": "work/v64-prep/v64-compare-b/winner-residual-queues.json",
+          "sha256": "e5f0faae2f3ef00bbbb384362c8954dec2e2470fdd34fd01d8f7f3090327ccf7"
+        }
+      ]
+    },
+    "official_v64_winner_locked": true,
+    "repository": "leegahuyn/mathlib4",
+    "stale_non_authority": {
+      "bytes": 7903,
+      "path": "work/v64-prep/v64-prep-result-index.json",
+      "role": "NONAUTHORITATIVE_PREHYDRATION_SCAFFOLD_ONLY",
+      "sha256": "0d815e5c62ca65e88585ce0888dbd13547fdf47ec5efafc412a65ef093ccb9ab",
+      "status": "PENDING_V63_DIRECT_RESULTS_FAIL_CLOSED_SCAFFOLD_STATIC_PASS"
+    },
+    "toolchain": "leanprover/lean4:v4.33.0-rc1",
+    "v63_head_sha": "336899ee618c4db5e88cf5c41b3a2195c3d61ba3",
+    "v63_run_id": 31871876992,
+    "v63_winner": "w4017_full",
+    "v64_active_hydration_contract": {
+      "bytes": 21301,
+      "path": "work/v64-prep/v64-artifact-inputs.ACTIVE.json",
+      "sha256": "8f8949eab05d6aceb5671891d1df9aec5e04b5895e6cc4d73719bdec7061bb14"
+    }
+  },
+  "clean_claimed": false,
+  "direct_lean_verified": false,
+  "exact_residual": {
+    "boundary_timeout": {
+      "diagnostic": {
+        "column": 0,
+        "declaration": "discriminantHardStageOperator_eq_weightedHard",
+        "declaration_index": 4017,
+        "diagnostic_code": null,
+        "file": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+        "line": 55558,
+        "message": "(deterministic) timeout at `whnf`, maximum number of heartbeats (200000) has been reached",
+        "normalized_message_signature": "(deterministic) timeout at `whnf`, maximum number of heartbeats (200000) has been reached",
+        "ordinal": 4,
+        "raw_header": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:55558:0: error: (deterministic) timeout at `whnf`, maximum number of heartbeats (200000) has been reached",
+        "severity": "error",
+        "source_file_match": true
+      },
+      "disposition": "EXPECTED_CASCADE_NEVER_PATCH_INDEPENDENTLY"
+    },
+    "diagnostic": {
+      "column": 42,
+      "declaration": "discriminantHardStageOperator_eq_weightedHard",
+      "declaration_index": 4017,
+      "diagnostic_code": null,
+      "file": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+      "line": 55523,
+      "message": "unsolved goals",
+      "normalized_message_signature": "unsolved goals",
+      "ordinal": 3,
+      "raw_header": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:55523:42: error: unsolved goals",
+      "severity": "error",
+      "source_file_match": true
+    },
+    "goal": "⊢ ⟪↑↑((orbitPeterssonEuclideanEmbedding n) ((baseExtension n) v)) z,\n      discriminantHardStageWeight N z * ↑↑((orbitPeterssonEuclideanEmbedding n) ((baseExtension n) u)) z⟫_ℂ =\n    ⟪↑↑((graphEuclideanBase n) v) z, discriminantHardStageWeight N z * ↑↑((graphEuclideanBase n) u) z⟫_ℂ",
+    "goal_sha256": "425d04d104eee8b6213fa047b24d44bac8043b97cf35b99e0cf8ad02a30c93af",
+    "graphEuclideanBase_definition": "/-- The concrete Euclidean base coordinate of the graph completion. -/\nnoncomputable def graphEuclideanBase (n : ℤ) :\n    GraphSobolevCompletion n →L[ℂ] OrbitEuclideanL2 n :=\n  (orbitPeterssonEuclideanEmbedding n).comp (baseExtension n)",
+    "graphEuclideanBase_definition_sha256": "bedd922c3262c30c700197314cab43e400822f527321b2f3ad4df7f1325c2a6e",
+    "graphEuclideanBase_definition_start_line": 55135,
+    "root_cause": "graphEuclideanBase is the exact ContinuousLinearMap composition of orbitPeterssonEuclideanEmbedding and baseExtension"
+  },
+  "global_invariants": {
+    "changed_region_maxHeartbeats": {
+      "set_option_count": 0,
+      "token_count": 0
+    },
+    "declaration_count": 4416,
+    "full_candidates_written": false,
+    "global_maxHeartbeats": {
+      "set_option_count": 8,
+      "token_count": 8
+    },
+    "headers_statements_order_comments_attributes_preserved": true,
+    "imports_options_helpers_added": false,
+    "source_moves": 0,
+    "trust_six_zero": {
+      "Lean.ofReduceBool": 0,
+      "admit": 0,
+      "axiom": 0,
+      "native_decide": 0,
+      "sorry": 0,
+      "unsafe": 0
+    }
+  },
+  "input_locks": {
+    "v63_selection_ready": {
+      "bytes": 13802,
+      "path": "work/v63-ci/fa_v63_selection.READY.json",
+      "sha256": "9d4313db727c3a5625d6fcfddcc2fa97a692ad99cae11957b9d8561094211367"
+    },
+    "v63_terminal_final_audit": {
+      "bytes": 7794,
+      "path": "work/v63-results/run-31871876992/FINAL_AUDIT.json",
+      "sha256": "1d112cca286b0296e070f82e1ce9aae4c7c952ca9d286cca4de7bc29e58d5615"
+    },
+    "v63_w4017_manifest_ready": {
+      "bytes": 11395,
+      "path": "work/v63-ci/fa_v63_w4017-manifest.READY.json",
+      "sha256": "0285c92f68d6c4222105dfcb6c8c4483cf4f87cf67832fe9ae076698a7cae01f"
+    },
+    "v64_active_hydration_contract": {
+      "bytes": 21301,
+      "path": "work/v64-prep/v64-artifact-inputs.ACTIVE.json",
+      "sha256": "8f8949eab05d6aceb5671891d1df9aec5e04b5895e6cc4d73719bdec7061bb14"
+    },
+    "v64_compare_a_ranking": {
+      "bytes": 3352,
+      "path": "work/v64-prep/v64-compare-a/ranking.json",
+      "sha256": "737c628ebe9684dddcb819e1e0939c80698288835ee2920279dd71ac64b85590"
+    },
+    "v64_compare_a_winner_queues": {
+      "bytes": 8149,
+      "path": "work/v64-prep/v64-compare-a/winner-residual-queues.json",
+      "sha256": "e5f0faae2f3ef00bbbb384362c8954dec2e2470fdd34fd01d8f7f3090327ccf7"
+    },
+    "v64_compare_b_ranking": {
+      "bytes": 3352,
+      "path": "work/v64-prep/v64-compare-b/ranking.json",
+      "sha256": "737c628ebe9684dddcb819e1e0939c80698288835ee2920279dd71ac64b85590"
+    },
+    "v64_compare_b_winner_queues": {
+      "bytes": 8149,
+      "path": "work/v64-prep/v64-compare-b/winner-residual-queues.json",
+      "sha256": "e5f0faae2f3ef00bbbb384362c8954dec2e2470fdd34fd01d8f7f3090327ccf7"
+    },
+    "v64_ready_hydrated_inputs": {
+      "bytes": 207063,
+      "path": "work/v64-prep/v64-artifact-inputs.json",
+      "sha256": "ade268f16ba52c293cd38317bf34598aa2dd181aff93260a98ee8d99208d752a"
+    },
+    "v64_stale_pending_scaffold_index": {
+      "bytes": 7903,
+      "path": "work/v64-prep/v64-prep-result-index.json",
+      "sha256": "0d815e5c62ca65e88585ce0888dbd13547fdf47ec5efafc412a65ef093ccb9ab"
+    },
+    "w4017_full_artifact_api": {
+      "bytes": 763,
+      "path": "work/v63-results/run-31871876992/w4017_full/artifact-api.json",
+      "sha256": "825ea7af63ee7d7ba024224e5cb819cf1142b1a719327ffa4e36e6474351673b"
+    },
+    "w4017_full_artifact_zip": {
+      "bytes": 1687279,
+      "path": "work/v63-results/run-31871876992/w4017_full/artifact-9244032070.zip",
+      "sha256": "51a74664e6bfa180b97ba97ddd8e3f1226c57125429ac90a09e3e9d3d1fdb7b5"
+    },
+    "w4017_full_diagnostics": {
+      "bytes": 5591,
+      "path": "work/v63-results/run-31871876992/w4017_full/root/FULL_DIAGNOSTICS.json",
+      "sha256": "2ea9a8161b981af1dd3ee5943c86f46695f66b04739c6b65b4aa12c8fd53f941"
+    },
+    "w4017_full_fa_log": {
+      "bytes": 291733,
+      "path": "work/v63-results/run-31871876992/w4017_full/root/Mock2_FunctionalAnalysis.log",
+      "sha256": "83239105842050ae49c013c4096197bc3436b1c7265393d9374b56284ee8a39f"
+    },
+    "w4017_full_final_gate": {
+      "bytes": 5795,
+      "path": "work/v63-results/run-31871876992/w4017_full/root/FINAL_GATE.json",
+      "sha256": "460a189730c48a3da9b62503592cef965cb096c26bc1e79a1018a22c0bed8e8d"
+    },
+    "w4017_full_independent_candidate": {
+      "bytes": 2813021,
+      "lines": 62944,
+      "path": "work/v63-independent-ci-audit/run-6854032ec765-1/materializer-11/w4017_full/candidate.lean",
+      "sha256": "20ad5b01e774f1c388d2d16991e34840fdafe0f9d033038652311b29d84ae3f5"
+    },
+    "w4017_full_materialization": {
+      "bytes": 2786,
+      "path": "work/v63-results/run-31871876992/w4017_full/root/MATERIALIZATION.json",
+      "sha256": "8acc81902e74173fd23329425150aa5e62928f938fe3ba7fe65c0a89040b13fa"
+    },
+    "w4017_full_metric": {
+      "bytes": 3385,
+      "path": "work/v63-results/run-31871876992/w4017_full/root/METRIC.json",
+      "sha256": "415c07b00f20644ebacf13d0cd4741eb2dc94b4d1ae7bfb54eb4a55d1fa13be3"
+    },
+    "w4017_full_patch_audit": {
+      "bytes": 12916,
+      "path": "work/v63-results/run-31871876992/w4017_full/root/PATCH_AUDIT.json",
+      "sha256": "9bca175310d9df9f3177b310dc2492b11bbf8f76be58a171176c443a915bc321"
+    },
+    "w4017_full_result_candidate": {
+      "bytes": 2813021,
+      "lines": 62944,
+      "path": "work/v63-results/run-31871876992/w4017_full/root/Mock2_FunctionalAnalysis-candidate.lean",
+      "sha256": "20ad5b01e774f1c388d2d16991e34840fdafe0f9d033038652311b29d84ae3f5"
+    }
+  },
+  "lean_lake_git_gh_github_network_invoked_by_builder": false,
+  "note": "Two candidates are materialized in memory only. No Lean/Lake result, clean claim, source edit, promotion, or supersession exists.",
+  "preserved_v63_body": {
+    "operation_locks": [
+      {
+        "new_bytes": 779,
+        "new_sha256": "0bac3b416c945c5b3914b89f69b39a1c398f2b6993f857e4beaa8fb6984ddfad",
+        "operation_id": "w4017-r17-boundary-unblock",
+        "repair_id": "V63-W4017-R17-BASE"
+      },
+      {
+        "new_bytes": 157,
+        "new_sha256": "0ee25cd9d825ad7cbc680c6d27963df9967351dba9d37856d7950c03203c53ac",
+        "operation_id": "w4017-p-literal",
+        "repair_id": "V63-W4017-P"
+      },
+      {
+        "new_bytes": 147,
+        "new_sha256": "d50acbd3169ef8597daf5936190486d4e13e48635bf5a0e8f9f60f83b14e5e9c",
+        "operation_id": "w4017-p-carrier",
+        "repair_id": "V63-W4017-P"
+      },
+      {
+        "new_bytes": 125,
+        "new_sha256": "ced7262ebbcafd2fd54c09d5aa3545a78bc3f960564ea1b8182bcf6a6e5ede9f",
+        "operation_id": "w4017-z-unfold-phi",
+        "repair_id": "V63-W4017-Z"
+      },
+      {
+        "new_bytes": 72,
+        "new_sha256": "e9049c4d1a76fb2e88492de6460076d41f9160256bfd06ce88941d2e64f07913",
+        "operation_id": "w4017-w-literal",
+        "repair_id": "V63-W4017-W"
+      },
+      {
+        "new_bytes": 64,
+        "new_sha256": "952b92a9ec85913acaf6b72acda7da0bb5b02138f29e053e81e16025a43d2306",
+        "operation_id": "w4017-w-carrier",
+        "repair_id": "V63-W4017-W"
+      }
+    ],
+    "primary_preserves_every_operation_new_exactly_once": true,
+    "rfl_preserves_every_operation_new_exactly_once": true,
+    "selected_body": "R17_BASE_PLUS_P_PLUS_Z_PLUS_W",
+    "selected_repair_ids": [
+      "V63-W4017-R17-BASE",
+      "V63-W4017-P",
+      "V63-W4017-Z",
+      "V63-W4017-W"
+    ]
+  },
+  "promotion_allowed": false,
+  "schema": "fa-v64-w4017-full-followup-static-repair-v1",
+  "scope": "IDX4017_EXACT_55523_42_GRAPH_BASE_DEFINITIONAL_RESIDUAL_ONLY",
+  "status": "STAGED_OFFICIAL_V64_W4017_FULL_WINNER_LOCKED_DIRECT_LEAN_UNVERIFIED",
+  "supersede_allowed": false,
+  "variants": [
+    {
+      "base_candidate": {
+        "bytes": 2813021,
+        "lines": 62944,
+        "sha256": "20ad5b01e774f1c388d2d16991e34840fdafe0f9d033038652311b29d84ae3f5"
+      },
+      "base_variant": "w4017_full",
+      "candidate": {
+        "bytes": 2813090,
+        "lines": 62945,
+        "preview_path": "work/v64-workers/w4017-followup/idx4017-after-full-literal-graph-base-simp-owner-preview.lean",
+        "sha256": "93491e69d4e6f3d24f11ad45ecbb3a5c74aa28202c2771484a3663cdd51846fc"
+      },
+      "clean_claimed": false,
+      "direct_lean_verified": false,
+      "exact_evidence": "graphEuclideanBase is exactly ContinuousLinearMap.comp; comp_apply closes the observed applied equality without changing P+Z+W",
+      "invariants": {
+        "attributes_identical": true,
+        "body_only": true,
+        "changed_declaration_indices": [
+          4017
+        ],
+        "changed_region_maxHeartbeats_after": {
+          "set_option_count": 0,
+          "token_count": 0
+        },
+        "changed_region_maxHeartbeats_before": {
+          "set_option_count": 0,
+          "token_count": 0
+        },
+        "comments_identical": true,
+        "declaration_count": 4416,
+        "declaration_headers_statements_order_identical": true,
+        "global_maxHeartbeats_after": {
+          "set_option_count": 8,
+          "token_count": 8
+        },
+        "global_maxHeartbeats_before": {
+          "set_option_count": 8,
+          "token_count": 8
+        },
+        "helpers_added": 0,
+        "imports_added": 0,
+        "options_added": 0,
+        "outside_owner_byte_identical": true,
+        "source_moves": 0,
+        "trust_counts_after": {
+          "Lean.ofReduceBool": 0,
+          "admit": 0,
+          "axiom": 0,
+          "native_decide": 0,
+          "sorry": 0,
+          "unsafe": 0
+        },
+        "trust_counts_before": {
+          "Lean.ofReduceBool": 0,
+          "admit": 0,
+          "axiom": 0,
+          "native_decide": 0,
+          "sorry": 0,
+          "unsafe": 0
+        }
+      },
+      "operation": {
+        "counts": {
+          "new_global_after": 1,
+          "new_global_before": 0,
+          "new_owner_after": 1,
+          "new_owner_before": 0,
+          "old_global_after": 0,
+          "old_global_before": 1,
+          "old_owner_after": 0,
+          "old_owner_before": 1
+        },
+        "new": "      unfold Φ\n      rw [hv, hmul, Pi.smul_apply', smul_eq_mul, hw, hu]\n      simp only [graphEuclideanBase, ContinuousLinearMap.comp_apply]\n    _ = ∫ z, Φ z ∂chosenEuclideanCarrierMeasure :=",
+        "new_bytes": 197,
+        "new_sha256": "e040c76889c0b0ca2b11f735c19b477319b2e4a6d116793651bd4de566911009",
+        "old": "      unfold Φ\n      rw [hv, hmul, Pi.smul_apply', smul_eq_mul, hw, hu]\n    _ = ∫ z, Φ z ∂chosenEuclideanCarrierMeasure :=",
+        "old_bytes": 128,
+        "old_sha256": "2d6225fb63454b16b86ec4ccf8a98cbdb6cc7afec150138893124d90e05c8140",
+        "operation_id": "V64-W4017-FULL-GRAPH-BASE-SIMP",
+        "reverse_replay_exact": true
+      },
+      "priority": 1,
+      "promotion_allowed": false,
+      "role": "PRIMARY_MINIMAL_BOUNDED_CLOSURE",
+      "status": "STAGED_OFFICIAL_V64_W4017_FULL_WINNER_LOCKED_DIRECT_LEAN_UNVERIFIED",
+      "variant_id": "idx4017_after_full_literal_graph_base_simp"
+    },
+    {
+      "base_candidate": {
+        "bytes": 2813021,
+        "lines": 62944,
+        "sha256": "20ad5b01e774f1c388d2d16991e34840fdafe0f9d033038652311b29d84ae3f5"
+      },
+      "base_variant": "w4017_full",
+      "candidate": {
+        "bytes": 2813031,
+        "lines": 62945,
+        "preview_path": "work/v64-workers/w4017-followup/idx4017-after-full-literal-rfl-owner-preview.lean",
+        "sha256": "6a2524de966143f709c92dfb992a8f2029be4648812518010a4c5639f0c4b288"
+      },
+      "clean_claimed": false,
+      "direct_lean_verified": false,
+      "exact_evidence": "The observed goal differs only by delta-reducing graphEuclideanBase to the exact CLM comp definition; retained as a smaller unverified fallback, never preferred over bounded simp without direct Lean evidence",
+      "invariants": {
+        "attributes_identical": true,
+        "body_only": true,
+        "changed_declaration_indices": [
+          4017
+        ],
+        "changed_region_maxHeartbeats_after": {
+          "set_option_count": 0,
+          "token_count": 0
+        },
+        "changed_region_maxHeartbeats_before": {
+          "set_option_count": 0,
+          "token_count": 0
+        },
+        "comments_identical": true,
+        "declaration_count": 4416,
+        "declaration_headers_statements_order_identical": true,
+        "global_maxHeartbeats_after": {
+          "set_option_count": 8,
+          "token_count": 8
+        },
+        "global_maxHeartbeats_before": {
+          "set_option_count": 8,
+          "token_count": 8
+        },
+        "helpers_added": 0,
+        "imports_added": 0,
+        "options_added": 0,
+        "outside_owner_byte_identical": true,
+        "source_moves": 0,
+        "trust_counts_after": {
+          "Lean.ofReduceBool": 0,
+          "admit": 0,
+          "axiom": 0,
+          "native_decide": 0,
+          "sorry": 0,
+          "unsafe": 0
+        },
+        "trust_counts_before": {
+          "Lean.ofReduceBool": 0,
+          "admit": 0,
+          "axiom": 0,
+          "native_decide": 0,
+          "sorry": 0,
+          "unsafe": 0
+        }
+      },
+      "operation": {
+        "counts": {
+          "new_global_after": 1,
+          "new_global_before": 0,
+          "new_owner_after": 1,
+          "new_owner_before": 0,
+          "old_global_after": 0,
+          "old_global_before": 1,
+          "old_owner_after": 0,
+          "old_owner_before": 1
+        },
+        "new": "      unfold Φ\n      rw [hv, hmul, Pi.smul_apply', smul_eq_mul, hw, hu]\n      rfl\n    _ = ∫ z, Φ z ∂chosenEuclideanCarrierMeasure :=",
+        "new_bytes": 138,
+        "new_sha256": "9beb9940b40ac73a3a995e452a6b364f32ef5955f04ff0661046dd1e9a770f63",
+        "old": "      unfold Φ\n      rw [hv, hmul, Pi.smul_apply', smul_eq_mul, hw, hu]\n    _ = ∫ z, Φ z ∂chosenEuclideanCarrierMeasure :=",
+        "old_bytes": 128,
+        "old_sha256": "2d6225fb63454b16b86ec4ccf8a98cbdb6cc7afec150138893124d90e05c8140",
+        "operation_id": "V64-W4017-FULL-GRAPH-BASE-RFL",
+        "reverse_replay_exact": true
+      },
+      "priority": 2,
+      "promotion_allowed": false,
+      "role": "SECONDARY_DEFINITIONAL_RFL_ONLY_ALTERNATIVE",
+      "status": "STAGED_OFFICIAL_V64_W4017_FULL_WINNER_LOCKED_DIRECT_LEAN_UNVERIFIED",
+      "variant_id": "idx4017_after_full_literal_rfl"
+    }
+  ]
+}

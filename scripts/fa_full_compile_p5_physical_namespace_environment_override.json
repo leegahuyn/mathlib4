@@ -1,0 +1,58 @@
+{
+  "schema": "fa-environment-fragment-repair-override-v1",
+  "status": "FULL_INVENTORY_ROOTS_CONFIRMED_STATIC_ONLY_UNVERIFIED",
+  "scope": "P5PhysicalHardStageRestriction namespace only, source lines 49695-53103",
+  "source_sha256": "d0a3decee1c0a7a781d14fdf122e235d71d8f210bb65a894dc4e518821bf03ec",
+  "analysis_note": "This physical Rellich section uses short names defined by three sibling namespaces but opens none of them. Add only the three exact owner namespaces inside the bounded P5 namespace. This targets 15 emitted unknown-identifier roots while avoiding the rejected file-tail global-open alternative.",
+  "confirmed_root_selectors": {
+    "diagnostic_ids": [
+      "E0525", "E0539", "E0544", "E0548", "E0552", "E0558", "E0562", "E0568",
+      "E0570", "E0579", "E0586", "E0587", "E0588", "E0589", "E0593"
+    ],
+    "declaration_indices": [3745, 3770, 3771, 3772, 3773, 3775, 3776, 3780, 3793, 3804, 3813, 3814],
+    "owner_map": {
+      "SmoothCompactCoreGeometry": ["upperLift_apply"],
+      "HalfWeightDifferentialOperators": ["heightC"],
+      "FixedPhaseHorocycleTrace": [
+        "euclideanHorizontalDrift",
+        "norm_height_mul_dy_le_euclideanGraph",
+        "fixedPhaseEuclideanGraphDensity",
+        "fixedPhaseEuclideanGraphDensity_nonneg",
+        "fixedPhaseEuclideanGraphDensity_continuous",
+        "logHeightTraceBaseCoeff",
+        "weighted_coordinate_energy_le_coreMap",
+        "selectedCuspTraceEnergyConstant"
+      ]
+    }
+  },
+  "environment_replacement": {
+    "old_fragment": "namespace P5PhysicalHardStageRestriction\n\nopen Set Function Topology Filter MeasureTheory\nopen scoped ENNReal NNReal\nopen DefinitionOneSobolev\nopen DefinitionOneSobolev.FixedPhasePeterssonCoordinates\nopen DefinitionOneSobolev.FixedPhaseGraphCompletion\nopen GammaTwoQuotientGeometry\nopen FixedPhaseClosedOperators\nopen PhysicalLocalL2\nopen FixedPhaseReducedChartFriedrichs\nopen FixedPhaseAffineFriedrichs",
+    "new_fragment": "namespace P5PhysicalHardStageRestriction\n\nopen Set Function Topology Filter MeasureTheory\nopen scoped ENNReal NNReal\nopen DefinitionOneSobolev\nopen DefinitionOneSobolev.FixedPhasePeterssonCoordinates\nopen DefinitionOneSobolev.FixedPhaseGraphCompletion\nopen GammaTwoQuotientGeometry\nopen SmoothCompactCoreGeometry\nopen HalfWeightDifferentialOperators\nopen FixedPhaseHorocycleTrace\nopen FixedPhaseClosedOperators\nopen PhysicalLocalL2\nopen FixedPhaseReducedChartFriedrichs\nopen FixedPhaseAffineFriedrichs",
+    "old_sha256": "34c7cfbca846caac977f0589e41bf144f496ab20f00224c660c3724ccd90cabc",
+    "new_sha256": "693327419b44c40907eb2522ad063e186df874d9aae73298a5ada36cb9218675",
+    "old_bytes": 403,
+    "new_bytes": 501,
+    "old_global_count": 1,
+    "new_global_count_before": 0
+  },
+  "standalone_candidate": {
+    "sha256": "3835332f3c2247314270819a66a845a033d1cc736112e6d3fca4cc7c3c139707",
+    "bytes": 2702350,
+    "splitlines": 60576,
+    "direct_lean_verified": false
+  },
+  "static_validation": {
+    "declarations": 4397,
+    "declaration_sequence_preserved": true,
+    "all_existing_declaration_headers_preserved": true,
+    "documentation_and_comments_preserved": true,
+    "existing_at_attributes_preserved": true,
+    "executable_forbidden_six_zero": true
+  },
+  "local_execution": {
+    "lean": false,
+    "lake": false,
+    "git": false,
+    "github_write": false
+  }
+}

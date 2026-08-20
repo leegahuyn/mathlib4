@@ -1,0 +1,11 @@
+{
+  "schema": "fa-dynamic-env-ambient-plane-l2-addgroup-v1",
+  "status": "STRUCTURAL_INSTANCE_COHERENCE_PENDING_DIRECT_LEAN",
+  "source_run_id": 31558337270,
+  "source_sha256": "ed43b7f89d9cd2128150cc2f2499ba475ff5ef417ef61adaa5b856df9293f6d8",
+  "environment_replacement": {
+    "id": "ambient-plane-l2-module-addgroup",
+    "old_fragment": "namespace FixedPhaseAffineFriedrichs\n\nopen Set Function Topology Filter MeasureTheory Metric\n\n/-- The zero-mean rewrite which removes the non-small untranslated term. -/",
+    "new_fragment": "namespace FixedPhaseAffineFriedrichs\n\nopen Set Function Topology Filter MeasureTheory Metric\n\nnoncomputable local instance ambientPlaneL2ModuleAddCommGroup :\n    AddCommGroup AmbientPlaneL2 :=\n  Module.addCommMonoidToAddCommGroup ℂ\n\n/-- The zero-mean rewrite which removes the non-small untranslated term. -/"
+  }
+}

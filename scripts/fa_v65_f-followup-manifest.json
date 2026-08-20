@@ -1,0 +1,3765 @@
+{
+  "authority": {
+    "branch": "codex/fa-exclusive-focus-20260814",
+    "official_v62_candidate": {
+      "bytes": 2812442,
+      "declaration_count": 4416,
+      "lines": 62933,
+      "path": "work/v61-results/run-31863434345/fourier_pair/extracted/Mock2_FunctionalAnalysis-candidate.lean",
+      "sha256": "1badac1451e11708114eb5438616063379558bcf0579dc82a01c2200b501d365"
+    },
+    "official_v62_variant": "fourier_pair",
+    "repository": "leegahuyn/mathlib4",
+    "toolchain": "leanprover/lean4:v4.33.0-rc1",
+    "v63_head_sha": "336899ee618c4db5e88cf5c41b3a2195c3d61ba3",
+    "v63_run_id": 31871876992,
+    "v63_selection": {
+      "bytes": 13802,
+      "path": "work/v63-ci/fa_v63_selection.READY.json",
+      "sha256": "9d4313db727c3a5625d6fcfddcc2fa97a692ad99cae11957b9d8561094211367",
+      "status": "READY"
+    }
+  },
+  "clean_claimed": false,
+  "direct_lean_verified": false,
+  "f3930_f3933_composite_commutativity": {
+    "clean_claimed": false,
+    "composites": [
+      {
+        "base_candidate": {
+          "bytes": 2813056,
+          "lines": 62947,
+          "sha256": "0b58272e04b80d84047edb9641a61d36ca6fbbb3d787e8139346b4e41eeb6101"
+        },
+        "base_variant": "f3930_f3933_fallback",
+        "candidate": {
+          "bytes": 2813338,
+          "declaration_count": 4416,
+          "full_candidate_written": false,
+          "lines": 62951,
+          "sha256": "12b5a0e8e359461a8f492c5acefb47a17a31fae6a89fbf52ff8b127e5a99d634"
+        },
+        "clean_claimed": false,
+        "components": [
+          "V64-IDX3930-PI-NEG-COMPLEX-NE-FIELDSIMP-RING",
+          "V64-IDX3933-INVERSE-STAR-CALC-FALLBACK"
+        ],
+        "composite_id": "f3930_fieldsimp_f3933_fallback_inv_calc",
+        "direct_lean_verified": false,
+        "forward_order": [
+          3930,
+          3933
+        ],
+        "forward_reverse_byte_equal": true,
+        "forward_reverse_sha256_equal": true,
+        "forward_steps": [
+          {
+            "counts": {
+              "new_global_after": 1,
+              "new_global_before": 0,
+              "new_owner_after": 1,
+              "new_owner_before": 0,
+              "old_global_after": 0,
+              "old_global_before": 1,
+              "old_owner_after": 0,
+              "old_owner_before": 1
+            },
+            "new": "      rw [hre, him]\n      simp only [Pi.neg_apply]\n      have hScaleNe : (literalStageFourierScale Y : ℂ) ≠ 0 :=\n        Complex.ofReal_ne_zero.mpr (literalStageFourierScale_ne_zero Y)\n      field_simp [hScaleNe] <;> ring",
+            "new_bytes": 225,
+            "new_sha256": "85cf6fc7bb2171362d39fbac0d47a3966436f963848ead2fc2e3d3d74e2a743e",
+            "old": "      rw [hre, him]\n      simp only [Pi.neg_apply]\n      ring",
+            "old_bytes": 61,
+            "old_sha256": "e35147bbc5634f09f0ad55d041cb780abc1992f96552ebf4ec314b60f902529f",
+            "step_id": "V64-IDX3930-PI-NEG-COMPLEX-NE-FIELDSIMP-RING-FORWARD"
+          },
+          {
+            "counts": {
+              "new_global_after": 1,
+              "new_global_before": 0,
+              "new_owner_after": 1,
+              "new_owner_before": 0,
+              "old_global_after": 0,
+              "old_global_before": 1,
+              "old_owner_after": 0,
+              "old_owner_before": 1
+            },
+            "new": "          have hScaleInvStar :\n              star ((literalStageFourierScale Y : ℂ)⁻¹) =\n                (literalStageFourierScale Y : ℂ)⁻¹ := by\n            calc\n              star ((literalStageFourierScale Y : ℂ)⁻¹) =\n                  (star (literalStageFourierScale Y : ℂ))⁻¹ := by\n                exact map_inv₀ (starRingEnd ℂ) _\n              _ = (literalStageFourierScale Y : ℂ)⁻¹ :=\n                congrArg Inv.inv hScaleStar",
+            "new_bytes": 464,
+            "new_sha256": "560542599ffe5d01f38f8b2fddb0040741cf1bdf511788abb96baa76871a68d7",
+            "old": "          have hScaleInvStar :\n              star ((literalStageFourierScale Y : ℂ)⁻¹) =\n                (literalStageFourierScale Y : ℂ)⁻¹ := by\n            change (starRingEnd ℂ)\n                ((literalStageFourierScale Y : ℂ)⁻¹) =\n              (literalStageFourierScale Y : ℂ)⁻¹\n            rw [map_inv₀, hScaleStar]",
+            "old_bytes": 346,
+            "old_sha256": "d73df4fa160e42bce763f756c540bf65366f6889d2618c4c27a44d7854e5bbcc",
+            "step_id": "V64-IDX3933-INVERSE-STAR-CALC-FALLBACK-FORWARD"
+          }
+        ],
+        "individual_candidate_owner_transplant_byte_equal": true,
+        "invariants_from_frozen_composite_base": {
+          "attributes_identical": true,
+          "body_only": true,
+          "changed_declaration_indices": [
+            3930,
+            3933
+          ],
+          "changed_region_maxHeartbeats": {
+            "3930": {
+              "after": {
+                "set_option_count": 0,
+                "token_count": 0
+              },
+              "before": {
+                "set_option_count": 0,
+                "token_count": 0
+              }
+            },
+            "3933": {
+              "after": {
+                "set_option_count": 0,
+                "token_count": 0
+              },
+              "before": {
+                "set_option_count": 0,
+                "token_count": 0
+              }
+            }
+          },
+          "comments_identical": true,
+          "declaration_count": 4416,
+          "declaration_headers_statements_and_order_identical": true,
+          "global_maxHeartbeats_after": {
+            "set_option_count": 8,
+            "token_count": 8
+          },
+          "global_maxHeartbeats_before": {
+            "set_option_count": 8,
+            "token_count": 8
+          },
+          "helpers_added": 0,
+          "imports_added": 0,
+          "options_added": 0,
+          "outside_owner_set_byte_identical": true,
+          "source_moves": 0,
+          "trust_counts_after": {
+            "Lean.ofReduceBool": 0,
+            "admit": 0,
+            "axiom": 0,
+            "native_decide": 0,
+            "sorry": 0,
+            "unsafe": 0
+          },
+          "trust_counts_before": {
+            "Lean.ofReduceBool": 0,
+            "admit": 0,
+            "axiom": 0,
+            "native_decide": 0,
+            "sorry": 0,
+            "unsafe": 0
+          }
+        },
+        "invariants_from_official_v62_authority": {
+          "attributes_identical": true,
+          "body_only": true,
+          "changed_declaration_indices": [
+            3930,
+            3933
+          ],
+          "changed_region_maxHeartbeats": {
+            "3930": {
+              "after": {
+                "set_option_count": 0,
+                "token_count": 0
+              },
+              "before": {
+                "set_option_count": 0,
+                "token_count": 0
+              }
+            },
+            "3933": {
+              "after": {
+                "set_option_count": 0,
+                "token_count": 0
+              },
+              "before": {
+                "set_option_count": 0,
+                "token_count": 0
+              }
+            }
+          },
+          "comments_identical": true,
+          "declaration_count": 4416,
+          "declaration_headers_statements_and_order_identical": true,
+          "global_maxHeartbeats_after": {
+            "set_option_count": 8,
+            "token_count": 8
+          },
+          "global_maxHeartbeats_before": {
+            "set_option_count": 8,
+            "token_count": 8
+          },
+          "helpers_added": 0,
+          "imports_added": 0,
+          "options_added": 0,
+          "outside_owner_set_byte_identical": true,
+          "source_moves": 0,
+          "trust_counts_after": {
+            "Lean.ofReduceBool": 0,
+            "admit": 0,
+            "axiom": 0,
+            "native_decide": 0,
+            "sorry": 0,
+            "unsafe": 0
+          },
+          "trust_counts_before": {
+            "Lean.ofReduceBool": 0,
+            "admit": 0,
+            "axiom": 0,
+            "native_decide": 0,
+            "sorry": 0,
+            "unsafe": 0
+          }
+        },
+        "preferred_f3933_included": false,
+        "promotion_allowed": false,
+        "reverse_order": [
+          3933,
+          3930
+        ],
+        "reverse_steps": [
+          {
+            "counts": {
+              "new_global_after": 1,
+              "new_global_before": 0,
+              "new_owner_after": 1,
+              "new_owner_before": 0,
+              "old_global_after": 0,
+              "old_global_before": 1,
+              "old_owner_after": 0,
+              "old_owner_before": 1
+            },
+            "new": "          have hScaleInvStar :\n              star ((literalStageFourierScale Y : ℂ)⁻¹) =\n                (literalStageFourierScale Y : ℂ)⁻¹ := by\n            calc\n              star ((literalStageFourierScale Y : ℂ)⁻¹) =\n                  (star (literalStageFourierScale Y : ℂ))⁻¹ := by\n                exact map_inv₀ (starRingEnd ℂ) _\n              _ = (literalStageFourierScale Y : ℂ)⁻¹ :=\n                congrArg Inv.inv hScaleStar",
+            "new_bytes": 464,
+            "new_sha256": "560542599ffe5d01f38f8b2fddb0040741cf1bdf511788abb96baa76871a68d7",
+            "old": "          have hScaleInvStar :\n              star ((literalStageFourierScale Y : ℂ)⁻¹) =\n                (literalStageFourierScale Y : ℂ)⁻¹ := by\n            change (starRingEnd ℂ)\n                ((literalStageFourierScale Y : ℂ)⁻¹) =\n              (literalStageFourierScale Y : ℂ)⁻¹\n            rw [map_inv₀, hScaleStar]",
+            "old_bytes": 346,
+            "old_sha256": "d73df4fa160e42bce763f756c540bf65366f6889d2618c4c27a44d7854e5bbcc",
+            "step_id": "V64-IDX3933-INVERSE-STAR-CALC-FALLBACK-REVERSE"
+          },
+          {
+            "counts": {
+              "new_global_after": 1,
+              "new_global_before": 0,
+              "new_owner_after": 1,
+              "new_owner_before": 0,
+              "old_global_after": 0,
+              "old_global_before": 1,
+              "old_owner_after": 0,
+              "old_owner_before": 1
+            },
+            "new": "      rw [hre, him]\n      simp only [Pi.neg_apply]\n      have hScaleNe : (literalStageFourierScale Y : ℂ) ≠ 0 :=\n        Complex.ofReal_ne_zero.mpr (literalStageFourierScale_ne_zero Y)\n      field_simp [hScaleNe] <;> ring",
+            "new_bytes": 225,
+            "new_sha256": "85cf6fc7bb2171362d39fbac0d47a3966436f963848ead2fc2e3d3d74e2a743e",
+            "old": "      rw [hre, him]\n      simp only [Pi.neg_apply]\n      ring",
+            "old_bytes": 61,
+            "old_sha256": "e35147bbc5634f09f0ad55d041cb780abc1992f96552ebf4ec314b60f902529f",
+            "step_id": "V64-IDX3930-PI-NEG-COMPLEX-NE-FIELDSIMP-RING-REVERSE"
+          }
+        ],
+        "status": "STAGED_DIRECT_LEAN_UNVERIFIED"
+      },
+      {
+        "base_candidate": {
+          "bytes": 2813056,
+          "lines": 62947,
+          "sha256": "0b58272e04b80d84047edb9641a61d36ca6fbbb3d787e8139346b4e41eeb6101"
+        },
+        "base_variant": "f3930_f3933_fallback",
+        "candidate": {
+          "bytes": 2813527,
+          "declaration_count": 4416,
+          "full_candidate_written": false,
+          "lines": 62954,
+          "sha256": "23a4c5e517aa26cda065f98fa169342105f10cb132089b1293b0f54826e5488d"
+        },
+        "clean_claimed": false,
+        "components": [
+          "V64-IDX3930-PI-NEG-EXPLICIT-SCALE-CANCEL",
+          "V64-IDX3933-INVERSE-STAR-CALC-FALLBACK"
+        ],
+        "composite_id": "f3930_explicit_cancel_f3933_fallback_inv_calc",
+        "direct_lean_verified": false,
+        "forward_order": [
+          3930,
+          3933
+        ],
+        "forward_reverse_byte_equal": true,
+        "forward_reverse_sha256_equal": true,
+        "forward_steps": [
+          {
+            "counts": {
+              "new_global_after": 1,
+              "new_global_before": 0,
+              "new_owner_after": 1,
+              "new_owner_before": 0,
+              "old_global_after": 0,
+              "old_global_before": 1,
+              "old_owner_after": 0,
+              "old_owner_before": 1
+            },
+            "new": "      rw [hre, him]\n      simp only [Pi.neg_apply]\n      have hScaleNe : (literalStageFourierScale Y : ℂ) ≠ 0 :=\n        Complex.ofReal_ne_zero.mpr (literalStageFourierScale_ne_zero Y)\n      rw [show (literalStageFourierScale Y : ℂ) ^ 2 *\n          (literalStageFourierScale Y : ℂ)⁻¹ =\n          (literalStageFourierScale Y : ℂ) by\n        rw [pow_two, mul_assoc, mul_inv_cancel₀ hScaleNe, mul_one]]",
+            "new_bytes": 414,
+            "new_sha256": "d1f671794893bae6521136f06d916e78ec03d46791edf11b43d569da2218f04c",
+            "old": "      rw [hre, him]\n      simp only [Pi.neg_apply]\n      ring",
+            "old_bytes": 61,
+            "old_sha256": "e35147bbc5634f09f0ad55d041cb780abc1992f96552ebf4ec314b60f902529f",
+            "step_id": "V64-IDX3930-PI-NEG-EXPLICIT-SCALE-CANCEL-FORWARD"
+          },
+          {
+            "counts": {
+              "new_global_after": 1,
+              "new_global_before": 0,
+              "new_owner_after": 1,
+              "new_owner_before": 0,
+              "old_global_after": 0,
+              "old_global_before": 1,
+              "old_owner_after": 0,
+              "old_owner_before": 1
+            },
+            "new": "          have hScaleInvStar :\n              star ((literalStageFourierScale Y : ℂ)⁻¹) =\n                (literalStageFourierScale Y : ℂ)⁻¹ := by\n            calc\n              star ((literalStageFourierScale Y : ℂ)⁻¹) =\n                  (star (literalStageFourierScale Y : ℂ))⁻¹ := by\n                exact map_inv₀ (starRingEnd ℂ) _\n              _ = (literalStageFourierScale Y : ℂ)⁻¹ :=\n                congrArg Inv.inv hScaleStar",
+            "new_bytes": 464,
+            "new_sha256": "560542599ffe5d01f38f8b2fddb0040741cf1bdf511788abb96baa76871a68d7",
+            "old": "          have hScaleInvStar :\n              star ((literalStageFourierScale Y : ℂ)⁻¹) =\n                (literalStageFourierScale Y : ℂ)⁻¹ := by\n            change (starRingEnd ℂ)\n                ((literalStageFourierScale Y : ℂ)⁻¹) =\n              (literalStageFourierScale Y : ℂ)⁻¹\n            rw [map_inv₀, hScaleStar]",
+            "old_bytes": 346,
+            "old_sha256": "d73df4fa160e42bce763f756c540bf65366f6889d2618c4c27a44d7854e5bbcc",
+            "step_id": "V64-IDX3933-INVERSE-STAR-CALC-FALLBACK-FORWARD"
+          }
+        ],
+        "individual_candidate_owner_transplant_byte_equal": true,
+        "invariants_from_frozen_composite_base": {
+          "attributes_identical": true,
+          "body_only": true,
+          "changed_declaration_indices": [
+            3930,
+            3933
+          ],
+          "changed_region_maxHeartbeats": {
+            "3930": {
+              "after": {
+                "set_option_count": 0,
+                "token_count": 0
+              },
+              "before": {
+                "set_option_count": 0,
+                "token_count": 0
+              }
+            },
+            "3933": {
+              "after": {
+                "set_option_count": 0,
+                "token_count": 0
+              },
+              "before": {
+                "set_option_count": 0,
+                "token_count": 0
+              }
+            }
+          },
+          "comments_identical": true,
+          "declaration_count": 4416,
+          "declaration_headers_statements_and_order_identical": true,
+          "global_maxHeartbeats_after": {
+            "set_option_count": 8,
+            "token_count": 8
+          },
+          "global_maxHeartbeats_before": {
+            "set_option_count": 8,
+            "token_count": 8
+          },
+          "helpers_added": 0,
+          "imports_added": 0,
+          "options_added": 0,
+          "outside_owner_set_byte_identical": true,
+          "source_moves": 0,
+          "trust_counts_after": {
+            "Lean.ofReduceBool": 0,
+            "admit": 0,
+            "axiom": 0,
+            "native_decide": 0,
+            "sorry": 0,
+            "unsafe": 0
+          },
+          "trust_counts_before": {
+            "Lean.ofReduceBool": 0,
+            "admit": 0,
+            "axiom": 0,
+            "native_decide": 0,
+            "sorry": 0,
+            "unsafe": 0
+          }
+        },
+        "invariants_from_official_v62_authority": {
+          "attributes_identical": true,
+          "body_only": true,
+          "changed_declaration_indices": [
+            3930,
+            3933
+          ],
+          "changed_region_maxHeartbeats": {
+            "3930": {
+              "after": {
+                "set_option_count": 0,
+                "token_count": 0
+              },
+              "before": {
+                "set_option_count": 0,
+                "token_count": 0
+              }
+            },
+            "3933": {
+              "after": {
+                "set_option_count": 0,
+                "token_count": 0
+              },
+              "before": {
+                "set_option_count": 0,
+                "token_count": 0
+              }
+            }
+          },
+          "comments_identical": true,
+          "declaration_count": 4416,
+          "declaration_headers_statements_and_order_identical": true,
+          "global_maxHeartbeats_after": {
+            "set_option_count": 8,
+            "token_count": 8
+          },
+          "global_maxHeartbeats_before": {
+            "set_option_count": 8,
+            "token_count": 8
+          },
+          "helpers_added": 0,
+          "imports_added": 0,
+          "options_added": 0,
+          "outside_owner_set_byte_identical": true,
+          "source_moves": 0,
+          "trust_counts_after": {
+            "Lean.ofReduceBool": 0,
+            "admit": 0,
+            "axiom": 0,
+            "native_decide": 0,
+            "sorry": 0,
+            "unsafe": 0
+          },
+          "trust_counts_before": {
+            "Lean.ofReduceBool": 0,
+            "admit": 0,
+            "axiom": 0,
+            "native_decide": 0,
+            "sorry": 0,
+            "unsafe": 0
+          }
+        },
+        "preferred_f3933_included": false,
+        "promotion_allowed": false,
+        "reverse_order": [
+          3933,
+          3930
+        ],
+        "reverse_steps": [
+          {
+            "counts": {
+              "new_global_after": 1,
+              "new_global_before": 0,
+              "new_owner_after": 1,
+              "new_owner_before": 0,
+              "old_global_after": 0,
+              "old_global_before": 1,
+              "old_owner_after": 0,
+              "old_owner_before": 1
+            },
+            "new": "          have hScaleInvStar :\n              star ((literalStageFourierScale Y : ℂ)⁻¹) =\n                (literalStageFourierScale Y : ℂ)⁻¹ := by\n            calc\n              star ((literalStageFourierScale Y : ℂ)⁻¹) =\n                  (star (literalStageFourierScale Y : ℂ))⁻¹ := by\n                exact map_inv₀ (starRingEnd ℂ) _\n              _ = (literalStageFourierScale Y : ℂ)⁻¹ :=\n                congrArg Inv.inv hScaleStar",
+            "new_bytes": 464,
+            "new_sha256": "560542599ffe5d01f38f8b2fddb0040741cf1bdf511788abb96baa76871a68d7",
+            "old": "          have hScaleInvStar :\n              star ((literalStageFourierScale Y : ℂ)⁻¹) =\n                (literalStageFourierScale Y : ℂ)⁻¹ := by\n            change (starRingEnd ℂ)\n                ((literalStageFourierScale Y : ℂ)⁻¹) =\n              (literalStageFourierScale Y : ℂ)⁻¹\n            rw [map_inv₀, hScaleStar]",
+            "old_bytes": 346,
+            "old_sha256": "d73df4fa160e42bce763f756c540bf65366f6889d2618c4c27a44d7854e5bbcc",
+            "step_id": "V64-IDX3933-INVERSE-STAR-CALC-FALLBACK-REVERSE"
+          },
+          {
+            "counts": {
+              "new_global_after": 1,
+              "new_global_before": 0,
+              "new_owner_after": 1,
+              "new_owner_before": 0,
+              "old_global_after": 0,
+              "old_global_before": 1,
+              "old_owner_after": 0,
+              "old_owner_before": 1
+            },
+            "new": "      rw [hre, him]\n      simp only [Pi.neg_apply]\n      have hScaleNe : (literalStageFourierScale Y : ℂ) ≠ 0 :=\n        Complex.ofReal_ne_zero.mpr (literalStageFourierScale_ne_zero Y)\n      rw [show (literalStageFourierScale Y : ℂ) ^ 2 *\n          (literalStageFourierScale Y : ℂ)⁻¹ =\n          (literalStageFourierScale Y : ℂ) by\n        rw [pow_two, mul_assoc, mul_inv_cancel₀ hScaleNe, mul_one]]",
+            "new_bytes": 414,
+            "new_sha256": "d1f671794893bae6521136f06d916e78ec03d46791edf11b43d569da2218f04c",
+            "old": "      rw [hre, him]\n      simp only [Pi.neg_apply]\n      ring",
+            "old_bytes": 61,
+            "old_sha256": "e35147bbc5634f09f0ad55d041cb780abc1992f96552ebf4ec314b60f902529f",
+            "step_id": "V64-IDX3930-PI-NEG-EXPLICIT-SCALE-CANCEL-REVERSE"
+          }
+        ],
+        "status": "STAGED_DIRECT_LEAN_UNVERIFIED"
+      }
+    ],
+    "direct_lean_verified": false,
+    "expected_frozen_base_candidate": {
+      "bytes": 2813056,
+      "declaration_count": 4416,
+      "lines": 62947,
+      "sha256": "0b58272e04b80d84047edb9641a61d36ca6fbbb3d787e8139346b4e41eeb6101"
+    },
+    "frozen_base_candidate": {
+      "bytes": 2813056,
+      "lines": 62947,
+      "sha256": "0b58272e04b80d84047edb9641a61d36ca6fbbb3d787e8139346b4e41eeb6101"
+    },
+    "frozen_base_reconstructed_from_both_owner_orders": true,
+    "full_candidates_written": false,
+    "matrix_policy": {
+      "exclude_f3933_preferred_lane": true,
+      "keep_f3930_explicit_cancel_lane": true,
+      "keep_f3930_fieldsimp_lane": true,
+      "keep_f3933_fallback_lane": true
+    },
+    "promotion_allowed": false,
+    "status": "STAGED_DIRECT_LEAN_UNVERIFIED"
+  },
+  "global_invariants": {
+    "all_f3930_f3933_composites_body_only": true,
+    "all_variants_body_only": true,
+    "changed_region_maxHeartbeats": {
+      "set_option_count": 0,
+      "token_count": 0
+    },
+    "declaration_count": 4416,
+    "declaration_headers_statements_order_comments_attributes_preserved": true,
+    "f3930_f3933_composite_changed_declaration_indices": [
+      3930,
+      3933
+    ],
+    "f3930_f3933_forward_reverse_byte_equality": true,
+    "f3933_preferred_successor_emitted": false,
+    "full_candidates_written": false,
+    "global_maxHeartbeats": {
+      "set_option_count": 8,
+      "token_count": 8
+    },
+    "imports_options_helpers_added": false,
+    "source_moves": 0,
+    "trust_six_zero": {
+      "Lean.ofReduceBool": 0,
+      "admit": 0,
+      "axiom": 0,
+      "native_decide": 0,
+      "sorry": 0,
+      "unsafe": 0
+    }
+  },
+  "lean_lake_git_gh_github_network_invoked_by_builder": false,
+  "live_v63_observations": {
+    "combined_best": {
+      "candidate": {
+        "bytes": 2814033,
+        "lines": 62967,
+        "sha256": "07e698419184a58b0e99bf8e6b3900782cb4a83b1471ab79ba7d4f45240068e6"
+      },
+      "direct_chain": {
+        "FA_exit": 1,
+        "Mock2_Advanced_exit": 0,
+        "Mock2_exit": 0,
+        "errors": 9,
+        "owners": 5,
+        "signatures": 5,
+        "warnings": 463
+      },
+      "direct_lean_verified_for_staged_successors": false,
+      "f3933_comparison_disposition": "EXACT FALLBACK HAS ONLY THE SHARED INVERSE-STAR MISS AND STRICTLY DOMINATES PREFERRED",
+      "idx3930_progression_matches_f3930": true,
+      "idx3933_preferred_residual_pair": [
+        {
+          "column": 26,
+          "declaration": "inner_literalStagePlaneWave",
+          "declaration_index": 3933,
+          "diagnostic_code": null,
+          "file": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+          "line": 53963,
+          "message": "Tactic `rewrite` failed: Did not find an occurrence of the pattern",
+          "normalized_message_signature": "Tactic `rewrite` failed: Did not find an occurrence of the pattern",
+          "ordinal": 2,
+          "raw_header": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:53963:26: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern",
+          "severity": "error",
+          "source_file_match": true
+        },
+        {
+          "column": 57,
+          "declaration": "inner_literalStagePlaneWave",
+          "declaration_index": 3933,
+          "diagnostic_code": null,
+          "file": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+          "line": 53973,
+          "message": "unsolved goals",
+          "normalized_message_signature": "unsolved goals",
+          "ordinal": 3,
+          "raw_header": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:53973:57: error: unsolved goals",
+          "severity": "error",
+          "source_file_match": true
+        }
+      ],
+      "idx4017_exact_goal_matches_w4017_full": true,
+      "idx4017_owner_byte_identical_to_w4017_full": true,
+      "observed_base_semantic_clean": false,
+      "status": "EXACT_DIRECT_NONCLEAN_RESULT_LOCKED",
+      "variant": "combined_best"
+    },
+    "f3930": {
+      "applicable_staged_successors": [
+        {
+          "candidate": {
+            "bytes": 2812585,
+            "declaration_count": 4416,
+            "full_candidate_written": false,
+            "lines": 62936,
+            "owner_region_bytes": 6245,
+            "owner_region_sha256": "0d361338df005ae47c255caa3e24999fab2cc43c4eb733b8ed53de466d860168",
+            "preview_path": "work/v64-workers/fallback-prep/idx3930-after-pi-neg-fieldsimp-ring-owner-preview.lean",
+            "sha256": "772ed2cb7295175fe9e42217e646e766b0a7b0b8b92a4c956f193c49b2d9efb4"
+          },
+          "priority": 1,
+          "variant_id": "idx3930_after_pi_neg_fieldsimp_ring"
+        },
+        {
+          "candidate": {
+            "bytes": 2812774,
+            "declaration_count": 4416,
+            "full_candidate_written": false,
+            "lines": 62939,
+            "owner_region_bytes": 6434,
+            "owner_region_sha256": "955bcf09a3d1ba632eecf4dbe3322109e06302527507440cdb6dc0521b746e3f",
+            "preview_path": "work/v64-workers/fallback-prep/idx3930-after-pi-neg-explicit-cancel-owner-preview.lean",
+            "sha256": "26541fa4712474c944ee4ec2ac209a1873fb07062577c9a08286876bed937ca9"
+          },
+          "priority": 2,
+          "variant_id": "idx3930_after_pi_neg_explicit_cancel"
+        }
+      ],
+      "artifact_id": 9244095042,
+      "candidate": {
+        "bytes": 2812421,
+        "lines": 62934,
+        "sha256": "9f57a361ce5ae99cbcaca5e7c4a4a8eb3eafbbbed69b79568a0347130d304de8"
+      },
+      "diagnostic": {
+        "column": 49,
+        "declaration": "inner_planeWave_ambientTestCore_eq_scale_mul_mFourierCoeff",
+        "declaration_index": 3930,
+        "diagnostic_code": null,
+        "file": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+        "line": 53653,
+        "message": "unsolved goals",
+        "normalized_message_signature": "unsolved goals",
+        "ordinal": 1,
+        "raw_header": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:53653:49: error: unsolved goals",
+        "severity": "error",
+        "source_file_match": true
+      },
+      "direct_chain": {
+        "FA_exit": 1,
+        "Mock2_Advanced_exit": 0,
+        "Mock2_exit": 0,
+        "errors": 8,
+        "owners": 6,
+        "signatures": 5,
+        "warnings": 463
+      },
+      "direct_lean_verified_for_staged_successors": false,
+      "head_sha": "336899ee618c4db5e88cf5c41b3a2195c3d61ba3",
+      "observed_base_semantic_clean": false,
+      "progression_from_v62_authority": {
+        "Pi_neg_apply_mismatch_removed": true,
+        "postpatch_residual": "s^2 * s⁻¹ * A * B * v = s * A * B * v",
+        "prepatch_residual": "-k i versus (-k) i plus a three-factor permutation",
+        "remaining_root": "single complex scale cancellation",
+        "same_residual": false
+      },
+      "run_id": 31871876992,
+      "status": "EXACT_DIRECT_NONCLEAN_PROGRESSION_LOCKED",
+      "variant": "f3930"
+    },
+    "f3933": {
+      "applicable_staged_successor": {
+        "candidate": {
+          "bytes": 2813195,
+          "declaration_count": 4416,
+          "full_candidate_written": false,
+          "lines": 62948,
+          "owner_region_bytes": 6824,
+          "owner_region_sha256": "5ea161a41f523d4fd25ac2797d530e0dac7c1ed3b7dba6833967c8fbddc3e2e0",
+          "preview_path": "work/v64-workers/fallback-prep/idx3933-after-fallback-inv-calc-owner-preview.lean",
+          "sha256": "44b80a7976626073cdccc326c925741fd51244932e20d4a518928c5ad09ba448"
+        },
+        "preserves_fallback_field_simp_ring_byte_for_byte": true,
+        "replaces_only_inverse_star_proof": true,
+        "variant_id": "idx3933_after_fallback_inv_calc"
+      },
+      "comparison": {
+        "error_delta_fallback_minus_preferred": -1,
+        "fallback_strictly_dominates_preferred": true,
+        "preferred_successor_not_staged": true,
+        "selected_base_for_next_static_successor": "f3933_fallback"
+      },
+      "direct_lean_verified_for_staged_successor": false,
+      "fallback": {
+        "artifact_id": 9244100825,
+        "candidate": {
+          "bytes": 2813077,
+          "lines": 62946,
+          "sha256": "059c988b4cdc3c67983ee38f270a2dcc907b97a24862dc7d723f2a2a61d00efe"
+        },
+        "direct_chain": {
+          "FA_exit": 1,
+          "Mock2_Advanced_exit": 0,
+          "Mock2_exit": 0,
+          "errors": 8,
+          "owners": 6,
+          "signatures": 5,
+          "warnings": 463
+        },
+        "idx3933_diagnostics": [
+          {
+            "column": 26,
+            "declaration": "inner_literalStagePlaneWave",
+            "declaration_index": 3933,
+            "diagnostic_code": null,
+            "file": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+            "line": 53962,
+            "message": "Tactic `rewrite` failed: Did not find an occurrence of the pattern",
+            "normalized_message_signature": "Tactic `rewrite` failed: Did not find an occurrence of the pattern",
+            "ordinal": 2,
+            "raw_header": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:53962:26: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern",
+            "severity": "error",
+            "source_file_match": true
+          }
+        ],
+        "single_remaining_root": "rw [map_inv₀, hScaleStar] cannot match star against starRingEnd under inverse"
+      },
+      "head_sha": "336899ee618c4db5e88cf5c41b3a2195c3d61ba3",
+      "observed_bases_semantic_clean": false,
+      "preferred": {
+        "artifact_id": 9244110249,
+        "candidate": {
+          "bytes": 2813475,
+          "lines": 62955,
+          "sha256": "2ae97aea7e838b08b4951ac499a5591d1e8eca87233b65863e92ec330f6aef7a"
+        },
+        "direct_chain": {
+          "FA_exit": 1,
+          "Mock2_Advanced_exit": 0,
+          "Mock2_exit": 0,
+          "errors": 9,
+          "owners": 6,
+          "signatures": 5,
+          "warnings": 463
+        },
+        "extra_ring_residual": true,
+        "idx3933_diagnostics": [
+          {
+            "column": 26,
+            "declaration": "inner_literalStagePlaneWave",
+            "declaration_index": 3933,
+            "diagnostic_code": null,
+            "file": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+            "line": 53962,
+            "message": "Tactic `rewrite` failed: Did not find an occurrence of the pattern",
+            "normalized_message_signature": "Tactic `rewrite` failed: Did not find an occurrence of the pattern",
+            "ordinal": 2,
+            "raw_header": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:53962:26: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern",
+            "severity": "error",
+            "source_file_match": true
+          },
+          {
+            "column": 57,
+            "declaration": "inner_literalStagePlaneWave",
+            "declaration_index": 3933,
+            "diagnostic_code": null,
+            "file": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+            "line": 53972,
+            "message": "unsolved goals",
+            "normalized_message_signature": "unsolved goals",
+            "ordinal": 3,
+            "raw_header": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:53972:57: error: unsolved goals",
+            "severity": "error",
+            "source_file_match": true
+          }
+        ]
+      },
+      "run_id": 31871876992,
+      "status": "EXACT_DIRECT_NONCLEAN_COMPARISON_LOCKED_FALLBACK_DOMINATES"
+    },
+    "w4017_full": {
+      "applicable_staged_successors": [
+        {
+          "candidate": {
+            "bytes": 2813090,
+            "declaration_count": 4416,
+            "full_candidate_written": false,
+            "lines": 62945,
+            "owner_region_bytes": 3312,
+            "owner_region_sha256": "8db824ec2b44db944b3f4668bbd846958a1aa5796fbb5b9a6bd33033573b499a",
+            "preview_path": "work/v64-workers/fallback-prep/idx4017-after-full-literal-graph-base-simp-owner-preview.lean",
+            "sha256": "93491e69d4e6f3d24f11ad45ecbb3a5c74aa28202c2771484a3663cdd51846fc"
+          },
+          "closure": "BOUNDED_SIMP_ONLY",
+          "priority": 1,
+          "variant_id": "idx4017_after_full_literal_graph_base_simp"
+        },
+        {
+          "candidate": {
+            "bytes": 2813031,
+            "declaration_count": 4416,
+            "full_candidate_written": false,
+            "lines": 62945,
+            "owner_region_bytes": 3253,
+            "owner_region_sha256": "7ff2946c869cd14bf00af2ba86d5de8b693870391289f6d5df906786664ab87c",
+            "preview_path": "work/v64-workers/fallback-prep/idx4017-after-full-literal-rfl-owner-preview.lean",
+            "sha256": "6a2524de966143f709c92dfb992a8f2029be4648812518010a4c5639f0c4b288"
+          },
+          "closure": "RFL_ONLY_ALTERNATIVE",
+          "priority": 2,
+          "variant_id": "idx4017_after_full_literal_rfl"
+        }
+      ],
+      "artifact_id": 9244032070,
+      "artifact_zip": {
+        "bytes": 1687279,
+        "sha256": "51a74664e6bfa180b97ba97ddd8e3f1226c57125429ac90a09e3e9d3d1fdb7b5"
+      },
+      "boundary_timeout_disposition": "EXPECTED_CASCADE_NEVER_PATCH_INDEPENDENTLY",
+      "candidate": {
+        "bytes": 2813021,
+        "lines": 62944,
+        "sha256": "20ad5b01e774f1c388d2d16991e34840fdafe0f9d033038652311b29d84ae3f5"
+      },
+      "direct_chain": {
+        "FA_exit": 1,
+        "Mock2_Advanced_exit": 0,
+        "Mock2_exit": 0,
+        "errors": 8,
+        "owners": 5,
+        "signatures": 5,
+        "warnings": 463
+      },
+      "direct_lean_verified_for_staged_successors": false,
+      "exact_goal": {
+        "column": 42,
+        "definition_source_lines": [
+          55135,
+          55138
+        ],
+        "lhs": "inner (orbitPeterssonEuclideanEmbedding n (baseExtension n v) z) (weight * orbitPeterssonEuclideanEmbedding n (baseExtension n u) z)",
+        "line": 55523,
+        "rhs": "inner (graphEuclideanBase n v z) (weight * graphEuclideanBase n u z)",
+        "root": "graphEuclideanBase definitional composition only"
+      },
+      "head_sha": "336899ee618c4db5e88cf5c41b3a2195c3d61ba3",
+      "idx4017_diagnostics": [
+        {
+          "column": 42,
+          "declaration": "discriminantHardStageOperator_eq_weightedHard",
+          "declaration_index": 4017,
+          "diagnostic_code": null,
+          "file": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+          "line": 55523,
+          "message": "unsolved goals",
+          "normalized_message_signature": "unsolved goals",
+          "ordinal": 3,
+          "raw_header": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:55523:42: error: unsolved goals",
+          "severity": "error",
+          "source_file_match": true
+        },
+        {
+          "column": 0,
+          "declaration": "discriminantHardStageOperator_eq_weightedHard",
+          "declaration_index": 4017,
+          "diagnostic_code": null,
+          "file": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+          "line": 55558,
+          "message": "(deterministic) timeout at `whnf`, maximum number of heartbeats (200000) has been reached",
+          "normalized_message_signature": "(deterministic) timeout at `whnf`, maximum number of heartbeats (200000) has been reached",
+          "ordinal": 4,
+          "raw_header": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:55558:0: error: (deterministic) timeout at `whnf`, maximum number of heartbeats (200000) has been reached",
+          "severity": "error",
+          "source_file_match": true
+        }
+      ],
+      "observed_base_semantic_clean": false,
+      "run_id": 31871876992,
+      "status": "EXACT_DIRECT_NONCLEAN_LEADER_LOCKED",
+      "variant": "w4017_full"
+    },
+    "w4017_pz": {
+      "artifact_id": 9243956307,
+      "artifact_zip": {
+        "bytes": 1687135,
+        "sha256": "1dd919dd065667337b41b83d07359b07bd2690a107adbc19d63a11a389aca7c9"
+      },
+      "candidate": {
+        "bytes": 2812951,
+        "lines": 62944,
+        "sha256": "d0ddccad25b3173ade4b9fd8600c5ee3b90e747a35171e83391f55703cdafde0"
+      },
+      "causal_delta": {
+        "P_typeclass_residual_gone": true,
+        "W_carrier_residual_remains": true,
+        "W_literal_residual_remains": true,
+        "Z_zero_branch_residual_gone": true,
+        "fourier_idx3930_unchanged": true,
+        "fourier_idx3933_unchanged": true,
+        "idx4016_boundary_gone": true,
+        "idx4017_boundary_timeout_remains": true,
+        "idx4019_error_count": 2,
+        "idx4020_error_count": 2
+      },
+      "direct_chain": {
+        "FA_exit": 1,
+        "Mock2_Advanced_exit": 0,
+        "Mock2_exit": 0,
+        "error_cap_sentinel_present": false,
+        "errors": 9,
+        "inventory_complete": true,
+        "owners": 5,
+        "signatures": 6,
+        "warnings": 463
+      },
+      "direct_lean_executed_for_observed_base": true,
+      "direct_lean_verified_for_staged_successor": false,
+      "exact_W_residuals": [
+        {
+          "column": 20,
+          "failed_pattern": "↑↑(discriminantHardStageWeightLp N) z",
+          "line": 55532,
+          "target": "⟪↑↑((orbitPeterssonEuclideanEmbedding n) ((baseExtension n) v)) z, (↑↑(discriminantHardStageWeightLp N) • ↑↑((graphLiteralStageRestriction Z n) u)) z⟫_ℂ = Φ z"
+        },
+        {
+          "column": 16,
+          "failed_pattern": "↑↑(discriminantHardCarrierWeightLp N) z",
+          "line": 55555,
+          "target": "Φ z = ⟪↑↑((graphEuclideanBase n) v) z, (↑↑(discriminantHardCarrierWeightLp N) • ↑↑((graphEuclideanBase n) u)) z⟫_ℂ"
+        }
+      ],
+      "head_sha": "336899ee618c4db5e88cf5c41b3a2195c3d61ba3",
+      "idx4017_diagnostics": [
+        {
+          "column": 20,
+          "declaration": "discriminantHardStageOperator_eq_weightedHard",
+          "declaration_index": 4017,
+          "diagnostic_code": null,
+          "file": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+          "line": 55532,
+          "message": "Tactic `rewrite` failed: Did not find an occurrence of the pattern",
+          "normalized_message_signature": "Tactic `rewrite` failed: Did not find an occurrence of the pattern",
+          "ordinal": 3,
+          "raw_header": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:55532:20: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern",
+          "severity": "error",
+          "source_file_match": true
+        },
+        {
+          "column": 16,
+          "declaration": "discriminantHardStageOperator_eq_weightedHard",
+          "declaration_index": 4017,
+          "diagnostic_code": null,
+          "file": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+          "line": 55555,
+          "message": "Tactic `rewrite` failed: Did not find an occurrence of the pattern",
+          "normalized_message_signature": "Tactic `rewrite` failed: Did not find an occurrence of the pattern",
+          "ordinal": 4,
+          "raw_header": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:55555:16: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern",
+          "severity": "error",
+          "source_file_match": true
+        },
+        {
+          "column": 0,
+          "declaration": "discriminantHardStageOperator_eq_weightedHard",
+          "declaration_index": 4017,
+          "diagnostic_code": null,
+          "file": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+          "line": 55558,
+          "message": "(deterministic) timeout at `whnf`, maximum number of heartbeats (200000) has been reached",
+          "normalized_message_signature": "(deterministic) timeout at `whnf`, maximum number of heartbeats (200000) has been reached",
+          "ordinal": 5,
+          "raw_header": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:55558:0: error: (deterministic) timeout at `whnf`, maximum number of heartbeats (200000) has been reached",
+          "severity": "error",
+          "source_file_match": true
+        }
+      ],
+      "observed_base_semantic_clean": false,
+      "provisional_staged_successor": {
+        "candidate": {
+          "bytes": 2813567,
+          "declaration_count": 4416,
+          "full_candidate_written": false,
+          "lines": 62956,
+          "owner_region_bytes": 3789,
+          "owner_region_sha256": "b9da95e50ddb13b3456b50a0194e0cba52c0d430c789904e9b67c57c017e7174",
+          "preview_path": "work/v64-workers/fallback-prep/idx4017-after-full-w-change-owner-preview.lean",
+          "sha256": "08e58f10ba5230dd28c2c6015623976d48a54da1573c6bca1c155df7c2659f94"
+        },
+        "rebase_preserves_v63_Z_body_byte_for_byte": true,
+        "selection_state": "NOT_SELECTED_AFTER_EXACT_FULL_RESULT",
+        "variant_id": "idx4017_after_full_w_change"
+      },
+      "run_id": 31871876992,
+      "status": "EXACT_DIRECT_NONCLEAN_RESULT_LOCKED_COMPARISON_COMPLETE_NOT_SELECTED",
+      "variant": "w4017_pz"
+    }
+  },
+  "note": "Staged successors are materialized and validated in memory only. Byte-locked v63 base results executed Lean, but no staged successor has direct Lean verification or a clean claim.",
+  "prior_exact_residual_evidence": {
+    "idx3930": {
+      "diagnostic": {
+        "column": 49,
+        "declaration": "inner_planeWave_ambientTestCore_eq_scale_mul_mFourierCoeff",
+        "declaration_index": 3930,
+        "diagnostic_code": null,
+        "file": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+        "line": 53653,
+        "message": "unsolved goals",
+        "normalized_message_signature": "unsolved goals",
+        "ordinal": 1,
+        "raw_header": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:53653:49: error: unsolved goals",
+        "severity": "error",
+        "source_file_match": true
+      },
+      "goal": [
+        "⊢ (fourier (-k 0)) ↑(x 0) * (fourier (-k 1)) ↑(x 1) *",
+        "      v (literalStageFourierScale Y • Complex.measurableEquivPi.symm x) =",
+        "    v (literalStageFourierScale Y • Complex.measurableEquivPi.symm x) * (fourier ((-k) 0)) ↑(x 0) *",
+        "      (fourier ((-k) 1)) ↑(x 1)"
+      ]
+    },
+    "idx3933": {
+      "diagnostic": {
+        "column": 75,
+        "declaration": "inner_literalStagePlaneWave",
+        "declaration_index": 3933,
+        "diagnostic_code": null,
+        "file": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+        "line": 53928,
+        "message": "unsolved goals",
+        "normalized_message_signature": "unsolved goals",
+        "ordinal": 2,
+        "raw_header": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:53928:75: error: unsolved goals",
+        "severity": "error",
+        "source_file_match": true
+      },
+      "goal": [
+        "⊢ (↑(literalStageFourierScale Y) * (UnitAddTorus.mFourier l) fun i => ↑(x i)) *",
+        "        (starRingEnd ℂ) ((UnitAddTorus.mFourier k) fun i => ↑(x i)) *",
+        "      (starRingEnd ℂ) (↑(literalStageFourierScale Y))⁻¹ =",
+        "    ((UnitAddTorus.mFourier l) fun i => ↑(x i)) * (starRingEnd ℂ) ((UnitAddTorus.mFourier k) fun i => ↑(x i))"
+      ]
+    },
+    "idx4017": {
+      "classification": {
+        "P": "unconstrained Lp exponent inference",
+        "W": "Pi pointwise smul folded before carrier-weight rewrite",
+        "Z": "Phi folded before zero-weight rewrite",
+        "boundary": "producer-clean gate only; never patch independently"
+      },
+      "diagnostics": [
+        {
+          "column": 8,
+          "declaration": "discriminantHardStageOperator_eq_weightedHard",
+          "declaration_index": 4017,
+          "diagnostic_code": null,
+          "file": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+          "line": 55529,
+          "message": "typeclass instance problem is stuck, it is often due to metavariables",
+          "normalized_message_signature": "typeclass instance problem is stuck, it is often due to metavariables",
+          "ordinal": 4,
+          "raw_header": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:55529:8: error: typeclass instance problem is stuck, it is often due to metavariables",
+          "severity": "error",
+          "source_file_match": true
+        },
+        {
+          "column": 12,
+          "declaration": "discriminantHardStageOperator_eq_weightedHard",
+          "declaration_index": 4017,
+          "diagnostic_code": null,
+          "file": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+          "line": 55540,
+          "message": "Tactic `rewrite` failed: Did not find an occurrence of the pattern",
+          "normalized_message_signature": "Tactic `rewrite` failed: Did not find an occurrence of the pattern",
+          "ordinal": 5,
+          "raw_header": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:55540:12: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern",
+          "severity": "error",
+          "source_file_match": true
+        },
+        {
+          "column": 16,
+          "declaration": "discriminantHardStageOperator_eq_weightedHard",
+          "declaration_index": 4017,
+          "diagnostic_code": null,
+          "file": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+          "line": 55554,
+          "message": "Tactic `rewrite` failed: Did not find an occurrence of the pattern",
+          "normalized_message_signature": "Tactic `rewrite` failed: Did not find an occurrence of the pattern",
+          "ordinal": 6,
+          "raw_header": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:55554:16: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern",
+          "severity": "error",
+          "source_file_match": true
+        },
+        {
+          "column": 0,
+          "declaration": "discriminantHardStageOperator_eq_weightedHard",
+          "declaration_index": 4017,
+          "diagnostic_code": null,
+          "file": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+          "line": 55557,
+          "message": "(deterministic) timeout at `whnf`, maximum number of heartbeats (200000) has been reached",
+          "normalized_message_signature": "(deterministic) timeout at `whnf`, maximum number of heartbeats (200000) has been reached",
+          "ordinal": 7,
+          "raw_header": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:55557:0: error: (deterministic) timeout at `whnf`, maximum number of heartbeats (200000) has been reached",
+          "severity": "error",
+          "source_file_match": true
+        }
+      ]
+    }
+  },
+  "promotion_allowed": false,
+  "protected_inputs": {
+    "repository_source_path": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+    "repository_source_present": false,
+    "v63_ci": {
+      "file_count": 31,
+      "files": [
+        {
+          "bytes": 42989,
+          "path": "work/v63-ci/__pycache__/fa_v63_contract.cpython-312.pyc",
+          "sha256": "bf7a186f525981e876dce68538258ed37f206ce8f87f75da228d1cfa7f0aa74b"
+        },
+        {
+          "bytes": 36543,
+          "path": "work/v63-ci/__pycache__/validate_fa_v63_promotion_ready.cpython-312.pyc",
+          "sha256": "58f3ec41ee494a52ea0c793de84becccd46d1b2a9e470797e0494b1377f5ad49"
+        },
+        {
+          "bytes": 17443,
+          "path": "work/v63-ci/codex-fa-v63-direct-matrix.PENDING.yml",
+          "sha256": "90029217fad022eb4ada810210c978e04bb582f20448fd6fa8d1a10d59eac442"
+        },
+        {
+          "bytes": 17768,
+          "path": "work/v63-ci/codex-fa-v63-direct-matrix.READY.yml",
+          "sha256": "9a9897c8541cdba024ced817609fda029b934f9d8f61019d552b3a1f06734ee8"
+        },
+        {
+          "bytes": 7471,
+          "path": "work/v63-ci/fa_v63_authority-lock.json",
+          "sha256": "2048729e8c0b3d8bec7d0b3de32f67ae38da83e226cad0fd83482e8adb18a2c0"
+        },
+        {
+          "bytes": 6165,
+          "path": "work/v63-ci/fa_v63_body-only-manifest.schema.json",
+          "sha256": "5ba5e71a482c0e56ee73273bb4e2e4a9ba4dad2caf5c1c77499797652ebe8f47"
+        },
+        {
+          "bytes": 13008,
+          "path": "work/v63-ci/fa_v63_collect_full_diagnostics.py",
+          "sha256": "257d3751c889ee45656e7b6e3e1133a67c2e0b0ef8efe117c0ba35386964ac6d"
+        },
+        {
+          "bytes": 40926,
+          "path": "work/v63-ci/fa_v63_contract.py",
+          "sha256": "d13fae1051abb8bc3ad6c043ebcf5bfd0aa645d96bf3c924b404508d018c2319"
+        },
+        {
+          "bytes": 1762,
+          "path": "work/v63-ci/fa_v63_direct_compile_ci.sh",
+          "sha256": "dd84588ed213311a41e83ec9316d1a16162d576a3a22117c753729b6158fe54f"
+        },
+        {
+          "bytes": 3114,
+          "path": "work/v63-ci/fa_v63_f3930-manifest.READY.json",
+          "sha256": "cd408eeeab5be791525fc6d24b1402577e95830243c64a0c36edbcbca19e64c5"
+        },
+        {
+          "bytes": 8647,
+          "path": "work/v63-ci/fa_v63_f3933-manifest.READY.json",
+          "sha256": "b95091f2140afaf36e60e26b4b09b482d32b4cd7d409751e8859384fcfca03ce"
+        },
+        {
+          "bytes": 19971,
+          "path": "work/v63-ci/fa_v63_final_gate.py",
+          "sha256": "0cab7b6fcb0451a9602951299f624ecdc7182300469f3ec4a17e51cd04ce151d"
+        },
+        {
+          "bytes": 5227,
+          "path": "work/v63-ci/fa_v63_handoff.PENDING.md",
+          "sha256": "7c1ead3779e3010e627cec8730fba46d27aceec97edcc5a5c829311d4a7cad5f"
+        },
+        {
+          "bytes": 5570,
+          "path": "work/v63-ci/fa_v63_handoff.READY.md",
+          "sha256": "86b45b7dfdd1f57ab6b4d4998f9a2f3ba911ff27860b5681c3befeba35114cdf"
+        },
+        {
+          "bytes": 1419,
+          "path": "work/v63-ci/fa_v63_hashes.PENDING.sha256",
+          "sha256": "4882ccec95eaa168b262be7fc5218847468ea31f6fe22b04c1e0bc534170b823"
+        },
+        {
+          "bytes": 1415,
+          "path": "work/v63-ci/fa_v63_hashes.READY.sha256",
+          "sha256": "013c3c4563fc3220fbebab991de4d522d6895a7c8e02bc63ead58dacc752dc56"
+        },
+        {
+          "bytes": 20649,
+          "path": "work/v63-ci/fa_v63_materialize.py",
+          "sha256": "48cd21f8cc160e90baea007d315adaec0598a20e10a447c70101072ad69ff5fd"
+        },
+        {
+          "bytes": 595,
+          "path": "work/v63-ci/fa_v63_promotion-hashes.PENDING.sha256",
+          "sha256": "80e23ef2d3169930950344e909dca90b04ac4c4a5756e28975605f0b0e8cd7ad"
+        },
+        {
+          "bytes": 686,
+          "path": "work/v63-ci/fa_v63_promotion-hashes.READY.sha256",
+          "sha256": "e072b7b80cb861f5bcf4cc7a4a3c263d332a7b642dc7d59f7774024a951c43b7"
+        },
+        {
+          "bytes": 14305,
+          "path": "work/v63-ci/fa_v63_promotion-map.PENDING.json",
+          "sha256": "15de59f3ca7d03dc864810cd699da3ded0c51ba01ec4125e007c21afa97c6155"
+        },
+        {
+          "bytes": 17496,
+          "path": "work/v63-ci/fa_v63_promotion-map.READY.json",
+          "sha256": "8005ba565f74305f52200db2f2598c9033acdde559b5f59a201bdfa58e6f4731"
+        },
+        {
+          "bytes": 2491,
+          "path": "work/v63-ci/fa_v63_promotion-static-audit.PENDING.json",
+          "sha256": "561acefead0f7b06d0d57b06d8161cf0f41d976254eb306773eb24f533c96578"
+        },
+        {
+          "bytes": 3424,
+          "path": "work/v63-ci/fa_v63_promotion-static-audit.READY.json",
+          "sha256": "5ebca40b8368185e5151593280a7d74f65ff3f005ca5e7b26d7d77d222f3ec50"
+        },
+        {
+          "bytes": 12206,
+          "path": "work/v63-ci/fa_v63_reprove_authority.py",
+          "sha256": "aee6e0456350764a62bc0abad2fd67a9750e7a2c6ae2a8bda05332608bd6d1ce"
+        },
+        {
+          "bytes": 13719,
+          "path": "work/v63-ci/fa_v63_selection.PENDING.json",
+          "sha256": "6f56a8823ec303c42a5a715f3e48a13db1579d4777dfd66b78ffada21e22b23b"
+        },
+        {
+          "bytes": 13802,
+          "path": "work/v63-ci/fa_v63_selection.READY.json",
+          "sha256": "9d4313db727c3a5625d6fcfddcc2fa97a692ad99cae11957b9d8561094211367"
+        },
+        {
+          "bytes": 2978,
+          "path": "work/v63-ci/fa_v63_validate.py",
+          "sha256": "ecfed6aa5cf3614e232577220633766def72a232e200821879f597d7735594c5"
+        },
+        {
+          "bytes": 11395,
+          "path": "work/v63-ci/fa_v63_w4017-manifest.READY.json",
+          "sha256": "0285c92f68d6c4222105dfcb6c8c4483cf4f87cf67832fe9ae076698a7cae01f"
+        },
+        {
+          "bytes": 28297,
+          "path": "work/v63-ci/test_fa_v63_scaffold.py",
+          "sha256": "48a2d829807ad0734de26191dd1a400be8ea94b707f7b7dee5ca450453b7d0e5"
+        },
+        {
+          "bytes": 23019,
+          "path": "work/v63-ci/validate_fa_v63_promotion_pending.py",
+          "sha256": "576fdf48505a08a6c20cec4a6fb1c08c7aa774b8d56a99db999cc98ae1c7788e"
+        },
+        {
+          "bytes": 30475,
+          "path": "work/v63-ci/validate_fa_v63_promotion_ready.py",
+          "sha256": "7cc005074e32a3964681c3fe4d4d1594269f0c87b9399d9024d1a005f227788b"
+        }
+      ],
+      "inventory_sha256": "7831157fb02e27c027d82683439c393d099e73c1f35657fc6cb0d91273239b09"
+    },
+    "v64_prep": {
+      "file_count": 9,
+      "files": [
+        {
+          "bytes": 8060,
+          "path": "work/v64-prep/README.md",
+          "sha256": "874e5646508975f469814facbd92128f6d8d831410f8cec477f480032552ee09"
+        },
+        {
+          "bytes": 708,
+          "path": "work/v64-prep/SHA256SUMS.v64-prep.txt",
+          "sha256": "5b075996580ab48a4868fd63f4917a2816640b57a224baed79dca8ef7762a5b9"
+        },
+        {
+          "bytes": 81361,
+          "path": "work/v64-prep/fa_v64_common.py",
+          "sha256": "acd293821996d1821c8a0020678fbbd0c77c6a00873d70f24341c2bd2a630298"
+        },
+        {
+          "bytes": 14779,
+          "path": "work/v64-prep/fa_v64_compare.py",
+          "sha256": "5187d37a15ecc7ed12486c8bd0c829e639af7b31e467df58d0160c635d0987dc"
+        },
+        {
+          "bytes": 10294,
+          "path": "work/v64-prep/hydrate_v64_inputs.py",
+          "sha256": "98372f117d9899abdbf1172bc18fa8730aadc51420fd7c05994a9d146f105505"
+        },
+        {
+          "bytes": 16526,
+          "path": "work/v64-prep/v64-artifact-inputs.PENDING.json",
+          "sha256": "03e58146e9ffc5f09642de765930d5563a2a39208e46394405d23894d52e0e52"
+        },
+        {
+          "bytes": 7903,
+          "path": "work/v64-prep/v64-prep-result-index.json",
+          "sha256": "0d815e5c62ca65e88585ce0888dbd13547fdf47ec5efafc412a65ef093ccb9ab"
+        },
+        {
+          "bytes": 3245,
+          "path": "work/v64-prep/v64-prep-static-validation.json",
+          "sha256": "1982443dae5a378f6141ba8250c6b26af41fdc2750be55ad27468473708ee124"
+        },
+        {
+          "bytes": 28241,
+          "path": "work/v64-prep/validate_v64_prep.py",
+          "sha256": "6e9582e12625690a91390ef78d8a31db81f3ddd69059eb582172d233a24ef3cd"
+        }
+      ],
+      "inventory_sha256": "5a65ad9ef4a5024d26f93dccdf254fcc2e9fd3bb8599d00c5790d3fd6189b435"
+    },
+    "writes_outside_fallback_prep": 0
+  },
+  "same_file_api_precedents": {
+    "idx3930": [
+      {
+        "bytes": 34,
+        "end_line": 30548,
+        "sha256": "b0f3cd538f3f79716ac1fb7de33c5fac0da603185f412d8c80f77549a3ea4f97",
+        "start_line": 30547,
+        "text": "  simp only [Pi.neg_apply]\n  ring\n"
+      },
+      {
+        "bytes": 297,
+        "end_line": 18051,
+        "sha256": "384324bebe0be47db23155a005c2c0b3c55566f11b84b9b201d0631daa5befa5",
+        "start_line": 18044,
+        "text": "private theorem sq_mul_mul_div_sq_cancel (j rho xi : ℂ) (hj : j ≠ 0) :\n    (j ^ 2 * rho) * (xi / j ^ 2) = rho * xi := by\n  calc\n    (j ^ 2 * rho) * (xi / j ^ 2) =\n        rho * (j ^ 2 * (xi / j ^ 2)) := by\n      ac_rfl\n    _ = rho * xi := by\n      rw [mul_div_cancel₀ xi (pow_ne_zero _ hj)]\n"
+      },
+      {
+        "bytes": 115,
+        "end_line": 12257,
+        "sha256": "cc9bf44346948fa3b22f63fd2938b4c93d807f606037e2aae255de3aa911ce34",
+        "start_line": 12255,
+        "text": "  have hh : heightC z ≠ 0 := by\n    simpa [heightC] using\n      (Complex.ofReal_ne_zero.mpr (ne_of_gt z.im_pos))\n"
+      }
+    ],
+    "idx3933": [
+      {
+        "bytes": 393,
+        "end_line": 14357,
+        "sha256": "04da77447c9873b9d6e9a0909573a97f1500a633db4e2a89f0484d3f827ce92a",
+        "start_line": 14349,
+        "text": "        have hstarInv :\n            star ((j ^ 2)⁻¹) = (star (j ^ 2))⁻¹ := by\n          change (starRingEnd ℂ) ((j ^ 2)⁻¹) =\n            ((starRingEnd ℂ) (j ^ 2))⁻¹\n          rw [map_inv₀]\n        calc\n          Bw = 1 * Bw := by rw [one_mul]\n          _ = (star (j ^ 2) * (star (j ^ 2))⁻¹) * Bw :=\n            congrArg (fun z : ℂ => z * Bw) (mul_inv_cancel₀ hs).symm\n"
+      },
+      {
+        "bytes": 219,
+        "end_line": 54087,
+        "sha256": "24f417b23edf1d5d1c3ea790d135239ad2fc182d41642cad97c8769101814271",
+        "start_line": 54081,
+        "text": "  have hbaseInner :\n      inner ℂ F F =\n        (literalStageFourierScale Y ^ 2 : ℝ) * inner ℂ T T := by\n    rw [inner_self_eq_norm_sq_to_K, inner_self_eq_norm_sq_to_K, hbase]\n    push_cast\n    ring_nf\n    ac_rfl\n"
+      },
+      {
+        "bytes": 311,
+        "end_line": 4959,
+        "sha256": "907ebbeabccc717f4d9406e085ea2ffa4545acfc0ab5dbe46ffb316bbdfc9a03",
+        "start_line": 4953,
+        "text": "  calc\n    inverseEtaRawFactor γ z ^ (4 : ℤ) =\n        (inverseEtaRawFactor γ z ^ (-4 : ℤ))⁻¹ := by\n      rw [zpow_neg, inv_inv]\n    _ = (etaPhase γ ^ (4 : ℕ) *\n        UpperHalfPlane.denom (γ : GL (Fin 2) ℝ) z ^ (2 : ℕ))⁻¹ :=\n      congrArg Inv.inv (inverseEtaRawFactor_zpow_neg_four γ z)\n"
+      },
+      {
+        "bytes": 186,
+        "end_line": 26714,
+        "sha256": "f6f5146a0679df9a6fb20ce806cb5a66623323f4ebed7c43c533eaf0fa1f7b08",
+        "start_line": 26712,
+        "text": "          rw [show star ((inverseEtaPaperOrbitDenom γ z ^ 2)⁻¹) =\n              (star (inverseEtaPaperOrbitDenom γ z ^ 2))⁻¹ by\n            exact map_inv₀ (starRingEnd ℂ) _]\n"
+      }
+    ],
+    "idx4017": [
+      {
+        "bytes": 243,
+        "end_line": 55138,
+        "sha256": "833ff50f489c9da7f9271c1b3d166b5c051cd27c8c3817e5cb1dd8285f4e38ef",
+        "start_line": 55135,
+        "text": "/-- The concrete Euclidean base coordinate of the graph completion. -/\nnoncomputable def graphEuclideanBase (n : ℤ) :\n    GraphSobolevCompletion n →L[ℂ] OrbitEuclideanL2 n :=\n  (orbitPeterssonEuclideanEmbedding n).comp (baseExtension n)\n"
+      },
+      {
+        "bytes": 824,
+        "end_line": 55413,
+        "sha256": "61ae4a7f507c385ecb4c7afeedb2d0eebccea9e949758237351bbf7d2a57e143",
+        "start_line": 55396,
+        "text": "      apply integral_congr_ae\n      filter_upwards [\n        coeFn_graphEuclideanBase_core n v,\n        coeFn_graphEuclideanBase_core n u,\n        coeFn_discriminantFullCarrierWeightLp,\n        MeasureTheory.Lp.coeFn_lpSMul (p := ∞) (q := 2) (r := 2)\n          discriminantFullCarrierWeightLp\n          (graphEuclideanBase n (coreMap n u))] with z hv hu hw hmul\n      simp only [weightedGraphOperator, weightedGraphLinear,\n        lpInfinityMultiplier_apply]\n      rw [hv, hmul]\n      change inner ℂ (fixedPhaseEuclideanGauge n v z)\n          (((discriminantFullCarrierWeightLp : ℍ → ℂ) z) *\n            ((graphEuclideanBase n (coreMap n u) : ℍ → ℂ) z)) =\n        inner ℂ (fixedPhaseEuclideanGauge n v z)\n          ((upstairsPotential z : ℂ) * fixedPhaseEuclideanGauge n u z)\n      rw [hw, hu]\n      rfl\n"
+      },
+      {
+        "bytes": 870,
+        "end_line": 62026,
+        "sha256": "a69e01b522cd02f57a81ec99555e8c7eeb91be47f59b09a7eb69ea5a2fb38d79",
+        "start_line": 62013,
+        "text": "  apply MeasureTheory.Lp.ext\n  filter_upwards [\n    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.coeFn_embedding_l2Coordinate_fixedPhaseGauge n\n      (invariantScalarCoreOperator c hc n u),\n    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.coeFn_embedding_l2Coordinate_fixedPhaseGauge n u,\n    MeasureTheory.Lp.coeFn_lpSMul (p := ∞) (q := 2) (r := 2)\n      (invariantScalarCarrierLInfinity c)\n      (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n\n        (l2Coordinate n u)),\n    coeFn_invariantScalarCarrierLInfinity c]\n      with z hleft hsource hmul hcval\n  rw [lpInfinityMultiplier_apply, hleft, hmul, Pi.smul_apply',\n    smul_eq_mul, hcval, hsource,\n    fixedPhaseEuclideanGauge_invariantScalarCoreOperator]\n"
+      },
+      {
+        "bytes": 340,
+        "end_line": 62196,
+        "sha256": "25f8c82b58bc8db90983b0d8e2b2601dfd179cbe6d893829f3d1ef23a7a8796b",
+        "start_line": 62189,
+        "text": "  apply MeasureTheory.Lp.ext\n  filter_upwards [\n    MeasureTheory.Lp.coeFn_lpSMul (p := ∞) (q := 2) (r := 2)\n      (fullPlaneTestToLInfinity phi) u,\n    coeFn_fullPlaneTestToLInfinity phi,\n    coeFn_fullPlaneTestMulL2 phi u] with z hmul hphi htarget\n  rw [lpInfinityMultiplier_apply, hmul, Pi.smul_apply',\n    smul_eq_mul, hphi, htarget]\n"
+      }
+    ]
+  },
+  "schema": "fa-v64-fallback-only-static-repair-prep-v1",
+  "scope": "IDX3930_IDX3933_IDX4017_FALLBACK_ONLY",
+  "selection_policy_after_v63_terminal_residual": {
+    "boundary_timeout": "Never patch ordinal 7 independently; it is only a producer-clean gate after owner 4017 closes.",
+    "current_full_observation": "P+Z+W leaves one definitional graphEuclideanBase goal plus the expected owner-boundary whnf cascade.",
+    "current_pz_observation": "PZ proved Z closure and W misses, but the exact full comparison advanced further; its broader explicit-change successor is not selected.",
+    "default": "KEEP_ALL_STAGED_NO_SUPERSESSION",
+    "idx3930": "The exact v63 residual proves Pi.neg_apply progression to scale cancellation; keep field_simp and explicit-cancel successors separate until direct Lean selects one.",
+    "idx3933": "Fallback strictly dominates preferred. Rebase only the fallback inverse-star proof; preserve its successful field_simp/ring closure byte-for-byte.",
+    "idx4017": "Exact full is the leader. Prefer the bounded graphEuclideanBase simp successor; keep rfl-only as the smaller unverified alternative.",
+    "p_typeclass_residual": "BLOCKED_NO_EVIDENCED_POST_P_STATIC_FALLBACK; do not apply Z/W as a substitute."
+  },
+  "status": "STAGED_DIRECT_LEAN_UNVERIFIED",
+  "supersede_allowed_before_exact_v63_remote_residual": false,
+  "variants": [
+    {
+      "applicability_gate": "Use only for the exact v63 post-Pi.neg_apply scale residual s^2 * s⁻¹ * A * B * v = s * A * B * v.",
+      "axis": "IDX3930_FIELDSIMP",
+      "candidate": {
+        "bytes": 2812585,
+        "declaration_count": 4416,
+        "full_candidate_written": false,
+        "lines": 62936,
+        "owner_region_bytes": 6245,
+        "owner_region_sha256": "0d361338df005ae47c255caa3e24999fab2cc43c4eb733b8ed53de466d860168",
+        "preview_path": "work/v64-workers/fallback-prep/idx3930-after-pi-neg-fieldsimp-ring-owner-preview.lean",
+        "sha256": "772ed2cb7295175fe9e42217e646e766b0a7b0b8b92a4c956f193c49b2d9efb4"
+      },
+      "clean_claimed": false,
+      "direct_lean_verified": false,
+      "invariants_from_official_v62_authority": {
+        "attributes_identical": true,
+        "body_only": true,
+        "changed_declaration_indices": [
+          3930
+        ],
+        "changed_region_maxHeartbeats_after": {
+          "set_option_count": 0,
+          "token_count": 0
+        },
+        "changed_region_maxHeartbeats_before": {
+          "set_option_count": 0,
+          "token_count": 0
+        },
+        "comments_identical": true,
+        "declaration_count": 4416,
+        "declaration_headers_statements_and_order_identical": true,
+        "global_maxHeartbeats_after": {
+          "set_option_count": 8,
+          "token_count": 8
+        },
+        "global_maxHeartbeats_before": {
+          "set_option_count": 8,
+          "token_count": 8
+        },
+        "helpers_added": 0,
+        "imports_added": 0,
+        "options_added": 0,
+        "outside_owner_byte_identical": true,
+        "source_moves": 0,
+        "trust_counts_after": {
+          "Lean.ofReduceBool": 0,
+          "admit": 0,
+          "axiom": 0,
+          "native_decide": 0,
+          "sorry": 0,
+          "unsafe": 0
+        },
+        "trust_counts_before": {
+          "Lean.ofReduceBool": 0,
+          "admit": 0,
+          "axiom": 0,
+          "native_decide": 0,
+          "sorry": 0,
+          "unsafe": 0
+        }
+      },
+      "live_v63_applicability_state": "EXACT_V63_RESIDUAL_MATCH_STAGED_DIRECT_LEAN_UNVERIFIED",
+      "official_v62_owner_region": {
+        "bytes": 6102,
+        "sha256": "38d3843c45871a6218e9b2857967181b20ba6c7de71bce9b82cadc5e9909fe6d"
+      },
+      "owner": {
+        "declaration": "inner_planeWave_ambientTestCore_eq_scale_mul_mFourierCoeff",
+        "declaration_index": 3930
+      },
+      "promotion_allowed": false,
+      "rationale": "Retain Pi.neg_apply, establish the complex-cast scale is nonzero, then use bounded field_simp followed by ring.",
+      "status": "STAGED_DIRECT_LEAN_UNVERIFIED",
+      "supersede_allowed_before_exact_v63_remote_residual": false,
+      "transitions": [
+        {
+          "base_candidate": {
+            "bytes": 2812421,
+            "lines": 62934,
+            "sha256": "9f57a361ce5ae99cbcaca5e7c4a4a8eb3eafbbbed69b79568a0347130d304de8"
+          },
+          "base_variant": "f3930",
+          "invariants_from_base": {
+            "attributes_identical": true,
+            "body_only": true,
+            "changed_declaration_indices": [
+              3930
+            ],
+            "changed_region_maxHeartbeats_after": {
+              "set_option_count": 0,
+              "token_count": 0
+            },
+            "changed_region_maxHeartbeats_before": {
+              "set_option_count": 0,
+              "token_count": 0
+            },
+            "comments_identical": true,
+            "declaration_count": 4416,
+            "declaration_headers_statements_and_order_identical": true,
+            "global_maxHeartbeats_after": {
+              "set_option_count": 8,
+              "token_count": 8
+            },
+            "global_maxHeartbeats_before": {
+              "set_option_count": 8,
+              "token_count": 8
+            },
+            "helpers_added": 0,
+            "imports_added": 0,
+            "options_added": 0,
+            "outside_owner_byte_identical": true,
+            "source_moves": 0,
+            "trust_counts_after": {
+              "Lean.ofReduceBool": 0,
+              "admit": 0,
+              "axiom": 0,
+              "native_decide": 0,
+              "sorry": 0,
+              "unsafe": 0
+            },
+            "trust_counts_before": {
+              "Lean.ofReduceBool": 0,
+              "admit": 0,
+              "axiom": 0,
+              "native_decide": 0,
+              "sorry": 0,
+              "unsafe": 0
+            }
+          },
+          "steps": [
+            {
+              "counts": {
+                "new_global_after": 1,
+                "new_global_before": 0,
+                "new_owner_after": 1,
+                "new_owner_before": 0,
+                "old_global_after": 0,
+                "old_global_before": 1,
+                "old_owner_after": 0,
+                "old_owner_before": 1
+              },
+              "new": "      rw [hre, him]\n      simp only [Pi.neg_apply]\n      have hScaleNe : (literalStageFourierScale Y : ℂ) ≠ 0 :=\n        Complex.ofReal_ne_zero.mpr (literalStageFourierScale_ne_zero Y)\n      field_simp [hScaleNe] <;> ring",
+              "new_bytes": 225,
+              "new_sha256": "85cf6fc7bb2171362d39fbac0d47a3966436f963848ead2fc2e3d3d74e2a743e",
+              "old": "      rw [hre, him]\n      simp only [Pi.neg_apply]\n      ring",
+              "old_bytes": 61,
+              "old_sha256": "e35147bbc5634f09f0ad55d041cb780abc1992f96552ebf4ec314b60f902529f",
+              "step_id": "V64-IDX3930-PI-NEG-COMPLEX-NE-FIELDSIMP-RING"
+            }
+          ]
+        }
+      ],
+      "variant_id": "idx3930_after_pi_neg_fieldsimp_ring"
+    },
+    {
+      "applicability_gate": "Use only for the exact v63 post-Pi.neg_apply scale residual; it is the explicit-cancellation alternative to bounded field_simp.",
+      "axis": "IDX3930_EXPLICIT_CANCEL",
+      "candidate": {
+        "bytes": 2812774,
+        "declaration_count": 4416,
+        "full_candidate_written": false,
+        "lines": 62939,
+        "owner_region_bytes": 6434,
+        "owner_region_sha256": "955bcf09a3d1ba632eecf4dbe3322109e06302527507440cdb6dc0521b746e3f",
+        "preview_path": "work/v64-workers/fallback-prep/idx3930-after-pi-neg-explicit-cancel-owner-preview.lean",
+        "sha256": "26541fa4712474c944ee4ec2ac209a1873fb07062577c9a08286876bed937ca9"
+      },
+      "clean_claimed": false,
+      "direct_lean_verified": false,
+      "invariants_from_official_v62_authority": {
+        "attributes_identical": true,
+        "body_only": true,
+        "changed_declaration_indices": [
+          3930
+        ],
+        "changed_region_maxHeartbeats_after": {
+          "set_option_count": 0,
+          "token_count": 0
+        },
+        "changed_region_maxHeartbeats_before": {
+          "set_option_count": 0,
+          "token_count": 0
+        },
+        "comments_identical": true,
+        "declaration_count": 4416,
+        "declaration_headers_statements_and_order_identical": true,
+        "global_maxHeartbeats_after": {
+          "set_option_count": 8,
+          "token_count": 8
+        },
+        "global_maxHeartbeats_before": {
+          "set_option_count": 8,
+          "token_count": 8
+        },
+        "helpers_added": 0,
+        "imports_added": 0,
+        "options_added": 0,
+        "outside_owner_byte_identical": true,
+        "source_moves": 0,
+        "trust_counts_after": {
+          "Lean.ofReduceBool": 0,
+          "admit": 0,
+          "axiom": 0,
+          "native_decide": 0,
+          "sorry": 0,
+          "unsafe": 0
+        },
+        "trust_counts_before": {
+          "Lean.ofReduceBool": 0,
+          "admit": 0,
+          "axiom": 0,
+          "native_decide": 0,
+          "sorry": 0,
+          "unsafe": 0
+        }
+      },
+      "live_v63_applicability_state": "EXACT_V63_RESIDUAL_MATCH_STAGED_DIRECT_LEAN_UNVERIFIED",
+      "official_v62_owner_region": {
+        "bytes": 6102,
+        "sha256": "38d3843c45871a6218e9b2857967181b20ba6c7de71bce9b82cadc5e9909fe6d"
+      },
+      "owner": {
+        "declaration": "inner_planeWave_ambientTestCore_eq_scale_mul_mFourierCoeff",
+        "declaration_index": 3930
+      },
+      "promotion_allowed": false,
+      "rationale": "Prove s^2 * s⁻¹ = s by pow_two, associativity, mul_inv_cancel₀, and mul_one, then rewrite the exact residual.",
+      "status": "STAGED_DIRECT_LEAN_UNVERIFIED",
+      "supersede_allowed_before_exact_v63_remote_residual": false,
+      "transitions": [
+        {
+          "base_candidate": {
+            "bytes": 2812421,
+            "lines": 62934,
+            "sha256": "9f57a361ce5ae99cbcaca5e7c4a4a8eb3eafbbbed69b79568a0347130d304de8"
+          },
+          "base_variant": "f3930",
+          "invariants_from_base": {
+            "attributes_identical": true,
+            "body_only": true,
+            "changed_declaration_indices": [
+              3930
+            ],
+            "changed_region_maxHeartbeats_after": {
+              "set_option_count": 0,
+              "token_count": 0
+            },
+            "changed_region_maxHeartbeats_before": {
+              "set_option_count": 0,
+              "token_count": 0
+            },
+            "comments_identical": true,
+            "declaration_count": 4416,
+            "declaration_headers_statements_and_order_identical": true,
+            "global_maxHeartbeats_after": {
+              "set_option_count": 8,
+              "token_count": 8
+            },
+            "global_maxHeartbeats_before": {
+              "set_option_count": 8,
+              "token_count": 8
+            },
+            "helpers_added": 0,
+            "imports_added": 0,
+            "options_added": 0,
+            "outside_owner_byte_identical": true,
+            "source_moves": 0,
+            "trust_counts_after": {
+              "Lean.ofReduceBool": 0,
+              "admit": 0,
+              "axiom": 0,
+              "native_decide": 0,
+              "sorry": 0,
+              "unsafe": 0
+            },
+            "trust_counts_before": {
+              "Lean.ofReduceBool": 0,
+              "admit": 0,
+              "axiom": 0,
+              "native_decide": 0,
+              "sorry": 0,
+              "unsafe": 0
+            }
+          },
+          "steps": [
+            {
+              "counts": {
+                "new_global_after": 1,
+                "new_global_before": 0,
+                "new_owner_after": 1,
+                "new_owner_before": 0,
+                "old_global_after": 0,
+                "old_global_before": 1,
+                "old_owner_after": 0,
+                "old_owner_before": 1
+              },
+              "new": "      rw [hre, him]\n      simp only [Pi.neg_apply]\n      have hScaleNe : (literalStageFourierScale Y : ℂ) ≠ 0 :=\n        Complex.ofReal_ne_zero.mpr (literalStageFourierScale_ne_zero Y)\n      rw [show (literalStageFourierScale Y : ℂ) ^ 2 *\n          (literalStageFourierScale Y : ℂ)⁻¹ =\n          (literalStageFourierScale Y : ℂ) by\n        rw [pow_two, mul_assoc, mul_inv_cancel₀ hScaleNe, mul_one]]",
+              "new_bytes": 414,
+              "new_sha256": "d1f671794893bae6521136f06d916e78ec03d46791edf11b43d569da2218f04c",
+              "old": "      rw [hre, him]\n      simp only [Pi.neg_apply]\n      ring",
+              "old_bytes": 61,
+              "old_sha256": "e35147bbc5634f09f0ad55d041cb780abc1992f96552ebf4ec314b60f902529f",
+              "step_id": "V64-IDX3930-PI-NEG-EXPLICIT-SCALE-CANCEL"
+            }
+          ]
+        }
+      ],
+      "variant_id": "idx3930_after_pi_neg_explicit_cancel"
+    },
+    {
+      "applicability_gate": "Use for the exact fallback-lane single residual at rw [map_inv₀, hScaleStar]; the fallback lane otherwise returns to the baseline error count and strictly dominates preferred.",
+      "axis": "IDX3933_FALLBACK",
+      "candidate": {
+        "bytes": 2813195,
+        "declaration_count": 4416,
+        "full_candidate_written": false,
+        "lines": 62948,
+        "owner_region_bytes": 6824,
+        "owner_region_sha256": "5ea161a41f523d4fd25ac2797d530e0dac7c1ed3b7dba6833967c8fbddc3e2e0",
+        "preview_path": "work/v64-workers/fallback-prep/idx3933-after-fallback-inv-calc-owner-preview.lean",
+        "sha256": "44b80a7976626073cdccc326c925741fd51244932e20d4a518928c5ad09ba448"
+      },
+      "clean_claimed": false,
+      "direct_lean_verified": false,
+      "invariants_from_official_v62_authority": {
+        "attributes_identical": true,
+        "body_only": true,
+        "changed_declaration_indices": [
+          3933
+        ],
+        "changed_region_maxHeartbeats_after": {
+          "set_option_count": 0,
+          "token_count": 0
+        },
+        "changed_region_maxHeartbeats_before": {
+          "set_option_count": 0,
+          "token_count": 0
+        },
+        "comments_identical": true,
+        "declaration_count": 4416,
+        "declaration_headers_statements_and_order_identical": true,
+        "global_maxHeartbeats_after": {
+          "set_option_count": 8,
+          "token_count": 8
+        },
+        "global_maxHeartbeats_before": {
+          "set_option_count": 8,
+          "token_count": 8
+        },
+        "helpers_added": 0,
+        "imports_added": 0,
+        "options_added": 0,
+        "outside_owner_byte_identical": true,
+        "source_moves": 0,
+        "trust_counts_after": {
+          "Lean.ofReduceBool": 0,
+          "admit": 0,
+          "axiom": 0,
+          "native_decide": 0,
+          "sorry": 0,
+          "unsafe": 0
+        },
+        "trust_counts_before": {
+          "Lean.ofReduceBool": 0,
+          "admit": 0,
+          "axiom": 0,
+          "native_decide": 0,
+          "sorry": 0,
+          "unsafe": 0
+        }
+      },
+      "live_v63_applicability_state": "EXACT_V63_RESIDUAL_MATCH_STAGED_DIRECT_LEAN_UNVERIFIED",
+      "official_v62_owner_region": {
+        "bytes": 6071,
+        "sha256": "74b180d55166924f3fe81667c8e1c578a0852dccf65dbc23cd1c227596b4d6f9"
+      },
+      "owner": {
+        "declaration": "inner_literalStagePlaneWave",
+        "declaration_index": 3933
+      },
+      "promotion_allowed": false,
+      "rationale": "Replace only the inverse-star proof by map_inv₀ plus congrArg Inv.inv hScaleStar; retain fallback field_simp [hScaleNe] <;> ring byte-for-byte.",
+      "status": "STAGED_DIRECT_LEAN_UNVERIFIED",
+      "supersede_allowed_before_exact_v63_remote_residual": false,
+      "transitions": [
+        {
+          "base_candidate": {
+            "bytes": 2813077,
+            "lines": 62946,
+            "sha256": "059c988b4cdc3c67983ee38f270a2dcc907b97a24862dc7d723f2a2a61d00efe"
+          },
+          "base_variant": "f3933_fallback",
+          "invariants_from_base": {
+            "attributes_identical": true,
+            "body_only": true,
+            "changed_declaration_indices": [
+              3933
+            ],
+            "changed_region_maxHeartbeats_after": {
+              "set_option_count": 0,
+              "token_count": 0
+            },
+            "changed_region_maxHeartbeats_before": {
+              "set_option_count": 0,
+              "token_count": 0
+            },
+            "comments_identical": true,
+            "declaration_count": 4416,
+            "declaration_headers_statements_and_order_identical": true,
+            "global_maxHeartbeats_after": {
+              "set_option_count": 8,
+              "token_count": 8
+            },
+            "global_maxHeartbeats_before": {
+              "set_option_count": 8,
+              "token_count": 8
+            },
+            "helpers_added": 0,
+            "imports_added": 0,
+            "options_added": 0,
+            "outside_owner_byte_identical": true,
+            "source_moves": 0,
+            "trust_counts_after": {
+              "Lean.ofReduceBool": 0,
+              "admit": 0,
+              "axiom": 0,
+              "native_decide": 0,
+              "sorry": 0,
+              "unsafe": 0
+            },
+            "trust_counts_before": {
+              "Lean.ofReduceBool": 0,
+              "admit": 0,
+              "axiom": 0,
+              "native_decide": 0,
+              "sorry": 0,
+              "unsafe": 0
+            }
+          },
+          "steps": [
+            {
+              "counts": {
+                "new_global_after": 1,
+                "new_global_before": 0,
+                "new_owner_after": 1,
+                "new_owner_before": 0,
+                "old_global_after": 0,
+                "old_global_before": 1,
+                "old_owner_after": 0,
+                "old_owner_before": 1
+              },
+              "new": "          have hScaleInvStar :\n              star ((literalStageFourierScale Y : ℂ)⁻¹) =\n                (literalStageFourierScale Y : ℂ)⁻¹ := by\n            calc\n              star ((literalStageFourierScale Y : ℂ)⁻¹) =\n                  (star (literalStageFourierScale Y : ℂ))⁻¹ := by\n                exact map_inv₀ (starRingEnd ℂ) _\n              _ = (literalStageFourierScale Y : ℂ)⁻¹ :=\n                congrArg Inv.inv hScaleStar",
+              "new_bytes": 464,
+              "new_sha256": "560542599ffe5d01f38f8b2fddb0040741cf1bdf511788abb96baa76871a68d7",
+              "old": "          have hScaleInvStar :\n              star ((literalStageFourierScale Y : ℂ)⁻¹) =\n                (literalStageFourierScale Y : ℂ)⁻¹ := by\n            change (starRingEnd ℂ)\n                ((literalStageFourierScale Y : ℂ)⁻¹) =\n              (literalStageFourierScale Y : ℂ)⁻¹\n            rw [map_inv₀, hScaleStar]",
+              "old_bytes": 346,
+              "old_sha256": "d73df4fa160e42bce763f756c540bf65366f6889d2618c4c27a44d7854e5bbcc",
+              "step_id": "V64-IDX3933-INVERSE-STAR-CALC-FALLBACK"
+            }
+          ]
+        }
+      ],
+      "variant_id": "idx3933_after_fallback_inv_calc"
+    },
+    {
+      "applicability_gate": "Use only for a v63 P/PZ lane whose exact remaining idx4017 residual is the folded Φ z = 0 zero branch; do not touch W.",
+      "axis": "IDX4017_Z_ONLY",
+      "candidate": {
+        "bytes": 2813076,
+        "declaration_count": 4416,
+        "full_candidate_written": false,
+        "lines": 62946,
+        "owner_region_bytes": 3298,
+        "owner_region_sha256": "6c6a757ecfdad657affe7fa561a794008ef54eed8cad9e3f832253a893e992f6",
+        "preview_path": "work/v64-workers/fallback-prep/idx4017-after-p-z-change-owner-preview.lean",
+        "sha256": "b62b71cf9cdce7b4564a644412cfeda03533cf2bff3b8eedeb89c9f2ab11f61b"
+      },
+      "clean_claimed": false,
+      "direct_lean_verified": false,
+      "invariants_from_official_v62_authority": {
+        "attributes_identical": true,
+        "body_only": true,
+        "changed_declaration_indices": [
+          4017
+        ],
+        "changed_region_maxHeartbeats_after": {
+          "set_option_count": 0,
+          "token_count": 0
+        },
+        "changed_region_maxHeartbeats_before": {
+          "set_option_count": 0,
+          "token_count": 0
+        },
+        "comments_identical": true,
+        "declaration_count": 4416,
+        "declaration_headers_statements_and_order_identical": true,
+        "global_maxHeartbeats_after": {
+          "set_option_count": 8,
+          "token_count": 8
+        },
+        "global_maxHeartbeats_before": {
+          "set_option_count": 8,
+          "token_count": 8
+        },
+        "helpers_added": 0,
+        "imports_added": 0,
+        "options_added": 0,
+        "outside_owner_byte_identical": true,
+        "source_moves": 0,
+        "trust_counts_after": {
+          "Lean.ofReduceBool": 0,
+          "admit": 0,
+          "axiom": 0,
+          "native_decide": 0,
+          "sorry": 0,
+          "unsafe": 0
+        },
+        "trust_counts_before": {
+          "Lean.ofReduceBool": 0,
+          "admit": 0,
+          "axiom": 0,
+          "native_decide": 0,
+          "sorry": 0,
+          "unsafe": 0
+        }
+      },
+      "live_v63_applicability_state": "STAGED_NO_SUPERSESSION",
+      "official_v62_owner_region": {
+        "bytes": 2664,
+        "sha256": "cec5e99e9ca1e3b9ad8f2374ac985284f80dfcccac09bbae48106a7b40606f6d"
+      },
+      "owner": {
+        "declaration": "discriminantHardStageOperator_eq_weightedHard",
+        "declaration_index": 4017
+      },
+      "promotion_allowed": false,
+      "rationale": "Expose the exact inner-product zero target by change before the established zero-weight rewrite.",
+      "status": "STAGED_DIRECT_LEAN_UNVERIFIED",
+      "supersede_allowed_before_exact_v63_remote_residual": false,
+      "transitions": [
+        {
+          "base_candidate": {
+            "bytes": 2812938,
+            "lines": 62943,
+            "sha256": "ee4fd072acbded035aeb7cf81a49db1a14f73a2f9f4ad5baab623a32f8cb0e2d"
+          },
+          "base_variant": "w4017_p",
+          "invariants_from_base": {
+            "attributes_identical": true,
+            "body_only": true,
+            "changed_declaration_indices": [
+              4017
+            ],
+            "changed_region_maxHeartbeats_after": {
+              "set_option_count": 0,
+              "token_count": 0
+            },
+            "changed_region_maxHeartbeats_before": {
+              "set_option_count": 0,
+              "token_count": 0
+            },
+            "comments_identical": true,
+            "declaration_count": 4416,
+            "declaration_headers_statements_and_order_identical": true,
+            "global_maxHeartbeats_after": {
+              "set_option_count": 8,
+              "token_count": 8
+            },
+            "global_maxHeartbeats_before": {
+              "set_option_count": 8,
+              "token_count": 8
+            },
+            "helpers_added": 0,
+            "imports_added": 0,
+            "options_added": 0,
+            "outside_owner_byte_identical": true,
+            "source_moves": 0,
+            "trust_counts_after": {
+              "Lean.ofReduceBool": 0,
+              "admit": 0,
+              "axiom": 0,
+              "native_decide": 0,
+              "sorry": 0,
+              "unsafe": 0
+            },
+            "trust_counts_before": {
+              "Lean.ofReduceBool": 0,
+              "admit": 0,
+              "axiom": 0,
+              "native_decide": 0,
+              "sorry": 0,
+              "unsafe": 0
+            }
+          },
+          "steps": [
+            {
+              "counts": {
+                "new_global_after": 1,
+                "new_global_before": 0,
+                "new_owner_after": 1,
+                "new_owner_before": 0,
+                "old_global_after": 0,
+                "old_global_before": 1,
+                "old_owner_after": 0,
+                "old_owner_before": 1
+              },
+              "new": "        change inner ℂ (graphEuclideanBase n v z)\n            (discriminantHardStageWeight N z *\n              graphEuclideanBase n u z) = 0\n        rw [discriminantHardStageWeight_eq_zero_outside_literalStage\n          N hzClosed hz]\n        simp)",
+              "new_bytes": 250,
+              "new_sha256": "b607ca858343e484e2faa4882867fecc2e0bc306ffc332ccd36fd5bf4e8bd877",
+              "old": "        rw [discriminantHardStageWeight_eq_zero_outside_literalStage\n          N hzClosed hz]\n        simp [Φ])",
+              "old_bytes": 112,
+              "old_sha256": "fce947c6c7f985785f2329f6a39332405caab7be38a7baf534b38a867d95d382",
+              "step_id": "V64-IDX4017-Z-CHANGE-FROM-P"
+            }
+          ]
+        },
+        {
+          "base_candidate": {
+            "bytes": 2812951,
+            "lines": 62944,
+            "sha256": "d0ddccad25b3173ade4b9fd8600c5ee3b90e747a35171e83391f55703cdafde0"
+          },
+          "base_variant": "w4017_pz",
+          "invariants_from_base": {
+            "attributes_identical": true,
+            "body_only": true,
+            "changed_declaration_indices": [
+              4017
+            ],
+            "changed_region_maxHeartbeats_after": {
+              "set_option_count": 0,
+              "token_count": 0
+            },
+            "changed_region_maxHeartbeats_before": {
+              "set_option_count": 0,
+              "token_count": 0
+            },
+            "comments_identical": true,
+            "declaration_count": 4416,
+            "declaration_headers_statements_and_order_identical": true,
+            "global_maxHeartbeats_after": {
+              "set_option_count": 8,
+              "token_count": 8
+            },
+            "global_maxHeartbeats_before": {
+              "set_option_count": 8,
+              "token_count": 8
+            },
+            "helpers_added": 0,
+            "imports_added": 0,
+            "options_added": 0,
+            "outside_owner_byte_identical": true,
+            "source_moves": 0,
+            "trust_counts_after": {
+              "Lean.ofReduceBool": 0,
+              "admit": 0,
+              "axiom": 0,
+              "native_decide": 0,
+              "sorry": 0,
+              "unsafe": 0
+            },
+            "trust_counts_before": {
+              "Lean.ofReduceBool": 0,
+              "admit": 0,
+              "axiom": 0,
+              "native_decide": 0,
+              "sorry": 0,
+              "unsafe": 0
+            }
+          },
+          "steps": [
+            {
+              "counts": {
+                "new_global_after": 1,
+                "new_global_before": 0,
+                "new_owner_after": 1,
+                "new_owner_before": 0,
+                "old_global_after": 0,
+                "old_global_before": 1,
+                "old_owner_after": 0,
+                "old_owner_before": 1
+              },
+              "new": "        change inner ℂ (graphEuclideanBase n v z)\n            (discriminantHardStageWeight N z *\n              graphEuclideanBase n u z) = 0\n        rw [discriminantHardStageWeight_eq_zero_outside_literalStage\n          N hzClosed hz]\n        simp)",
+              "new_bytes": 250,
+              "new_sha256": "b607ca858343e484e2faa4882867fecc2e0bc306ffc332ccd36fd5bf4e8bd877",
+              "old": "        unfold Φ\n        rw [discriminantHardStageWeight_eq_zero_outside_literalStage\n          N hzClosed hz]\n        simp)",
+              "old_bytes": 125,
+              "old_sha256": "ced7262ebbcafd2fd54c09d5aa3545a78bc3f960564ea1b8182bcf6a6e5ede9f",
+              "step_id": "V64-IDX4017-Z-CHANGE-AFTER-PZ"
+            }
+          ]
+        }
+      ],
+      "variant_id": "idx4017_after_p_z_change"
+    },
+    {
+      "applicability_gate": "Use only for a v63 P/PW lane whose remaining idx4017 residual is one or both pointwise Lp-smul carrier shapes; do not touch Z.",
+      "axis": "IDX4017_W_ONLY",
+      "candidate": {
+        "bytes": 2813554,
+        "declaration_count": 4416,
+        "full_candidate_written": false,
+        "lines": 62955,
+        "owner_region_bytes": 3776,
+        "owner_region_sha256": "a2feec9893bdcde45e192c4675782504d9a1c586b9fbb8255fa8094ee1db705c",
+        "preview_path": "work/v64-workers/fallback-prep/idx4017-after-p-w-change-owner-preview.lean",
+        "sha256": "8116f90cfd7cd9137367c0c42b63c0fb7ce1526d02c811e35ca336c981cc7285"
+      },
+      "clean_claimed": false,
+      "direct_lean_verified": false,
+      "invariants_from_official_v62_authority": {
+        "attributes_identical": true,
+        "body_only": true,
+        "changed_declaration_indices": [
+          4017
+        ],
+        "changed_region_maxHeartbeats_after": {
+          "set_option_count": 0,
+          "token_count": 0
+        },
+        "changed_region_maxHeartbeats_before": {
+          "set_option_count": 0,
+          "token_count": 0
+        },
+        "comments_identical": true,
+        "declaration_count": 4416,
+        "declaration_headers_statements_and_order_identical": true,
+        "global_maxHeartbeats_after": {
+          "set_option_count": 8,
+          "token_count": 8
+        },
+        "global_maxHeartbeats_before": {
+          "set_option_count": 8,
+          "token_count": 8
+        },
+        "helpers_added": 0,
+        "imports_added": 0,
+        "options_added": 0,
+        "outside_owner_byte_identical": true,
+        "source_moves": 0,
+        "trust_counts_after": {
+          "Lean.ofReduceBool": 0,
+          "admit": 0,
+          "axiom": 0,
+          "native_decide": 0,
+          "sorry": 0,
+          "unsafe": 0
+        },
+        "trust_counts_before": {
+          "Lean.ofReduceBool": 0,
+          "admit": 0,
+          "axiom": 0,
+          "native_decide": 0,
+          "sorry": 0,
+          "unsafe": 0
+        }
+      },
+      "live_v63_applicability_state": "STAGED_NO_SUPERSESSION",
+      "official_v62_owner_region": {
+        "bytes": 2664,
+        "sha256": "cec5e99e9ca1e3b9ad8f2374ac985284f80dfcccac09bbae48106a7b40606f6d"
+      },
+      "owner": {
+        "declaration": "discriminantHardStageOperator_eq_weightedHard",
+        "declaration_index": 4017
+      },
+      "promotion_allowed": false,
+      "rationale": "Use the same-file hmul-then-explicit-change pattern instead of unfolding Φ plus Pi.smul_apply'.",
+      "status": "STAGED_DIRECT_LEAN_UNVERIFIED",
+      "supersede_allowed_before_exact_v63_remote_residual": false,
+      "transitions": [
+        {
+          "base_candidate": {
+            "bytes": 2812938,
+            "lines": 62943,
+            "sha256": "ee4fd072acbded035aeb7cf81a49db1a14f73a2f9f4ad5baab623a32f8cb0e2d"
+          },
+          "base_variant": "w4017_p",
+          "invariants_from_base": {
+            "attributes_identical": true,
+            "body_only": true,
+            "changed_declaration_indices": [
+              4017
+            ],
+            "changed_region_maxHeartbeats_after": {
+              "set_option_count": 0,
+              "token_count": 0
+            },
+            "changed_region_maxHeartbeats_before": {
+              "set_option_count": 0,
+              "token_count": 0
+            },
+            "comments_identical": true,
+            "declaration_count": 4416,
+            "declaration_headers_statements_and_order_identical": true,
+            "global_maxHeartbeats_after": {
+              "set_option_count": 8,
+              "token_count": 8
+            },
+            "global_maxHeartbeats_before": {
+              "set_option_count": 8,
+              "token_count": 8
+            },
+            "helpers_added": 0,
+            "imports_added": 0,
+            "options_added": 0,
+            "outside_owner_byte_identical": true,
+            "source_moves": 0,
+            "trust_counts_after": {
+              "Lean.ofReduceBool": 0,
+              "admit": 0,
+              "axiom": 0,
+              "native_decide": 0,
+              "sorry": 0,
+              "unsafe": 0
+            },
+            "trust_counts_before": {
+              "Lean.ofReduceBool": 0,
+              "admit": 0,
+              "axiom": 0,
+              "native_decide": 0,
+              "sorry": 0,
+              "unsafe": 0
+            }
+          },
+          "steps": [
+            {
+              "counts": {
+                "new_global_after": 1,
+                "new_global_before": 0,
+                "new_owner_after": 1,
+                "new_owner_before": 0,
+                "old_global_after": 0,
+                "old_global_before": 1,
+                "old_owner_after": 0,
+                "old_owner_before": 1
+              },
+              "new": "      rw [hv, hmul]\n      change inner ℂ (graphEuclideanBase n v z)\n          (((discriminantHardStageWeightLp N : ℍ → ℂ) z) *\n            ((graphLiteralStageRestriction Z n u : ℍ → ℂ) z)) =\n        inner ℂ (graphEuclideanBase n v z)\n          (discriminantHardStageWeight N z *\n            graphEuclideanBase n u z)\n      rw [hw, hu]",
+              "new_bytes": 350,
+              "new_sha256": "de334b19137a434478c158aa37bc0dda3b297c8d35f7ad592e19710defe4548b",
+              "old": "      rw [hv, hmul, hw, hu]\n      rfl",
+              "old_bytes": 37,
+              "old_sha256": "a5d8bfb67bb768c92cda2d9ca542d959c718a4fac478aae0540119ee6adf363b",
+              "step_id": "V64-IDX4017-W-LITERAL-CHANGE-FROM-P"
+            },
+            {
+              "counts": {
+                "new_global_after": 1,
+                "new_global_before": 0,
+                "new_owner_after": 1,
+                "new_owner_before": 0,
+                "old_global_after": 0,
+                "old_global_before": 1,
+                "old_owner_after": 0,
+                "old_owner_before": 1
+              },
+              "new": "      rw [hmul]\n      change inner ℂ (graphEuclideanBase n v z)\n          (discriminantHardStageWeight N z *\n            graphEuclideanBase n u z) =\n        inner ℂ (graphEuclideanBase n v z)\n          (((discriminantHardCarrierWeightLp N : ℍ → ℂ) z) *\n            ((graphEuclideanBase n u : ℍ → ℂ) z))\n      rw [hw]",
+              "new_bytes": 332,
+              "new_sha256": "34e0bea43ad6764d41d2b317c944cbe48b39e3c531f18a9eeaa8dbc447bfee0e",
+              "old": "      rw [hmul, hw]\n      rfl",
+              "old_bytes": 29,
+              "old_sha256": "7eaccf39887669958d373460b282c3981a07d514d186e6a9e125ed35d77e5abc",
+              "step_id": "V64-IDX4017-W-CARRIER-CHANGE-FROM-P"
+            }
+          ]
+        },
+        {
+          "base_candidate": {
+            "bytes": 2813008,
+            "lines": 62943,
+            "sha256": "1abcc43c7416538a9b3ab470abecaa31410e4a82b86101bc60e452c98de64435"
+          },
+          "base_variant": "w4017_pw",
+          "invariants_from_base": {
+            "attributes_identical": true,
+            "body_only": true,
+            "changed_declaration_indices": [
+              4017
+            ],
+            "changed_region_maxHeartbeats_after": {
+              "set_option_count": 0,
+              "token_count": 0
+            },
+            "changed_region_maxHeartbeats_before": {
+              "set_option_count": 0,
+              "token_count": 0
+            },
+            "comments_identical": true,
+            "declaration_count": 4416,
+            "declaration_headers_statements_and_order_identical": true,
+            "global_maxHeartbeats_after": {
+              "set_option_count": 8,
+              "token_count": 8
+            },
+            "global_maxHeartbeats_before": {
+              "set_option_count": 8,
+              "token_count": 8
+            },
+            "helpers_added": 0,
+            "imports_added": 0,
+            "options_added": 0,
+            "outside_owner_byte_identical": true,
+            "source_moves": 0,
+            "trust_counts_after": {
+              "Lean.ofReduceBool": 0,
+              "admit": 0,
+              "axiom": 0,
+              "native_decide": 0,
+              "sorry": 0,
+              "unsafe": 0
+            },
+            "trust_counts_before": {
+              "Lean.ofReduceBool": 0,
+              "admit": 0,
+              "axiom": 0,
+              "native_decide": 0,
+              "sorry": 0,
+              "unsafe": 0
+            }
+          },
+          "steps": [
+            {
+              "counts": {
+                "new_global_after": 1,
+                "new_global_before": 0,
+                "new_owner_after": 1,
+                "new_owner_before": 0,
+                "old_global_after": 0,
+                "old_global_before": 1,
+                "old_owner_after": 0,
+                "old_owner_before": 1
+              },
+              "new": "      rw [hv, hmul]\n      change inner ℂ (graphEuclideanBase n v z)\n          (((discriminantHardStageWeightLp N : ℍ → ℂ) z) *\n            ((graphLiteralStageRestriction Z n u : ℍ → ℂ) z)) =\n        inner ℂ (graphEuclideanBase n v z)\n          (discriminantHardStageWeight N z *\n            graphEuclideanBase n u z)\n      rw [hw, hu]",
+              "new_bytes": 350,
+              "new_sha256": "de334b19137a434478c158aa37bc0dda3b297c8d35f7ad592e19710defe4548b",
+              "old": "      unfold Φ\n      rw [hv, hmul, Pi.smul_apply', smul_eq_mul, hw, hu]",
+              "old_bytes": 72,
+              "old_sha256": "e9049c4d1a76fb2e88492de6460076d41f9160256bfd06ce88941d2e64f07913",
+              "step_id": "V64-IDX4017-W-LITERAL-CHANGE-AFTER-PW"
+            },
+            {
+              "counts": {
+                "new_global_after": 1,
+                "new_global_before": 0,
+                "new_owner_after": 1,
+                "new_owner_before": 0,
+                "old_global_after": 0,
+                "old_global_before": 1,
+                "old_owner_after": 0,
+                "old_owner_before": 1
+              },
+              "new": "      rw [hmul]\n      change inner ℂ (graphEuclideanBase n v z)\n          (discriminantHardStageWeight N z *\n            graphEuclideanBase n u z) =\n        inner ℂ (graphEuclideanBase n v z)\n          (((discriminantHardCarrierWeightLp N : ℍ → ℂ) z) *\n            ((graphEuclideanBase n u : ℍ → ℂ) z))\n      rw [hw]",
+              "new_bytes": 332,
+              "new_sha256": "34e0bea43ad6764d41d2b317c944cbe48b39e3c531f18a9eeaa8dbc447bfee0e",
+              "old": "      unfold Φ\n      rw [hmul, Pi.smul_apply', smul_eq_mul, hw]",
+              "old_bytes": 64,
+              "old_sha256": "952b92a9ec85913acaf6b72acda7da0bb5b02138f29e053e81e16025a43d2306",
+              "step_id": "V64-IDX4017-W-CARRIER-CHANGE-AFTER-PW"
+            }
+          ]
+        }
+      ],
+      "variant_id": "idx4017_after_p_w_change"
+    },
+    {
+      "applicability_gate": "Use only when W has passed or must be preserved and the exact remaining residual is Z; retain the v63 W body byte-for-byte.",
+      "axis": "IDX4017_FULL_KEEP_W_REPLACE_Z",
+      "candidate": {
+        "bytes": 2813146,
+        "declaration_count": 4416,
+        "full_candidate_written": false,
+        "lines": 62946,
+        "owner_region_bytes": 3368,
+        "owner_region_sha256": "a0f3e57b265e83abb04f28018546de9a6f869b8ab2c2a98867ab43c629ff53bf",
+        "preview_path": "work/v64-workers/fallback-prep/idx4017-after-full-z-change-owner-preview.lean",
+        "sha256": "e43b0d8f73571f35634c3886a745fdb1f35be97c069f98d52e844ec066eee3db"
+      },
+      "clean_claimed": false,
+      "direct_lean_verified": false,
+      "invariants_from_official_v62_authority": {
+        "attributes_identical": true,
+        "body_only": true,
+        "changed_declaration_indices": [
+          4017
+        ],
+        "changed_region_maxHeartbeats_after": {
+          "set_option_count": 0,
+          "token_count": 0
+        },
+        "changed_region_maxHeartbeats_before": {
+          "set_option_count": 0,
+          "token_count": 0
+        },
+        "comments_identical": true,
+        "declaration_count": 4416,
+        "declaration_headers_statements_and_order_identical": true,
+        "global_maxHeartbeats_after": {
+          "set_option_count": 8,
+          "token_count": 8
+        },
+        "global_maxHeartbeats_before": {
+          "set_option_count": 8,
+          "token_count": 8
+        },
+        "helpers_added": 0,
+        "imports_added": 0,
+        "options_added": 0,
+        "outside_owner_byte_identical": true,
+        "source_moves": 0,
+        "trust_counts_after": {
+          "Lean.ofReduceBool": 0,
+          "admit": 0,
+          "axiom": 0,
+          "native_decide": 0,
+          "sorry": 0,
+          "unsafe": 0
+        },
+        "trust_counts_before": {
+          "Lean.ofReduceBool": 0,
+          "admit": 0,
+          "axiom": 0,
+          "native_decide": 0,
+          "sorry": 0,
+          "unsafe": 0
+        }
+      },
+      "live_v63_applicability_state": "STAGED_NO_SUPERSESSION",
+      "official_v62_owner_region": {
+        "bytes": 2664,
+        "sha256": "cec5e99e9ca1e3b9ad8f2374ac985284f80dfcccac09bbae48106a7b40606f6d"
+      },
+      "owner": {
+        "declaration": "discriminantHardStageOperator_eq_weightedHard",
+        "declaration_index": 4017
+      },
+      "promotion_allowed": false,
+      "rationale": "Applicable-axis-only hybrid: replace Z by explicit change while preserving the selected W rewrite sequence.",
+      "status": "STAGED_DIRECT_LEAN_UNVERIFIED",
+      "supersede_allowed_before_exact_v63_remote_residual": false,
+      "transitions": [
+        {
+          "base_candidate": {
+            "bytes": 2813008,
+            "lines": 62943,
+            "sha256": "1abcc43c7416538a9b3ab470abecaa31410e4a82b86101bc60e452c98de64435"
+          },
+          "base_variant": "w4017_pw",
+          "invariants_from_base": {
+            "attributes_identical": true,
+            "body_only": true,
+            "changed_declaration_indices": [
+              4017
+            ],
+            "changed_region_maxHeartbeats_after": {
+              "set_option_count": 0,
+              "token_count": 0
+            },
+            "changed_region_maxHeartbeats_before": {
+              "set_option_count": 0,
+              "token_count": 0
+            },
+            "comments_identical": true,
+            "declaration_count": 4416,
+            "declaration_headers_statements_and_order_identical": true,
+            "global_maxHeartbeats_after": {
+              "set_option_count": 8,
+              "token_count": 8
+            },
+            "global_maxHeartbeats_before": {
+              "set_option_count": 8,
+              "token_count": 8
+            },
+            "helpers_added": 0,
+            "imports_added": 0,
+            "options_added": 0,
+            "outside_owner_byte_identical": true,
+            "source_moves": 0,
+            "trust_counts_after": {
+              "Lean.ofReduceBool": 0,
+              "admit": 0,
+              "axiom": 0,
+              "native_decide": 0,
+              "sorry": 0,
+              "unsafe": 0
+            },
+            "trust_counts_before": {
+              "Lean.ofReduceBool": 0,
+              "admit": 0,
+              "axiom": 0,
+              "native_decide": 0,
+              "sorry": 0,
+              "unsafe": 0
+            }
+          },
+          "steps": [
+            {
+              "counts": {
+                "new_global_after": 1,
+                "new_global_before": 0,
+                "new_owner_after": 1,
+                "new_owner_before": 0,
+                "old_global_after": 0,
+                "old_global_before": 1,
+                "old_owner_after": 0,
+                "old_owner_before": 1
+              },
+              "new": "        change inner ℂ (graphEuclideanBase n v z)\n            (discriminantHardStageWeight N z *\n              graphEuclideanBase n u z) = 0\n        rw [discriminantHardStageWeight_eq_zero_outside_literalStage\n          N hzClosed hz]\n        simp)",
+              "new_bytes": 250,
+              "new_sha256": "b607ca858343e484e2faa4882867fecc2e0bc306ffc332ccd36fd5bf4e8bd877",
+              "old": "        rw [discriminantHardStageWeight_eq_zero_outside_literalStage\n          N hzClosed hz]\n        simp [Φ])",
+              "old_bytes": 112,
+              "old_sha256": "fce947c6c7f985785f2329f6a39332405caab7be38a7baf534b38a867d95d382",
+              "step_id": "V64-IDX4017-Z-CHANGE-AFTER-PW"
+            }
+          ]
+        },
+        {
+          "base_candidate": {
+            "bytes": 2813021,
+            "lines": 62944,
+            "sha256": "20ad5b01e774f1c388d2d16991e34840fdafe0f9d033038652311b29d84ae3f5"
+          },
+          "base_variant": "w4017_full",
+          "invariants_from_base": {
+            "attributes_identical": true,
+            "body_only": true,
+            "changed_declaration_indices": [
+              4017
+            ],
+            "changed_region_maxHeartbeats_after": {
+              "set_option_count": 0,
+              "token_count": 0
+            },
+            "changed_region_maxHeartbeats_before": {
+              "set_option_count": 0,
+              "token_count": 0
+            },
+            "comments_identical": true,
+            "declaration_count": 4416,
+            "declaration_headers_statements_and_order_identical": true,
+            "global_maxHeartbeats_after": {
+              "set_option_count": 8,
+              "token_count": 8
+            },
+            "global_maxHeartbeats_before": {
+              "set_option_count": 8,
+              "token_count": 8
+            },
+            "helpers_added": 0,
+            "imports_added": 0,
+            "options_added": 0,
+            "outside_owner_byte_identical": true,
+            "source_moves": 0,
+            "trust_counts_after": {
+              "Lean.ofReduceBool": 0,
+              "admit": 0,
+              "axiom": 0,
+              "native_decide": 0,
+              "sorry": 0,
+              "unsafe": 0
+            },
+            "trust_counts_before": {
+              "Lean.ofReduceBool": 0,
+              "admit": 0,
+              "axiom": 0,
+              "native_decide": 0,
+              "sorry": 0,
+              "unsafe": 0
+            }
+          },
+          "steps": [
+            {
+              "counts": {
+                "new_global_after": 1,
+                "new_global_before": 0,
+                "new_owner_after": 1,
+                "new_owner_before": 0,
+                "old_global_after": 0,
+                "old_global_before": 1,
+                "old_owner_after": 0,
+                "old_owner_before": 1
+              },
+              "new": "        change inner ℂ (graphEuclideanBase n v z)\n            (discriminantHardStageWeight N z *\n              graphEuclideanBase n u z) = 0\n        rw [discriminantHardStageWeight_eq_zero_outside_literalStage\n          N hzClosed hz]\n        simp)",
+              "new_bytes": 250,
+              "new_sha256": "b607ca858343e484e2faa4882867fecc2e0bc306ffc332ccd36fd5bf4e8bd877",
+              "old": "        unfold Φ\n        rw [discriminantHardStageWeight_eq_zero_outside_literalStage\n          N hzClosed hz]\n        simp)",
+              "old_bytes": 125,
+              "old_sha256": "ced7262ebbcafd2fd54c09d5aa3545a78bc3f960564ea1b8182bcf6a6e5ede9f",
+              "step_id": "V64-IDX4017-Z-CHANGE-AFTER-FULL"
+            }
+          ]
+        }
+      ],
+      "variant_id": "idx4017_after_full_z_change"
+    },
+    {
+      "applicability_gate": "Use only when Z has passed or must be preserved and the exact remaining residual is W; retain the v63 Z body byte-for-byte.",
+      "axis": "IDX4017_FULL_KEEP_Z_REPLACE_W",
+      "candidate": {
+        "bytes": 2813567,
+        "declaration_count": 4416,
+        "full_candidate_written": false,
+        "lines": 62956,
+        "owner_region_bytes": 3789,
+        "owner_region_sha256": "b9da95e50ddb13b3456b50a0194e0cba52c0d430c789904e9b67c57c017e7174",
+        "preview_path": "work/v64-workers/fallback-prep/idx4017-after-full-w-change-owner-preview.lean",
+        "sha256": "08e58f10ba5230dd28c2c6015623976d48a54da1573c6bca1c155df7c2659f94"
+      },
+      "clean_claimed": false,
+      "direct_lean_verified": false,
+      "invariants_from_official_v62_authority": {
+        "attributes_identical": true,
+        "body_only": true,
+        "changed_declaration_indices": [
+          4017
+        ],
+        "changed_region_maxHeartbeats_after": {
+          "set_option_count": 0,
+          "token_count": 0
+        },
+        "changed_region_maxHeartbeats_before": {
+          "set_option_count": 0,
+          "token_count": 0
+        },
+        "comments_identical": true,
+        "declaration_count": 4416,
+        "declaration_headers_statements_and_order_identical": true,
+        "global_maxHeartbeats_after": {
+          "set_option_count": 8,
+          "token_count": 8
+        },
+        "global_maxHeartbeats_before": {
+          "set_option_count": 8,
+          "token_count": 8
+        },
+        "helpers_added": 0,
+        "imports_added": 0,
+        "options_added": 0,
+        "outside_owner_byte_identical": true,
+        "source_moves": 0,
+        "trust_counts_after": {
+          "Lean.ofReduceBool": 0,
+          "admit": 0,
+          "axiom": 0,
+          "native_decide": 0,
+          "sorry": 0,
+          "unsafe": 0
+        },
+        "trust_counts_before": {
+          "Lean.ofReduceBool": 0,
+          "admit": 0,
+          "axiom": 0,
+          "native_decide": 0,
+          "sorry": 0,
+          "unsafe": 0
+        }
+      },
+      "live_v63_applicability_state": "APPLICABLE_FROM_EXACT_W4017_PZ_W_MISSES_BUT_NOT_SELECTED_AFTER_FULL_COMPARISON",
+      "observed_base_direct_lean_executed": true,
+      "observed_base_semantic_clean": false,
+      "observed_base_variant": "w4017_pz",
+      "official_v62_owner_region": {
+        "bytes": 2664,
+        "sha256": "cec5e99e9ca1e3b9ad8f2374ac985284f80dfcccac09bbae48106a7b40606f6d"
+      },
+      "owner": {
+        "declaration": "discriminantHardStageOperator_eq_weightedHard",
+        "declaration_index": 4017
+      },
+      "promotion_allowed": false,
+      "rationale": "Applicable-axis-only hybrid: replace W by explicit change while preserving the selected Z unfold/rewrite sequence.",
+      "status": "STAGED_DIRECT_LEAN_UNVERIFIED",
+      "supersede_allowed_before_exact_v63_remote_residual": false,
+      "transitions": [
+        {
+          "base_candidate": {
+            "bytes": 2812951,
+            "lines": 62944,
+            "sha256": "d0ddccad25b3173ade4b9fd8600c5ee3b90e747a35171e83391f55703cdafde0"
+          },
+          "base_variant": "w4017_pz",
+          "invariants_from_base": {
+            "attributes_identical": true,
+            "body_only": true,
+            "changed_declaration_indices": [
+              4017
+            ],
+            "changed_region_maxHeartbeats_after": {
+              "set_option_count": 0,
+              "token_count": 0
+            },
+            "changed_region_maxHeartbeats_before": {
+              "set_option_count": 0,
+              "token_count": 0
+            },
+            "comments_identical": true,
+            "declaration_count": 4416,
+            "declaration_headers_statements_and_order_identical": true,
+            "global_maxHeartbeats_after": {
+              "set_option_count": 8,
+              "token_count": 8
+            },
+            "global_maxHeartbeats_before": {
+              "set_option_count": 8,
+              "token_count": 8
+            },
+            "helpers_added": 0,
+            "imports_added": 0,
+            "options_added": 0,
+            "outside_owner_byte_identical": true,
+            "source_moves": 0,
+            "trust_counts_after": {
+              "Lean.ofReduceBool": 0,
+              "admit": 0,
+              "axiom": 0,
+              "native_decide": 0,
+              "sorry": 0,
+              "unsafe": 0
+            },
+            "trust_counts_before": {
+              "Lean.ofReduceBool": 0,
+              "admit": 0,
+              "axiom": 0,
+              "native_decide": 0,
+              "sorry": 0,
+              "unsafe": 0
+            }
+          },
+          "steps": [
+            {
+              "counts": {
+                "new_global_after": 1,
+                "new_global_before": 0,
+                "new_owner_after": 1,
+                "new_owner_before": 0,
+                "old_global_after": 0,
+                "old_global_before": 1,
+                "old_owner_after": 0,
+                "old_owner_before": 1
+              },
+              "new": "      rw [hv, hmul]\n      change inner ℂ (graphEuclideanBase n v z)\n          (((discriminantHardStageWeightLp N : ℍ → ℂ) z) *\n            ((graphLiteralStageRestriction Z n u : ℍ → ℂ) z)) =\n        inner ℂ (graphEuclideanBase n v z)\n          (discriminantHardStageWeight N z *\n            graphEuclideanBase n u z)\n      rw [hw, hu]",
+              "new_bytes": 350,
+              "new_sha256": "de334b19137a434478c158aa37bc0dda3b297c8d35f7ad592e19710defe4548b",
+              "old": "      rw [hv, hmul, hw, hu]\n      rfl",
+              "old_bytes": 37,
+              "old_sha256": "a5d8bfb67bb768c92cda2d9ca542d959c718a4fac478aae0540119ee6adf363b",
+              "step_id": "V64-IDX4017-W-LITERAL-CHANGE-AFTER-PZ"
+            },
+            {
+              "counts": {
+                "new_global_after": 1,
+                "new_global_before": 0,
+                "new_owner_after": 1,
+                "new_owner_before": 0,
+                "old_global_after": 0,
+                "old_global_before": 1,
+                "old_owner_after": 0,
+                "old_owner_before": 1
+              },
+              "new": "      rw [hmul]\n      change inner ℂ (graphEuclideanBase n v z)\n          (discriminantHardStageWeight N z *\n            graphEuclideanBase n u z) =\n        inner ℂ (graphEuclideanBase n v z)\n          (((discriminantHardCarrierWeightLp N : ℍ → ℂ) z) *\n            ((graphEuclideanBase n u : ℍ → ℂ) z))\n      rw [hw]",
+              "new_bytes": 332,
+              "new_sha256": "34e0bea43ad6764d41d2b317c944cbe48b39e3c531f18a9eeaa8dbc447bfee0e",
+              "old": "      rw [hmul, hw]\n      rfl",
+              "old_bytes": 29,
+              "old_sha256": "7eaccf39887669958d373460b282c3981a07d514d186e6a9e125ed35d77e5abc",
+              "step_id": "V64-IDX4017-W-CARRIER-CHANGE-AFTER-PZ"
+            }
+          ]
+        },
+        {
+          "base_candidate": {
+            "bytes": 2813021,
+            "lines": 62944,
+            "sha256": "20ad5b01e774f1c388d2d16991e34840fdafe0f9d033038652311b29d84ae3f5"
+          },
+          "base_variant": "w4017_full",
+          "invariants_from_base": {
+            "attributes_identical": true,
+            "body_only": true,
+            "changed_declaration_indices": [
+              4017
+            ],
+            "changed_region_maxHeartbeats_after": {
+              "set_option_count": 0,
+              "token_count": 0
+            },
+            "changed_region_maxHeartbeats_before": {
+              "set_option_count": 0,
+              "token_count": 0
+            },
+            "comments_identical": true,
+            "declaration_count": 4416,
+            "declaration_headers_statements_and_order_identical": true,
+            "global_maxHeartbeats_after": {
+              "set_option_count": 8,
+              "token_count": 8
+            },
+            "global_maxHeartbeats_before": {
+              "set_option_count": 8,
+              "token_count": 8
+            },
+            "helpers_added": 0,
+            "imports_added": 0,
+            "options_added": 0,
+            "outside_owner_byte_identical": true,
+            "source_moves": 0,
+            "trust_counts_after": {
+              "Lean.ofReduceBool": 0,
+              "admit": 0,
+              "axiom": 0,
+              "native_decide": 0,
+              "sorry": 0,
+              "unsafe": 0
+            },
+            "trust_counts_before": {
+              "Lean.ofReduceBool": 0,
+              "admit": 0,
+              "axiom": 0,
+              "native_decide": 0,
+              "sorry": 0,
+              "unsafe": 0
+            }
+          },
+          "steps": [
+            {
+              "counts": {
+                "new_global_after": 1,
+                "new_global_before": 0,
+                "new_owner_after": 1,
+                "new_owner_before": 0,
+                "old_global_after": 0,
+                "old_global_before": 1,
+                "old_owner_after": 0,
+                "old_owner_before": 1
+              },
+              "new": "      rw [hv, hmul]\n      change inner ℂ (graphEuclideanBase n v z)\n          (((discriminantHardStageWeightLp N : ℍ → ℂ) z) *\n            ((graphLiteralStageRestriction Z n u : ℍ → ℂ) z)) =\n        inner ℂ (graphEuclideanBase n v z)\n          (discriminantHardStageWeight N z *\n            graphEuclideanBase n u z)\n      rw [hw, hu]",
+              "new_bytes": 350,
+              "new_sha256": "de334b19137a434478c158aa37bc0dda3b297c8d35f7ad592e19710defe4548b",
+              "old": "      unfold Φ\n      rw [hv, hmul, Pi.smul_apply', smul_eq_mul, hw, hu]",
+              "old_bytes": 72,
+              "old_sha256": "e9049c4d1a76fb2e88492de6460076d41f9160256bfd06ce88941d2e64f07913",
+              "step_id": "V64-IDX4017-W-LITERAL-CHANGE-AFTER-FULL"
+            },
+            {
+              "counts": {
+                "new_global_after": 1,
+                "new_global_before": 0,
+                "new_owner_after": 1,
+                "new_owner_before": 0,
+                "old_global_after": 0,
+                "old_global_before": 1,
+                "old_owner_after": 0,
+                "old_owner_before": 1
+              },
+              "new": "      rw [hmul]\n      change inner ℂ (graphEuclideanBase n v z)\n          (discriminantHardStageWeight N z *\n            graphEuclideanBase n u z) =\n        inner ℂ (graphEuclideanBase n v z)\n          (((discriminantHardCarrierWeightLp N : ℍ → ℂ) z) *\n            ((graphEuclideanBase n u : ℍ → ℂ) z))\n      rw [hw]",
+              "new_bytes": 332,
+              "new_sha256": "34e0bea43ad6764d41d2b317c944cbe48b39e3c531f18a9eeaa8dbc447bfee0e",
+              "old": "      unfold Φ\n      rw [hmul, Pi.smul_apply', smul_eq_mul, hw]",
+              "old_bytes": 64,
+              "old_sha256": "952b92a9ec85913acaf6b72acda7da0bb5b02138f29e053e81e16025a43d2306",
+              "step_id": "V64-IDX4017-W-CARRIER-CHANGE-AFTER-FULL"
+            }
+          ]
+        }
+      ],
+      "variant_id": "idx4017_after_full_w_change"
+    },
+    {
+      "applicability_gate": "Use only if the exact v63 residual set shows both Z and W remain applicable; never select this merely because it is the largest staged variant.",
+      "axis": "IDX4017_FULL_REPLACE_Z_AND_W",
+      "candidate": {
+        "bytes": 2813692,
+        "declaration_count": 4416,
+        "full_candidate_written": false,
+        "lines": 62958,
+        "owner_region_bytes": 3914,
+        "owner_region_sha256": "34e3816317d4796cf3dcf7d8537628df2e2fc46eb45b6c3afe94825c8b68e4c5",
+        "preview_path": "work/v64-workers/fallback-prep/idx4017-after-full-zw-change-owner-preview.lean",
+        "sha256": "d66fd73a706893157321758038e1637f66e5e9eedd4ba48bca98c423b52485e3"
+      },
+      "clean_claimed": false,
+      "direct_lean_verified": false,
+      "invariants_from_official_v62_authority": {
+        "attributes_identical": true,
+        "body_only": true,
+        "changed_declaration_indices": [
+          4017
+        ],
+        "changed_region_maxHeartbeats_after": {
+          "set_option_count": 0,
+          "token_count": 0
+        },
+        "changed_region_maxHeartbeats_before": {
+          "set_option_count": 0,
+          "token_count": 0
+        },
+        "comments_identical": true,
+        "declaration_count": 4416,
+        "declaration_headers_statements_and_order_identical": true,
+        "global_maxHeartbeats_after": {
+          "set_option_count": 8,
+          "token_count": 8
+        },
+        "global_maxHeartbeats_before": {
+          "set_option_count": 8,
+          "token_count": 8
+        },
+        "helpers_added": 0,
+        "imports_added": 0,
+        "options_added": 0,
+        "outside_owner_byte_identical": true,
+        "source_moves": 0,
+        "trust_counts_after": {
+          "Lean.ofReduceBool": 0,
+          "admit": 0,
+          "axiom": 0,
+          "native_decide": 0,
+          "sorry": 0,
+          "unsafe": 0
+        },
+        "trust_counts_before": {
+          "Lean.ofReduceBool": 0,
+          "admit": 0,
+          "axiom": 0,
+          "native_decide": 0,
+          "sorry": 0,
+          "unsafe": 0
+        }
+      },
+      "live_v63_applicability_state": "STAGED_NO_SUPERSESSION",
+      "official_v62_owner_region": {
+        "bytes": 2664,
+        "sha256": "cec5e99e9ca1e3b9ad8f2374ac985284f80dfcccac09bbae48106a7b40606f6d"
+      },
+      "owner": {
+        "declaration": "discriminantHardStageOperator_eq_weightedHard",
+        "declaration_index": 4017
+      },
+      "promotion_allowed": false,
+      "rationale": "Convergent Z+W explicit-change fallback, with byte-identical reconstruction from all four frozen P/PZ/PW/full bases.",
+      "status": "STAGED_DIRECT_LEAN_UNVERIFIED",
+      "supersede_allowed_before_exact_v63_remote_residual": false,
+      "transitions": [
+        {
+          "base_candidate": {
+            "bytes": 2812938,
+            "lines": 62943,
+            "sha256": "ee4fd072acbded035aeb7cf81a49db1a14f73a2f9f4ad5baab623a32f8cb0e2d"
+          },
+          "base_variant": "w4017_p",
+          "invariants_from_base": {
+            "attributes_identical": true,
+            "body_only": true,
+            "changed_declaration_indices": [
+              4017
+            ],
+            "changed_region_maxHeartbeats_after": {
+              "set_option_count": 0,
+              "token_count": 0
+            },
+            "changed_region_maxHeartbeats_before": {
+              "set_option_count": 0,
+              "token_count": 0
+            },
+            "comments_identical": true,
+            "declaration_count": 4416,
+            "declaration_headers_statements_and_order_identical": true,
+            "global_maxHeartbeats_after": {
+              "set_option_count": 8,
+              "token_count": 8
+            },
+            "global_maxHeartbeats_before": {
+              "set_option_count": 8,
+              "token_count": 8
+            },
+            "helpers_added": 0,
+            "imports_added": 0,
+            "options_added": 0,
+            "outside_owner_byte_identical": true,
+            "source_moves": 0,
+            "trust_counts_after": {
+              "Lean.ofReduceBool": 0,
+              "admit": 0,
+              "axiom": 0,
+              "native_decide": 0,
+              "sorry": 0,
+              "unsafe": 0
+            },
+            "trust_counts_before": {
+              "Lean.ofReduceBool": 0,
+              "admit": 0,
+              "axiom": 0,
+              "native_decide": 0,
+              "sorry": 0,
+              "unsafe": 0
+            }
+          },
+          "steps": [
+            {
+              "counts": {
+                "new_global_after": 1,
+                "new_global_before": 0,
+                "new_owner_after": 1,
+                "new_owner_before": 0,
+                "old_global_after": 0,
+                "old_global_before": 1,
+                "old_owner_after": 0,
+                "old_owner_before": 1
+              },
+              "new": "        change inner ℂ (graphEuclideanBase n v z)\n            (discriminantHardStageWeight N z *\n              graphEuclideanBase n u z) = 0\n        rw [discriminantHardStageWeight_eq_zero_outside_literalStage\n          N hzClosed hz]\n        simp)",
+              "new_bytes": 250,
+              "new_sha256": "b607ca858343e484e2faa4882867fecc2e0bc306ffc332ccd36fd5bf4e8bd877",
+              "old": "        rw [discriminantHardStageWeight_eq_zero_outside_literalStage\n          N hzClosed hz]\n        simp [Φ])",
+              "old_bytes": 112,
+              "old_sha256": "fce947c6c7f985785f2329f6a39332405caab7be38a7baf534b38a867d95d382",
+              "step_id": "V64-IDX4017-Z-CHANGE-FROM-P-FULL"
+            },
+            {
+              "counts": {
+                "new_global_after": 1,
+                "new_global_before": 0,
+                "new_owner_after": 1,
+                "new_owner_before": 0,
+                "old_global_after": 0,
+                "old_global_before": 1,
+                "old_owner_after": 0,
+                "old_owner_before": 1
+              },
+              "new": "      rw [hv, hmul]\n      change inner ℂ (graphEuclideanBase n v z)\n          (((discriminantHardStageWeightLp N : ℍ → ℂ) z) *\n            ((graphLiteralStageRestriction Z n u : ℍ → ℂ) z)) =\n        inner ℂ (graphEuclideanBase n v z)\n          (discriminantHardStageWeight N z *\n            graphEuclideanBase n u z)\n      rw [hw, hu]",
+              "new_bytes": 350,
+              "new_sha256": "de334b19137a434478c158aa37bc0dda3b297c8d35f7ad592e19710defe4548b",
+              "old": "      rw [hv, hmul, hw, hu]\n      rfl",
+              "old_bytes": 37,
+              "old_sha256": "a5d8bfb67bb768c92cda2d9ca542d959c718a4fac478aae0540119ee6adf363b",
+              "step_id": "V64-IDX4017-W-LITERAL-CHANGE-FROM-P-FULL"
+            },
+            {
+              "counts": {
+                "new_global_after": 1,
+                "new_global_before": 0,
+                "new_owner_after": 1,
+                "new_owner_before": 0,
+                "old_global_after": 0,
+                "old_global_before": 1,
+                "old_owner_after": 0,
+                "old_owner_before": 1
+              },
+              "new": "      rw [hmul]\n      change inner ℂ (graphEuclideanBase n v z)\n          (discriminantHardStageWeight N z *\n            graphEuclideanBase n u z) =\n        inner ℂ (graphEuclideanBase n v z)\n          (((discriminantHardCarrierWeightLp N : ℍ → ℂ) z) *\n            ((graphEuclideanBase n u : ℍ → ℂ) z))\n      rw [hw]",
+              "new_bytes": 332,
+              "new_sha256": "34e0bea43ad6764d41d2b317c944cbe48b39e3c531f18a9eeaa8dbc447bfee0e",
+              "old": "      rw [hmul, hw]\n      rfl",
+              "old_bytes": 29,
+              "old_sha256": "7eaccf39887669958d373460b282c3981a07d514d186e6a9e125ed35d77e5abc",
+              "step_id": "V64-IDX4017-W-CARRIER-CHANGE-FROM-P-FULL"
+            }
+          ]
+        },
+        {
+          "base_candidate": {
+            "bytes": 2812951,
+            "lines": 62944,
+            "sha256": "d0ddccad25b3173ade4b9fd8600c5ee3b90e747a35171e83391f55703cdafde0"
+          },
+          "base_variant": "w4017_pz",
+          "invariants_from_base": {
+            "attributes_identical": true,
+            "body_only": true,
+            "changed_declaration_indices": [
+              4017
+            ],
+            "changed_region_maxHeartbeats_after": {
+              "set_option_count": 0,
+              "token_count": 0
+            },
+            "changed_region_maxHeartbeats_before": {
+              "set_option_count": 0,
+              "token_count": 0
+            },
+            "comments_identical": true,
+            "declaration_count": 4416,
+            "declaration_headers_statements_and_order_identical": true,
+            "global_maxHeartbeats_after": {
+              "set_option_count": 8,
+              "token_count": 8
+            },
+            "global_maxHeartbeats_before": {
+              "set_option_count": 8,
+              "token_count": 8
+            },
+            "helpers_added": 0,
+            "imports_added": 0,
+            "options_added": 0,
+            "outside_owner_byte_identical": true,
+            "source_moves": 0,
+            "trust_counts_after": {
+              "Lean.ofReduceBool": 0,
+              "admit": 0,
+              "axiom": 0,
+              "native_decide": 0,
+              "sorry": 0,
+              "unsafe": 0
+            },
+            "trust_counts_before": {
+              "Lean.ofReduceBool": 0,
+              "admit": 0,
+              "axiom": 0,
+              "native_decide": 0,
+              "sorry": 0,
+              "unsafe": 0
+            }
+          },
+          "steps": [
+            {
+              "counts": {
+                "new_global_after": 1,
+                "new_global_before": 0,
+                "new_owner_after": 1,
+                "new_owner_before": 0,
+                "old_global_after": 0,
+                "old_global_before": 1,
+                "old_owner_after": 0,
+                "old_owner_before": 1
+              },
+              "new": "        change inner ℂ (graphEuclideanBase n v z)\n            (discriminantHardStageWeight N z *\n              graphEuclideanBase n u z) = 0\n        rw [discriminantHardStageWeight_eq_zero_outside_literalStage\n          N hzClosed hz]\n        simp)",
+              "new_bytes": 250,
+              "new_sha256": "b607ca858343e484e2faa4882867fecc2e0bc306ffc332ccd36fd5bf4e8bd877",
+              "old": "        unfold Φ\n        rw [discriminantHardStageWeight_eq_zero_outside_literalStage\n          N hzClosed hz]\n        simp)",
+              "old_bytes": 125,
+              "old_sha256": "ced7262ebbcafd2fd54c09d5aa3545a78bc3f960564ea1b8182bcf6a6e5ede9f",
+              "step_id": "V64-IDX4017-Z-CHANGE-AFTER-PZ-FULL"
+            },
+            {
+              "counts": {
+                "new_global_after": 1,
+                "new_global_before": 0,
+                "new_owner_after": 1,
+                "new_owner_before": 0,
+                "old_global_after": 0,
+                "old_global_before": 1,
+                "old_owner_after": 0,
+                "old_owner_before": 1
+              },
+              "new": "      rw [hv, hmul]\n      change inner ℂ (graphEuclideanBase n v z)\n          (((discriminantHardStageWeightLp N : ℍ → ℂ) z) *\n            ((graphLiteralStageRestriction Z n u : ℍ → ℂ) z)) =\n        inner ℂ (graphEuclideanBase n v z)\n          (discriminantHardStageWeight N z *\n            graphEuclideanBase n u z)\n      rw [hw, hu]",
+              "new_bytes": 350,
+              "new_sha256": "de334b19137a434478c158aa37bc0dda3b297c8d35f7ad592e19710defe4548b",
+              "old": "      rw [hv, hmul, hw, hu]\n      rfl",
+              "old_bytes": 37,
+              "old_sha256": "a5d8bfb67bb768c92cda2d9ca542d959c718a4fac478aae0540119ee6adf363b",
+              "step_id": "V64-IDX4017-W-LITERAL-CHANGE-AFTER-PZ-FULL"
+            },
+            {
+              "counts": {
+                "new_global_after": 1,
+                "new_global_before": 0,
+                "new_owner_after": 1,
+                "new_owner_before": 0,
+                "old_global_after": 0,
+                "old_global_before": 1,
+                "old_owner_after": 0,
+                "old_owner_before": 1
+              },
+              "new": "      rw [hmul]\n      change inner ℂ (graphEuclideanBase n v z)\n          (discriminantHardStageWeight N z *\n            graphEuclideanBase n u z) =\n        inner ℂ (graphEuclideanBase n v z)\n          (((discriminantHardCarrierWeightLp N : ℍ → ℂ) z) *\n            ((graphEuclideanBase n u : ℍ → ℂ) z))\n      rw [hw]",
+              "new_bytes": 332,
+              "new_sha256": "34e0bea43ad6764d41d2b317c944cbe48b39e3c531f18a9eeaa8dbc447bfee0e",
+              "old": "      rw [hmul, hw]\n      rfl",
+              "old_bytes": 29,
+              "old_sha256": "7eaccf39887669958d373460b282c3981a07d514d186e6a9e125ed35d77e5abc",
+              "step_id": "V64-IDX4017-W-CARRIER-CHANGE-AFTER-PZ-FULL"
+            }
+          ]
+        },
+        {
+          "base_candidate": {
+            "bytes": 2813008,
+            "lines": 62943,
+            "sha256": "1abcc43c7416538a9b3ab470abecaa31410e4a82b86101bc60e452c98de64435"
+          },
+          "base_variant": "w4017_pw",
+          "invariants_from_base": {
+            "attributes_identical": true,
+            "body_only": true,
+            "changed_declaration_indices": [
+              4017
+            ],
+            "changed_region_maxHeartbeats_after": {
+              "set_option_count": 0,
+              "token_count": 0
+            },
+            "changed_region_maxHeartbeats_before": {
+              "set_option_count": 0,
+              "token_count": 0
+            },
+            "comments_identical": true,
+            "declaration_count": 4416,
+            "declaration_headers_statements_and_order_identical": true,
+            "global_maxHeartbeats_after": {
+              "set_option_count": 8,
+              "token_count": 8
+            },
+            "global_maxHeartbeats_before": {
+              "set_option_count": 8,
+              "token_count": 8
+            },
+            "helpers_added": 0,
+            "imports_added": 0,
+            "options_added": 0,
+            "outside_owner_byte_identical": true,
+            "source_moves": 0,
+            "trust_counts_after": {
+              "Lean.ofReduceBool": 0,
+              "admit": 0,
+              "axiom": 0,
+              "native_decide": 0,
+              "sorry": 0,
+              "unsafe": 0
+            },
+            "trust_counts_before": {
+              "Lean.ofReduceBool": 0,
+              "admit": 0,
+              "axiom": 0,
+              "native_decide": 0,
+              "sorry": 0,
+              "unsafe": 0
+            }
+          },
+          "steps": [
+            {
+              "counts": {
+                "new_global_after": 1,
+                "new_global_before": 0,
+                "new_owner_after": 1,
+                "new_owner_before": 0,
+                "old_global_after": 0,
+                "old_global_before": 1,
+                "old_owner_after": 0,
+                "old_owner_before": 1
+              },
+              "new": "        change inner ℂ (graphEuclideanBase n v z)\n            (discriminantHardStageWeight N z *\n              graphEuclideanBase n u z) = 0\n        rw [discriminantHardStageWeight_eq_zero_outside_literalStage\n          N hzClosed hz]\n        simp)",
+              "new_bytes": 250,
+              "new_sha256": "b607ca858343e484e2faa4882867fecc2e0bc306ffc332ccd36fd5bf4e8bd877",
+              "old": "        rw [discriminantHardStageWeight_eq_zero_outside_literalStage\n          N hzClosed hz]\n        simp [Φ])",
+              "old_bytes": 112,
+              "old_sha256": "fce947c6c7f985785f2329f6a39332405caab7be38a7baf534b38a867d95d382",
+              "step_id": "V64-IDX4017-Z-CHANGE-AFTER-PW-FULL"
+            },
+            {
+              "counts": {
+                "new_global_after": 1,
+                "new_global_before": 0,
+                "new_owner_after": 1,
+                "new_owner_before": 0,
+                "old_global_after": 0,
+                "old_global_before": 1,
+                "old_owner_after": 0,
+                "old_owner_before": 1
+              },
+              "new": "      rw [hv, hmul]\n      change inner ℂ (graphEuclideanBase n v z)\n          (((discriminantHardStageWeightLp N : ℍ → ℂ) z) *\n            ((graphLiteralStageRestriction Z n u : ℍ → ℂ) z)) =\n        inner ℂ (graphEuclideanBase n v z)\n          (discriminantHardStageWeight N z *\n            graphEuclideanBase n u z)\n      rw [hw, hu]",
+              "new_bytes": 350,
+              "new_sha256": "de334b19137a434478c158aa37bc0dda3b297c8d35f7ad592e19710defe4548b",
+              "old": "      unfold Φ\n      rw [hv, hmul, Pi.smul_apply', smul_eq_mul, hw, hu]",
+              "old_bytes": 72,
+              "old_sha256": "e9049c4d1a76fb2e88492de6460076d41f9160256bfd06ce88941d2e64f07913",
+              "step_id": "V64-IDX4017-W-LITERAL-CHANGE-AFTER-PW-FULL"
+            },
+            {
+              "counts": {
+                "new_global_after": 1,
+                "new_global_before": 0,
+                "new_owner_after": 1,
+                "new_owner_before": 0,
+                "old_global_after": 0,
+                "old_global_before": 1,
+                "old_owner_after": 0,
+                "old_owner_before": 1
+              },
+              "new": "      rw [hmul]\n      change inner ℂ (graphEuclideanBase n v z)\n          (discriminantHardStageWeight N z *\n            graphEuclideanBase n u z) =\n        inner ℂ (graphEuclideanBase n v z)\n          (((discriminantHardCarrierWeightLp N : ℍ → ℂ) z) *\n            ((graphEuclideanBase n u : ℍ → ℂ) z))\n      rw [hw]",
+              "new_bytes": 332,
+              "new_sha256": "34e0bea43ad6764d41d2b317c944cbe48b39e3c531f18a9eeaa8dbc447bfee0e",
+              "old": "      unfold Φ\n      rw [hmul, Pi.smul_apply', smul_eq_mul, hw]",
+              "old_bytes": 64,
+              "old_sha256": "952b92a9ec85913acaf6b72acda7da0bb5b02138f29e053e81e16025a43d2306",
+              "step_id": "V64-IDX4017-W-CARRIER-CHANGE-AFTER-PW-FULL"
+            }
+          ]
+        },
+        {
+          "base_candidate": {
+            "bytes": 2813021,
+            "lines": 62944,
+            "sha256": "20ad5b01e774f1c388d2d16991e34840fdafe0f9d033038652311b29d84ae3f5"
+          },
+          "base_variant": "w4017_full",
+          "invariants_from_base": {
+            "attributes_identical": true,
+            "body_only": true,
+            "changed_declaration_indices": [
+              4017
+            ],
+            "changed_region_maxHeartbeats_after": {
+              "set_option_count": 0,
+              "token_count": 0
+            },
+            "changed_region_maxHeartbeats_before": {
+              "set_option_count": 0,
+              "token_count": 0
+            },
+            "comments_identical": true,
+            "declaration_count": 4416,
+            "declaration_headers_statements_and_order_identical": true,
+            "global_maxHeartbeats_after": {
+              "set_option_count": 8,
+              "token_count": 8
+            },
+            "global_maxHeartbeats_before": {
+              "set_option_count": 8,
+              "token_count": 8
+            },
+            "helpers_added": 0,
+            "imports_added": 0,
+            "options_added": 0,
+            "outside_owner_byte_identical": true,
+            "source_moves": 0,
+            "trust_counts_after": {
+              "Lean.ofReduceBool": 0,
+              "admit": 0,
+              "axiom": 0,
+              "native_decide": 0,
+              "sorry": 0,
+              "unsafe": 0
+            },
+            "trust_counts_before": {
+              "Lean.ofReduceBool": 0,
+              "admit": 0,
+              "axiom": 0,
+              "native_decide": 0,
+              "sorry": 0,
+              "unsafe": 0
+            }
+          },
+          "steps": [
+            {
+              "counts": {
+                "new_global_after": 1,
+                "new_global_before": 0,
+                "new_owner_after": 1,
+                "new_owner_before": 0,
+                "old_global_after": 0,
+                "old_global_before": 1,
+                "old_owner_after": 0,
+                "old_owner_before": 1
+              },
+              "new": "        change inner ℂ (graphEuclideanBase n v z)\n            (discriminantHardStageWeight N z *\n              graphEuclideanBase n u z) = 0\n        rw [discriminantHardStageWeight_eq_zero_outside_literalStage\n          N hzClosed hz]\n        simp)",
+              "new_bytes": 250,
+              "new_sha256": "b607ca858343e484e2faa4882867fecc2e0bc306ffc332ccd36fd5bf4e8bd877",
+              "old": "        unfold Φ\n        rw [discriminantHardStageWeight_eq_zero_outside_literalStage\n          N hzClosed hz]\n        simp)",
+              "old_bytes": 125,
+              "old_sha256": "ced7262ebbcafd2fd54c09d5aa3545a78bc3f960564ea1b8182bcf6a6e5ede9f",
+              "step_id": "V64-IDX4017-Z-CHANGE-AFTER-FULL-COMBINED"
+            },
+            {
+              "counts": {
+                "new_global_after": 1,
+                "new_global_before": 0,
+                "new_owner_after": 1,
+                "new_owner_before": 0,
+                "old_global_after": 0,
+                "old_global_before": 1,
+                "old_owner_after": 0,
+                "old_owner_before": 1
+              },
+              "new": "      rw [hv, hmul]\n      change inner ℂ (graphEuclideanBase n v z)\n          (((discriminantHardStageWeightLp N : ℍ → ℂ) z) *\n            ((graphLiteralStageRestriction Z n u : ℍ → ℂ) z)) =\n        inner ℂ (graphEuclideanBase n v z)\n          (discriminantHardStageWeight N z *\n            graphEuclideanBase n u z)\n      rw [hw, hu]",
+              "new_bytes": 350,
+              "new_sha256": "de334b19137a434478c158aa37bc0dda3b297c8d35f7ad592e19710defe4548b",
+              "old": "      unfold Φ\n      rw [hv, hmul, Pi.smul_apply', smul_eq_mul, hw, hu]",
+              "old_bytes": 72,
+              "old_sha256": "e9049c4d1a76fb2e88492de6460076d41f9160256bfd06ce88941d2e64f07913",
+              "step_id": "V64-IDX4017-W-LITERAL-CHANGE-AFTER-FULL-COMBINED"
+            },
+            {
+              "counts": {
+                "new_global_after": 1,
+                "new_global_before": 0,
+                "new_owner_after": 1,
+                "new_owner_before": 0,
+                "old_global_after": 0,
+                "old_global_before": 1,
+                "old_owner_after": 0,
+                "old_owner_before": 1
+              },
+              "new": "      rw [hmul]\n      change inner ℂ (graphEuclideanBase n v z)\n          (discriminantHardStageWeight N z *\n            graphEuclideanBase n u z) =\n        inner ℂ (graphEuclideanBase n v z)\n          (((discriminantHardCarrierWeightLp N : ℍ → ℂ) z) *\n            ((graphEuclideanBase n u : ℍ → ℂ) z))\n      rw [hw]",
+              "new_bytes": 332,
+              "new_sha256": "34e0bea43ad6764d41d2b317c944cbe48b39e3c531f18a9eeaa8dbc447bfee0e",
+              "old": "      unfold Φ\n      rw [hmul, Pi.smul_apply', smul_eq_mul, hw]",
+              "old_bytes": 64,
+              "old_sha256": "952b92a9ec85913acaf6b72acda7da0bb5b02138f29e053e81e16025a43d2306",
+              "step_id": "V64-IDX4017-W-CARRIER-CHANGE-AFTER-FULL-COMBINED"
+            }
+          ]
+        }
+      ],
+      "variant_id": "idx4017_after_full_zw_change"
+    },
+    {
+      "applicability_gate": "Use for the exact full-lane 55523:42 residual after P+Z+W: only the definitional graphEuclideanBase equality remains; the whnf boundary is not patched independently.",
+      "axis": "IDX4017_FULL_LITERAL_SIMP",
+      "candidate": {
+        "bytes": 2813090,
+        "declaration_count": 4416,
+        "full_candidate_written": false,
+        "lines": 62945,
+        "owner_region_bytes": 3312,
+        "owner_region_sha256": "8db824ec2b44db944b3f4668bbd846958a1aa5796fbb5b9a6bd33033573b499a",
+        "preview_path": "work/v64-workers/fallback-prep/idx4017-after-full-literal-graph-base-simp-owner-preview.lean",
+        "sha256": "93491e69d4e6f3d24f11ad45ecbb3a5c74aa28202c2771484a3663cdd51846fc"
+      },
+      "clean_claimed": false,
+      "direct_lean_verified": false,
+      "invariants_from_official_v62_authority": {
+        "attributes_identical": true,
+        "body_only": true,
+        "changed_declaration_indices": [
+          4017
+        ],
+        "changed_region_maxHeartbeats_after": {
+          "set_option_count": 0,
+          "token_count": 0
+        },
+        "changed_region_maxHeartbeats_before": {
+          "set_option_count": 0,
+          "token_count": 0
+        },
+        "comments_identical": true,
+        "declaration_count": 4416,
+        "declaration_headers_statements_and_order_identical": true,
+        "global_maxHeartbeats_after": {
+          "set_option_count": 8,
+          "token_count": 8
+        },
+        "global_maxHeartbeats_before": {
+          "set_option_count": 8,
+          "token_count": 8
+        },
+        "helpers_added": 0,
+        "imports_added": 0,
+        "options_added": 0,
+        "outside_owner_byte_identical": true,
+        "source_moves": 0,
+        "trust_counts_after": {
+          "Lean.ofReduceBool": 0,
+          "admit": 0,
+          "axiom": 0,
+          "native_decide": 0,
+          "sorry": 0,
+          "unsafe": 0
+        },
+        "trust_counts_before": {
+          "Lean.ofReduceBool": 0,
+          "admit": 0,
+          "axiom": 0,
+          "native_decide": 0,
+          "sorry": 0,
+          "unsafe": 0
+        }
+      },
+      "live_v63_applicability_state": "EXACT_V63_RESIDUAL_MATCH_STAGED_DIRECT_LEAN_UNVERIFIED",
+      "official_v62_owner_region": {
+        "bytes": 2664,
+        "sha256": "cec5e99e9ca1e3b9ad8f2374ac985284f80dfcccac09bbae48106a7b40606f6d"
+      },
+      "owner": {
+        "declaration": "discriminantHardStageOperator_eq_weightedHard",
+        "declaration_index": 4017
+      },
+      "promotion_allowed": false,
+      "rationale": "Append bounded simp only [graphEuclideanBase, ContinuousLinearMap.comp_apply] immediately after the current literal-stage W rw.",
+      "status": "STAGED_DIRECT_LEAN_UNVERIFIED",
+      "supersede_allowed_before_exact_v63_remote_residual": false,
+      "transitions": [
+        {
+          "base_candidate": {
+            "bytes": 2813021,
+            "lines": 62944,
+            "sha256": "20ad5b01e774f1c388d2d16991e34840fdafe0f9d033038652311b29d84ae3f5"
+          },
+          "base_variant": "w4017_full",
+          "invariants_from_base": {
+            "attributes_identical": true,
+            "body_only": true,
+            "changed_declaration_indices": [
+              4017
+            ],
+            "changed_region_maxHeartbeats_after": {
+              "set_option_count": 0,
+              "token_count": 0
+            },
+            "changed_region_maxHeartbeats_before": {
+              "set_option_count": 0,
+              "token_count": 0
+            },
+            "comments_identical": true,
+            "declaration_count": 4416,
+            "declaration_headers_statements_and_order_identical": true,
+            "global_maxHeartbeats_after": {
+              "set_option_count": 8,
+              "token_count": 8
+            },
+            "global_maxHeartbeats_before": {
+              "set_option_count": 8,
+              "token_count": 8
+            },
+            "helpers_added": 0,
+            "imports_added": 0,
+            "options_added": 0,
+            "outside_owner_byte_identical": true,
+            "source_moves": 0,
+            "trust_counts_after": {
+              "Lean.ofReduceBool": 0,
+              "admit": 0,
+              "axiom": 0,
+              "native_decide": 0,
+              "sorry": 0,
+              "unsafe": 0
+            },
+            "trust_counts_before": {
+              "Lean.ofReduceBool": 0,
+              "admit": 0,
+              "axiom": 0,
+              "native_decide": 0,
+              "sorry": 0,
+              "unsafe": 0
+            }
+          },
+          "steps": [
+            {
+              "counts": {
+                "new_global_after": 1,
+                "new_global_before": 0,
+                "new_owner_after": 1,
+                "new_owner_before": 0,
+                "old_global_after": 0,
+                "old_global_before": 1,
+                "old_owner_after": 0,
+                "old_owner_before": 1
+              },
+              "new": "      unfold Φ\n      rw [hv, hmul, Pi.smul_apply', smul_eq_mul, hw, hu]\n      simp only [graphEuclideanBase, ContinuousLinearMap.comp_apply]\n    _ = ∫ z, Φ z ∂chosenEuclideanCarrierMeasure :=",
+              "new_bytes": 197,
+              "new_sha256": "e040c76889c0b0ca2b11f735c19b477319b2e4a6d116793651bd4de566911009",
+              "old": "      unfold Φ\n      rw [hv, hmul, Pi.smul_apply', smul_eq_mul, hw, hu]\n    _ = ∫ z, Φ z ∂chosenEuclideanCarrierMeasure :=",
+              "old_bytes": 128,
+              "old_sha256": "2d6225fb63454b16b86ec4ccf8a98cbdb6cc7afec150138893124d90e05c8140",
+              "step_id": "V64-IDX4017-FULL-LITERAL-GRAPH-BASE-SIMP"
+            }
+          ]
+        }
+      ],
+      "variant_id": "idx4017_after_full_literal_graph_base_simp"
+    },
+    {
+      "applicability_gate": "Use only as the rfl-only alternative for the exact full-lane definitional equality; retain staged status until direct Lean verifies it.",
+      "axis": "IDX4017_FULL_LITERAL_RFL",
+      "candidate": {
+        "bytes": 2813031,
+        "declaration_count": 4416,
+        "full_candidate_written": false,
+        "lines": 62945,
+        "owner_region_bytes": 3253,
+        "owner_region_sha256": "7ff2946c869cd14bf00af2ba86d5de8b693870391289f6d5df906786664ab87c",
+        "preview_path": "work/v64-workers/fallback-prep/idx4017-after-full-literal-rfl-owner-preview.lean",
+        "sha256": "6a2524de966143f709c92dfb992a8f2029be4648812518010a4c5639f0c4b288"
+      },
+      "clean_claimed": false,
+      "direct_lean_verified": false,
+      "invariants_from_official_v62_authority": {
+        "attributes_identical": true,
+        "body_only": true,
+        "changed_declaration_indices": [
+          4017
+        ],
+        "changed_region_maxHeartbeats_after": {
+          "set_option_count": 0,
+          "token_count": 0
+        },
+        "changed_region_maxHeartbeats_before": {
+          "set_option_count": 0,
+          "token_count": 0
+        },
+        "comments_identical": true,
+        "declaration_count": 4416,
+        "declaration_headers_statements_and_order_identical": true,
+        "global_maxHeartbeats_after": {
+          "set_option_count": 8,
+          "token_count": 8
+        },
+        "global_maxHeartbeats_before": {
+          "set_option_count": 8,
+          "token_count": 8
+        },
+        "helpers_added": 0,
+        "imports_added": 0,
+        "options_added": 0,
+        "outside_owner_byte_identical": true,
+        "source_moves": 0,
+        "trust_counts_after": {
+          "Lean.ofReduceBool": 0,
+          "admit": 0,
+          "axiom": 0,
+          "native_decide": 0,
+          "sorry": 0,
+          "unsafe": 0
+        },
+        "trust_counts_before": {
+          "Lean.ofReduceBool": 0,
+          "admit": 0,
+          "axiom": 0,
+          "native_decide": 0,
+          "sorry": 0,
+          "unsafe": 0
+        }
+      },
+      "live_v63_applicability_state": "EXACT_V63_RESIDUAL_MATCH_STAGED_DIRECT_LEAN_UNVERIFIED",
+      "official_v62_owner_region": {
+        "bytes": 2664,
+        "sha256": "cec5e99e9ca1e3b9ad8f2374ac985284f80dfcccac09bbae48106a7b40606f6d"
+      },
+      "owner": {
+        "declaration": "discriminantHardStageOperator_eq_weightedHard",
+        "declaration_index": 4017
+      },
+      "promotion_allowed": false,
+      "rationale": "Append only rfl after the current literal-stage W rw; graphEuclideanBase is the composition in the exact goal.",
+      "status": "STAGED_DIRECT_LEAN_UNVERIFIED",
+      "supersede_allowed_before_exact_v63_remote_residual": false,
+      "transitions": [
+        {
+          "base_candidate": {
+            "bytes": 2813021,
+            "lines": 62944,
+            "sha256": "20ad5b01e774f1c388d2d16991e34840fdafe0f9d033038652311b29d84ae3f5"
+          },
+          "base_variant": "w4017_full",
+          "invariants_from_base": {
+            "attributes_identical": true,
+            "body_only": true,
+            "changed_declaration_indices": [
+              4017
+            ],
+            "changed_region_maxHeartbeats_after": {
+              "set_option_count": 0,
+              "token_count": 0
+            },
+            "changed_region_maxHeartbeats_before": {
+              "set_option_count": 0,
+              "token_count": 0
+            },
+            "comments_identical": true,
+            "declaration_count": 4416,
+            "declaration_headers_statements_and_order_identical": true,
+            "global_maxHeartbeats_after": {
+              "set_option_count": 8,
+              "token_count": 8
+            },
+            "global_maxHeartbeats_before": {
+              "set_option_count": 8,
+              "token_count": 8
+            },
+            "helpers_added": 0,
+            "imports_added": 0,
+            "options_added": 0,
+            "outside_owner_byte_identical": true,
+            "source_moves": 0,
+            "trust_counts_after": {
+              "Lean.ofReduceBool": 0,
+              "admit": 0,
+              "axiom": 0,
+              "native_decide": 0,
+              "sorry": 0,
+              "unsafe": 0
+            },
+            "trust_counts_before": {
+              "Lean.ofReduceBool": 0,
+              "admit": 0,
+              "axiom": 0,
+              "native_decide": 0,
+              "sorry": 0,
+              "unsafe": 0
+            }
+          },
+          "steps": [
+            {
+              "counts": {
+                "new_global_after": 1,
+                "new_global_before": 0,
+                "new_owner_after": 1,
+                "new_owner_before": 0,
+                "old_global_after": 0,
+                "old_global_before": 1,
+                "old_owner_after": 0,
+                "old_owner_before": 1
+              },
+              "new": "      unfold Φ\n      rw [hv, hmul, Pi.smul_apply', smul_eq_mul, hw, hu]\n      rfl\n    _ = ∫ z, Φ z ∂chosenEuclideanCarrierMeasure :=",
+              "new_bytes": 138,
+              "new_sha256": "9beb9940b40ac73a3a995e452a6b364f32ef5955f04ff0661046dd1e9a770f63",
+              "old": "      unfold Φ\n      rw [hv, hmul, Pi.smul_apply', smul_eq_mul, hw, hu]\n    _ = ∫ z, Φ z ∂chosenEuclideanCarrierMeasure :=",
+              "old_bytes": 128,
+              "old_sha256": "2d6225fb63454b16b86ec4ccf8a98cbdb6cc7afec150138893124d90e05c8140",
+              "step_id": "V64-IDX4017-FULL-LITERAL-RFL"
+            }
+          ]
+        }
+      ],
+      "variant_id": "idx4017_after_full_literal_rfl"
+    }
+  ]
+}

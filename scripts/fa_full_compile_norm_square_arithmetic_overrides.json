@@ -1,0 +1,102 @@
+{
+  "schema": "fa-fragment-repair-overrides-v1",
+  "status": "FULL_INVENTORY_ROOTS_CONFIRMED_STATIC_ONLY_UNVERIFIED",
+  "source_sha256": "d0a3decee1c0a7a781d14fdf122e235d71d8f210bb65a894dc4e518821bf03ec",
+  "analysis_note": "Replace four failed nlinarith square-root arguments with the exact nonnegative square equivalences already used elsewhere in the checked source. The two equality repairs use sq_eq_sq₀; the dx/dy bounds use sq_le_sq₀, multiply the recorded squared estimate by the nonnegative scale square, and cancel the nonzero scale square explicitly. The idx3920 replacement is disjoint from the already-hydrated Complex.conj_ofReal fragment and is only the final arithmetic tail after its earlier declaration-local roots are repaired.",
+  "repairs": [
+    {
+      "declaration_index": 3900,
+      "declaration_name": "norm_ambientTestCoreToPlaneL2Linear_eq_scale_mul_torusTest",
+      "header_sha256": "9e11d1d83953fc23eec39ef5a634451463db533b936d27ab3fc36989c16f1981",
+      "diagnostic_ids": ["E0645"],
+      "replacements": [
+        {
+          "old_fragment": "  nlinarith [sq_nonneg\n    (‖ambientTestCoreToPlaneL2Linear v‖ -\n      literalStageFourierScale Y * ‖literalStageTorusTest Y v‖)]",
+          "new_fragment": "  apply (sq_eq_sq₀ hleft (mul_nonneg hL.le hright)).mp\n  simpa only [mul_pow] using hsq",
+          "old_sha256": "352ca02d76c3632d4aa768d135226a373d833ec137ed1be78c8548a07abbbe00",
+          "new_sha256": "b4211c0d9cba1329073e3c40b12fa9529e96a4d3fcac5c23df6a232db925b546",
+          "old_bytes": 137,
+          "new_bytes": 89,
+          "target_old_count": 1,
+          "global_old_count": 1
+        }
+      ]
+    },
+    {
+      "declaration_index": 3920,
+      "declaration_name": "norm_planeFourierRemainder_eq_scale_mul_torusRemainder",
+      "header_sha256": "bce022113369aa6b1ea8c561382a81b8163dca85b91199a780a835f7bbbbc470",
+      "diagnostic_ids": ["E0676"],
+      "downstream_after_current_roots": ["E0671", "E0672", "E0673", "E0674", "E0675"],
+      "replacements": [
+        {
+          "old_fragment": "  nlinarith [sq_nonneg\n    (‖literalStagePlaneFiniteProjection Y N F - F‖ -\n      literalStageFourierScale Y *\n        ‖P5LocalFourierRellich.twoTorusFiniteFourierProjection s T - T‖)]",
+          "new_fragment": "  apply (sq_eq_sq₀ hpnonneg (mul_nonneg hL.le htnonneg)).mp\n  simpa only [mul_pow] using hsq",
+          "old_sha256": "973106fb317abf1ce1ea48342366e5fede15418d88eb17558da66ebbc8ad000a",
+          "new_sha256": "79e44a6a5bc1146f81e4bef0b0ad4e914fef62a61030dde1d2b434007f1bc4c2",
+          "old_bytes": 192,
+          "new_bytes": 94,
+          "target_old_count": 1,
+          "global_old_count": 1
+        }
+      ]
+    },
+    {
+      "declaration_index": 3921,
+      "declaration_name": "norm_scale_smul_torusTest_dx_le_plane",
+      "header_sha256": "31ec1c047277f0372390b38c691e860c79376767d13cc79f5577db453ac94ade",
+      "diagnostic_ids": ["E0677"],
+      "replacements": [
+        {
+          "old_fragment": "  nlinarith [sq_nonneg\n    (literalStageFourierScale Y *\n      ‖literalStageTorusTest Y\n        (HalfWeightCompactCoordinateGreen.dx v)‖)]",
+          "new_fragment": "  apply (sq_le_sq₀ (mul_nonneg hL.le hnonneg) hplane).mp\n  calc\n    (literalStageFourierScale Y *\n        ‖literalStageTorusTest Y\n          (HalfWeightCompactCoordinateGreen.dx v)‖) ^ 2 =\n        literalStageFourierScale Y ^ 2 *\n          ‖literalStageTorusTest Y\n            (HalfWeightCompactCoordinateGreen.dx v)‖ ^ 2 := by ring\n    _ ≤ literalStageFourierScale Y ^ 2 *\n        ((literalStageFourierScale Y ^ 2)⁻¹ *\n          ‖ambientTestCoreToPlaneL2Linear\n            (HalfWeightCompactCoordinateGreen.dx v)‖ ^ 2) :=\n      mul_le_mul_of_nonneg_left h (sq_nonneg _)\n    _ = ‖ambientTestCoreToPlaneL2Linear\n          (HalfWeightCompactCoordinateGreen.dx v)‖ ^ 2 := by\n      rw [← mul_assoc, mul_inv_cancel₀ (pow_ne_zero 2 hL0), one_mul]",
+          "old_sha256": "4e1b2e9378a12905599040082c24a1d095aa2fcdafd4a2801792366b722496e6",
+          "new_sha256": "432c2e2a151493e62c8790e7f3b6eca89128019db005e32b9230ed49d9eabbb3",
+          "old_bytes": 142,
+          "new_bytes": 767,
+          "target_old_count": 1,
+          "global_old_count": 1
+        }
+      ]
+    },
+    {
+      "declaration_index": 3922,
+      "declaration_name": "norm_scale_smul_torusTest_dy_le_plane",
+      "header_sha256": "dc1288e3b830880949d9ce3be9e7796b80067ff56db8987b3e511c85cb48f0f1",
+      "diagnostic_ids": ["E0678"],
+      "replacements": [
+        {
+          "old_fragment": "  nlinarith [sq_nonneg\n    (literalStageFourierScale Y *\n      ‖literalStageTorusTest Y\n        (HalfWeightCompactCoordinateGreen.dy v)‖)]",
+          "new_fragment": "  apply (sq_le_sq₀ (mul_nonneg hL.le hnonneg) hplane).mp\n  calc\n    (literalStageFourierScale Y *\n        ‖literalStageTorusTest Y\n          (HalfWeightCompactCoordinateGreen.dy v)‖) ^ 2 =\n        literalStageFourierScale Y ^ 2 *\n          ‖literalStageTorusTest Y\n            (HalfWeightCompactCoordinateGreen.dy v)‖ ^ 2 := by ring\n    _ ≤ literalStageFourierScale Y ^ 2 *\n        ((literalStageFourierScale Y ^ 2)⁻¹ *\n          ‖ambientTestCoreToPlaneL2Linear\n            (HalfWeightCompactCoordinateGreen.dy v)‖ ^ 2) :=\n      mul_le_mul_of_nonneg_left h (sq_nonneg _)\n    _ = ‖ambientTestCoreToPlaneL2Linear\n          (HalfWeightCompactCoordinateGreen.dy v)‖ ^ 2 := by\n      rw [← mul_assoc, mul_inv_cancel₀ (pow_ne_zero 2 hL0), one_mul]",
+          "old_sha256": "e5153fdc5ea2801c714ae4c4502376460331fd7d6ad2ad3fcec3257a0238bb82",
+          "new_sha256": "042e5516aa4e4f9b93b5d4c05ccd30078f344f716ba1363d0e6c76391d833459",
+          "old_bytes": 142,
+          "new_bytes": 767,
+          "target_old_count": 1,
+          "global_old_count": 1
+        }
+      ]
+    }
+  ],
+  "standalone_candidate": {
+    "sha256": "994220757d2165f0d26d28ba87dac8c77d65d8fbb8fa33ad43104aed5276e0e7",
+    "bytes": 2703356,
+    "splitlines": 60594,
+    "changed_declaration_indices": [3900, 3920, 3921, 3922],
+    "direct_lean_verified": false
+  },
+  "static_validation": {
+    "all_old_fragments_unique_in_target_and_source": true,
+    "declaration_sequence_preserved": true,
+    "all_existing_declaration_headers_preserved": true,
+    "documentation_and_comments_preserved": true,
+    "existing_at_attributes_preserved": true,
+    "executable_forbidden_six_zero": true
+  },
+  "local_execution": {
+    "lean": false,
+    "lake": false,
+    "git": false,
+    "github_write": false
+  }
+}

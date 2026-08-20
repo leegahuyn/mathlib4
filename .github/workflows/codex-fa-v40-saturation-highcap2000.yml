@@ -1,0 +1,248 @@
+name: Codex FA v40 saturation full-inventory highcap2000
+
+on:
+  push:
+    branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
+    paths:
+      - .github/workflows/codex-fa-v40-saturation-highcap2000.yml
+      - scripts/fa_v40_saturation_candidate.py
+      - scripts/fa_v40_saturation_repairs.json
+  workflow_dispatch: {}
+
+permissions: {actions: read, contents: read}
+
+jobs:
+  direct:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with: {ref: "${{ github.sha }}", fetch-depth: 1, persist-credentials: false}
+
+      - name: Materialize exact v39 authority and build locked v40 candidate
+        env:
+          GH_TOKEN: "${{ github.token }}"
+          V39_ARTIFACT_ID: "9175492925"
+          V39_ARTIFACT_DIGEST: "sha256:e8416f9a522175d069f9d612e14219d3a7236d046b1f8ee67dfd9bb93fe85945"
+          V39_SOURCE_SHA256: "530baa644c7a86eda78328920eda4b8f5fd273bd29d9f04351914396303d4c03"
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT=build-logs/codex-fa-v40-saturation-highcap2000
+          mkdir -p "$OUT" /tmp/v39
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${V39_ARTIFACT_ID}/zip" >/tmp/v39.zip
+          test "sha256:$(sha256sum /tmp/v39.zip | awk '{print $1}')" = "$V39_ARTIFACT_DIGEST"
+          unzip -q /tmp/v39.zip -d /tmp/v39
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib, os, shutil
+          expected = os.environ["V39_SOURCE_SHA256"]
+          hits = [
+              p for p in Path("/tmp/v39").rglob("Mock2_FunctionalAnalysis.lean")
+              if "PrimalitySheafVerification" in p.as_posix()
+              and hashlib.sha256(p.read_bytes()).hexdigest() == expected
+          ]
+          assert len(hits) == 1, hits
+          shutil.copy2(hits[0], "/tmp/v39-authority.lean")
+          PY
+          python3 scripts/fa_v40_saturation_candidate.py \
+            /tmp/v39-authority.lean \
+            scripts/fa_v40_saturation_repairs.json \
+            /tmp/v40.lean \
+            "$OUT/PATCH_AUDIT.json" \
+            >"$OUT/PATCH_AUDIT.stdout.json"
+          cp /tmp/v40.lean PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          cp scripts/fa_v40_saturation_repairs.json "$OUT/REPAIRS.json"
+          sha256sum PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | awk '{print $1}' >"$OUT/candidate.sha256"
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          out = Path("build-logs/codex-fa-v40-saturation-highcap2000")
+          manifest = json.loads(Path("scripts/fa_v40_saturation_repairs.json").read_text())
+          actual = (out / "candidate.sha256").read_text().strip()
+          assert actual == manifest["expected_candidate_sha256"], (actual, manifest)
+          audit = json.loads((out / "PATCH_AUDIT.json").read_text())
+          assert audit["candidate_sha256"] == actual
+          assert audit["authority_source_sha256"] == manifest["authority_source_sha256"]
+          assert audit["declaration_sequence_identical"] is True
+          assert audit["allowed_header_changes_exact"] is True
+          assert all(v == 0 for v in audit["executable_trust_counts_after"].values())
+          PY
+
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT=build-logs/codex-fa-v40-saturation-highcap2000
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none >"$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >"$OUT/toolchain.log" 2>&1
+          lake exe cache get >"$OUT/cache.log" 2>&1
+
+      - name: Direct Mock2 then Mock2 Advanced then full FA highcap2000
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          OUT=build-logs/codex-fa-v40-saturation-highcap2000
+          mkdir -p .lake/build/lib/lean/PrimalitySheafVerification
+          one() {
+            local source="$1" cap="$2"
+            local o=.lake/build/lib/lean/PrimalitySheafVerification/${source}.olean
+            local i=.lake/build/lib/lean/PrimalitySheafVerification/${source}.ilean
+            rm -f "$o" "$i"
+            : >"$OUT/${source}.executed"
+            set +e
+            lake env lean "-DmaxErrors=${cap}" -DwarningAsError=false \
+              -o "$o" -i "$i" "PrimalitySheafVerification/${source}.lean" \
+              >"$OUT/${source}.log" 2>&1
+            local status=$?
+            set -e
+            printf '%s\n' "$status" >"$OUT/${source}.exit"
+          }
+          one Mock2 1
+          one Mock2_Advanced 1
+          test "$(sha256sum PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | awk '{print $1}')" = \
+            "$(cat "$OUT/candidate.sha256")"
+          one Mock2_FunctionalAnalysis 2000
+
+      - name: Build exact metrics and complete error inventory
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT=build-logs/codex-fa-v40-saturation-highcap2000
+          python3 - <<'PY'
+          from pathlib import Path
+          from bisect import bisect_right
+          import collections, hashlib, json, os, re
+
+          out = Path("build-logs/codex-fa-v40-saturation-highcap2000")
+          source = Path("PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean")
+          text = source.read_text(errors="replace")
+          data = source.read_bytes()
+          decl_re = re.compile(
+              r"(?m)^(?:protected\s+|private\s+|noncomputable\s+|local\s+)*"
+              r"(?:theorem|lemma|def|abbrev|instance|structure|class)\s+(?P<name>[^\s(:]+)"
+          )
+          decls = list(decl_re.finditer(text))
+          starts = [text.count("\n", 0, m.start()) + 1 for m in decls]
+          error_re = re.compile(r"^.+?\.lean:(\d+):(\d+): error(?:\([^)]+\))?:(.*)$")
+          warning_re = re.compile(r"^.+?\.lean:(\d+):(\d+): warning(?:\([^)]+\))?:(.*)$")
+          diagnostics = []
+          warnings = []
+          log = out / "Mock2_FunctionalAnalysis.log"
+          for raw in log.read_text(errors="replace").splitlines() if log.exists() else []:
+              match = error_re.match(raw)
+              if match:
+                  line = int(match.group(1))
+                  index = bisect_right(starts, line) - 1
+                  message = match.group(3).strip()
+                  diagnostics.append({
+                      "ordinal": len(diagnostics) + 1,
+                      "line": line,
+                      "column": int(match.group(2)),
+                      "declaration": decls[index].group("name") if index >= 0 else None,
+                      "declaration_index": index if index >= 0 else None,
+                      "message": message,
+                      "normalized_message_signature": re.sub(r"\s+", " ", message),
+                  })
+                  continue
+              match = warning_re.match(raw)
+              if match:
+                  warnings.append(raw)
+          stems = ["Mock2", "Mock2_Advanced", "Mock2_FunctionalAnalysis"]
+          exits = {
+              stem: int((out / f"{stem}.exit").read_text())
+              if (out / f"{stem}.exit").exists() else None
+              for stem in stems
+          }
+          first = diagnostics[0] if diagnostics else {}
+          metric = {
+              "schema": "fa-v40-saturation-highcap2000",
+              "run_id": os.environ.get("GITHUB_RUN_ID"),
+              "head_sha": os.environ.get("GITHUB_SHA"),
+              "source_sha256": hashlib.sha256(data).hexdigest(),
+              "source_bytes": len(data),
+              "source_lines": len(text.splitlines()),
+              "source_identity_locked_after_materialization": (
+                  (out / "candidate.sha256").exists()
+                  and hashlib.sha256(data).hexdigest()
+                  == (out / "candidate.sha256").read_text().strip()
+              ),
+              "Mock2_exit": exits["Mock2"],
+              "Mock2_Advanced_exit": exits["Mock2_Advanced"],
+              "FA_exit": exits["Mock2_FunctionalAnalysis"],
+              "strict_direct_chain_exit_zero": all(
+                  exits[stem] == 0 for stem in stems
+              ),
+              "all_required_lean_executed": all(
+                  (out / f"{stem}.executed").exists() for stem in stems
+              ),
+              "FA_compile_max_errors": 2000,
+              "FA_error_headers_captured": len(diagnostics),
+              "FA_warning_headers_captured": len(warnings),
+              "FA_first_actual_error_line": first.get("line"),
+              "FA_first_actual_error_col": first.get("column"),
+              "FA_first_error_declaration": first.get("declaration"),
+              "FA_error_declaration_index": first.get("declaration_index"),
+              "FA_first_error_message": first.get("message"),
+              "unique_declarations_with_errors": len({
+                  (d["declaration_index"], d["declaration"]) for d in diagnostics
+              }),
+              "unique_normalized_message_signatures": len({
+                  d["normalized_message_signature"] for d in diagnostics
+              }),
+          }
+          (out / "FULL_DIAGNOSTICS.json").write_text(
+              json.dumps(diagnostics, indent=2, sort_keys=True) + "\n"
+          )
+          (out / "METRIC.json").write_text(
+              json.dumps(metric, indent=2, sort_keys=True) + "\n"
+          )
+          counts = collections.Counter(
+              (d["declaration_index"], d["declaration"]) for d in diagnostics
+          )
+          (out / "DIAGNOSTIC_DECLARATION_COUNTS.json").write_text(
+              json.dumps([
+                  {
+                      "declaration_index": key[0],
+                      "declaration": key[1],
+                      "count": count,
+                  }
+                  for key, count in sorted(
+                      counts.items(),
+                      key=lambda item: (
+                          item[0][0] if item[0][0] is not None else -1,
+                          item[0][1] or "",
+                      ),
+                  )
+              ], indent=2, sort_keys=True) + "\n"
+          )
+          print(json.dumps(metric, indent=2, sort_keys=True))
+          PY
+
+      - name: Upload exact v40 candidate and evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-v40-saturation-highcap2000-${{ github.sha }}
+          path: |
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+            build-logs/codex-fa-v40-saturation-highcap2000
+          retention-days: 30
+
+      - name: Preserve strict direct chain exits
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT=build-logs/codex-fa-v40-saturation-highcap2000
+          test -f "$OUT/Mock2.exit" || exit 86
+          test -f "$OUT/Mock2_Advanced.exit" || exit 86
+          test -f "$OUT/Mock2_FunctionalAnalysis.exit" || exit 86
+          test "$(cat "$OUT/Mock2.exit")" = 0 || exit 1
+          test "$(cat "$OUT/Mock2_Advanced.exit")" = 0 || exit 1
+          exit "$(cat "$OUT/Mock2_FunctionalAnalysis.exit")"

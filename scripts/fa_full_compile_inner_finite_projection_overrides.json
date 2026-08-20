@@ -1,0 +1,57 @@
+{
+  "schema": "fa-fragment-repair-overrides-v1",
+  "status": "FULL_INVENTORY_ROOTS_CONFIRMED_STATIC_ONLY_UNVERIFIED",
+  "source_sha256": "d0a3decee1c0a7a781d14fdf122e235d71d8f210bb65a894dc4e518821bf03ec",
+  "analysis_note": "Normalize the double complex conjugation in the x-versus-projection inner-product summand instead of asking ring to reason about star. Then expand inner_sub_right twice: after inner_sub_left there are two separate right-subtraction occurrences, while the original single rewrite leaves the second one folded.",
+  "repairs": [
+    {
+      "declaration_index": 3919,
+      "declaration_name": "inner_finiteOrthonormalProjection_sub",
+      "header_sha256": "d2c186bc7628029bb15540374fd0d0775bdbb197a9b68e3a3ccd0a916ed2e708",
+      "diagnostic_ids": ["E0669", "E0670"],
+      "replacements": [
+        {
+          "old_fragment": "    rw [inner_smul_right, ← inner_conj_symm]\n    ring",
+          "new_fragment": "    rw [inner_smul_right, ← inner_conj_symm]\n    simp only [map_star, star_star]",
+          "old_sha256": "ce6f6a8129fef5b13d15122a4316591235b7aed66127a5d787f21f32832e64f3",
+          "new_sha256": "cc0dcb08f758d50e73425e29e03714c076eae3a9d6f75a2de5eb5cddd9c4401f",
+          "old_bytes": 55,
+          "new_bytes": 82,
+          "target_old_count": 1,
+          "global_old_count": 1
+        },
+        {
+          "old_fragment": "  rw [inner_sub_left, inner_sub_right, hPP, hPx, hxP]\n  ring",
+          "new_fragment": "  rw [inner_sub_left, inner_sub_right, inner_sub_right, hPP, hPx, hxP]\n  ring",
+          "old_sha256": "79ca0666a1eff164f7ce176ee3b1b7cfd341d55e7f1486dc7bef92f2b0cfeb24",
+          "new_sha256": "cca6e24a25c5b798f9450eb20f436ae14f69a14c3488e87696fef9e28527be17",
+          "old_bytes": 60,
+          "new_bytes": 77,
+          "target_old_count": 1,
+          "global_old_count": 1
+        }
+      ]
+    }
+  ],
+  "standalone_candidate": {
+    "sha256": "110ce2cc286f2a7be723c848fadf56570b9298ac4dc006ac40bd757dc9cdded7",
+    "bytes": 2702296,
+    "splitlines": 60573,
+    "changed_declaration_indices": [3919],
+    "direct_lean_verified": false
+  },
+  "static_validation": {
+    "all_old_fragments_unique_in_target_and_source": true,
+    "declaration_sequence_preserved": true,
+    "all_existing_declaration_headers_preserved": true,
+    "documentation_and_comments_preserved": true,
+    "existing_at_attributes_preserved": true,
+    "executable_forbidden_six_zero": true
+  },
+  "local_execution": {
+    "lean": false,
+    "lake": false,
+    "git": false,
+    "github_write": false
+  }
+}

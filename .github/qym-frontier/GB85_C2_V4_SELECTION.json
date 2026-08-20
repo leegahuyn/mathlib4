@@ -1,0 +1,102 @@
+{
+  "baseline": {
+    "blob": "bd28d0436230a8f0bcb01806dac01787542256b8",
+    "error_headers": 85,
+    "sha256": "f4c9b27a297be772cde7183526378ad42ae826053f69cf3ce521670da4f06210"
+  },
+  "best": null,
+  "promoted": false,
+  "rejected": [
+    {
+      "reason": "no-full-or-source",
+      "variant": "i1_named_mul_inv_simpa"
+    },
+    {
+      "reason": "no-full-or-source",
+      "variant": "i1_exact_div_simpa"
+    },
+    {
+      "reason": "no-full-or-source",
+      "variant": "i2_named_mul_inv_simpa"
+    },
+    {
+      "reason": "no-full-or-source",
+      "variant": "i1_pos_div_simpa"
+    },
+    {
+      "reason": "no-full-or-source",
+      "variant": "i1_named_div_simpa"
+    },
+    {
+      "reason": "no-full-or-source",
+      "variant": "i0_pos_div_change"
+    },
+    {
+      "reason": "no-full-or-source",
+      "variant": "i2_exact_div_simpa"
+    },
+    {
+      "reason": "no-full-or-source",
+      "variant": "i0_named_mul_inv_simpa"
+    },
+    {
+      "reason": "no-full-or-source",
+      "variant": "i0_named_div_simpa"
+    },
+    {
+      "reason": "no-full-or-source",
+      "variant": "i1_pos_mul_inv_simpa"
+    },
+    {
+      "reason": "no-full-or-source",
+      "variant": "i2_named_div_simpa"
+    },
+    {
+      "reason": "no-full-or-source",
+      "variant": "i0_named_div_change"
+    },
+    {
+      "reason": "no-full-or-source",
+      "variant": "i0_pos_mul_inv_change"
+    },
+    {
+      "reason": "no-full-or-source",
+      "variant": "i2_pos_div_simpa"
+    },
+    {
+      "reason": "no-full-or-source",
+      "variant": "i2_pos_mul_inv_simpa"
+    },
+    {
+      "reason": "no-full-or-source",
+      "variant": "i1_exact_mul_inv_simpa"
+    },
+    {
+      "reason": "no-full-or-source",
+      "variant": "i2_exact_mul_inv_simpa"
+    },
+    {
+      "reason": "no-full-or-source",
+      "variant": "i0_exact_div_simpa"
+    },
+    {
+      "reason": "no-full-or-source",
+      "variant": "i0_exact_mul_inv_simpa"
+    },
+    {
+      "reason": "no-full-or-source",
+      "variant": "i0_named_mul_inv_change"
+    },
+    {
+      "reason": "no-full-or-source",
+      "variant": "i0_pos_mul_inv_simpa"
+    },
+    {
+      "reason": "no-full-or-source",
+      "variant": "i0_pos_div_simpa"
+    }
+  ],
+  "run_id": 32231589799,
+  "schema": "qym-gb85-c2-v4-selection",
+  "valid": []
+}

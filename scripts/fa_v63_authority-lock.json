@@ -1,0 +1,222 @@
+{
+  "schema": "fa-v63-v62-winner-authority-lock-v1",
+  "status": "EXACT_LOCAL_EVIDENCE_LOCKED",
+  "repository": "leegahuyn/mathlib4",
+  "workflow": {
+    "run_id": 31863434345,
+    "run_attempt": 1,
+    "event": "push",
+    "workflow_name": "Codex FA v61 bounded eight-way direct Lean matrix",
+    "workflow_path": ".github/workflows/codex-fa-v61-direct-matrix.yml",
+    "head_branch": "codex/fa-exclusive-focus-20260814",
+    "head_sha": "3a503721ec899f6c1c92758eeb5facc49e0d59b4",
+    "job_id": 94960572977,
+    "job_name": "direct-fourier_pair",
+    "job_conclusion": "failure"
+  },
+  "artifact": {
+    "id": 9241529792,
+    "name": "codex-fa-v61-fourier_pair-highcap2000-3a503721ec899f6c1c92758eeb5facc49e0d59b4",
+    "variant": "fourier_pair",
+    "size_in_bytes": 1684227,
+    "digest": "sha256:799b754b01ef17bd8326ad0d9554f6fc1e27c42d01c070d3b2271816ae248333",
+    "zip_sha256": "799b754b01ef17bd8326ad0d9554f6fc1e27c42d01c070d3b2271816ae248333",
+    "zip_bytes": 1684227,
+    "member_count": 48,
+    "flat_members_only": true,
+    "expired_at_evidence_time": false
+  },
+  "source": {
+    "member": "Mock2_FunctionalAnalysis-candidate.lean",
+    "sha256": "1badac1451e11708114eb5438616063379558bcf0579dc82a01c2200b501d365",
+    "bytes": 2812442,
+    "lines": 62933,
+    "declaration_count": 4416,
+    "global_maxHeartbeats": {
+      "token_count": 8,
+      "set_option_count": 8
+    },
+    "trust_six": {
+      "sorry": 0,
+      "admit": 0,
+      "axiom": 0,
+      "unsafe": 0,
+      "native_decide": 0,
+      "Lean.ofReduceBool": 0
+    }
+  },
+  "expected_flat_members": [
+    "AUTHORITY_REPROOF.json",
+    "BASE_FINAL_GATE.json",
+    "BASE_FULL_DIAGNOSTICS.json",
+    "BASE_MATERIALIZATION.json",
+    "BASE_Mock2_FunctionalAnalysis-candidate.lean",
+    "BASE_Mock2_FunctionalAnalysis.log",
+    "BASE_PATCH_AUDIT.json",
+    "BASE_TOOLCHAIN_PIN.json",
+    "BASE_VARIANT_INDEX.json",
+    "COLLECTOR_AUTHORITY_ATTESTATION.json",
+    "DIAGNOSTIC_DECLARATION_COUNTS.json",
+    "FINAL_GATE.json",
+    "FULL_DIAGNOSTICS.json",
+    "FULL_WARNINGS.json",
+    "MATERIALIZATION.json",
+    "MATERIALIZATION.stdout.json",
+    "METRIC.json",
+    "Mock2.command",
+    "Mock2.executed",
+    "Mock2.exit",
+    "Mock2.log",
+    "Mock2_Advanced.command",
+    "Mock2_Advanced.executed",
+    "Mock2_Advanced.exit",
+    "Mock2_Advanced.log",
+    "Mock2_FunctionalAnalysis-candidate.lean",
+    "Mock2_FunctionalAnalysis-observed.lean",
+    "Mock2_FunctionalAnalysis.command",
+    "Mock2_FunctionalAnalysis.executed",
+    "Mock2_FunctionalAnalysis.exit",
+    "Mock2_FunctionalAnalysis.log",
+    "PATCH_AUDIT.json",
+    "SCAFFOLD_GATE.json",
+    "SYNTHETIC_SORRY_WARNINGS.json",
+    "TOOLCHAIN_PIN.json",
+    "V59_ARTIFACT.json",
+    "V59_JOBS.json",
+    "V59_RUN.json",
+    "VARIANT_INDEX.json",
+    "cache.log",
+    "candidate.after.sha256",
+    "candidate.before-fa.sha256",
+    "candidate.before.sha256",
+    "candidate.sha256",
+    "elan.log",
+    "lean-version.txt",
+    "metric-console.log",
+    "toolchain.log"
+  ],
+  "member_locks": {
+    "Mock2_FunctionalAnalysis-candidate.lean": {
+      "sha256": "1badac1451e11708114eb5438616063379558bcf0579dc82a01c2200b501d365",
+      "bytes": 2812442
+    },
+    "METRIC.json": {
+      "sha256": "f66f3ef068bb684c3499447931184bf0b516b43f2635ae6805a2342acdfcab75",
+      "bytes": 3380
+    },
+    "FULL_DIAGNOSTICS.json": {
+      "sha256": "31370de532745411bd9acdc258cf5d90c9d0bb5b08b23870b00b55300000f383",
+      "bytes": 5807
+    },
+    "FULL_WARNINGS.json": {
+      "sha256": "93044953e97510f86849bd76acf8f37bd72e64e919138badb26db76d583ce7ac",
+      "bytes": 290060
+    },
+    "Mock2_FunctionalAnalysis.log": {
+      "sha256": "8e27a4dcc8be79a091b8b1c2f61197fdb7c9e4d995f3e158327442969c1de60a",
+      "bytes": 290901
+    },
+    "Mock2_FunctionalAnalysis.exit": {
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+      "bytes": 2
+    },
+    "FINAL_GATE.json": {
+      "sha256": "2537e5bbc28e11dfdbcb5cc6bc7d2adbac5d571b37393087863b1215b88b9b95",
+      "bytes": 1905
+    },
+    "PATCH_AUDIT.json": {
+      "sha256": "e104455b3242b45df254528e59f7e7400a86120a2c4db4b81305198c9a8316e5",
+      "bytes": 6700
+    },
+    "MATERIALIZATION.json": {
+      "sha256": "a3467b09c65eab27f539c0eed1c78dfc260b2bdcf1aedb971ac74d526984d781",
+      "bytes": 2675
+    },
+    "TOOLCHAIN_PIN.json": {
+      "sha256": "8f54d5486b82a5fc11bc52199c89265b7e9e8eed5a3ff4131f86251894bcff07",
+      "bytes": 393
+    },
+    "VARIANT_INDEX.json": {
+      "sha256": "471fd5d48efcc174e532307cf6ae1eb426b2bc5208e2db56cd5cceb9e95a1df6",
+      "bytes": 6054
+    },
+    "COLLECTOR_AUTHORITY_ATTESTATION.json": {
+      "sha256": "b3a0f8f5b776c81d8e334b24d8a0ace1190cb47fc69c30058d9abf1059efe230",
+      "bytes": 3149
+    }
+  },
+  "official_v62_ready": {
+    "path": "work/v62-prep/v62-artifact-inputs.json",
+    "sha256": "8a7f65766baf2d20713b7cfa29c7edbb0a5cff0d670256adebfb57646ce2ab51",
+    "bytes": 160559,
+    "status": "READY_V61_EIGHT_ARTIFACTS_EXACT_LOCKED",
+    "winner_variant": "fourier_pair",
+    "winner_clean": false
+  },
+  "direct_chain": {
+    "order": [
+      "Mock2",
+      "Mock2_Advanced",
+      "Mock2_FunctionalAnalysis"
+    ],
+    "Mock2_exit": 0,
+    "Mock2_Advanced_exit": 0,
+    "Mock2_FunctionalAnalysis_exit": 1,
+    "FA_max_errors": 2000,
+    "FA_error_count": 8,
+    "FA_error_owner_count": 6,
+    "FA_error_signature_count": 5,
+    "FA_warning_count": 463,
+    "cap_sentinel_present": false,
+    "full_inventory_complete": true,
+    "synthetic_declaration_uses_sorry_warning_count": 0
+  },
+  "toolchain": {
+    "content": "leanprover/lean4:v4.33.0-rc1",
+    "file_bytes": 29,
+    "file_sha256": "62c2d9c0fc1ec4c67e151c11eff41ca004ef38e179cf9476c230406e6defedef",
+    "observed_version_prefix": "Lean (version 4.33.0-rc1,"
+  },
+  "local_evidence": {
+    "independent_artifact_audit": {
+      "path": "work/v61-independent-artifact-audit/audit.json",
+      "sha256": "25ba46f318489c09313ac1b925932927c46464629b2b041e3b1bee7816f7986e",
+      "bytes": 165128,
+      "status": "PASS_EXACT_LOCAL_ARTIFACT_EVIDENCE_AUDIT_FA_NONZERO"
+    },
+    "v62_final_handoff": {
+      "path": "work/v62-prep/v62-final-handoff.json",
+      "sha256": "3e4ff556d24d18d4c775258c025318fc843262f45e5a2570909847c70fde608b",
+      "bytes": 14931
+    },
+    "ranking": {
+      "path": "work/v62-results/run-31863434345-a/ranking.json",
+      "sha256": "581519427d1e9cb2d87dcc3d6c3a5015d9f779cd33ee22d824b4c774c8933f37",
+      "bytes": 2466
+    },
+    "winner_residual_queues": {
+      "path": "work/v62-results/run-31863434345-a/winner-residual-queues.json",
+      "sha256": "11e5cfe0efd0ca56263e3d317bf974c7a19ad389b33b80e49d4922fdc11df268",
+      "bytes": 8563
+    },
+    "run_api": {
+      "path": "work/v61-results/run-31863434345/run-api.json",
+      "sha256": "85f36e96ab9a7015258818eca536cc39b0feebddb052843439adaabceb864248",
+      "bytes": 13408
+    },
+    "jobs_api": {
+      "path": "work/v61-results/run-31863434345/jobs-api.json",
+      "sha256": "50fa14ee11f8f7d4d023c1294b6b1c27648e89fa165e7223c6249d6b03e72ba6",
+      "bytes": 38358
+    },
+    "artifact_api": {
+      "path": "work/v61-results/run-31863434345/fourier_pair/artifact-api.json",
+      "sha256": "c9285e85fe0d97844a12886c2199a926385186a784edf853ffbb733495fc8118",
+      "bytes": 803
+    }
+  },
+  "runtime_evidence_fallback_allowed": false,
+  "source_moves_allowed": false,
+  "heartbeat_increases_allowed": false,
+  "clean_claim_permitted_from_authority": false
+}

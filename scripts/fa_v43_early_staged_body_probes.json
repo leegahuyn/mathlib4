@@ -1,0 +1,278 @@
+{
+  "schema": "fa-v43-early-repair-manifest-v1",
+  "status": "STAGED_DIRECT_LEAN_REQUIRED",
+  "direct_lean_verified": false,
+  "full_fa_clean_claimed": false,
+  "authority": {
+    "run_id": 31709054520,
+    "head_sha": "d6e8e7d12bbf76bf371bb0f21c085f0ebd4ba199",
+    "job_id": 94476949087,
+    "artifact_id": 9184978707,
+    "artifact_digest": "sha256:a587808a5ca47993bba554673c4b24d2f8c6cbea08415be69db7f9f11923e042",
+    "variant": "conservative",
+    "source_path": "work/v42-run-31709054520/9184978707/Mock2_FunctionalAnalysis-candidate.lean",
+    "source_sha256": "442dc2841f80b6814a16396a9b08ec27e90d3bd3d1913c4edd417137d8d1bbe7",
+    "source_bytes": 2776625,
+    "source_lines": 62113,
+    "declaration_count": 4416,
+    "diagnostics_path": "work/v42-run-31709054520/9184978707/FULL_DIAGNOSTICS.json",
+    "diagnostics_sha256": "d71f00c9181ff3bdce00ca39d0bbb33367c3f939ee1ad2c47d4982f639406a8a",
+    "diagnostics_bytes": 49990,
+    "diagnostics_lines": 1136,
+    "fa_log_path": "work/v42-run-31709054520/9184978707/Mock2_FunctionalAnalysis.log",
+    "fa_log_sha256": "63b5dacbe7a6d40280ad0dea17001ef730a99a17400da72d8665d97b7d49c899",
+    "metric_path": "work/v42-run-31709054520/9184978707/METRIC.json",
+    "metric_sha256": "35f48eb733f4802eb4784ba4f19bd4bfa298b2803b8c8d822d9e302b5d4ae11d",
+    "patch_audit_path": "work/v42-run-31709054520/9184978707/PATCH_AUDIT.json",
+    "patch_audit_sha256": "1ba66a100ec5f20ee1f8f6f046a40135f6274b9a9fe779f2d3dea48973c55215"
+  },
+  "scope": {
+    "declaration_index_min": 3653,
+    "declaration_index_max": 3949,
+    "staged_owner_count": 14,
+    "staged_diagnostic_count": 23,
+    "staged_declaration_indices": [3653, 3690, 3883, 3920, 3923, 3925, 3926, 3927, 3928, 3930, 3932, 3933, 3939, 3948],
+    "staged_diagnostic_ordinals": [1, 4, 9, 12, 13, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 27, 28, 29, 30, 31, 32, 35]
+  },
+  "promotion_policy": "Every proposal below is excluded from the high-confidence candidate. API- or elaboration-sensitive OLD/NEW fragments are retained for isolated direct-Lean probes; owners with an unresolved mathematical/domain rewrite or resource-only condition are explicitly deferred without a speculative replacement.",
+  "proposals": [
+    {
+      "id": "V43-E-S01-explicit-dependent-index-transport",
+      "owner": "energyForm_eq_inner_strongPrincipalCore",
+      "declaration_index": 3653,
+      "diagnostic_ordinals": [1],
+      "kind": "body",
+      "classification": "STAGE_DEPENDENT_TRANSPORT",
+      "confidence": "low-medium",
+      "apply_to_simulation": true,
+      "expected_count_in_owner": 1,
+      "old": "  have hs :=\n    successorEnergyForm_eq_inner_strongPrincipalCore (n - 1)\n  simpa only [successorGraphCoordinates, transportSuccessorCoordinates,\n    successorIndexEq, sub_add_cancel] using hs\n",
+      "new": "  have hn : n - 1 + 1 = n := sub_add_cancel n 1\n  let v' : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore (n - 1 + 1) :=\n    Eq.mpr (congrArg\n      Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore hn) v\n  let u' : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore (n - 1 + 1) :=\n    Eq.mpr (congrArg\n      Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore hn) u\n  have hs :=\n    successorEnergyForm_eq_inner_strongPrincipalCore (n - 1) v' u'\n  cases hn\n  simpa only [v', u', successorGraphCoordinates,\n    transportSuccessorCoordinates, successorIndexEq] using hs\n",
+      "prior_relation": {
+        "state": "NOT_MATERIALIZED_V42",
+        "repair_id": "V42-Q4-S3653-explicit-dependent-index-transport"
+      },
+      "staging_reason": "The diagnostic is equality transport through a dependent family; Eq.mpr direction and coordinate casts require direct elaboration."
+    },
+    {
+      "id": "V43-E-S02-change-nested-withlp-carrier",
+      "owner": "jointGraphCoreDensityAt_of_strongCrossAdjoints",
+      "declaration_index": 3690,
+      "diagnostic_ordinals": [4],
+      "kind": "body",
+      "classification": "STAGE_DEFINITIONAL_CARRIER",
+      "confidence": "medium",
+      "apply_to_simulation": true,
+      "expected_count_in_owner": 1,
+      "old": "    simpa only [coe_smoothCoreMap,\n      DefinitionOneSobolev.QuotientHilbertCoordinates.graph,\n      FixedPhaseClosedOperators.successorGraphCoordinates_base,\n      FixedPhaseClosedOperators.successorGraphCoordinates_raised,\n      FixedPhaseClosedOperators.successorGraphCoordinates_lowered,\n      FixedPhaseClosedOperators.reindexedActualLoweredCoordinate_eq_lowerFromSuccCoordinate,\n      baseCoordinate_apply, raiseCoordinate_apply, lowerCoordinate_apply,\n      Function.comp_apply, LinearMap.coe_mk, AddHom.coe_mk] using hOuter\n",
+      "new": "    change Filter.Tendsto\n      (fun j : ℕ ↦ WithLp.toLp 2\n        (l2Coordinate (n + 1) (w j),\n          WithLp.toLp 2\n            (raisedCoordinate (n + 1) (w j),\n              lowerFromSuccCoordinate n (w j))))\n      Filter.atTop\n      (𝒩 (WithLp.toLp 2\n        (baseCoordinate n x,\n          WithLp.toLp 2\n            (raiseCoordinate n x, lowerCoordinate n x))))\n    simpa only [Function.comp_apply] using hOuter\n",
+      "prior_relation": {
+        "state": "FOLLOW_ON_TO_MATERIALIZED_V42",
+        "repair_id": "V42-Q1-04-expose-linear-map-coercion-and-composition",
+        "proposal_id": "V42-Q4-S3690-change-nested-withlp-carrier"
+      },
+      "staging_reason": "The source and target carriers print extensionally equal but reducibility of WeakCoordinateAmbient versus nested WithLp is elaborator-sensitive."
+    },
+    {
+      "id": "V43-E-S03-repr-finite-projection-explicit-evaluation",
+      "owner": "repr_finiteHilbertProjection_sub_apply",
+      "declaration_index": 3883,
+      "diagnostic_ordinals": [9],
+      "kind": "body",
+      "classification": "DEFER_HILBERT_BASIS_EVALUATION_ROOT",
+      "confidence": "low-medium",
+      "apply_to_simulation": false,
+      "staging_reason": "Both membership branches retain an explicit finite-sum evaluation in lp.single. Removing unused simp lemmas is not a repair; a verified HilbertBasis.repr/single evaluation lemma is still required."
+    },
+    {
+      "id": "V43-E-S04-factor-torus-coordinate-before-complex-reconstruction",
+      "owner": "literalStageTorusPoint_physicalTorusPoint",
+      "declaration_index": 3920,
+      "diagnostic_ordinals": [12],
+      "kind": "body",
+      "classification": "STAGE_COORDINATE_RECONSTRUCTION",
+      "confidence": "medium",
+      "apply_to_simulation": false,
+      "prior_relation": {
+        "state": "FOLLOW_ON_TO_MATERIALIZED_V42",
+        "repair_id": "Q1-P3920-reunfold-physical-torus-point-after-coordinate-rewrite"
+      },
+      "staging_reason": "The direct rw is blocked under Complex.measurableEquivPi.symm. A historical hcoord factorization exists, but an older remote run still reported arithmetic and rewrite failures; do not promote without an isolated compile."
+    },
+    {
+      "id": "V43-E-S05-compose-fourier-differentiability",
+      "owner": "literalStageNegativePlaneWave_differentiable",
+      "declaration_index": 3923,
+      "diagnostic_ordinals": [13],
+      "kind": "body",
+      "classification": "STAGE_FOURIER_DIFFERENTIABILITY_API",
+      "confidence": "medium-high",
+      "apply_to_simulation": true,
+      "expected_count_in_owner": 1,
+      "old": "  unfold literalStageNegativePlaneWave\n  fun_prop\n",
+      "new": "  unfold literalStageNegativePlaneWave\n  have hFourier (i : Fin 2) :\n      Differentiable ℝ (fun x : ℝ =>\n        fourier (-(k i)) ((x : ℝ) : UnitAddCircle)) :=\n    fun x =>\n      (hasDerivAt_fourier_neg (1 : ℝ) (k i) x).differentiableAt\n  have hRe : Differentiable ℝ (fun w : ℂ =>\n      fourier (-(k 0))\n        (((literalStageFourierScale Y)⁻¹ * w.re : ℝ) : UnitAddCircle)) := by\n    simpa only [Function.comp_apply] using\n      (hFourier 0).comp\n        (by fun_prop : Differentiable ℝ (fun w : ℂ =>\n          (literalStageFourierScale Y)⁻¹ * w.re))\n  have hIm : Differentiable ℝ (fun w : ℂ =>\n      fourier (-(k 1))\n        (((literalStageFourierScale Y)⁻¹ * w.im : ℝ) : UnitAddCircle)) := by\n    simpa only [Function.comp_apply] using\n      (hFourier 1).comp\n        (by fun_prop : Differentiable ℝ (fun w : ℂ =>\n          (literalStageFourierScale Y)⁻¹ * w.im))\n  have hScale : Differentiable ℝ (fun _ : ℂ =>\n      (((literalStageFourierScale Y)⁻¹ : ℝ) : ℂ)) :=\n    differentiable_const\n  exact (hScale.mul hRe).mul hIm\n",
+      "prior_relation": {
+        "state": "NOT_MATERIALIZED_V42",
+        "repair_id": "V42-Q4-S3923-compose-fourier-differentiability"
+      },
+      "staging_reason": "The derivative theorem is exact, but Differentiable.comp through UnitAddCircle coercion has no runtime evidence in the current toolchain."
+    },
+    {
+      "id": "V43-E-S06-use-codomain-const-multiplication-horizontal",
+      "owner": "fderiv_literalStageNegativePlaneWave_one",
+      "declaration_index": 3925,
+      "diagnostic_ordinals": [15],
+      "kind": "body",
+      "classification": "STAGE_OVERLOAD_SENSITIVE",
+      "confidence": "medium",
+      "apply_to_simulation": true,
+      "expected_count_in_owner": 1,
+      "old": "          (((hasDerivAt_id (0 : ℝ)).const_add w.re).const_mul\n            (literalStageFourierScale Y)⁻¹)).mul_const\n        (fourier (-(k 1))",
+      "new": "          (((hasDerivAt_id (0 : ℝ)).const_add w.re).const_mul\n            (literalStageFourierScale Y)⁻¹)).const_mul\n        (fourier (-(k 1))",
+      "prior_relation": {
+        "state": "EXTENDED_REGRESSED_TO_DIFFERENT_TYPE_MISMATCH",
+        "repair_id": "V42-Q3-S01-use-codomain-const-multiplication"
+      },
+      "staging_reason": "Extended changes the residual but does not eliminate it; the const_mul overload and product orientation still need a typed intermediate."
+    },
+    {
+      "id": "V43-E-S07-rebuild-vertical-derivative-with-typed-intermediate",
+      "owner": "fderiv_literalStageNegativePlaneWave_I",
+      "declaration_index": 3926,
+      "diagnostic_ordinals": [16],
+      "kind": "body",
+      "classification": "DEFER_AFTER_EXTENDED_SYNTAX_REGRESSION",
+      "confidence": "low",
+      "apply_to_simulation": false,
+      "prior_relation": {
+        "state": "EXCLUDE_V42_EXTENDED_FRAGMENT",
+        "repair_id": "Q1-S3926-factor-vertical-hasDerivAt-before-const-mul"
+      },
+      "staging_reason": "Extended produced an unexpected-token syntax error at its convert expression. The fragment must be rebuilt, not replayed."
+    },
+    {
+      "id": "V43-E-S08-correct-horizontal-integration-by-parts-arguments",
+      "owner": "integral_negativePlaneWave_mul_dx",
+      "declaration_index": 3927,
+      "diagnostic_ordinals": [17, 18, 19, 20],
+      "kind": "body",
+      "classification": "STAGE_MULTI_ARGUMENT_API_ROOT",
+      "confidence": "medium-high",
+      "apply_to_simulation": false,
+      "prior_relation": {
+        "state": "NOT_MATERIALIZED_V42",
+        "repair_id": "V42-Q4-S3927-correct-integration-by-parts-arguments"
+      },
+      "staging_reason": "The four errors are one root plus local inference cascades, but the derivative-integrability argument order must be checked with the exact theorem signature."
+    },
+    {
+      "id": "V43-E-S09-correct-vertical-integration-by-parts-arguments",
+      "owner": "integral_negativePlaneWave_mul_dy",
+      "declaration_index": 3928,
+      "diagnostic_ordinals": [21, 22, 23, 24],
+      "kind": "body",
+      "classification": "STAGE_MULTI_ARGUMENT_API_ROOT",
+      "confidence": "medium-high",
+      "apply_to_simulation": false,
+      "prior_relation": {
+        "state": "FOLLOW_ON_TO_MATERIALIZED_V42",
+        "repair_id": "V42-Q3-H02-pin-integration-by-parts-functions"
+      },
+      "staging_reason": "Pinning f/g did not change the four-error owner count. It exposed the same argument-order root as dx; apply a full named hLeft/hRight/hBase repair only after direct signature confirmation."
+    },
+    {
+      "id": "V43-E-S10-rewrite-fourier-domain-after-integral-preimage",
+      "owner": "inner_planeWave_ambientTestCore_eq_scale_mul_mFourierCoeff",
+      "declaration_index": 3930,
+      "diagnostic_ordinals": [25],
+      "kind": "body",
+      "classification": "DEFER_DOMAIN_NORMALIZATION_ROOT",
+      "confidence": "medium",
+      "apply_to_simulation": false,
+      "prior_relation": {
+        "state": "FOLLOW_ON_TO_MATERIALIZED_V42",
+        "repair_id": "V42-Q3-H03-bridge-lp-coe-to-torus-representative"
+      },
+      "staging_reason": "The coe bridge succeeds, but integral_preimage changes the RHS to a literal Ioc predicate set before the physical-box rewrite. A controlled set equality and scale change-of-variables proof is required."
+    },
+    {
+      "id": "V43-E-S11-pull-dy-scalar-through-fourier-integral",
+      "owner": "mFourierCoeff_scaled_dy",
+      "declaration_index": 3932,
+      "diagnostic_ordinals": [27],
+      "kind": "body",
+      "classification": "STAGE_LP_COERCION_API",
+      "confidence": "medium-high",
+      "apply_to_simulation": true,
+      "expected_count_in_owner": 1,
+      "old": "  have hbase := inner_planeWave_ambientTestCore_eq_scale_mul_mFourierCoeff\n    Y k v hv\n  have hder := inner_planeWave_ambientTestCore_eq_scale_mul_mFourierCoeff\n    Y k (HalfWeightCompactCoordinateGreen.dy v) hdy\n  rw [map_smul]\n  simp only [smul_eq_mul]\n",
+      "new": "  have hbase := inner_planeWave_ambientTestCore_eq_scale_mul_mFourierCoeff\n    Y k v hv\n  have hder := inner_planeWave_ambientTestCore_eq_scale_mul_mFourierCoeff\n    Y k (HalfWeightCompactCoordinateGreen.dy v) hdy\n  have hScaled :\n      UnitAddTorus.mFourierCoeff\n          ((literalStageFourierScale Y : ℂ) •\n            literalStageTorusTest Y\n              (HalfWeightCompactCoordinateGreen.dy v)) k =\n        (literalStageFourierScale Y : ℂ) *\n          UnitAddTorus.mFourierCoeff\n            (literalStageTorusTest Y\n              (HalfWeightCompactCoordinateGreen.dy v)) k := by\n    unfold UnitAddTorus.mFourierCoeff\n    rw [← integral_const_mul]\n    apply integral_congr_ae\n    filter_upwards [MeasureTheory.Lp.coeFn_smul\n      (literalStageFourierScale Y : ℂ)\n      (literalStageTorusTest Y\n        (HalfWeightCompactCoordinateGreen.dy v))] with t ht\n    rw [ht]\n    simp only [Pi.smul_apply, smul_eq_mul]\n    ring\n  rw [hScaled]\n",
+      "prior_relation": {
+        "state": "NOT_MATERIALIZED_V42",
+        "repair_id": "V42-Q4-S3932-pull-scalar-through-fourier-integral"
+      },
+      "staging_reason": "The horizontal twin has runtime progression evidence, but this exact vertical fragment was not materialized in either v42 variant."
+    },
+    {
+      "id": "V43-E-S12-restore-physical-fourier-domain-before-orthogonality",
+      "owner": "inner_literalStagePlaneWave",
+      "declaration_index": 3933,
+      "diagnostic_ordinals": [28],
+      "kind": "body",
+      "classification": "DEFER_DOMAIN_AND_LP_COERCION_ROOT",
+      "confidence": "low-medium",
+      "apply_to_simulation": false,
+      "staging_reason": "The failed rewrite occurs while both sides are still full integrals. It needs support-to-setIntegral and a.e. Lp representative bridges before the existing scaling/preimage sequence."
+    },
+    {
+      "id": "V43-E-S13-repair-complex-self-inner-chain",
+      "owner": "norm_planeFourierRemainder_eq_scale_mul_torusRemainder",
+      "declaration_index": 3939,
+      "diagnostic_ordinals": [29, 30, 31, 32],
+      "kind": "body",
+      "classification": "STAGE_MULTI_FRAGMENT_COMPLEX_INNER_ROOT",
+      "confidence": "medium-high",
+      "apply_to_simulation": true,
+      "prior_relation": {
+        "state": "NOT_MATERIALIZED_V42",
+        "repair_id": "V42-Q4-S3939-repair-complex-self-inner-residuals"
+      },
+      "replacements": [
+        {
+          "id": "V43-E-S13A-use-complex-self-inner-equality",
+          "expected_count_in_owner": 1,
+          "old": "  have hbaseInner :\n      inner ℂ F F =\n        (literalStageFourierScale Y ^ 2 : ℝ) * inner ℂ T T := by\n    apply Complex.ext\n    · simp only [Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im,\n        zero_mul, sub_zero, inner_self_eq_norm_sq (𝕜 := ℂ), hbase]\n      ring\n    · simp only [Complex.mul_im, Complex.ofReal_re, Complex.ofReal_im,\n        zero_mul, add_zero, inner_self_im (𝕜 := ℂ)]\n",
+          "new": "  have hbaseInner :\n      inner ℂ F F =\n        (literalStageFourierScale Y ^ 2 : ℝ) * inner ℂ T T := by\n    rw [inner_self_eq_norm_sq_to_K, inner_self_eq_norm_sq_to_K, hbase]\n    push_cast\n    ring\n"
+        },
+        {
+          "id": "V43-E-S13B-avoid-recursive-simp-on-star-product",
+          "expected_count_in_owner": 1,
+          "old": "    simp only [map_mul, starRingEnd_apply, Complex.star_def,\n      Complex.conj_ofReal]\n    ring\n",
+          "new": "    rw [map_mul, starRingEnd_apply, Complex.star_def,\n      Complex.conj_ofReal]\n    ring\n"
+        },
+        {
+          "id": "V43-E-S13C-bridge-re-inner-to-norm-square",
+          "expected_count_in_owner": 1,
+          "old": "  have hsq :\n      ‖literalStagePlaneFiniteProjection Y N F - F‖ ^ 2 =\n        literalStageFourierScale Y ^ 2 *\n          ‖P5LocalFourierRellich.twoTorusFiniteFourierProjection s T - T‖ ^ 2 := by\n    have hre := congrArg Complex.re hresInner\n    simpa only [Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im,\n      zero_mul, sub_zero, inner_self_eq_norm_sq (𝕜 := ℂ)] using hre\n",
+          "new": "  have hsq :\n      ‖literalStagePlaneFiniteProjection Y N F - F‖ ^ 2 =\n        literalStageFourierScale Y ^ 2 *\n          ‖P5LocalFourierRellich.twoTorusFiniteFourierProjection s T - T‖ ^ 2 := by\n    calc\n      ‖literalStagePlaneFiniteProjection Y N F - F‖ ^ 2 =\n+          (inner ℂ (literalStagePlaneFiniteProjection Y N F - F)\n+            (literalStagePlaneFiniteProjection Y N F - F)).re :=\n+        norm_sq_eq_re_inner (𝕜 := ℂ) _\n+      _ = ((literalStageFourierScale Y ^ 2 : ℝ) *\n+          inner ℂ\n+            (P5LocalFourierRellich.twoTorusFiniteFourierProjection s T - T)\n+            (P5LocalFourierRellich.twoTorusFiniteFourierProjection s T - T)).re :=\n+        congrArg Complex.re hresInner\n+      _ = literalStageFourierScale Y ^ 2 *\n+          (inner ℂ\n+            (P5LocalFourierRellich.twoTorusFiniteFourierProjection s T - T)\n+            (P5LocalFourierRellich.twoTorusFiniteFourierProjection s T - T)).re := by\n+        rw [Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im,\n+          zero_mul, sub_zero]\n+      _ = literalStageFourierScale Y ^ 2 *\n+          ‖P5LocalFourierRellich.twoTorusFiniteFourierProjection s T - T‖ ^ 2 := by\n+        rw [← norm_sq_eq_re_inner (𝕜 := ℂ)]\n"
+        }
+      ],
+      "staging_reason": "The four diagnostics form one owner-local chain. All three edits are shape-exact but interact, so the whole owner must be compiled as one isolated probe."
+    },
+    {
+      "id": "V43-E-S14-resource-timeout-body-local-budget",
+      "owner": "opNorm_literalStagePlaneFiniteApproximation_sub_le",
+      "declaration_index": 3948,
+      "diagnostic_ordinals": [35],
+      "kind": "resource",
+      "classification": "DEFER_RESOURCE_ONLY",
+      "confidence": "low",
+      "apply_to_simulation": false,
+      "prior_relation": {
+        "state": "EXCLUDE_V42_EXTENDED_FRAGMENT",
+        "repair_id": "Q1-S3948-bounded-heartbeat-probe"
+      },
+      "staging_reason": "Raising maxHeartbeats from 200000 to 800000 still timed out remotely and a theorem-level wrapper would violate the header-preservation contract. Proof restructuring is required."
+    }
+  ]
+}

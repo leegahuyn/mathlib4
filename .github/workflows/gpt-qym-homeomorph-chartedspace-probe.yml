@@ -1,0 +1,117 @@
+name: GPT QYM Homeomorph charted-space transport probe
+
+on:
+  push:
+    branches:
+      - gpt/qym-gb57-global-batch-round2-20260820
+    paths:
+      - .github/workflows/gpt-qym-homeomorph-chartedspace-probe.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: gpt-qym-homeomorph-chartedspace-probe
+  cancel-in-progress: true
+
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - name: Install pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/qym-homeomorph-probe
+          curl --retry 8 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none > /tmp/qym-homeomorph-probe/elan.log 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          tc="$(tr -d '\r\n' < lean-toolchain)"
+          elan toolchain install "$tc" >> /tmp/qym-homeomorph-probe/toolchain.log 2>&1
+          lake exe cache get >> /tmp/qym-homeomorph-probe/cache.log 2>&1
+          lean --version | tee /tmp/qym-homeomorph-probe/lean-version.txt
+
+      - name: Compile transport probe
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > /tmp/qym-homeomorph-probe/Probe.lean <<'LEAN'
+          import Mathlib
+
+          open Set Topology Manifold
+
+          universe u v w u₁ u₂
+
+          variable {H : Type u} {M : Type v} {M' : Type w}
+          variable [TopologicalSpace H] [TopologicalSpace M] [TopologicalSpace M']
+          variable [ChartedSpace H M]
+          variable (G : StructureGroupoid H) [HasGroupoid M G]
+          variable (f : M ≃ₜ M')
+
+          example :
+              letI : ChartedSpace H M' := f.chartedSpace
+              HasGroupoid M' G := by
+            letI : ChartedSpace H M' := f.chartedSpace
+            infer_instance
+
+          variable {𝕜 : Type u₁} {E : Type u₂}
+          variable [NontriviallyNormedField 𝕜]
+          variable [NormedAddCommGroup E] [NormedSpace 𝕜 E]
+          variable (I : ModelWithCorners 𝕜 E H)
+          variable [IsManifold I ∞ M]
+
+          example :
+              letI : ChartedSpace H M' := f.chartedSpace
+              IsManifold I ∞ M' := by
+            letI : ChartedSpace H M' := f.chartedSpace
+            infer_instance
+          LEAN
+          set +e
+          lake env lean /tmp/qym-homeomorph-probe/Probe.lean \
+            > /tmp/qym-homeomorph-probe/probe.log 2>&1
+          rc=$?
+          set -e
+          echo "$rc" > /tmp/qym-homeomorph-probe/exit.txt
+          cat /tmp/qym-homeomorph-probe/probe.log
+
+      - name: Persist probe result
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          dest=.github/qym-probes/HOMEOMORPH_CHARTEDSPACE
+          rm -rf "$dest"
+          mkdir -p "$dest"
+          cp /tmp/qym-homeomorph-probe/Probe.lean "$dest/"
+          cp /tmp/qym-homeomorph-probe/probe.log "$dest/"
+          cp /tmp/qym-homeomorph-probe/exit.txt "$dest/"
+          cat > "$dest/STATUS.json" <<JSON
+          {
+            "run_id": ${GITHUB_RUN_ID},
+            "trigger_sha": "${GITHUB_SHA}",
+            "exit": $(cat /tmp/qym-homeomorph-probe/exit.txt)
+          }
+          JSON
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "$dest"
+          git commit -m "QYM: persist Homeomorph charted-space transport probe ${GITHUB_RUN_ID} [skip ci]"
+          for attempt in 1 2 3 4 5; do
+            git fetch origin gpt/qym-gb57-global-batch-round2-20260820
+            if git rebase origin/gpt/qym-gb57-global-batch-round2-20260820 && \
+               git push origin HEAD:gpt/qym-gb57-global-batch-round2-20260820; then
+              exit 0
+            fi
+            git rebase --abort || true
+            sleep $((attempt * 5))
+          done
+          exit 1

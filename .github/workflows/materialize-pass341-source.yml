@@ -1,0 +1,60 @@
+name: Materialize PASS 341 source candidate
+
+# Current repaired driver: PASS 341 module-before-additive-group ordering.
+on:
+  push:
+    branches: [fix/fa341-final-isolated-20260808]
+    paths:
+      - '.github/workflows/materialize-pass341-source.yml'
+      - 'scripts/diagnose_pass341_fa.sh'
+      - 'scripts/apply_three_hundred_forty_first_pass_functional_analysis_repairs.py'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: materialize-pass341-source
+  cancel-in-progress: true
+
+jobs:
+  materialize:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout exact branch head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 240
+          persist-credentials: true
+
+      - name: Replay repairs without compiling
+        shell: bash
+        run: |
+          set -euo pipefail
+          awk '
+            /^rm -f "\$\{OUTDIR\}\/Mock2_FunctionalAnalysis\.olean"/ { exit }
+            { print }
+          ' scripts/diagnose_pass341_fa.sh > /tmp/reconstruct-pass341.sh
+          bash -n /tmp/reconstruct-pass341.sh
+          bash /tmp/reconstruct-pass341.sh
+          candidate='/tmp/diagnose-pass341-fa/source/Mock2_FunctionalAnalysis-pass341.lean'
+          test -s "${candidate}"
+          mkdir -p build-logs/candidates
+          cp "${candidate}" build-logs/candidates/Mock2_FunctionalAnalysis-pass341.lean
+          sha256sum "${candidate}" | tee build-logs/candidates/Mock2_FunctionalAnalysis-pass341.sha256
+          cp /tmp/diagnose-pass341-fa/repair-source-sha256.csv \
+            build-logs/candidates/Mock2_FunctionalAnalysis-pass341-repair-chain.csv
+
+      - name: Commit generated candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add build-logs/candidates/Mock2_FunctionalAnalysis-pass341.lean \
+            build-logs/candidates/Mock2_FunctionalAnalysis-pass341.sha256 \
+            build-logs/candidates/Mock2_FunctionalAnalysis-pass341-repair-chain.csv
+          git diff --cached --quiet || git commit -m 'ci: materialize PASS 341 source candidate'
+          git push origin HEAD:fix/fa341-final-isolated-20260808

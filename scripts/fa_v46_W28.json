@@ -1,0 +1,144 @@
+{
+  "schema": "fa-v42-declaration-local-repairs-v1",
+  "status": "PATCH_READY_STATIC_EXACT_POINTWISE_FUNCTION_SMUL_API_DIRECT_LEAN_REQUIRED_V46_W28",
+  "worker_id": "W28",
+  "cluster_id": "V46-IDX4389-PI-POINTWISE-FUNCTION-SMUL-PRIME",
+  "authority": {
+    "repository": "leegahuyn/mathlib4",
+    "run_id": 31728453514,
+    "head_sha": "5ec44f3d343955f3124e7efecc048b648dccc5ab",
+    "job_id": 94542617528,
+    "artifact_id": 9192669673,
+    "artifact_digest": "sha256:8f07a678145b62342aaa9cb94ebbce6c9f7cc1a45c400560918d42499e67f2f3",
+    "variant": "all_probes",
+    "source_path": "work/v45-results/run-31728453514/all_probes/Mock2_FunctionalAnalysis-candidate.lean",
+    "source_sha256": "726f40d1dd03d32f03592adf4f6b02e3f7f52e7e1f71087ee53bdb83c4bb0caf",
+    "source_bytes": 2788764,
+    "source_lines": 62383,
+    "declaration_count": 4416,
+    "diagnostics_path": "work/v45-results/run-31728453514/all_probes/FULL_DIAGNOSTICS.json",
+    "diagnostics_sha256": "1fb14600849d7281df6ff65ae9213b6671b19a396cf539041f864fea157476a1",
+    "fa_log_path": "work/v45-results/run-31728453514/all_probes/Mock2_FunctionalAnalysis.log",
+    "fa_log_sha256": "bcc92a247a531419b25677cfdd5e28ce1705e6c3fb87301b93e24510932b4888",
+    "patch_audit_path": "work/v45-results/run-31728453514/all_probes/PATCH_AUDIT.json",
+    "patch_audit_sha256": "045fe75a7b0b7691e58b01dd97e87d1e9d76d4f84648b34745870d902df7ec94"
+  },
+  "assignment": {
+    "declaration_index": 4389,
+    "declaration": "orbitPeterssonEuclideanEmbedding_invariantScalarMultiplier",
+    "authority_diagnostic_ordinals": [44],
+    "diagnostic_count": 1,
+    "lines": [61475],
+    "columns": [47],
+    "normalized_signatures": ["Tactic `rewrite` failed: Did not find an occurrence of the pattern"],
+    "root_or_cascade": "INDEPENDENT_OWNER_LOCAL_POINTWISE_FUNCTION_SMUL_API_MISMATCH",
+    "ownership": "W28-only"
+  },
+  "exact_remote_residual": {
+    "failed_rewrite_pattern": "(?r • ?f) ?x",
+    "target_rhs": "((invariantScalarCarrierLInfinity c coerced to UpperHalfPlane -> Complex) • (orbitPeterssonEuclideanEmbedding ... coerced to UpperHalfPlane -> Complex)) z",
+    "context": {
+      "hmul": "The Lp product representative has already been rewritten to pointwise smul of two coerced functions.",
+      "hcval": "The L-infinity representative equals the cutoff c almost everywhere.",
+      "hsource": "The L2 representative equals the fixed-phase gauge almost everywhere."
+    },
+    "authority_log_lines": "5417-5450"
+  },
+  "diagnosis": {
+    "root_cause": "The scalar in the target is itself a function UpperHalfPlane -> Complex, not a constant Complex scalar. The pointwise action is the Pi.smul' instance SMul (forall i, alpha i) (forall i, beta i). Both the earlier Pi.smul_apply and the current unqualified smul_apply express a constant scalar acting on a function, so their rewrite pattern cannot match function-on-function pointwise smul.",
+    "exact_api": {
+      "path": "C:/Users/사용자/Desktop/mathlib4_spt2/Mathlib/Algebra/Group/Action/Pi.lean",
+      "lines": "33-42",
+      "instance": "Pi.smul'",
+      "theorem": "Pi.smul_apply'",
+      "attribute": "simp",
+      "statement_shape": "for s : forall i, alpha i and x : forall i, beta i, (s • x) i = s i • x i",
+      "proof": "rfl",
+      "api_file_sha256": "cdda3b15d9ef657c1971d55c1fa0cd02b79ddce82464b755c09532306e2105b3"
+    },
+    "holder_api": {
+      "path": "C:/Users/사용자/Desktop/mathlib4_spt2/Mathlib/MeasureTheory/Function/Holder.lean",
+      "lines": "179-186",
+      "theorem": "MeasureTheory.Lp.coeFn_lpSMul",
+      "rhs_shape": "the Lp product representative equals the pointwise function smul of the two representatives"
+    },
+    "repair": "Replace only `smul_apply` in the successful rewrite chain by `Pi.smul_apply'`. The next `smul_eq_mul` then turns the pointwise Complex scalar action into multiplication, after which hcval, hsource, and fixedPhaseEuclideanGauge_invariantScalarCoreOperator close the equality exactly as intended.",
+    "required_imports": [],
+    "expected_errors_closed": 1,
+    "semantic_risk": "MINIMAL",
+    "confidence": "VERY_HIGH_EXACT_INSTANCE_AND_RFL_POINTWISE_API_DIRECT_LEAN_REQUIRED",
+    "theorem_proposition_changed": false,
+    "disposition": "PATCH_READY"
+  },
+  "history": {
+    "v42_q4": {
+      "repair": "V42-Q4-4389-pin-holder-exponents",
+      "effect": "Pinned p=infinity, q=2, r=2 in coeFn_lpSMul and removed the earlier unresolved Infinity.HolderTriple root.",
+      "decision": "KEEP"
+    },
+    "v43_late": {
+      "repair": "V43-LATE-4389-evaluate-function-smul-pointwise",
+      "attempt": "Pi.smul_apply followed by smul_eq_mul",
+      "remote_outcome": "The rewrite pattern (?a • ?f) ?i did not match the function-scalar pointwise action."
+    },
+    "v44_q3_hc05": {
+      "repair": "V44-Q3-HC05-use-generic-pointwise-smul-evaluation",
+      "attempt": "Replace Pi.smul_apply by unqualified smul_apply",
+      "remote_outcome": "All six V45 variants retain the same rewrite failure. The all_probes pattern is still (?r • ?f) ?x, confirming that the generic theorem selected the constant-scalar action rather than Pi.smul'."
+    },
+    "w28": "Select the apostrophe theorem belonging to the function-valued Pi scalar-action instance."
+  },
+  "variant_stability": {
+    "v45_core": {"diagnostic_count": 1, "ordinal": 48, "line": 61423, "signature": "rewrite pattern not found"},
+    "v45_common_probe": {"diagnostic_count": 1, "ordinal": 48, "line": 61436, "signature": "rewrite pattern not found"},
+    "v45_q1_probe": {"diagnostic_count": 1, "ordinal": 48, "line": 61425, "signature": "rewrite pattern not found"},
+    "v45_q2_probe": {"diagnostic_count": 1, "ordinal": 48, "line": 61424, "signature": "rewrite pattern not found"},
+    "v45_q3_probe": {"diagnostic_count": 1, "ordinal": 44, "line": 61459, "signature": "rewrite pattern not found"},
+    "v45_all_probes": {"diagnostic_count": 1, "ordinal": 44, "line": 61475, "signature": "rewrite pattern not found"},
+    "reading": "The same wrong non-prime API survives every composition. This is a stable owner-local root, not a HolderTriple or upstream cascade."
+  },
+  "adjacent_worker_coordination": {
+    "W31_idx4391": {
+      "status": "COMPATIBLE_KEEP",
+      "reason": "W31 uses an explicitly type-ascribed multiplication change after hmul, so it bypasses the pointwise-smul rewrite API. Compose W28 before W31 because idx4391 invokes idx4389 through simp_rw."
+    },
+    "W32_idx4395": {
+      "status": "CORRECTION_REQUIRED_AND_AUTHORIZED_BY_COORDINATOR",
+      "reason": "W32's initial replacement used the same unqualified smul_apply and described idx4389 as a compiled precedent. The locked authority proves idx4389 is not compiled clean. idx4395 has the same function-valued L-infinity representative acting pointwise on an L2 representative, so its replacement must also use Pi.smul_apply'.",
+      "atomic_api_sibling": true,
+      "compose_order": "W28 then corrected W32; W31 may be interposed after W28"
+    }
+  },
+  "dependency_classification": {
+    "diagnostic_is_cascade": false,
+    "preceding_dense_core_and_representative_dependencies_clean_at_site": true,
+    "reason": "The proof reaches the final rw with hleft, hsource, hmul, and hcval all elaborated and the exact wrong rewrite pattern printed.",
+    "downstream_direct_user": "idx4391 finset_sum_invariantScalarMultipliers_eq_of_compactSupport",
+    "promotion_policy": "Apply W28 before W31 and use the corrected W32 sibling manifest for idx4395."
+  },
+  "header_policy": "NO_HEADER_OR_ATTRIBUTE_OR_COMMENT_CHANGES_BODY_ONLY",
+  "trust_policy": {
+    "tokens": ["sorry", "admit", "axiom", "unsafe", "native_decide", "Lean.ofReduceBool"],
+    "required_before": 0,
+    "required_after": 0
+  },
+  "repairs": [
+    {
+      "id": "V46-W28-IDX4389-use-Pi-pointwise-function-smul-apply-prime",
+      "owner": "orbitPeterssonEuclideanEmbedding_invariantScalarMultiplier",
+      "declaration_index": 4389,
+      "diagnostics": [44],
+      "kind": "body",
+      "classification": "EXACT-POINTWISE-FUNCTION-SCALAR-ACTION-API",
+      "confidence": "very-high-exact-Pi-smul-prime-instance-rfl-theorem-direct-Lean-required",
+      "expected_count_in_owner": 1,
+      "old": "  rw [lpInfinityMultiplier_apply, hleft, hmul, smul_apply,\n    smul_eq_mul, hcval, hsource,\n    fixedPhaseEuclideanGauge_invariantScalarCoreOperator]",
+      "new": "  rw [lpInfinityMultiplier_apply, hleft, hmul, Pi.smul_apply',\n    smul_eq_mul, hcval, hsource,\n    fixedPhaseEuclideanGauge_invariantScalarCoreOperator]",
+      "evidence": "The exact old chain occurs once in idx4389 and once globally. The failed theorem seeks constant scalar action; Pi.smul_apply' is the rfl theorem for the function-valued scalar action displayed by the remote target."
+    }
+  ],
+  "promotion_rule": "Compose W28 before W31 and the corrected W32. Require all_probes ordinal 44 to disappear with no new idx4389 diagnostic. Then require W31 ordinals 45-52 and corrected W32 ordinals 53-58 to clear independently, Mock2=0, Mock2_Advanced=0, full FA maxErrors=2000, all 4416 headers/order/comments/attributes unchanged, synthetic-sorry zero, and trust-six zero.",
+  "direct_lean_verified": false,
+  "clean_build_claimed": false,
+  "lean_lake_git_github_network_invoked_by_worker": false
+}

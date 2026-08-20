@@ -1,0 +1,54 @@
+{
+  "variant": "trace_deriv_change_norm",
+  "candidate_sha256": "1f0a7e6c95691a89b3099a829da3e11fbbc731332f87e7c63d24eadade5692eb",
+  "baseline_sha256": "1243b2ba563d364a6977cbf9aa867e628de50a28b0f56677dc70456a210e209a",
+  "line_count": 60450,
+  "baseline_line_count": 60453,
+  "target_header_sha256": "20f8d04dfc32eb6aa027b1523622e01b26feac09d7a78cbafac93f98b0abc84a",
+  "declaration_sequence_sha256": "a9f15910d7e589feb18eac7d42370c5bfa07233a188d32554f5711a8e3446a5b",
+  "baseline_forbidden_counts": {
+    "sorry": 0,
+    "admit": 0,
+    "new_global_axiom": 0,
+    "unsafe": 0,
+    "native_decide": 0,
+    "Lean.ofReduceBool": 0
+  },
+  "repairs": [
+    {
+      "declaration": "selectedCuspRestrictionRepresentative_add",
+      "old_block_sha256": "ceb4a6cddc83c37824a08646b228b745e0ceb4124d0aefceae477b47b7fb269d",
+      "new_block_sha256": "87424ae15e6aaf28a34c7732232e35458a612608ba750f833827ee236a45b82e"
+    },
+    {
+      "declaration": "selectedCuspRestrictionRepresentative_memLp",
+      "old_block_sha256": "eaf85e2697904c49e9d81deeb0bb65c19bfd4a6b3f02062080deba60e77b6672",
+      "new_block_sha256": "1f7ad40be814db531292223af87ce5b9c4a28603fff810059694745306d52b0f"
+    },
+    {
+      "declaration": "coeFn_selectedCuspCoreTrace",
+      "old_block_sha256": "def63a84ba668f4f1809989d9b596a457f17c4aa23610f3a911157d26632e2be",
+      "new_block_sha256": "379775808fb590cce5c229fdfec7ab6432912b392d89e7bd2deb08629c2f17ff"
+    },
+    {
+      "declaration": "fixedPhaseCore_eventually_selectedCuspRepresentative_ae_zero",
+      "old_block_sha256": "e31b73645db1a275cf4aa5f4b47986f8edccb7fe9c90590b2655fc86e628891b",
+      "new_block_sha256": "449dd5af4582c60cc9f6cbfcbae54ef5946b1c6f7b3e83a4138e2247edbc2ab1"
+    },
+    {
+      "declaration": "fixedPhaseCore_eventually_selectedCuspCoreTrace_eq_zero",
+      "old_block_sha256": "9785505e8d1040d193731bc2227301cb0c54beaada04496826af7b2d4dd74ec6",
+      "new_block_sha256": "06d4d6ad707a64fc40e861c51d5a5dcfa1206087e5ea6e102804e06162ac70ff"
+    },
+    {
+      "declaration": "deriv_height_mul_normSq",
+      "old_block_sha256": "076e389efa7160bfa22146e0887105ab7cce3aa9578b156ce47dca01cd714276",
+      "new_block_sha256": "f09d494d692bb86921bbc2f3c56a687d3e735838cda393b002e1e08b4bc1e656"
+    },
+    {
+      "declaration": "norm_deriv_height_mul_normSq_le",
+      "old_block_sha256": "94e2b825d730acf79ac941d72950fdd13107d50afd1f50886c4275ef46a32d6c",
+      "new_block_sha256": "7930ac2c6ea58a1cf4a9b6e894e58cb443d4d62d8f909733fc0f6cb714b5f70b"
+    }
+  ]
+}

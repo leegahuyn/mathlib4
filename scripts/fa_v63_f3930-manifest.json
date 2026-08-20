@@ -1,0 +1,75 @@
+{
+  "schema": "fa-v63-body-only-repair-manifest-v1",
+  "status": "READY",
+  "manifest_id": "f3930",
+  "authority_source": {
+    "sha256": "1badac1451e11708114eb5438616063379558bcf0579dc82a01c2200b501d365",
+    "bytes": 2812442,
+    "lines": 62933,
+    "declaration_count": 4416
+  },
+  "source_package": {
+    "path": "work/v62-workers/f3930/f3930-repair-manifest.json",
+    "sha256": "5fc96ad9baa41b8b149b889cef0230697bbfdd03cc4f1060413967652ea8113f",
+    "bytes": 7112,
+    "result_index_path": "work/v62-workers/f3930/f3930-result-index.json",
+    "result_index_sha256": "8d62cc74070ec9078e0459f67b212bac9c0fb84b28d94eedd6da52b0a6c6b1ca",
+    "direct_lean_verified": false
+  },
+  "repairs": [
+    {
+      "id": "V63-F3930-PI-NEG-APPLY-RING",
+      "sequence": 0,
+      "stage": 0,
+      "depends_on": [],
+      "conflicts_with": [],
+      "owner": {
+        "declaration_index": 3930,
+        "declaration_name": "inner_planeWave_ambientTestCore_eq_scale_mul_mFourierCoeff",
+        "expected_header": "theorem inner_planeWave_ambientTestCore_eq_scale_mul_mFourierCoeff\n    (Y : ℝ) (k : Fin 2 → ℤ)\n    (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore)\n    (hv : tsupport (v : ℂ → ℂ) ⊆ literalStageFourierBox Y) :\n    inner ℂ (literalStagePlaneWave Y k)\n        (ambientTestCoreToPlaneL2Linear v) =\n      (literalStageFourierScale Y : ℂ) *\n        UnitAddTorus.mFourierCoeff (literalStageTorusTest Y v) k ",
+        "expected_header_sha256": "9bb2b8f834fcf921662ca829d782ff59a1a3f104275609f1df60e366dfc7d4fc",
+        "expected_authority_region_sha256": "38d3843c45871a6218e9b2857967181b20ba6c7de71bce9b82cadc5e9909fe6d"
+      },
+      "operations": [
+        {
+          "id": "f3930-body",
+          "old": "      rw [hre, him]\n      field_simp [literalStageFourierScale_ne_zero Y] <;> ring",
+          "new": "      rw [hre, him]\n      simp only [Pi.neg_apply]\n      ring",
+          "old_sha256": "762b740dc64acc1b05ac65a4ec05db96a02dcf94ba9a178bd88906f41096a948",
+          "new_sha256": "e35147bbc5634f09f0ad55d041cb780abc1992f96552ebf4ec314b60f902529f",
+          "old_bytes": 82,
+          "new_bytes": 61,
+          "counts": {
+            "old_global_before": 1,
+            "old_owner_before": 1,
+            "new_global_before": 0,
+            "new_owner_before": 0,
+            "old_global_after": 0,
+            "old_owner_after": 0,
+            "new_global_after": 1,
+            "new_owner_after": 1
+          }
+        }
+      ],
+      "diagnostic_roots": ["F3930"],
+      "constraints": {
+        "body_only": true,
+        "header_unchanged": true,
+        "statement_unchanged": true,
+        "comments_unchanged": true,
+        "attributes_unchanged": true,
+        "source_move": false,
+        "maxHeartbeats_unchanged": true,
+        "trust_six_unchanged": true
+      }
+    }
+  ],
+  "constraints": {
+    "body_only": true,
+    "source_moves": 0,
+    "maxHeartbeats_delta": 0,
+    "trust_six_delta": 0,
+    "runtime_fallback_allowed": false,
+    "composition": "EXACT_FROM_AUTHORITY_NONCUMULATIVE"
+  }
+}

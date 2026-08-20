@@ -1,0 +1,167 @@
+diff --git a/PrimalitySheafVerification/QYM.lean b/PrimalitySheafVerification/QYM.lean
+index 29d4467430..1a6a08d254 100644
+--- a/PrimalitySheafVerification/QYM.lean
++++ b/PrimalitySheafVerification/QYM.lean
+@@ -45442,161 +45442,161 @@ only the equivalence between zero-times continuous differentiability and
+ continuity, so it makes no smooth-atlas assertion. -/
+ noncomputable def quotientProjectionPartialDiffeomorphZero (z : ℍ) :
+     PartialDiffeomorph 𝓘(ℂ) 𝓘(ℂ) ℍ GammaTwoQuotient 0 where
+   toPartialEquiv := (QYM.FullCertification.P2GammaTwoFreeActionExtension.upstairsLocalHomeomorphAt z).toPartialEquiv
+   open_source := (QYM.FullCertification.P2GammaTwoFreeActionExtension.upstairsLocalHomeomorphAt z).open_source
+   open_target := (QYM.FullCertification.P2GammaTwoFreeActionExtension.upstairsLocalHomeomorphAt z).open_target
+   contMDiffOn_toFun := contMDiffOn_zero_iff.mpr
+     (QYM.FullCertification.P2GammaTwoFreeActionExtension.upstairsLocalHomeomorphAt z).continuousOn
+   contMDiffOn_invFun := contMDiffOn_zero_iff.mpr
+     (QYM.FullCertification.P2GammaTwoFreeActionExtension.upstairsLocalHomeomorphAt z).continuousOn_symm
+ 
+ /-- Unconditionally, the quotient projection is a local diffeomorphism of
+ order zero, i.e. exactly its certified local-homeomorphism structure expressed
+ in the manifold API. -/
+ theorem gammaTwoQuotientMk_isLocalDiffeomorph_zero :
+     IsLocalDiffeomorph 𝓘(ℂ) 𝓘(ℂ) 0 Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.gammaTwoQuotientMk := by
+   intro z
+   refine ⟨quotientProjectionPartialDiffeomorphZero z,
+     QYM.FullCertification.P2GammaTwoFreeActionExtension.upstairsLocalHomeomorphAt_mem_source z, ?_⟩
+   intro w hw
+   exact congrFun (QYM.FullCertification.P2GammaTwoFreeActionExtension.upstairsLocalHomeomorphAt_eq_projection z) w
+ 
+ /-! ## 4. The all-sheets atlas and the exact smooth residual -/
+ 
+ /-- Unlike the earlier one-chosen-lift-per-point atlas, this atlas explicitly
+ contains the inverse of every covering sheet.  Its `chartAt` is unchanged. -/
+ noncomputable def allCoveringSheetsChartedSpaceH :
+     ChartedSpace ℍ GammaTwoQuotient where
+   atlas := Set.range (fun z : ℍ => (QYM.FullCertification.P2GammaTwoFreeActionExtension.upstairsLocalHomeomorphAt z).symm)
+   chartAt := QYM.FullCertification.P2GammaTwoFreeActionExtension.quotientChartAtH
+   mem_chart_source := QYM.FullCertification.P2GammaTwoFreeActionExtension.mem_quotientChartAtH_source
+   chart_mem_atlas x := ⟨QYM.FullCertification.P2GammaTwoFreeActionExtension.quotientLift x, rfl⟩
+ 
+ /-- Smooth maps of the upper half-plane, expressed as a pregroupoid.  This is
+ the intermediate groupoid needed before composing the `ℍ` atlas with the
+ standard complex atlas of `ℍ`. -/
+ def upperHalfPlaneSmoothPregroupoid : Pregroupoid ℍ where
+   property f s := ContMDiffOn 𝓘(ℂ) 𝓘(ℂ) ∞ f s
+   comp hf hg _ _ _ := hg.comp' hf
+   id_mem := contMDiff_id.contMDiffOn
+   locality _ h := contMDiffOn_of_locally_contMDiffOn h
+   congr _ hfg hf := hf.congr hfg
+ 
+ /-- The structure groupoid whose maps and inverses are smooth maps of `ℍ`. -/
+ def upperHalfPlaneSmoothGroupoid : StructureGroupoid ℍ :=
+   upperHalfPlaneSmoothPregroupoid.groupoid
+ 
+ /-- The exact missing smoothness statement for the all-covering-sheets atlas:
+ every transition from one sheet to another is smooth on its natural source.
+ The reverse transition is the same assertion with `z` and `w` exchanged. -/
+ def SmoothTransitionResidual : Prop :=
+   ∀ z w : ℍ,
+     ContMDiffOn 𝓘(ℂ) 𝓘(ℂ) ∞
+       ((QYM.FullCertification.P2GammaTwoFreeActionExtension.upstairsLocalHomeomorphAt z).trans
+         (QYM.FullCertification.P2GammaTwoFreeActionExtension.upstairsLocalHomeomorphAt w).symm)
+       ((QYM.FullCertification.P2GammaTwoFreeActionExtension.upstairsLocalHomeomorphAt z).trans
+         (QYM.FullCertification.P2GammaTwoFreeActionExtension.upstairsLocalHomeomorphAt w).symm).source
+ 
+ /-- The residual is sufficient to make the all-sheets `ℍ` atlas compatible
+ with the intermediate smooth groupoid. -/
+ theorem allCoveringSheets_hasGroupoid
+     (hSmooth : SmoothTransitionResidual) :
+     letI : ChartedSpace ℍ GammaTwoQuotient :=
+       allCoveringSheetsChartedSpaceH
+     HasGroupoid GammaTwoQuotient upperHalfPlaneSmoothGroupoid := by
+   letI : ChartedSpace ℍ GammaTwoQuotient :=
+     allCoveringSheetsChartedSpaceH
+   apply hasGroupoid_of_pregroupoid upperHalfPlaneSmoothPregroupoid
+   intro e e' he he'
+   change e ∈ Set.range
+     (fun z : ℍ => (QYM.FullCertification.P2GammaTwoFreeActionExtension.upstairsLocalHomeomorphAt z).symm) at he
+   change e' ∈ Set.range
+     (fun z : ℍ => (QYM.FullCertification.P2GammaTwoFreeActionExtension.upstairsLocalHomeomorphAt z).symm) at he'
+   rcases he with ⟨z, rfl⟩
+   rcases he' with ⟨w, rfl⟩
+   simpa only [upperHalfPlaneSmoothPregroupoid,
+     OpenPartialHomeomorph.symm_symm] using hSmooth z w
+ 
+ section ConditionalSmoothAtlas
+ 
+-variable (hSmooth : SmoothTransitionResidual)
++variable [hSmooth : SmoothTransitionResidual]
+ 
+ local instance conditionalChartedSpaceH :
+     ChartedSpace ℍ GammaTwoQuotient :=
+   allCoveringSheetsChartedSpaceH
+ 
+ local instance conditionalHasGroupoidH :
+     HasGroupoid GammaTwoQuotient upperHalfPlaneSmoothGroupoid :=
+   allCoveringSheets_hasGroupoid hSmooth
+ 
+ /-- Compose the all-sheets atlas with the standard complex atlas on `ℍ`. -/
+ local instance conditionalChartedSpaceComplex :
+     ChartedSpace ℂ GammaTwoQuotient :=
+   ChartedSpace.comp ℂ ℍ GammaTwoQuotient
+ 
+ /-- Groupoid composition turns the single transition residual into the usual
+ complex smooth-atlas compatibility condition. -/
+ local instance conditionalHasGroupoidComplex :
+     HasGroupoid GammaTwoQuotient (contDiffGroupoid ∞ 𝓘(ℂ)) := by
+   apply StructureGroupoid.HasGroupoid.comp upperHalfPlaneSmoothGroupoid
+   intro e he
+   rw [isLocalStructomorphOn_contDiffGroupoid_iff]
+   change
+     ContMDiffOn 𝓘(ℂ) 𝓘(ℂ) ∞ e e.source ∧
+       ContMDiffOn 𝓘(ℂ) 𝓘(ℂ) ∞ e.symm e.target at he
+   exact he
+ 
+ /-- Conditional construction of the genuine smooth quotient manifold.  The
+ only hypothesis is `SmoothTransitionResidual`; no additional topological or
+ atlas premise is hidden in this theorem. -/
+ theorem gammaTwoQuotient_isManifold_of_smoothTransitionResidual :
+     IsManifold 𝓘(ℂ) ∞ GammaTwoQuotient :=
+   IsManifold.mk' 𝓘(ℂ) ∞ GammaTwoQuotient
+ 
+ local instance conditionalIsManifold :
+     IsManifold 𝓘(ℂ) ∞ GammaTwoQuotient :=
+   gammaTwoQuotient_isManifold_of_smoothTransitionResidual
+ 
+ /-! ## 5. Open stage interiors -/
+ 
+ /-- The largest open submanifold canonically contained in the intrinsic closed
+ stage.  The closed subtype itself is not an `Opens`, so Mathlib's manifold
+ inclusion theorem does not apply directly to `IStage.X Y`. -/
+ def interiorStage (Y : ℝ) : TopologicalSpace.Opens GammaTwoQuotient :=
+   ⟨interior (QYM.FullCertification.P2IntrinsicTruncatedQuotientExtension.XSet Y), isOpen_interior⟩
+ 
+ /-- Monotonicity of the closed stages induces monotonicity of their open
+ interiors. -/
+ theorem interiorStage_mono {Y Z : ℝ} (hYZ : Y ≤ Z) :
+     interiorStage Y ≤ interiorStage Z :=
+   interior_mono (QYM.FullCertification.P2IntrinsicTruncatedQuotientExtension.XSet_monotone hYZ)
+ 
+ /-- The canonical open-stage inclusion. -/
+ def interiorStageInclusion {Y Z : ℝ} (hYZ : Y ≤ Z) :
+     interiorStage Y → interiorStage Z :=
+   TopologicalSpace.Opens.inclusion (interiorStage_mono hYZ)
+ 
+ /-- Under the exact atlas-transition residual, every open-stage inclusion is
+ smooth. -/
+ theorem interiorStageInclusion_contMDiff
+     {Y Z : ℝ} (hYZ : Y ≤ Z) :
+     ContMDiff 𝓘(ℂ) 𝓘(ℂ) ∞ (interiorStageInclusion hYZ) :=
+   contMDiff_inclusion (interiorStage_mono hYZ)
+ 
+ end ConditionalSmoothAtlas
+ 
+ /-! ## 6. The remaining cusp-collar datum -/
+ 
+ /-- Exact residual for a genuine collar chart around the embedded cusp
+ circle.  It asks for an open partial homeomorphism to a product strip which
+ sends the certified circle to the central horizontal slice.  The embedded
+ circle proved above supplies the zero-thickness endpoint; a proof of this
+ proposition requires a uniform orbit-separation argument on a thickened
+ horocycle, not merely the pointwise high-cusp bridge used for injectivity. -/
+ def CuspCollarResidual
+     (q : GammaTwoRightCoset) (Y : ℝ) : Prop :=
+   ∃ epsilon : ℝ, 0 < epsilon ∧
+     ∃ e : OpenPartialHomeomorph
+         GammaTwoQuotient (WidthTwoCircle × ℝ),
+       e.target =
+         Set.univ ×ˢ

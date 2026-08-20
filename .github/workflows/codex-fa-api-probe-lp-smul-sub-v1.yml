@@ -1,0 +1,107 @@
+name: Codex FA local evaluation LinearMap subtraction probe
+# trigger: local-eval-linearmap-sub-v1
+on:
+  push:
+    branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
+    paths: [.github/workflows/codex-fa-api-probe-lp-smul-sub-v1.yml]
+  workflow_dispatch:
+permissions: {contents: read}
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with: {ref: "${{ github.sha }}", fetch-depth: 1, persist-credentials: false}
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none >/tmp/elan.log 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1
+          lake exe cache get >/tmp/cache.log 2>&1
+      - name: Compile local evaluation map subtraction shapes
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          cat >/tmp/ProbeLocalEval.lean <<'LEAN'
+          import Mathlib
+
+          noncomputable section
+
+          variable {X : Type*} [AddCommMonoid X] [Module ℂ X]
+          variable (S : Submodule ℂ X)
+          variable (phi : X →ₗ[ℂ] ℂ)
+
+          noncomputable local instance coreModule : Module ℂ S := by
+            exact Submodule.module S
+          noncomputable local instance coreAddCommGroup : AddCommGroup S := by
+            exact Module.addCommMonoidToAddCommGroup ℂ
+
+          example (u v : S) :
+              let ev : S →ₗ[ℂ] ℂ :=
+                { toFun := fun x => phi x.1
+                  map_add' := by
+                    intro x y
+                    exact phi.map_add x.1 y.1
+                  map_smul' := by
+                    intro c x
+                    exact phi.map_smul c x.1 }
+              ev (u - v) = ev u - ev v := by
+            dsimp only
+            let ev : S →ₗ[ℂ] ℂ :=
+              { toFun := fun x => phi x.1
+                map_add' := by
+                  intro x y
+                  exact phi.map_add x.1 y.1
+                map_smul' := by
+                  intro c x
+                  exact phi.map_smul c x.1 }
+            exact map_sub ev u v
+
+          example (u a b : S) :
+              let ev : S →ₗ[ℂ] ℂ :=
+                { toFun := fun x => phi x.1
+                  map_add' := by intro x y; exact phi.map_add x.1 y.1
+                  map_smul' := by intro c x; exact phi.map_smul c x.1 }
+              ev (u - a - b) = ev u - ev a - ev b := by
+            dsimp only
+            let ev : S →ₗ[ℂ] ℂ :=
+              { toFun := fun x => phi x.1
+                map_add' := by intro x y; exact phi.map_add x.1 y.1
+                map_smul' := by intro c x; exact phi.map_smul c x.1 }
+            rw [map_sub, map_sub]
+
+          example (u a : S) (t : ℂ) :
+              let ev : S →ₗ[ℂ] ℂ :=
+                { toFun := fun x => phi x.1
+                  map_add' := by intro x y; exact phi.map_add x.1 y.1
+                  map_smul' := by intro c x; exact phi.map_smul c x.1 }
+              ev (u - t • a) = ev u - t * ev a := by
+            dsimp only
+            let ev : S →ₗ[ℂ] ℂ :=
+              { toFun := fun x => phi x.1
+                map_add' := by intro x y; exact phi.map_add x.1 y.1
+                map_smul' := by intro c x; exact phi.map_smul c x.1 }
+            rw [map_sub, map_smul]
+            rfl
+          LEAN
+          set +e
+          lake env lean -DmaxErrors=30 -DwarningAsError=false /tmp/ProbeLocalEval.lean 2>&1 | tee /tmp/probe.log
+          x=${PIPESTATUS[0]}
+          set -e
+          echo "$x" >/tmp/probe.exit
+          exit "$x"
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-local-eval-linearmap-sub-${{ github.sha }}
+          path: |
+            /tmp/ProbeLocalEval.lean
+            /tmp/probe.log
+            /tmp/probe.exit
+          retention-days: 30

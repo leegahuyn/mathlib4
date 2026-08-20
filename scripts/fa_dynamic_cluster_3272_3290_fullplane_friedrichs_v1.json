@@ -1,0 +1,81 @@
+{
+  "schema": "fa-dynamic-cluster-3272-3290-fullplane-friedrichs-v1",
+  "status": "DIAGNOSTIC_DERIVED_PENDING_DIRECT_FULL_SOURCE",
+  "source_diagnostic_run_id": 31558337276,
+  "repairs": [
+    {
+      "declaration_index": 3272,
+      "declaration_name": "tsupport_fullPlaneDirectionalDerivative_subset",
+      "old_fragment": "  simpa only [fullPlaneDirectionalDerivative_apply] using\n    (tsupport_fderiv_apply_subset ℝ xi :\n      tsupport (fun t : ℂ ↦ fderiv ℝ (v : ℂ → ℂ) t xi) ⊆\n        tsupport (v : ℂ → ℂ))",
+      "new_fragment": "  have hfun : (fullPlaneDirectionalDerivative xi v : ℂ → ℂ) =\n      (fun t : ℂ ↦ fderiv ℝ (v : ℂ → ℂ) t xi) := by\n    funext t\n    exact fullPlaneDirectionalDerivative_apply xi v t\n  rw [hfun]\n  exact (tsupport_fderiv_apply_subset ℝ xi :\n    tsupport (fun t : ℂ ↦ fderiv ℝ (v : ℂ → ℂ) t xi) ⊆\n      tsupport (v : ℂ → ℂ))"
+    },
+    {
+      "declaration_index": 3273,
+      "declaration_name": "integral_fullPlaneDirectionalDerivative_eq_zero",
+      "old_fragment": "  have h := integral_mul_fderiv_eq_neg_fderiv_mul_of_integrable\n    (mu := (volume : Measure ℂ))\n    (f := fun _t : ℂ ↦ (1 : ℂ)) (g := (v : ℂ → ℂ))\n    (v := xi)\n    (by simpa using (integrable_zero :\n      Integrable (fun _t : ℂ ↦ (0 : ℂ)) volume))\n    (by simpa only [one_mul, fullPlaneDirectionalDerivative_apply] using\n      fullPlaneTest_integrable (fullPlaneDirectionalDerivative xi v))\n    (by simpa only [one_mul] using fullPlaneTest_integrable v)\n    (fun t _ ↦ differentiableAt_const (c := (1 : ℂ)))\n    (fun t _ ↦ (v.contDiff.differentiable (by simp)) t)\n  simpa only [one_mul, zero_mul, integral_zero, neg_zero,\n    fullPlaneDirectionalDerivative_apply] using h",
+      "new_fragment": "  have hfun : (fullPlaneDirectionalDerivative xi v : ℂ → ℂ) =\n      (fun t : ℂ ↦ fderiv ℝ (v : ℂ → ℂ) t xi) := by\n    funext t\n    exact fullPlaneDirectionalDerivative_apply xi v t\n  have hDeriv : Integrable\n      (fun t : ℂ ↦ fderiv ℝ (v : ℂ → ℂ) t xi)\n      (volume : Measure ℂ) := by\n    rw [← hfun]\n    exact fullPlaneTest_integrable (fullPlaneDirectionalDerivative xi v)\n  rw [hfun]\n  have h := integral_mul_fderiv_eq_neg_fderiv_mul_of_integrable\n    (μ := (volume : Measure ℂ))\n    (f := fun _t : ℂ ↦ (1 : ℂ)) (g := (v : ℂ → ℂ))\n    (v := xi)\n    (by simpa using (integrable_zero :\n      Integrable (fun _t : ℂ ↦ (0 : ℂ)) volume))\n    (by simpa only [one_mul] using hDeriv)\n    (by simpa only [one_mul] using fullPlaneTest_integrable v)\n    (fun t _ ↦ differentiableAt_const (c := (1 : ℂ)))\n    (fun t _ ↦ (v.contDiff.differentiable (by simp)) t)\n  simpa only [one_mul, zero_mul, integral_zero, neg_zero] using h"
+    },
+    {
+      "declaration_index": 3274,
+      "declaration_name": "friedrichsUnitMollifierTest",
+      "old_fragment": "  tsupport_subset' := subset_univ",
+      "new_fragment": "  tsupport_subset' := by\n    intro x hx\n    simp"
+    },
+    {
+      "declaration_index": 3276,
+      "declaration_name": "friedrichsUnitHeightMollifierTest",
+      "old_fragment": "  tsupport_subset' := subset_univ",
+      "new_fragment": "  tsupport_subset' := by\n    intro x hx\n    simp"
+    },
+    {
+      "declaration_index": 3279,
+      "declaration_name": "friedrichsUnitAffineCommutatorTest_apply",
+      "old_fragment": "  simp only [friedrichsUnitAffineCommutatorTest,\n    add_apply, smul_apply,\n    fullPlaneDirectionalDerivative_apply,\n    friedrichsUnitHeightMollifierTest_apply, smul_eq_mul,\n    FixedPhaseAffineFriedrichs.ambientConstantMaassDerivative]",
+      "new_fragment": "  simp only [friedrichsUnitAffineCommutatorTest,\n    add_apply, smul_apply,\n    fullPlaneDirectionalDerivative_apply, smul_eq_mul,\n    FixedPhaseAffineFriedrichs.ambientConstantMaassDerivative]\n  change sigma *\n      fderiv ℝ (fun s : ℂ ↦ (s.im : ℂ) * friedrichsUnitMollifier s) t 1 +\n      fderiv ℝ (fun s : ℂ ↦ (s.im : ℂ) * friedrichsUnitMollifier s) t Complex.I =\n    sigma *\n      fderiv ℝ (fun s : ℂ ↦ (s.im : ℂ) * friedrichsUnitMollifier s) t 1 +\n      fderiv ℝ (fun s : ℂ ↦ (s.im : ℂ) * friedrichsUnitMollifier s) t Complex.I\n  rfl"
+    },
+    {
+      "declaration_index": 3280,
+      "declaration_name": "integral_friedrichsUnitAffineCommutatorTest_eq_zero",
+      "old_fragment": "  rw [friedrichsUnitAffineCommutatorTest,\n    integral_add",
+      "new_fragment": "  rw [friedrichsUnitAffineCommutatorTest]\n  change (∫ t : ℂ,\n      (sigma • fullPlaneDirectionalDerivative 1\n        friedrichsUnitHeightMollifierTest) t +\n      fullPlaneDirectionalDerivative Complex.I\n        friedrichsUnitHeightMollifierTest t) = 0\n  rw [integral_add"
+    },
+    {
+      "declaration_index": 3282,
+      "declaration_name": "tsupport_friedrichsUnitAffineCommutatorTest_subset",
+      "old_fragment": "  simpa only [friedrichsUnitAffineCommutatorTest,\n    add_apply, smul_apply, smul_eq_mul] using\n      (tsupport_add _ _).trans (union_subset hSmul hI)",
+      "new_fragment": "  change tsupport (fun t : ℂ ↦ sigma *\n      fullPlaneDirectionalDerivative 1\n        friedrichsUnitHeightMollifierTest t +\n      fullPlaneDirectionalDerivative Complex.I\n        friedrichsUnitHeightMollifierTest t) ⊆\n    closedBall (0 : ℂ) 2\n  exact (tsupport_add _ _).trans (union_subset hSmul hI)"
+    },
+    {
+      "declaration_index": 3284,
+      "declaration_name": "friedrichsAffineCommutatorKernel_integrable",
+      "old_fragment": "  simpa only [friedrichsAffineCommutatorKernel] using\n    hcomp.const_mul (((friedrichsScale j ^ 2 : ℝ) : ℂ))",
+      "new_fragment": "  change Integrable\n    (fun t : ℂ ↦ (((friedrichsScale j ^ 2 : ℝ) : ℂ)) *\n      friedrichsUnitAffineCommutatorTest sigma\n        (friedrichsScale j • t)) (volume : Measure ℂ)\n  exact hcomp.const_mul (((friedrichsScale j ^ 2 : ℝ) : ℂ))"
+    },
+    {
+      "declaration_index": 3286,
+      "declaration_name": "integral_friedrichsAffineCommutatorKernel_eq_zero",
+      "old_fragment": "  have hchange := Measure.integral_comp_smul\n    (volume : Measure ℂ)\n    (friedrichsUnitAffineCommutatorTest sigma : ℂ → ℂ) a\n  rw [friedrichsAffineCommutatorKernel, integral_const_mul, hchange,\n    integral_friedrichsUnitAffineCommutatorTest_eq_zero, smul_zero, mul_zero]",
+      "new_fragment": "  have hchange := Measure.integral_comp_smul\n    (volume : Measure ℂ)\n    (friedrichsUnitAffineCommutatorTest sigma : ℂ → ℂ) a\n  rw [Complex.finrank_real_complex,\n    abs_of_pos (inv_pos.mpr (pow_pos ha 2)), smul_eq_mul] at hchange\n  change (∫ t : ℂ, (((a ^ 2 : ℝ) : ℂ)) *\n    friedrichsUnitAffineCommutatorTest sigma (a • t)) = 0\n  rw [integral_const_mul, hchange,\n    integral_friedrichsUnitAffineCommutatorTest_eq_zero, mul_zero]"
+    },
+    {
+      "declaration_index": 3289,
+      "declaration_name": "friedrichsAffineCommutatorKernel_l1",
+      "replacements": [
+        {
+          "old_fragment": "      rw [integral_const_mul]\n      apply integral_congr_ae",
+          "new_fragment": "      rw [← integral_const_mul]\n      apply integral_congr_ae"
+        },
+        {
+          "old_fragment": "    _ = a ^ 2 * ((a ^ 2)^{-1} *\n          friedrichsAffineCommutatorL1 sigma) := by rw [hchange]",
+          "new_fragment": "    _ = a ^ 2 * ((a ^ 2)⁻¹ *\n          friedrichsAffineCommutatorL1 sigma) := by\n      rw [hchange]\n      rfl"
+        }
+      ]
+    },
+    {
+      "declaration_index": 3290,
+      "declaration_name": "friedrichsAffineCommutatorKernel_support_bound",
+      "old_fragment": "  exact (le_div_iff₀ ha).2 hle",
+      "new_fragment": "  apply (le_div_iff₀ ha).2\n  simpa only [mul_comm] using hle"
+    }
+  ]
+}

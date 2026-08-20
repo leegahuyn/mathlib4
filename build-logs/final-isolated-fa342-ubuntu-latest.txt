@@ -1,0 +1,735 @@
+run_id=31209071317
+tested_sha=e1345adcc17068b728e5333859ab654f2f3ca1cc
+diagnostic_exit_code=1
+utc=2026-08-07T19:15:20Z
+--- summary ---
+source_sha256=b0d4f65b829992910bddf838ddaeb179a32da57c1f306b623fed0086d511add5
+exit_code=1
+error_header_count=1155
+warning_count=734
+--- repair hashes (tail) ---
+apply_three_hundred_nineteenth_pass_functional_analysis_repairs.py,171588d37133a6494727645474dadad3f80828bdcf8a1ce5b8fd72b77d4d3c0a
+apply_three_hundred_twentieth_pass_functional_analysis_repairs.py,48fe6bd80915c155b6a38266c7a30f3818ad4b335fb9b77cc07175c8cad1dcd9
+apply_three_hundred_twenty_first_pass_functional_analysis_repairs.py,d184ee500fb6d514db79e50d4ed581cba0123660e0f8288d6f479e6f1c63d51f
+apply_three_hundred_twenty_second_pass_functional_analysis_repairs.py,5f7052b75353817e55e4fab35cc5f6578a9449737476a3dd05621999eaa67eed
+apply_three_hundred_twenty_third_pass_functional_analysis_repairs.py,41a542e802bbb2b05e56f81ae5b94c045cde75b14b140b679cc4ed70e156b960
+apply_three_hundred_twenty_fourth_pass_functional_analysis_repairs.py,cbe40f444a0fd843f89f87608b5f962cad774375d5daadf124b62ab155165350
+apply_three_hundred_twenty_fifth_pass_functional_analysis_repairs.py,6c557bc718c2a9259fd9df442b792bb94a031dc54b61876eb7c8900676daaaa8
+apply_three_hundred_twenty_sixth_pass_functional_analysis_repairs.py,14350571cc83f03849f21d4f12ba09a97e3e8897a35bca8dd3e59103d9799468
+apply_three_hundred_twenty_seventh_pass_functional_analysis_repairs.py,3f79d5931a58750a0800351da6a0d44939d448fc61cab56a6cf0fb4195be0f37
+apply_three_hundred_twenty_eighth_pass_functional_analysis_repairs.py,f39bad641a544d23c59871b91d3e3eb677cf8fca25e0bf49c10d28d48503b576
+apply_three_hundred_twenty_ninth_pass_functional_analysis_repairs.py,d38f2f58649a4acda650c92d4a36a6df063b86dbe144ce958dc1c1a096168189
+apply_three_hundred_thirtieth_pass_functional_analysis_repairs.py,706546d7c3329c1982fa223b3262ea5953180a92d1e40ea9c17c98c6da1ac6e0
+apply_three_hundred_thirty_first_pass_functional_analysis_repairs.py,674037f3e75131b8b64d583fc2d8210f264ddc814324ee84ea276166ccaeddf5
+apply_three_hundred_thirty_second_pass_functional_analysis_repairs.py,b6bbe2d8a656573150b4dbaf8ecbe8f640b10e13cccd834dacc8b0404223e6bf
+apply_three_hundred_thirty_third_pass_functional_analysis_repairs.py,8c0b0797155d3ae4f8f05b2d38d36552a629c900b8e990aba1ff44b666b72e45
+apply_three_hundred_thirty_fourth_pass_functional_analysis_repairs.py,7a179ce46bcb210dbd8cbf30a19aeb7da65ffed24709a8844bf4a244a8e65de5
+apply_three_hundred_thirty_fifth_pass_functional_analysis_repairs.py,f79ef8961deeda98a6b21dd731061d0f6124729a7562240c7eacbc13dea44f4c
+apply_three_hundred_thirty_sixth_pass_functional_analysis_repairs.py,204acd949c17f55013487819b215886ae5c1c5fb4d125d4683871f8fb94847ad
+apply_three_hundred_thirty_seventh_pass_functional_analysis_repairs.py,6e772d414fc0fb9b3ec532039a22a00f0d28e2884136bb0d841494d7bde3f2b1
+apply_three_hundred_thirty_eighth_pass_functional_analysis_repairs.py,1d150bcb8bd909e1bde7ce3577cf754386efcd7be2902d68a7c78b72b28d6b39
+apply_three_hundred_thirty_ninth_pass_functional_analysis_repairs.py,57f084029aff8e8a4b95d13e0daa9890eaa036716da48b3a3352ac3023be1c25
+apply_three_hundred_fortieth_pass_functional_analysis_repairs.py,48707b6952a1aad8e19fd47b5f3d4f74d4e0b0e66262ead87386512786083c3e
+apply_three_hundred_forty_first_pass_functional_analysis_repairs.py,df78d684944e2963d4fce2169f281192836c101d2fe8b22669fd11c069539fa5
+apply_three_hundred_forty_second_pass_functional_analysis_repairs.py,b0d4f65b829992910bddf838ddaeb179a32da57c1f306b623fed0086d511add5
+--- failure summary ---
+907:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20618:2: error: Type mismatch: After simplification, term
+933:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:21498:6: error: `simp` made no progress
+937:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:22349:2: error: Type mismatch: After simplification, term
+966:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:23011:18: error: unsolved goals
+981:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:23024:19: error: unsolved goals
+1017:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:23057:18: error: unsolved goals
+1032:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:23070:19: error: unsolved goals
+1068:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:23133:2: error: 'change' tactic failed, pattern
+1084:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:23155:2: error: 'change' tactic failed, pattern
+1132:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:23928:57: error: unsolved goals
+1167:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:23958:6: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+1206:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:23969:2: error: Type mismatch: After simplification, term
+1215:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:23989:4: error: Type mismatch: After simplification, term
+1231:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:23995:4: error: Type mismatch: After simplification, term
+1242:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:24034:2: error: Type mismatch: After simplification, term
+1251:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:24142:2: error: Type mismatch: After simplification, term
+1260:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:24208:4: error: Application type mismatch: The argument
+1269:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:24202:64: error: unsolved goals
+1275:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:24228:4: error: Application type mismatch: The argument
+1284:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:24222:66: error: unsolved goals
+1297:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:24261:64: error: unsolved goals
+1315:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:24283:50: error: unsolved goals
+1538:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:24682:24: error: Application type mismatch: The argument
+1547:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:24718:4: error: Type mismatch: After simplification, term
+1575:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:25132:12: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+1594:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:25148:31: error: Application type mismatch: The argument
+1603:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:25158:32: error: Type mismatch
+1622:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:25393:4: error: Type mismatch: After simplification, term
+1631:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:25520:4: error: Type mismatch: After simplification, term
+1637:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:25588:4: error: Type mismatch: After simplification, term
+1643:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:25844:4: error: Type mismatch: After simplification, term
+1649:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:25871:4: error: Type mismatch: After simplification, term
+1659:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:25884:4: error: Type mismatch: After simplification, term
+1669:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:25902:4: error: Type mismatch: After simplification, term
+1675:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:25905:4: error: Type mismatch: After simplification, term
+2641:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:26663:6: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+2652:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:26717:6: error: `simp` made no progress
+2653:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:26727:6: error: `simp` made no progress
+2654:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:26732:6: error: No goals to be solved
+2655:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:26741:12: error: unsolved goals
+2662:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:26746:14: error: unsolved goals
+2675:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:26764:46: error: unsolved goals
+2686:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:26918:4: error: Type mismatch: After simplification, term
+2724:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:27113:2: error: Type mismatch: After simplification, term
+2730:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:27124:2: error: Tactic `rfl` failed: The left-hand side
+2738:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:27191:4: error: Type mismatch: After simplification, term
+2748:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:27240:25: error: unsolved goals
+2856:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:27347:72: error: unsolved goals
+2863:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:27362:8: error: (kernel) unknown constant 'Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.successorGraphCoordinates_jointlyClosable'
+2931:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:27505:13: error: Type mismatch
+2938:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:27521:2: error: Function expected at
+2945:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:27560:2: error: Function expected at
+2952:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:27596:2: error: Type mismatch: After simplification, term
+2959:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:27638:2: error: Type mismatch: After simplification, term
+2965:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:27647:4: error: Type mismatch
+3014:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:28000:13: error: Application type mismatch: The argument
+3027:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:28042:26: error: Application type mismatch: The argument
+3084:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:28151:58: error: unsolved goals
+3101:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:28237:44: error: `ring_nf` made no progress on the goal
+3102:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:28237:44: error: `ring_nf` made no progress on the goal
+3115:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:28240:9: error: Tactic `unfold` failed to unfold `modularLowerHeightDeriv` in
+3117:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:28308:2: error: Tactic `rfl` failed: The left-hand side
+3125:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:28318:2: error: Type mismatch
+3135:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:28333:43: error: Application type mismatch: The argument
+3143:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:28386:4: error: unsolved goals
+3154:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:28419:6: error: linarith failed to find a contradiction
+3163:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:28439:6: error: linarith failed to find a contradiction
+3176:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:28490:6: error: Application type mismatch: The argument
+3184:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:28522:28: error: Application type mismatch: The argument
+3192:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:28525:4: error: `simp` made no progress
+3194:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:28537:4: error: `simp` made no progress
+3195:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:28537:4: error: `simp` made no progress
+3196:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:28529:8: error: (kernel) declaration has metavariables 'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoCurvilinearTileStokes.hasDerivAt_curvedTileRectangleMap_vertical'
+3197:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:28544:2: error: Type mismatch: After simplification, term
+3206:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:28573:7: error: Invalid projection: Projection operates on types of the form `C ...` where C is a constant. The expression
+3209:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:28573:15: error: Invalid projection: Projection operates on types of the form `C ...` where C is a constant. The expression
+3212:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:28568:69: error: unsolved goals
+3221:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:28605:68: error: unsolved goals
+3233:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:28679:60: error: unsolved goals
+3240:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:28732:7: error: Invalid projection: Projection operates on types of the form `C ...` where C is a constant. The expression
+3243:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:28732:15: error: Invalid projection: Projection operates on types of the form `C ...` where C is a constant. The expression
+3246:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:28727:38: error: unsolved goals
+3253:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:28767:6: error: Type mismatch: After simplification, term
+3263:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:28862:4: error: `simp` made no progress
+3271:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:28886:48: error: Application type mismatch: The argument
+3279:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:28887:48: error: `ring_nf` made no progress on the goal
+3280:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:28887:48: error: `ring_nf` made no progress on the goal
+3293:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:28887:48: error: `ring_nf` made no progress on the goal
+3294:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:28890:4: error: `simp` made no progress
+3295:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:28879:13: error: unsolved goals
+3320:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:28906:45: error: Application type mismatch: The argument
+3328:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:28934:2: error: Type mismatch: After simplification, term
+3337:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:28963:22: error: Application type mismatch: The argument
+3345:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:28965:49: error: Application type mismatch: The argument
+3353:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:28973:6: error: Application type mismatch: The argument
+3367:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:28982:6: error: Application type mismatch: The argument
+3384:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:29196:53: error: unsolved goals
+3393:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:29280:6: error: Application type mismatch: The argument
+3403:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:29417:51: error: unsolved goals
+3407:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:29425:50: error: unsolved goals
+3411:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:29434:53: error: unsolved goals
+3441:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:29610:41: error: unsolved goals
+3455:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:29623:2: error: Type mismatch: After simplification, term
+3490:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:29676:67: error: Application type mismatch: The argument
+3498:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:29677:2: error: Type mismatch: After simplification, term
+3504:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:29689:8: error: Application type mismatch: The argument
+3512:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:29697:4: error: Type mismatch: After simplification, term
+3535:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:29786:51: error: unsolved goals
+3549:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:29796:2: error: 'change' tactic failed, pattern
+3553:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:29803:2: error: 'change' tactic failed, pattern
+3557:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:29832:8: error: Type mismatch: After simplification, term
+3563:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:29837:8: error: Type mismatch: After simplification, term
+3569:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:29848:8: error: Type mismatch: After simplification, term
+3575:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:29853:8: error: Type mismatch: After simplification, term
+3581:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:29932:2: error: No goals to be solved
+3588:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:29955:60: error: unsolved goals
+3616:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:29980:6: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+3634:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:30078:13: error: Application type mismatch: The argument
+3642:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:30062:45: error: unsolved goals
+3658:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:30111:4: error: Tactic `apply` failed: could not unify the conclusion of `@Subtype.ext`
+3677:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:30192:6: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+3737:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:30414:2: error: Type mismatch
+3794:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:30766:8: error: Type mismatch
+3806:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:30824:16: error: unsolved goals
+3856:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:30965:10: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+3896:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:31103:67: error: `ring_nf` made no progress on the goal
+3897:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:31103:67: error: `ring_nf` made no progress on the goal
+3910:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:31118:2: error: Type mismatch: After simplification, term
+3918:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:31130:4: error: Type mismatch
+3924:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:31132:2: error: Type mismatch: After simplification, term
+3930:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:31144:4: error: Type mismatch
+3936:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:31146:2: error: Type mismatch: After simplification, term
+3942:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:31188:16: error: unsolved goals
+3953:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:31249:4: error: Application type mismatch: The argument
+3961:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:31248:45: error: Application type mismatch: The argument
+3971:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:31315:2: error: Type mismatch: After simplification, term
+3977:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:31335:4: error: Application type mismatch: The argument
+3985:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:31334:45: error: Application type mismatch: The argument
+4011:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:31557:8: error: Application type mismatch: The argument
+4019:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:31563:8: error: Application type mismatch: The argument
+4027:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:31601:8: error: Application type mismatch: The argument
+4035:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:31606:6: error: Application type mismatch: The argument
+4043:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:31626:8: error: Application type mismatch: The argument
+4051:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:31631:6: error: Application type mismatch: The argument
+4075:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:31877:2: error: 'change' tactic failed, pattern
+4082:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:31889:2: error: 'change' tactic failed, pattern
+4087:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:31901:2: error: 'change' tactic failed, pattern
+4143:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32205:2: error: unsolved goals
+4163:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32208:2: error: unsolved goals
+4178:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32270:24: error: Application type mismatch: The argument
+4229:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32617:12: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+4252:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32736:10: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+4320:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33067:4: error: Type mismatch
+4326:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33140:57: error: unsolved goals
+4349:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33149:59: error: unsolved goals
+4366:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33176:2: error: Type mismatch: After simplification, term
+4372:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33192:4: error: Type mismatch: After simplification, term
+4382:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33294:9: error: Function expected at
+4389:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33296:4: error: Tactic `rcases` failed: `x✝ : ?m.18` is not an inductive datatype
+4390:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33317:9: error: Function expected at
+4397:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33319:4: error: Tactic `rcases` failed: `x✝ : ?m.47` is not an inductive datatype
+4398:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33340:2: error: Type mismatch: After simplification, term
+4404:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33391:2: error: Type mismatch: After simplification, term
+4411:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33415:23: error: unsolved goals
+4418:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33432:4: error: Type mismatch: After simplification, term
+4424:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33435:4: error: Type mismatch: After simplification, term
+4431:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33438:4: error: Type mismatch: After simplification, term
+4438:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33442:4: error: Type mismatch: After simplification, term
+4445:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33446:4: error: Type mismatch: After simplification, term
+4453:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33479:50: error: Application type mismatch: The argument
+4461:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33484:41: error: Application type mismatch: The argument
+4469:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33482:36: error: unsolved goals
+4491:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33548:4: error: Type mismatch
+4501:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33566:52: error: Application type mismatch: The argument
+4509:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33565:27: error: unsolved goals
+4523:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33664:8: error: Type mismatch
+4536:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33725:44: error: unsolved goals
+4558:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33761:67: error: unsolved goals
+4563:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33806:48: error: unsolved goals
+4572:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33801:51: error: unsolved goals
+4581:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33846:53: error: Application type mismatch: The argument
+4589:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33847:2: error: Type mismatch: After simplification, term
+4597:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33860:6: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+4625:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33872:53: error: Application type mismatch: The argument
+4633:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33902:53: error: Application type mismatch: The argument
+4641:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33904:4: error: Type mismatch: After simplification, term
+4647:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33907:53: error: unsolved goals
+4662:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33897:56: error: unsolved goals
+4676:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33950:25: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+4704:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33959:65: error: unsolved goals
+4708:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33969:65: error: unsolved goals
+4712:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33994:6: error: Type mismatch
+4719:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34019:6: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+4735:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34033:6: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+4751:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34051:4: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+4775:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34088:23: error: Type mismatch
+4781:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34098:10: error: Type mismatch
+4787:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34099:51: error: unsolved goals
+4803:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34151:2: error: failed to prove positivity/nonnegativity/nonzeroness
+4804:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34210:29: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+--- last errors ---
+16537:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:58686:37: error: unexpected token '('; expected ')'
+16538:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:58698:37: error: unexpected token '('; expected ')'
+16539:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:58729:37: error: unexpected token '('; expected ')'
+16540:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:58737:37: error: unexpected token '('; expected ')'
+16541:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:58747:37: error: unexpected token '('; expected ')'
+16542:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:58763:37: error: unexpected token '('; expected ')'
+16543:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:58775:37: error: unexpected token '('; expected ')'
+16544:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:58812:37: error: unexpected token '('; expected ')'
+16546:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:58853:68: error: unsolved goals
+16575:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:58910:10: error: Function expected at
+16585:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:58932:10: error: Function expected at
+16594:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:58934:4: error: Type mismatch
+16600:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:58936:6: error: Type mismatch
+16606:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:58936:22: error: Type mismatch
+16612:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:58945:6: error: Invalid projection: Projection operates on types of the form `C ...` where C is a constant. The expression
+16615:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:58945:23: error: Invalid projection: Projection operates on types of the form `C ...` where C is a constant. The expression
+16618:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:58952:6: error: Invalid projection: Projection operates on types of the form `C ...` where C is a constant. The expression
+16621:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:58952:23: error: Invalid projection: Projection operates on types of the form `C ...` where C is a constant. The expression
+16624:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:58957:5: error: Type mismatch
+16630:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:58960:6: error: Invalid projection: Projection operates on types of the form `C ...` where C is a constant. The expression
+16633:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:58960:23: error: Invalid projection: Projection operates on types of the form `C ...` where C is a constant. The expression
+16636:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:58965:10: error: Function expected at
+16645:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:58969:6: error: Type mismatch
+16652:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:58970:128: error: unsolved goals
+16664:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:58980:10: error: Function expected at
+16673:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:58985:45: error: Type mismatch
+16682:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:58994:10: error: Function expected at
+16691:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59001:10: error: Function expected at
+16700:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59003:56: error: Application type mismatch: The argument
+16715:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59008:10: error: Function expected at
+16724:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59012:35: error: (deterministic) timeout at `whnf`, maximum number of heartbeats (200000) has been reached
+16729:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59006:8: error: (deterministic) timeout at `whnf`, maximum number of heartbeats (200000) has been reached
+16734:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59018:10: error: Function expected at
+16743:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59023:5: error: (deterministic) timeout at `whnf`, maximum number of heartbeats (200000) has been reached
+16748:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59016:8: error: (deterministic) timeout at `whnf`, maximum number of heartbeats (200000) has been reached
+16753:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59033:22: error: Invalid projection: Projection operates on types of the form `C ...` where C is a constant. The expression
+16756:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59038:6: error: Type mismatch
+16763:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59043:8: error: Application type mismatch: The argument
+16771:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59044:6: error: Type mismatch
+16777:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59046:24: error: Invalid projection: Projection operates on types of the form `C ...` where C is a constant. The expression
+16781:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59056:10: error: Function expected at
+16790:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59063:9: error: failed to elaborate eliminator, after generalizing over-applied arguments, expected type is type incorrect:
+16796:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59070:8: error: No goals to be solved
+16797:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59092:62: error: Application type mismatch: The argument
+16805:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59114:15: error: Function expected at
+16814:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59115:18: error: Function expected at
+16823:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59116:16: error: Type mismatch
+16830:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59122:11: error: `simp` made no progress
+16833:Full error:
+16855:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59206:46: error: Application type mismatch: The argument
+16863:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59207:6: error: Type mismatch
+16882:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59268:7: error: don't know how to synthesize implicit argument `IsGammaTwoInvariantCutoff`
+16898:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59268:7: error: don't know how to synthesize implicit argument
+16914:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59268:7: error: don't know how to synthesize implicit argument `SmoothQuotientCompactFunction`
+16930:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59270:9: error: don't know how to synthesize implicit argument `IsGammaTwoInvariantCutoff`
+16941:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59270:9: error: don't know how to synthesize implicit argument
+16952:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59269:9: error: don't know how to synthesize implicit argument `SmoothQuotientCompactFunction`
+16963:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59274:2: error: No goals to be solved
+16964:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59261:8: error: (kernel) unknown constant 'Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseReducedChartFriedrichs.effectiveScalarSmoothQuotient_invariant'
+16965:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59315:26: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+16982:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59347:9: error: don't know how to synthesize implicit argument `IsGammaTwoInvariantCutoff`
+16997:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59347:9: error: don't know how to synthesize implicit argument
+17012:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59347:9: error: don't know how to synthesize implicit argument `SmoothQuotientCompactFunction`
+17027:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59349:11: error: don't know how to synthesize implicit argument `IsGammaTwoInvariantCutoff`
+17038:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59349:11: error: don't know how to synthesize implicit argument
+17049:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59348:11: error: don't know how to synthesize implicit argument `SmoothQuotientCompactFunction`
+17060:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59352:59: error: unsolved goals
+17072:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59385:8: error: don't know how to synthesize implicit argument `IsGammaTwoInvariantCutoff`
+17094:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59385:8: error: don't know how to synthesize implicit argument
+17116:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59385:8: error: don't know how to synthesize implicit argument `SmoothQuotientCompactFunction`
+17138:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59387:7: error: don't know how to synthesize implicit argument `IsGammaTwoInvariantCutoff`
+17157:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59387:7: error: don't know how to synthesize implicit argument
+17176:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59386:7: error: don't know how to synthesize implicit argument `SmoothQuotientCompactFunction`
+17194:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59387:59: error: unsolved goals
+17217:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59566:10: error: don't know how to synthesize implicit argument `IsGammaTwoInvariantCutoff`
+17236:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59566:10: error: don't know how to synthesize implicit argument
+17255:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59566:10: error: don't know how to synthesize implicit argument `SmoothQuotientCompactFunction`
+17274:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59568:9: error: don't know how to synthesize implicit argument `IsGammaTwoInvariantCutoff`
+17289:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59568:9: error: don't know how to synthesize implicit argument
+17304:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59567:9: error: don't know how to synthesize implicit argument `SmoothQuotientCompactFunction`
+17319:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59571:23: error: Type mismatch
+17325:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59569:54: error: unsolved goals
+17342:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59625:10: error: don't know how to synthesize implicit argument `IsGammaTwoInvariantCutoff`
+17361:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59625:10: error: don't know how to synthesize implicit argument
+17380:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59625:10: error: don't know how to synthesize implicit argument `SmoothQuotientCompactFunction`
+17399:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59627:9: error: don't know how to synthesize implicit argument `IsGammaTwoInvariantCutoff`
+17414:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59627:9: error: don't know how to synthesize implicit argument
+17429:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59626:9: error: don't know how to synthesize implicit argument `SmoothQuotientCompactFunction`
+17444:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59630:23: error: Type mismatch
+17450:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59628:46: error: unsolved goals
+17467:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59712:11: error: unexpected token 'in'; expected ','
+17468:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59733:6: error: don't know how to synthesize implicit argument `IsGammaTwoInvariantCutoff`
+17489:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59733:6: error: don't know how to synthesize implicit argument
+17510:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59733:6: error: don't know how to synthesize implicit argument `SmoothQuotientCompactFunction`
+17531:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59735:9: error: don't know how to synthesize implicit argument `IsGammaTwoInvariantCutoff`
+17548:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59735:9: error: don't know how to synthesize implicit argument
+17565:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59734:9: error: don't know how to synthesize implicit argument `SmoothQuotientCompactFunction`
+17584:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59746:49: error: unsolved goals
+17607:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59815:50: error: unsolved goals
+17651:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59941:4: error: Function expected at
+--- log tail ---
+but this term has type
+  ?m.2
+
+Note: Expected a function because this term is being applied to the argument
+  c
+
+Hint: The identifier `IsGammaTwoInvariantCutoff` is unknown, and Lean's `autoImplicit` option causes an unknown identifier to be treated as an implicitly bound variable with an unknown type. However, the unknown type cannot be a function, and a function is what Lean expects here. This is often the result of a typo or a missing `import` or `open` statement.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:58985:45: error: Type mismatch
+  c
+has type
+  SmoothQuotientCompactFunction
+of sort `Sort u_1` but is expected to have type
+  ℍ → ℂ
+of sort `Type`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:58988:5: error(lean.unknownIdentifier): Unknown identifier `fixedPhaseEuclideanGauge_invariantScalarCoreOperator`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:58989:5: error(lean.unknownIdentifier): Unknown identifier `norm_invariantScalar_le_carrierBound`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:58994:10: error: Function expected at
+  IsGammaTwoInvariantCutoff
+but this term has type
+  ?m.2
+
+Note: Expected a function because this term is being applied to the argument
+  c
+
+Hint: The identifier `IsGammaTwoInvariantCutoff` is unknown, and Lean's `autoImplicit` option causes an unknown identifier to be treated as an implicitly bound variable with an unknown type. However, the unknown type cannot be a function, and a function is what Lean expects here. This is often the result of a typo or a missing `import` or `open` statement.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59001:10: error: Function expected at
+  IsGammaTwoInvariantCutoff
+but this term has type
+  ?m.2
+
+Note: Expected a function because this term is being applied to the argument
+  c
+
+Hint: The identifier `IsGammaTwoInvariantCutoff` is unknown, and Lean's `autoImplicit` option causes an unknown identifier to be treated as an implicitly bound variable with an unknown type. However, the unknown type cannot be a function, and a function is what Lean expects here. This is often the result of a typo or a missing `import` or `open` statement.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59003:56: error: Application type mismatch: The argument
+  l2Coordinate n
+has type
+  @LinearMap ℂ ℂ Complex.instSemiring Complex.instSemiring (RingHom.id ℂ)
+    (HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) (OrbitPeterssonHilbert n)
+    (HalfWeightDifferentialOperators.inverseEtaFixedPhaseStableCoreSubmodule n).addCommMonoid
+    UniformSpace.Completion.instAddCommGroup.toAddCommMonoid
+    (HalfWeightDifferentialOperators.inverseEtaFixedPhaseStableCoreSubmodule n).module
+    UniformSpace.Completion.instModule
+but is expected to have type
+  @LinearMap ℂ ℂ DivisionRing.toDivisionSemiring.toSemiring DivisionRing.toDivisionSemiring.toSemiring (RingHom.id ℂ)
+    ?m.21 (OrbitPeterssonHilbert n) AddCommGroup.toAddCommMonoid
+    NormedAddCommGroup.toSeminormedAddCommGroup.toAddCommMonoid ?m.30 UniformSpace.Completion.instModule
+in the application
+  LinearMap.extendOfNorm ?m.36 (l2Coordinate n)
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59008:10: error: Function expected at
+  IsGammaTwoInvariantCutoff
+but this term has type
+  ?m.2
+
+Note: Expected a function because this term is being applied to the argument
+  c
+
+Hint: The identifier `IsGammaTwoInvariantCutoff` is unknown, and Lean's `autoImplicit` option causes an unknown identifier to be treated as an implicitly bound variable with an unknown type. However, the unknown type cannot be a function, and a function is what Lean expects here. This is often the result of a typo or a missing `import` or `open` statement.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59012:35: error: (deterministic) timeout at `whnf`, maximum number of heartbeats (200000) has been reached
+
+Note: Use `set_option maxHeartbeats <num>` to set the limit.
+
+Hint: Additional diagnostic information may be available using the `set_option diagnostics true` command.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59006:8: error: (deterministic) timeout at `whnf`, maximum number of heartbeats (200000) has been reached
+
+Note: Use `set_option maxHeartbeats <num>` to set the limit.
+
+Hint: Additional diagnostic information may be available using the `set_option diagnostics true` command.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59018:10: error: Function expected at
+  IsGammaTwoInvariantCutoff
+but this term has type
+  ?m.2
+
+Note: Expected a function because this term is being applied to the argument
+  c
+
+Hint: The identifier `IsGammaTwoInvariantCutoff` is unknown, and Lean's `autoImplicit` option causes an unknown identifier to be treated as an implicitly bound variable with an unknown type. However, the unknown type cannot be a function, and a function is what Lean expects here. This is often the result of a typo or a missing `import` or `open` statement.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59023:5: error: (deterministic) timeout at `whnf`, maximum number of heartbeats (200000) has been reached
+
+Note: Use `set_option maxHeartbeats <num>` to set the limit.
+
+Hint: Additional diagnostic information may be available using the `set_option diagnostics true` command.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59016:8: error: (deterministic) timeout at `whnf`, maximum number of heartbeats (200000) has been reached
+
+Note: Use `set_option maxHeartbeats <num>` to set the limit.
+
+Hint: Additional diagnostic information may be available using the `set_option diagnostics true` command.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59033:22: error: Invalid projection: Projection operates on types of the form `C ...` where C is a constant. The expression
+  c
+has type `SmoothQuotientCompactFunction` which does not have the necessary form.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59038:6: error: Type mismatch
+  c
+has type
+  SmoothQuotientCompactFunction
+but is expected to have type
+  ℍ → ℂ
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59036:12: error(lean.unknownIdentifier): Unknown identifier `norm_invariantScalar_le_carrierBound`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59043:8: error: Application type mismatch: The argument
+  FixedPhaseClosedOperators.PhysicalLocalL2.chosenEuclideanCarrierMeasure
+has type
+  Measure ℍ
+but is expected to have type
+  Filter ?m.2
+in the application
+  EventuallyEq FixedPhaseClosedOperators.PhysicalLocalL2.chosenEuclideanCarrierMeasure
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59044:6: error: Type mismatch
+  c
+has type
+  SmoothQuotientCompactFunction
+but is expected to have type
+  ℍ → ℂ
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59046:24: error: Invalid projection: Projection operates on types of the form `C ...` where C is a constant. The expression
+  c
+has type `SmoothQuotientCompactFunction` which does not have the necessary form.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59049:14: error(lean.unknownIdentifier): Unknown identifier `norm_invariantScalar_le_carrierBound`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59056:10: error: Function expected at
+  IsGammaTwoInvariantCutoff
+but this term has type
+  ?m.2
+
+Note: Expected a function because this term is being applied to the argument
+  c
+
+Hint: The identifier `IsGammaTwoInvariantCutoff` is unknown, and Lean's `autoImplicit` option causes an unknown identifier to be treated as an implicitly bound variable with an unknown type. However, the unknown type cannot be a function, and a function is what Lean expects here. This is often the result of a typo or a missing `import` or `open` statement.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59063:9: error: failed to elaborate eliminator, after generalizing over-applied arguments, expected type is type incorrect:
+  (FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n)
+      ((invariantScalarPeterssonMultiplier c hc n) x) =
+    (lpInfinityMultiplier FixedPhaseClosedOperators.PhysicalLocalL2.chosenEuclideanCarrierMeasure
+        (invariantScalarCarrierLInfinity c))
+      ((FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n) x)
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59070:8: error: No goals to be solved
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59092:62: error: Application type mismatch: The argument
+  mu
+has type
+  Measure alpha
+but is expected to have type
+  Filter ?m.6
+in the application
+  EventuallyEq mu
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59114:15: error: Function expected at
+  IsGammaTwoInvariantCutoff
+but this term has type
+  ?m.2
+
+Note: Expected a function because this term is being applied to the argument
+  (c i)
+
+Hint: The identifier `IsGammaTwoInvariantCutoff` is unknown, and Lean's `autoImplicit` option causes an unknown identifier to be treated as an implicitly bound variable with an unknown type. However, the unknown type cannot be a function, and a function is what Lean expects here. This is often the result of a typo or a missing `import` or `open` statement.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59115:18: error: Function expected at
+  gammaTwoOrbitSaturation
+but this term has type
+  ?m.3
+
+Note: Expected a function because this term is being applied to the argument
+  K
+
+Hint: The identifier `gammaTwoOrbitSaturation` is unknown, and Lean's `autoImplicit` option causes an unknown identifier to be treated as an implicitly bound variable with an unknown type. However, the unknown type cannot be a function, and a function is what Lean expects here. This is often the result of a typo or a missing `import` or `open` statement.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59116:16: error: Type mismatch
+  c i
+has type
+  SmoothQuotientCompactFunction
+but is expected to have type
+  ℍ → ℂ
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59122:11: error(lean.unknownIdentifier): Unknown identifier `orbitPeterssonEuclideanEmbedding_invariantScalarMultiplier`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59122:11: error: `simp` made no progress
+
+Note: The target expression is not type-correct under the `implicit` transparency level, which may have triggered the failure. This is usually caused by unfolding of semireducible definitions in prior tactic steps. Use `set_option linter.tacticCheckInstances true` to investigate the source of the issue.
+Full error:
+  Application type mismatch: The argument
+    IsGammaTwoInvariantCutoff
+  has type
+    x✝¹
+  but is expected to have type
+    ?m.2
+  in the application
+    @?m.77 SmoothQuotientCompactFunction IsGammaTwoInvariantCutoff
+'Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseInvariantScalarMultiplier.invariantScalarCoreOperator' depends on axioms: [propext,
+ sorryAx,
+ Classical.choice,
+ Quot.sound]
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59160:14: error(lean.unknownIdentifier): Unknown constant `FixedPhaseInvariantScalarMultiplier.fixedPhaseEuclideanGauge_invariantScalarCoreOperator`
+'Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseInvariantScalarMultiplier.invariantScalarPeterssonMultiplier' depends on axioms: [propext,
+ sorryAx,
+ Classical.choice,
+ Quot.sound]
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59162:14: error(lean.unknownIdentifier): Unknown constant `FixedPhaseInvariantScalarMultiplier.invariantScalarPeterssonMultiplier_l2Coordinate`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59163:14: error(lean.unknownIdentifier): Unknown constant `FixedPhaseInvariantScalarMultiplier.orbitPeterssonEuclideanEmbedding_invariantScalarMultiplier`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59164:14: error(lean.unknownIdentifier): Unknown constant `FixedPhaseInvariantScalarMultiplier.finset_sum_invariantScalarMultipliers_eq_of_compactSupport`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59200:18: warning: declaration uses `sorry`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59206:46: error: Application type mismatch: The argument
+  volume
+has type
+  Measure ℂ
+but is expected to have type
+  Filter ?m.1
+in the application
+  EventuallyEq volume
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59207:6: error: Type mismatch
+  phi
+has type
+  FullPlaneTest
+but is expected to have type
+  ℂ → ℂ
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59218:8: warning: declaration uses `sorry`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59226:2: warning: 'rw [lpInfinityMultiplier_apply, hmul, hphi, htarget]' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59227:2: warning: 'rfl' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59226:2: warning: this tactic is never executed
+
+Note: This linter can be disabled with `set_option linter.unreachableTactic false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59227:2: warning: this tactic is never executed
+
+Note: This linter can be disabled with `set_option linter.unreachableTactic false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59268:7: error: don't know how to synthesize implicit argument `IsGammaTwoInvariantCutoff`
+  @DFunLike.coe
+    (HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore m →ₗ[ℂ]
+      HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore m)
+    (HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore m)
+    (fun x => HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore m) LinearMap.instFunLike
+    (invariantScalarCoreOperator (effectiveScalarSmoothQuotient phi) (effectiveScalarSmoothQuotient_invariant phi) m) u
+context:
+m : ℤ
+z₀ : ℍ
+phi : FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore
+hphi : tsupport ⇑phi ⊆ ambientGammaTwoReducedChart z₀
+u : HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore m
+⊢ ?m.16 phi hphi u
+
+Note: All parameter types and holes (e.g., `_`) in the header of a theorem are resolved before the proof is processed; information from the proof cannot be used to infer what these values should be
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59268:7: error: don't know how to synthesize implicit argument
+  @DFunLike.coe
+    (HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore m →ₗ[ℂ]
+      HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore m)
+    (HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore m)
+    (fun x => HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore m) LinearMap.instFunLike
+    (invariantScalarCoreOperator (effectiveScalarSmoothQuotient phi) (effectiveScalarSmoothQuotient_invariant phi) m) u
+context:
+m : ℤ
+z₀ : ℍ
+phi : FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore
+hphi : tsupport ⇑phi ⊆ ambientGammaTwoReducedChart z₀
+u : HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore m
+⊢ Sort ?u.16
+
+Note: All parameter types and holes (e.g., `_`) in the header of a theorem are resolved before the proof is processed; information from the proof cannot be used to infer what these values should be
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59268:7: error: don't know how to synthesize implicit argument `SmoothQuotientCompactFunction`
+  @DFunLike.coe
+    (HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore m →ₗ[ℂ]
+      HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore m)
+    (HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore m)
+    (fun x => HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore m) LinearMap.instFunLike
+    (invariantScalarCoreOperator (effectiveScalarSmoothQuotient phi) (effectiveScalarSmoothQuotient_invariant phi) m) u
+context:
+m : ℤ
+z₀ : ℍ
+phi : FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore
+hphi : tsupport ⇑phi ⊆ ambientGammaTwoReducedChart z₀
+u : HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore m
+⊢ Sort ?u.18
+
+Note: All parameter types and holes (e.g., `_`) in the header of a theorem are resolved before the proof is processed; information from the proof cannot be used to infer what these values should be
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59270:9: error: don't know how to synthesize implicit argument `IsGammaTwoInvariantCutoff`
+  @effectiveScalarSmoothQuotient_invariant (?m.18 phi hphi u) (?m.19 phi hphi u) phi
+context:
+m : ℤ
+z₀ : ℍ
+phi : FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore
+hphi : tsupport ⇑phi ⊆ ambientGammaTwoReducedChart z₀
+u : HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore m
+⊢ ?m.18 phi hphi u
+
+Note: All parameter types and holes (e.g., `_`) in the header of a theorem are resolved before the proof is processed; information from the proof cannot be used to infer what these values should be
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59270:9: error: don't know how to synthesize implicit argument
+  @effectiveScalarSmoothQuotient_invariant (?m.18 phi hphi u) (?m.19 phi hphi u) phi
+context:
+m : ℤ
+z₀ : ℍ
+phi : FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore
+hphi : tsupport ⇑phi ⊆ ambientGammaTwoReducedChart z₀
+u : HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore m
+⊢ Sort ?u.20
+
+Note: All parameter types and holes (e.g., `_`) in the header of a theorem are resolved before the proof is processed; information from the proof cannot be used to infer what these values should be
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59269:9: error: don't know how to synthesize implicit argument `SmoothQuotientCompactFunction`
+  @effectiveScalarSmoothQuotient (?m.15 phi hphi u) phi
+context:
+m : ℤ
+z₀ : ℍ
+phi : FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore
+hphi : tsupport ⇑phi ⊆ ambientGammaTwoReducedChart z₀
+u : HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore m
+⊢ Sort ?u.18
+
+Note: All parameter types and holes (e.g., `_`) in the header of a theorem are resolved before the proof is processed; information from the proof cannot be used to infer what these values should be
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59274:2: error: No goals to be solved
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59261:8: error: (kernel) unknown constant 'Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseReducedChartFriedrichs.effectiveScalarSmoothQuotient_invariant'
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59315:26: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+  (orbitPeterssonReducedChartEmbedding ?n ?z₀) ↑?u
+in the target expression
+  fullPlaneTestToL2 (ambientTestCoreToFullPlaneTest (reducedChartGaugeLocalizedAmbientTest m phi u)) =
+    fullPlaneTestMulL2 (ambientTestCoreToFullPlaneTest phi)
+      ((orbitPeterssonReducedChartEmbedding m z₀)
+        (WeightCorePetersson.PeterssonCoreSpace.toCompletion ((coreEmbedding m) u)))
+
+m : ℤ
+z₀ : ℍ
+phi : FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore
+hphi : tsupport ⇑phi ⊆ ambientGammaTwoReducedChart z₀
+u : HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore m
+⊢ fullPlaneTestToL2 (ambientTestCoreToFullPlaneTest (reducedChartGaugeLocalizedAmbientTest m phi u)) =
+    fullPlaneTestMulL2 (ambientTestCoreToFullPlaneTest phi)
+      ((orbitPeterssonReducedChartEmbedding m z₀)
+        (WeightCorePetersson.PeterssonCoreSpace.toCompletion ((coreEmbedding m) u)))
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59347:9: error: don't know how to synthesize implicit argument `IsGammaTwoInvariantCutoff`
+  @DFunLike.coe (OrbitPeterssonHilbert m →L[ℂ] OrbitPeterssonHilbert m) (OrbitPeterssonHilbert m)
+    (fun x => OrbitPeterssonHilbert m) ContinuousLinearMap.funLike
+    (invariantScalarPeterssonMultiplier (effectiveScalarSmoothQuotient phi)
+      (effectiveScalarSmoothQuotient_invariant phi) m)
+    p
+context:
+m : ℤ
+z₀ : ℍ
+phi : FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore
+hphi : tsupport ⇑phi ⊆ ambientGammaTwoReducedChart z₀
+x p : OrbitPeterssonHilbert m
+⊢ ?m.24 phi hphi x p
+
+Note: All parameter types and holes (e.g., `_`) in the header of a theorem are resolved before the proof is processed; information from the proof cannot be used to infer what these values should be
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59347:9: error: don't know how to synthesize implicit argument
+  @DFunLike.coe (OrbitPeterssonHilbert m →L[ℂ] OrbitPeterssonHilbert m) (OrbitPeterssonHilbert m)
+    (fun x => OrbitPeterssonHilbert m) ContinuousLinearMap.funLike
+    (invariantScalarPeterssonMultiplier (effectiveScalarSmoothQuotient phi)
+      (effectiveScalarSmoothQuotient_invariant phi) m)
+    p
+context:
+m : ℤ
+z₀ : ℍ
+phi : FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore
+hphi : tsupport ⇑phi ⊆ ambientGammaTwoReducedChart z₀
+x p : OrbitPeterssonHilbert m
+⊢ Sort ?u.19
+
+Note: All parameter types and holes (e.g., `_`) in the header of a theorem are resolved before the proof is processed; information from the proof cannot be used to infer what these values should be
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59347:9: error: don't know how to synthesize implicit argument `SmoothQuotientCompactFunction`
+  @DFunLike.coe (OrbitPeterssonHilbert m →L[ℂ] OrbitPeterssonHilbert m) (OrbitPeterssonHilbert m)
+    (fun x => OrbitPeterssonHilbert m) ContinuousLinearMap.funLike
+    (invariantScalarPeterssonMultiplier (effectiveScalarSmoothQuotient phi)
+      (effectiveScalarSmoothQuotient_invariant phi) m)
+    p
+context:
+m : ℤ
+z₀ : ℍ
+phi : FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore
+hphi : tsupport ⇑phi ⊆ ambientGammaTwoReducedChart z₀
+x p : OrbitPeterssonHilbert m
+⊢ Sort ?u.21
+
+Note: All parameter types and holes (e.g., `_`) in the header of a theorem are resolved before the proof is processed; information from the proof cannot be used to infer what these values should be
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59349:11: error: don't know how to synthesize implicit argument `IsGammaTwoInvariantCutoff`
+  @effectiveScalarSmoothQuotient_invariant (?m.26 phi hphi x p) (?m.27 phi hphi x p) phi
+context:
+m : ℤ
+z₀ : ℍ
+phi : FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore
+hphi : tsupport ⇑phi ⊆ ambientGammaTwoReducedChart z₀
+x p : OrbitPeterssonHilbert m
+⊢ ?m.26 phi hphi x p
+
+Note: All parameter types and holes (e.g., `_`) in the header of a theorem are resolved before the proof is processed; information from the proof cannot be used to infer what these values should be
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59349:11: error: don't know how to synthesize implicit argument
+  @effectiveScalarSmoothQuotient_invariant (?m.26 phi hphi x p) (?m.27 phi hphi x p) phi
+context:
+m : ℤ
+z₀ : ℍ
+phi : FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore
+hphi : tsupport ⇑phi ⊆ ambientGammaTwoReducedChart z₀
+x p : OrbitPeterssonHilbert m
+⊢ Sort ?u.23
+
+Note: All parameter types and holes (e.g., `_`) in the header of a theorem are resolved before the proof is processed; information from the proof cannot be used to infer what these values should be
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59348:11: error: don't know how to synthesize implicit argument `SmoothQuotientCompactFunction`
+  @effectiveScalarSmoothQuotient (?m.23 phi hphi x p) phi
+context:
+m : ℤ
+z₀ : ℍ
+phi : FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore
+hphi : tsupport ⇑phi ⊆ ambientGammaTwoReducedChart z₀
+x p : OrbitPeterssonHilbert m
+⊢ Sort ?u.21
+
+Note: All parameter types and holes (e.g., `_`) in the header of a theorem are resolved before the proof is processed; information from the proof cannot be used to infer what these values should be
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:59352:59: error: unsolved goals
+m : ℤ
+z₀ : ℍ
+phi : FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore

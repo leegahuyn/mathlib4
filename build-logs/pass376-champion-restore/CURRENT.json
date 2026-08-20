@@ -1,0 +1,30 @@
+{
+  "complete": true,
+  "purpose": "restore immutable PASS376 champion and reproduce first error 31725 or better",
+  "artifact_run_id": 31267332510,
+  "artifact_id": 9024606745,
+  "expected_source_sha256": "07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4",
+  "actual_source_sha256": "07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4",
+  "required_first_error": 31725,
+  "results": {
+    "Mock2": {
+      "exit_code": 0,
+      "error_headers": 0,
+      "first_error_line": 0,
+      "first_error_col": 0
+    },
+    "Mock2_Advanced": {
+      "exit_code": 0,
+      "error_headers": 0,
+      "first_error_line": 0,
+      "first_error_col": 0
+    },
+    "Mock2_FunctionalAnalysis": {
+      "exit_code": 1,
+      "error_headers": 501,
+      "first_error_line": 31725,
+      "first_error_col": 2
+    }
+  },
+  "champion_rule": "exit 0, otherwise first_error_line strictly greater than current champion for later promotion"
+}

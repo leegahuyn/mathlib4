@@ -1,0 +1,266 @@
+{
+  "final_classification": "STRICT PROMOTION",
+  "baseline": {
+    "classification": "LEAN_FAILURE",
+    "authority": "direct Lean CLI on repository source path",
+    "variant": "baseline",
+    "source_path": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+    "source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+    "candidate_metadata_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+    "source_metadata_identity": true,
+    "head_source_sha256_before_candidate_materialization": "885e585d346e81ff15df6f03391913a791d121b7933c3c99a37a557253c87489",
+    "baseline_sha256_required": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+    "line_count": 60453,
+    "required_line_count": 60453,
+    "target_declaration": "actualEdgeAmbientParam_hasDerivAt",
+    "target_declaration_index": 2624,
+    "target_header_sha256": "20f8d04dfc32eb6aa027b1523622e01b26feac09d7a78cbafac93f98b0abc84a",
+    "metadata_target_header_sha256": "20f8d04dfc32eb6aa027b1523622e01b26feac09d7a78cbafac93f98b0abc84a",
+    "declaration_count": 4397,
+    "declaration_sequence_sha256": "a9f15910d7e589feb18eac7d42370c5bfa07233a188d32554f5711a8e3446a5b",
+    "lean_executed": true,
+    "all_required_lean_executed": true,
+    "Mock2_executed": true,
+    "Mock2_exit": 0,
+    "Mock2_errors_under_cap": 0,
+    "Mock2_Advanced_executed": true,
+    "Mock2_Advanced_exit": 0,
+    "Mock2_Advanced_errors_under_cap": 0,
+    "FA_executed": true,
+    "FA_exit": 1,
+    "FA_error_headers_captured": 95,
+    "FA_first_actual_error_line": 31726,
+    "FA_first_actual_error_col": 2,
+    "FA_first_error_message": "Type mismatch: After simplification, term\n  hcomp\n has type\n  @HasDerivAt ℝ DenselyNormedField.toNontriviallyNormedField ℂ Complex.instNormedAddCommGroup.toAddCommGroup\n    instInnerProductSpaceRealComplex.toModule PseudoMetricSpace.toUniformSpace.toTopologicalSpace ⋯\n    (fun x => selectedCosetAmbientMap e.1 (modularTileEdgeAmbientParam e.2 x))\n    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) ↑(modularTileEdgeParam e.2 t)) (modularTileEdgeVelocity e.2 t)) ↑t\nbut is expected to have type\n  @HasDerivAt ℝ DenselyNormedField.toNontriviallyNormedField ℂ Complex.addCommGroup\n    instInnerProductSpaceRealComplex.toModule PseudoMetricSpace.toUniformSpace.toTopologicalSpace ⋯\n    (actualEdgeAmbientParam e)\n    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) ↑(modularTileEdgeParam e.2 t)) (modularTileEdgeVelocity e.2 t)) ↑t",
+    "FA_first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+    "FA_error_declaration_index": 2624,
+    "FA_error_declaration_start_line": 31713,
+    "exact_compile_commands": {
+      "Mock2": "lake env lean -DmaxErrors=100 -DwarningAsError=false -o .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean -i .lake/build/lib/lean/PrimalitySheafVerification/Mock2.ilean PrimalitySheafVerification/Mock2.lean",
+      "Mock2_Advanced": "lake env lean -DmaxErrors=100 -DwarningAsError=false -o .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean -i .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.ilean PrimalitySheafVerification/Mock2_Advanced.lean",
+      "Mock2_FunctionalAnalysis": "lake env lean -DmaxErrors=100 -DwarningAsError=false -o .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean -i .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean"
+    },
+    "maxErrors_cap": 100,
+    "maxErrors_interpretation": "diagnostic cap only; not total errors and not proof-progress evidence",
+    "lean_version": "Lean (version 4.33.0-rc1, x86_64-unknown-linux-gnu, commit 62eed1db4d67327ec8120be05f1a1b0847d74561, Release)",
+    "lake_version": "Lake version 5.0.0-src+62eed1d (Lean version 4.33.0-rc1)",
+    "lean_toolchain": "leanprover/lean4:v4.33.0-rc1",
+    "toolchain_install_exit": 0,
+    "cache_get_exit": 0,
+    "repository_head": "0d64916585e8fc8bc6f8a7d3bcc6f039ba4e1c34",
+    "repository_tree": "29d735fd48dfd797128a18cf9d51cf365e8e8fcc",
+    "lake_manifest_sha256": "672474eb93bc14c66cd1ff45203c451987fe525f7b5d13ecd83140be46434b26",
+    "candidate_forbidden_counts": {
+      "sorry": 0,
+      "admit": 0,
+      "new_global_axiom": 0,
+      "unsafe": 0,
+      "native_decide": 0,
+      "Lean.ofReduceBool": 0
+    },
+    "baseline_forbidden_counts": {
+      "sorry": 0,
+      "admit": 0,
+      "new_global_axiom": 0,
+      "unsafe": 0,
+      "native_decide": 0,
+      "Lean.ofReduceBool": 0
+    },
+    "forbidden_not_increased": true,
+    "forbidden_clean": true,
+    "repairs": [],
+    "infra_reasons": [],
+    "_metric_path": "/home/runner/work/mathlib4/mathlib4/build-logs/fa442-pipeline-repair/selector-baseline/METRIC.json",
+    "_source_path": "/home/runner/work/mathlib4/mathlib4/build-logs/fa442-pipeline-repair/selector-baseline/Mock2_FunctionalAnalysis-candidate.lean",
+    "_actual_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+    "_independent_selector_baseline": true
+  },
+  "chosen": {
+    "classification": "LEAN_FAILURE",
+    "authority": "direct Lean CLI on repository source path",
+    "variant": "slope_paired_dot_all_known",
+    "source_path": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+    "source_sha256": "1243b2ba563d364a6977cbf9aa867e628de50a28b0f56677dc70456a210e209a",
+    "candidate_metadata_sha256": "1243b2ba563d364a6977cbf9aa867e628de50a28b0f56677dc70456a210e209a",
+    "source_metadata_identity": true,
+    "head_source_sha256_before_candidate_materialization": "885e585d346e81ff15df6f03391913a791d121b7933c3c99a37a557253c87489",
+    "baseline_sha256_required": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+    "line_count": 60453,
+    "required_line_count": 60453,
+    "target_declaration": "actualEdgeAmbientParam_hasDerivAt",
+    "target_declaration_index": 2624,
+    "target_header_sha256": "20f8d04dfc32eb6aa027b1523622e01b26feac09d7a78cbafac93f98b0abc84a",
+    "metadata_target_header_sha256": "20f8d04dfc32eb6aa027b1523622e01b26feac09d7a78cbafac93f98b0abc84a",
+    "declaration_count": 4397,
+    "declaration_sequence_sha256": "a9f15910d7e589feb18eac7d42370c5bfa07233a188d32554f5711a8e3446a5b",
+    "lean_executed": true,
+    "all_required_lean_executed": true,
+    "Mock2_executed": true,
+    "Mock2_exit": 0,
+    "Mock2_errors_under_cap": 0,
+    "Mock2_Advanced_executed": true,
+    "Mock2_Advanced_exit": 0,
+    "Mock2_Advanced_errors_under_cap": 0,
+    "FA_executed": true,
+    "FA_exit": 1,
+    "FA_error_headers_captured": 42,
+    "FA_first_actual_error_line": 33624,
+    "FA_first_actual_error_col": 57,
+    "FA_first_error_message": "unsolved goals\nn : ℤ\nq : GammaTwoRightCoset\nY : ℝ\nu v : InverseEtaFixedPhaseCore n\nt : ℝ\n⊢ ↑(selectedCuspTraceWeight n q Y t) * ↑↑u.toSmoothQuotientCompactFunction (gammaTwoSelectedHorocycleParam q Y t) +\n      ↑(selectedCuspTraceWeight n q Y t) * ↑↑v.toSmoothQuotientCompactFunction (gammaTwoSelectedHorocycleParam q Y t) =\n    (selectedCuspRestrictionRepresentative n q Y u + selectedCuspRestrictionRepresentative n q Y v) t",
+    "FA_first_error_declaration": "selectedCuspRestrictionRepresentative_add",
+    "FA_error_declaration_index": 2720,
+    "FA_error_declaration_start_line": 33619,
+    "exact_compile_commands": {
+      "Mock2": "lake env lean -DmaxErrors=50 -DwarningAsError=false -o .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean -i .lake/build/lib/lean/PrimalitySheafVerification/Mock2.ilean PrimalitySheafVerification/Mock2.lean",
+      "Mock2_Advanced": "lake env lean -DmaxErrors=50 -DwarningAsError=false -o .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean -i .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.ilean PrimalitySheafVerification/Mock2_Advanced.lean",
+      "Mock2_FunctionalAnalysis": "lake env lean -DmaxErrors=50 -DwarningAsError=false -o .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean -i .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean"
+    },
+    "maxErrors_cap": 50,
+    "maxErrors_interpretation": "diagnostic cap only; not total errors and not proof-progress evidence",
+    "lean_version": "Lean (version 4.33.0-rc1, x86_64-unknown-linux-gnu, commit 62eed1db4d67327ec8120be05f1a1b0847d74561, Release)",
+    "lake_version": "Lake version 5.0.0-src+62eed1d (Lean version 4.33.0-rc1)",
+    "lean_toolchain": "leanprover/lean4:v4.33.0-rc1",
+    "toolchain_install_exit": 0,
+    "cache_get_exit": 0,
+    "repository_head": "bc0ddb147a279986c81d973ef182033ae618c7dd",
+    "repository_tree": "c0749d3508383e8c97455dda90a5520ee7ef3ccd",
+    "lake_manifest_sha256": "672474eb93bc14c66cd1ff45203c451987fe525f7b5d13ecd83140be46434b26",
+    "candidate_forbidden_counts": {
+      "sorry": 0,
+      "admit": 0,
+      "new_global_axiom": 0,
+      "unsafe": 0,
+      "native_decide": 0,
+      "Lean.ofReduceBool": 0
+    },
+    "baseline_forbidden_counts": {
+      "sorry": 0,
+      "admit": 0,
+      "new_global_axiom": 0,
+      "unsafe": 0,
+      "native_decide": 0,
+      "Lean.ofReduceBool": 0
+    },
+    "forbidden_not_increased": true,
+    "forbidden_clean": true,
+    "repairs": [
+      {
+        "repair": "slope_plain",
+        "applied": 1
+      },
+      {
+        "repair": "paired_dot",
+        "applied": 9,
+        "per_edge": {
+          "circularArc": 5,
+          "leftVerticalSegment": 2,
+          "rightVerticalSegment": 2
+        }
+      },
+      {
+        "repair": "left_selected_piola_ring",
+        "applied": 1
+      },
+      {
+        "repair": "height_membership",
+        "applied": 1
+      },
+      {
+        "repair": "upper_half_plane_cluster",
+        "details": [
+          {
+            "repair": "upperHalfPlaneMk",
+            "applied": 1
+          },
+          {
+            "repair": "UpperHalfPlane.ext_contextual",
+            "applied": 1
+          }
+        ]
+      },
+      {
+        "repair": "tail_projection",
+        "applied": 2
+      },
+      {
+        "repair": "Pi.zero_apply",
+        "applied": 1
+      },
+      {
+        "repair": "misc_known",
+        "details": [
+          {
+            "repair": "absolute_triangle_rename",
+            "applied": 1
+          },
+          {
+            "repair": "product_derivative_normalization",
+            "applied": 1
+          },
+          {
+            "repair": "positive_tail_height",
+            "applied": 1
+          },
+          {
+            "repair": "nonnegative_multiplier",
+            "applied": 1
+          }
+        ]
+      }
+    ],
+    "infra_reasons": [],
+    "_metric_path": "/home/runner/work/mathlib4/mathlib4/build-logs/fa442-pipeline-repair/collected/slope_paired_dot_all_known/METRIC.json",
+    "_source_path": "/home/runner/work/mathlib4/mathlib4/build-logs/fa442-pipeline-repair/collected/slope_paired_dot_all_known/Mock2_FunctionalAnalysis-candidate.lean",
+    "_actual_sha256": "1243b2ba563d364a6977cbf9aa867e628de50a28b0f56677dc70456a210e209a",
+    "_artifact_id": 9049009563,
+    "_artifact_name": "fa442-repair-candidate-slope_paired_dot_all_known"
+  },
+  "identity": {
+    "selected_sha256": "1243b2ba563d364a6977cbf9aa867e628de50a28b0f56677dc70456a210e209a",
+    "worktree_sha256": "1243b2ba563d364a6977cbf9aa867e628de50a28b0f56677dc70456a210e209a",
+    "head_source_sha256": "1243b2ba563d364a6977cbf9aa867e628de50a28b0f56677dc70456a210e209a",
+    "identity_ok": true,
+    "head_commit": "d8f1d3e6d61c16b91e49b51dbbd56edce1448cbe"
+  },
+  "trust_audit": {
+    "sorry": 0,
+    "admit": 0,
+    "new_global_axiom": 0,
+    "unsafe": 0,
+    "native_decide": 0,
+    "Lean.ofReduceBool": 0
+  },
+  "FA_checked_in": {
+    "checked_in_source": true,
+    "FA_run1_exit": 1,
+    "FA_run2_exit": 1,
+    "artifacts": {
+      "run1_olean": false,
+      "run1_ilean": false,
+      "run2_olean": false,
+      "run2_ilean": false
+    },
+    "forbidden_audit": {
+      "sorry": 0,
+      "admit": 0,
+      "new_global_axiom": 0,
+      "unsafe": 0,
+      "native_decide": 0,
+      "Lean.ofReduceBool": 0
+    },
+    "forbidden_clean": true,
+    "FA_TRUE_PASS": false
+  },
+  "downstream": {
+    "classification": "SKIPPED_FA_NOT_TRUE_PASS",
+    "complete": false,
+    "Integrated": "SKIPPED",
+    "Mock3_bridges": "SKIPPED",
+    "QYM": "SKIPPED"
+  },
+  "branch": "fix/fa444-fa442-matrix-pipeline-repair-20260810",
+  "source_commit": "d8f1d3e6d61c16b91e49b51dbbd56edce1448cbe",
+  "workflow_run_url": "https://github.com/leegahuyn/mathlib4/actions/runs/31350101724",
+  "artifact_id": "9049467864",
+  "artifact_url": "https://github.com/leegahuyn/mathlib4/actions/runs/31350101724/artifacts/9049467864"
+}

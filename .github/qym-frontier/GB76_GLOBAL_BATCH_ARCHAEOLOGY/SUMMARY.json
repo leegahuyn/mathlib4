@@ -1,0 +1,59 @@
+{
+  "branches": [
+    {
+      "branch": "gpt/qym-gb78-v14-inverseeta-rebased-20260820",
+      "commit": "c75936fce365e30480497923bd6bddd803370171",
+      "diff_bytes": 20613,
+      "diff_hunks": 4,
+      "qym_blob": "75c2c8afb5fc8b30bcd2a6665a9b3f7846cc152b",
+      "qym_bytes": 2948541,
+      "qym_sha256": "c1498a41b1a7fd334bef55df3cb045cef5f89cac9a5d8a33173d6f05d7937385"
+    },
+    {
+      "branch": "gpt/qym-gb79-v13-inverseeta-fibre-20260819",
+      "commit": "d88461a21d7c75242fe7d0f9189c2b9372702581",
+      "diff_bytes": 20485,
+      "diff_hunks": 4,
+      "qym_blob": "33e4fab1130e4c17ea5d212fe2691c3e0c0eb8d3",
+      "qym_bytes": 2948384,
+      "qym_sha256": "790b40c05a8f3735dd171a135eda65de92ab68b247d13e7e2ffe2968e3798421"
+    },
+    {
+      "branch": "gpt/qym-gb79-v11-staged-repair-20260820",
+      "commit": "677ceb53b679e4fbab8c0b4cfb9d2c98acd768fc",
+      "diff_bytes": 37005,
+      "diff_hunks": 6,
+      "qym_blob": "43aee9530d6c665fbc5e082b3a5b3ef3367f069b",
+      "qym_bytes": 2947194,
+      "qym_sha256": "ea7c26fd104104e852a6c678017b1fb0c76abb062edd758228c4bbe506dbe8d1"
+    },
+    {
+      "branch": "gpt/qym-gb78-v16-timeout-exact-20260820",
+      "commit": "59cb24712cda98fa7d4ab7c172e177478c1346f4",
+      "diff_bytes": 20613,
+      "diff_hunks": 4,
+      "qym_blob": "75c2c8afb5fc8b30bcd2a6665a9b3f7846cc152b",
+      "qym_bytes": 2948541,
+      "qym_sha256": "c1498a41b1a7fd334bef55df3cb045cef5f89cac9a5d8a33173d6f05d7937385"
+    },
+    {
+      "branch": "gpt/qym-fixed-gb77-v16-conditional-atlas-20260820",
+      "commit": "56adc48ae19e3ae79149046226e4fdd92e4a60ae",
+      "diff_bytes": 9450,
+      "diff_hunks": 2,
+      "qym_blob": "c6e8883353b350f22b7f48d955fc5cfa4e61f88f",
+      "qym_bytes": 2948871,
+      "qym_sha256": "b6f0126c27dfc08b5f81c306a7140f9531fcc3d6ca6b75dd8abbd71101d458fd"
+    },
+    {
+      "branch": "gpt/qym-gb76-v16-smooth-atlas-instance-20260820",
+      "commit": "1cdfd884c6a8b8c60b6ceeb3e323d860e5e5ec58",
+      "diff_bytes": 8608,
+      "diff_hunks": 2,
+      "qym_blob": "1a6a08d254ba2c81ea36c0c7220989facfdad7e8",
+      "qym_bytes": 2948900,
+      "qym_sha256": "7ee25cfadbb1e9ca872ae7648830adb1ba67a3e6c4b52e197c561d0d73c8cb49"
+    }
+  ],
+  "schema": "qym-gb76-global-batch-archaeology-v1"
+}

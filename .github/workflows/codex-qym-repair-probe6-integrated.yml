@@ -1,0 +1,646 @@
+name: Codex QYM deterministic integrated repair probe 6
+
+on:
+  push:
+    branches:
+      - gpt/fa-qym-clean-final-20260816
+    paths:
+      - .github/workflows/codex-qym-repair-probe6-integrated.yml
+      - scripts/qym_probe6_frontier.py
+      - scripts/qym_probe6_pmap_addon.py
+      - scripts/qym_probe6_conditional.py
+      - scripts/qym_probe6_late_conditional.py
+      - scripts/qym_probe6_integrate.py
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: read
+
+concurrency:
+  group: codex-qym-repair-probe6-integrated-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  qym-repair-probe6-integrated:
+    name: exact c680 dependency chain then integrated Probe6 QYM
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      EXPECTED_BRANCH: gpt/fa-qym-clean-final-20260816
+      EXPECTED_INSTALL_PARENT: 47fba66fc5c14a11b89bf6774d7350034f275fae
+      EXPECTED_QYM_SHA256: 698c7625628ccc654ca7be713944930fdccf12dd78a26937d3f45c9b6982a9f0
+      EXPECTED_QYM_BLOB: 4b394b2709af88b8cd8eac8b432e535aaf19b64c
+      EXPECTED_M2_SHA256: 36a034721c389888b2c235d856753e5f2e38f9f6a258fddabbb70fe751ae3594
+      EXPECTED_M2_BLOB: 94f8894b5f866701955a105044b8958a8deb7734
+      EXPECTED_M2A_SHA256: cf44063abca1d5b47331a9001a3cff45a86b5e889865812fe4e7826c6af41526
+      EXPECTED_M2A_BLOB: a60fa47ebcd8c1fb6037d705e81b54c80910657a
+      EXPECTED_FA_SHA256: c680a35b9f12ea3223d8328ed0f5f0674b3439e650bb62cb900b54917f9653bd
+      EXPECTED_FA_BLOB: 28f614d48e02a0f28d3f5a758e813350b3ea89cf
+      EXPECTED_INTEGRATED_SHA256: a77f9e67980ec35b0d7b4d1624c10ec68051f575468d3b74859e6cf30e3e0439
+      EXPECTED_INTEGRATED_BLOB: 464f5dd095876b20165d12690c8127ef9d909e6a
+      EXPECTED_TOOLCHAIN_SHA256: 62c2d9c0fc1ec4c67e151c11eff41ca004ef38e179cf9476c230406e6defedef
+      EXPECTED_TOOLCHAIN_BLOB: fd85b262bf1c734663aa8292b0101f672168788f
+      EXPECTED_LAKE_MANIFEST_BLOB: 71d2d1d50d8f0ca3d99347e6f2f00c54038b0e25
+      EXPECTED_LAKEFILE_BLOB: 2afc2a7a30308ade4ea00e21966faa37232dd4dc
+      EXPECTED_TRANSFORMER_SHA256: cb5a4aad49f6e39ca4c4f45c1451a9ea469074e0dc2de2e710eb24b38ea51192
+      EXPECTED_ALIAS_TRANSFORMER_SHA256: f7f885bae401fcf859ed635e0fcbc24ee171acc9dad2402c1fb2a6dd766e0fc4
+      EXPECTED_FINALIZER_SHA256: 91bc3d9fbf03c53b9b5ed6818eb84ef60547c6ff3bd31716e924a2460ffee2a3
+      EXPECTED_P3_LATE_SHA256: 381b0442490c98ce3c03fa618ea84b4954d1e655aba981d13b674c0bd7be30fe
+      EXPECTED_P3_EARLY_SHA256: a0c39dc2c26ee7f40faf7b7c93f99e18f6284cdc21e462483171d66b215b060a
+      EXPECTED_P3_MID_P0_SHA256: 85be64d86f0f1526e79c10cc3e6179b4352c3e5335f69be13a62beafbdb83862
+      EXPECTED_P3_MID_PATCH_SHA256: 624b537b94536936f981e6eb09cc56f101c14a6a15f44830805c02cb0059140b
+      EXPECTED_P3_FORWARDERS_SHA256: 3d39b45d2d5908ab1f3d7b8e041ef0f11f3dc1b9e1780996b737d73b55bcf6e5
+      EXPECTED_P3_INTEGRATOR_SHA256: e1da9396643abc5713f797f185e062003e162727612b8e5c4ac566b9216ffde7
+      EXPECTED_PASS1_SHA256: f264de0fd05911a4594b2087aa92caa5deda95c0fd378d09a5d311498b019e56
+      EXPECTED_ALIAS_SAFE_SHA256: 52907b000d31b3f925fd8437ec6aa96beea682d3ba362afbf76c9e49fa188388
+      EXPECTED_CANDIDATE64_SHA256: 64f045b04dc39e157ba609047e6ac9a0851962b7c74024af9987dbcbd46f19d1
+      EXPECTED_PROBE3_SHA256: 9e82073bdaf6339feb1ca09d70ab371947c6e07294ae01895a33c75f978bd780
+      EXPECTED_PROBE3_BLOB: 652a6b11899db967ec19c2f32ca7aa1ad2044c7a
+      EXPECTED_P4_EARLY_SHA256: a7ee4a8ca00ef161ca38d9f48e4e2a876aee3bc6badcb8e075e0b1b4ccfe1ffb
+      EXPECTED_P4_MID_SHA256: 057e6be5ac748be10bcb1c6e7ee129c8232ceed87e5c2c22bf932c105cc08ed9
+      EXPECTED_P4_LATE_SHA256: ec184eb92a1dbb5455519ca802452a64909c43f3600a42579e5c59ff028eb0f9
+      EXPECTED_P4_INTEGRATOR_SHA256: f0de3269afa4f2fa628ae42c696ff701ab4f4eec0f85a3383924cd569dba5dd2
+      EXPECTED_PROBE4_SHA256: fb9d451c88d55e71398f3e3a4b38b3cc9ff5e0a37273115579fc2351d1fdad9c
+      EXPECTED_PROBE4_BLOB: b08d7bb621d8acc8338f3afa3f12ac2ff2c7e6d1
+      EXPECTED_P5_FRONTIER_SHA256: 14b7c7fdbbca2853696f9b396ba6492c46d6291264433299c892683e60fba481
+      EXPECTED_P5_LINE41115_SHA256: 287293d255d774a6e9e5497649de528552f7b9910335ec70ca6727c53d7ad056
+      EXPECTED_P5_EARLYMID_SHA256: 14d50568b6e146d109326b1c8a359a5753c2e4d68084fa88db7dba9dd0d86dca
+      EXPECTED_P5_REALPARTFORM_SHA256: 2961ecf9eb8ec6eb0e2fc848be374cf00184a2b9f563a7e064ed357153386074
+      EXPECTED_P5_SURVIVOR_SHA256: 89922cdeb8a9d9b14bcb253de5ab32d7f195ff2ff85ca3b911e078abc0691082
+      EXPECTED_P5_LATE_SHA256: 9df8cd59a61f6f3f122bd2c722e810f48a5400582b059bda26606007625f6242
+      EXPECTED_P5_INTEGRATOR_SHA256: 3a64c7cecb4432ef9e88eb62b61af62fa2e95fda38e1f8709ead4b3cba4d4c15
+      EXPECTED_PROBE5_SHA256: 30edb320b25eadbfda284160016a5a23cc28a95d6228cbd061161d4ec615de7c
+      EXPECTED_PROBE5_BLOB: 9ea2ef7d03555cca4e82cbeeb01cba033dff6b99
+      EXPECTED_P6_FRONTIER_SHA256: bc8383e2ac0fb47634a1310bcb0fa0da2c1715cf28cbfcf47d34f281c586378f
+      EXPECTED_P6_FRONTIER_ADDON_SHA256: 7d6e37d214caf670b5a0ebd08e5587f08d4718f214618ab2a7bf4d0fd4226d4e
+      EXPECTED_P6_CONDITIONAL_SHA256: 31d080cba9e5bc943cdb85c2566d6cb3068dd901c0cb610c710c87cf20766517
+      EXPECTED_P6_LATE_SHA256: a943f692e9b1047e85fba082a5dd2ebc5e900b3feda1502f9ef361b1182e86dc
+      EXPECTED_P6_INTEGRATOR_SHA256: 2a63e02b302399cb21ef030d7f1b3577f8c8d938bbecd78fbdd38eba0663e964
+      EXPECTED_PROBE6_SHA256: 1941ed50883da7e1c6cc0fbdcab084f0184ab1b35d89e00a754cb60809723b34
+      EXPECTED_PROBE6_BLOB: 21919f9a27529afa93b12bb8e88d8952cb63e292
+      REQUIRED_PROBE5_RUN: '31964319679'
+      REQUIRED_PROBE5_TRIGGER_SHA: 47fba66fc5c14a11b89bf6774d7350034f275fae
+      REQUIRED_PROBE5_ARTIFACT_NAME: qym-repair-probe5-conditional-47fba66fc5c14a11b89bf6774d7350034f275fae-attempt1
+      REQUIRED_PROBE5_ZIP_SHA256_LOCAL_EVIDENCE: c4ddeb9d6f9c392096b51113fac1861121408f1637f86732a60ccf1b5eb7eb54
+      REQUIRED_PROBE5_RESULT_SHA256: 96940be3c39a741775e8546474e27578274b3a8c2599197c246f3ff54012544e
+      REQUIRED_PROBE5_LOG_SHA256: c9a9799987cb18047c580777841d5cd4f0e32c592d5ab72062d05b0b9022acae
+      REQUIRED_PROBE5_HEADERS_SHA256: 03cee5d456f2c725432e62504d5e80f231fa61510fac5a241b0c016d89203c8e
+      REQUIRED_PROBE5_ERROR_HEADERS: '517'
+      REQUIRED_PROBE5_WARNING_HEADERS: '379'
+      REQUIRED_PROBE4_RUN: '31962191425'
+      REQUIRED_PROBE4_TRIGGER_SHA: 04a06a0a265253a26a7b247a8c774def1f1c6358
+      REQUIRED_PROBE4_ARTIFACT_NAME: qym-repair-probe4-04a06a0a265253a26a7b247a8c774def1f1c6358-attempt1
+      REQUIRED_PROBE4_ZIP_SHA256_LOCAL_EVIDENCE: 4d46b2725a8ea25bc9d09e36611ac934794420830eb74b3a5498dbd664df5d83
+      REQUIRED_PROBE4_RESULT_SHA256: f78c9afb9d2f5b81ef11185c8c6a5487a0255b1aff8b9bfd335d7d9525f476f1
+      REQUIRED_PROBE4_LOG_SHA256: 3ce6d19d831d1723b19fb15181e9561cb1e6b8744e130812838469a03011ddc6
+      REQUIRED_PROBE4_HEADERS_SHA256: a9b9ae54fcc4f44800bff26a75f6513beeaa469601df8aba7418a20e04356431
+      REQUIRED_PROBE4_ERROR_HEADERS: '624'
+      REQUIRED_PROBE4_WARNING_HEADERS: '390'
+      QYM_SOURCE: PrimalitySheafVerification/QYM.lean
+      M2_SOURCE: PrimalitySheafVerification/Mock2.lean
+      M2A_SOURCE: PrimalitySheafVerification/Mock2_Advanced.lean
+      FA_SOURCE: PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+      INTEGRATED_SOURCE: PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean
+      TRANSFORMER: scripts/qym_repair_probe_transform.py
+      ALIAS_TRANSFORMER: scripts/qym_repair_probe_aliases.py
+      FINALIZER: scripts/qym_repair_probe_finalize.py
+      P3_LATE: scripts/qym_probe3_late_static.py
+      P3_EARLY: scripts/qym_probe3_early.py
+      P3_MID_P0: scripts/qym_probe3_mid_p0.py
+      P3_MID_PATCH: scripts/qym_probe3_mid_confirmed.patch
+      P3_FORWARDERS: scripts/qym_probe3_forwarders.json
+      P3_INTEGRATOR: scripts/qym_probe3_integrate.py
+      P4_EARLY: scripts/qym_probe4_early.py
+      P4_MID: scripts/qym_probe4_mid.py
+      P4_LATE: scripts/qym_probe4_late.py
+      P4_INTEGRATOR: scripts/qym_probe4_integrate.py
+      P5_FRONTIER: scripts/qym_probe5_frontier21187_21306.py
+      P5_LINE41115: scripts/qym_probe5_line41115_conditional.py
+      P5_EARLYMID: scripts/qym_probe5_earlymid_conditional.py
+      P5_REALPARTFORM: scripts/qym_probe5_realpartform23220.py
+      P5_SURVIVOR: scripts/qym_probe5_survivor_batch.py
+      P5_LATE: scripts/qym_probe5_late_conditional.py
+      P5_INTEGRATOR: scripts/qym_probe5_conditional_integrate.py
+      P6_FRONTIER: scripts/qym_probe6_frontier.py
+      P6_FRONTIER_ADDON: scripts/qym_probe6_pmap_addon.py
+      P6_CONDITIONAL: scripts/qym_probe6_conditional.py
+      P6_LATE: scripts/qym_probe6_late_conditional.py
+      P6_INTEGRATOR: scripts/qym_probe6_integrate.py
+      OLEAN_ROOT: .lake/build/lib/lean/PrimalitySheafVerification
+
+    steps:
+      - name: Check out exact triggering commit
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 2
+          persist-credentials: false
+
+      - name: Lock installation delta, canonical sources, and every helper
+        shell: bash
+        run: |
+          set -euo pipefail
+          export OUT="$RUNNER_TEMP/qym-repair-probe6-integrated"
+          mkdir -p "$OUT"
+          test "$GITHUB_REF_NAME" = "$EXPECTED_BRANCH"
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          parents=( $(git rev-list --parents -n 1 HEAD) )
+          test "${#parents[@]}" -eq 2
+          test "${parents[1]}" = "$EXPECTED_INSTALL_PARENT"
+          git diff-tree --no-commit-id --name-status -r HEAD^ HEAD | sort \
+            > "$OUT/install-delta.actual.txt"
+          cat > "$OUT/install-delta.expected.txt" <<'EOF'
+          A	.github/workflows/codex-qym-repair-probe6-integrated.yml
+          A	scripts/qym_probe6_conditional.py
+          A	scripts/qym_probe6_frontier.py
+          A	scripts/qym_probe6_integrate.py
+          A	scripts/qym_probe6_late_conditional.py
+          A	scripts/qym_probe6_pmap_addon.py
+          EOF
+          diff -u "$OUT/install-delta.expected.txt" "$OUT/install-delta.actual.txt"
+          test -z "$(git status --porcelain=v1 --untracked-files=all)"
+          test -z "$(find scripts -type d -name __pycache__ -print -quit)"
+
+          sha256sum "$QYM_SOURCE" "$M2_SOURCE" "$M2A_SOURCE" "$FA_SOURCE" \
+            "$INTEGRATED_SOURCE" lean-toolchain "$TRANSFORMER" \
+            "$ALIAS_TRANSFORMER" "$FINALIZER" "$P3_LATE" "$P3_EARLY" \
+            "$P3_MID_P0" "$P3_MID_PATCH" "$P3_FORWARDERS" "$P3_INTEGRATOR" \
+            "$P4_EARLY" "$P4_MID" "$P4_LATE" "$P4_INTEGRATOR" \
+            "$P5_FRONTIER" "$P5_LINE41115" "$P5_EARLYMID" "$P5_REALPARTFORM" "$P5_SURVIVOR" "$P5_LATE" "$P5_INTEGRATOR" \
+            "$P6_FRONTIER" "$P6_FRONTIER_ADDON" "$P6_CONDITIONAL" "$P6_LATE" "$P6_INTEGRATOR" \
+            | tee "$OUT/input-files.sha256"
+          test "$(sha256sum "$QYM_SOURCE" | awk '{print $1}')" = "$EXPECTED_QYM_SHA256"
+          test "$(sha256sum "$M2_SOURCE" | awk '{print $1}')" = "$EXPECTED_M2_SHA256"
+          test "$(sha256sum "$M2A_SOURCE" | awk '{print $1}')" = "$EXPECTED_M2A_SHA256"
+          test "$(sha256sum "$FA_SOURCE" | awk '{print $1}')" = "$EXPECTED_FA_SHA256"
+          test "$(sha256sum "$INTEGRATED_SOURCE" | awk '{print $1}')" = "$EXPECTED_INTEGRATED_SHA256"
+          test "$(sha256sum lean-toolchain | awk '{print $1}')" = "$EXPECTED_TOOLCHAIN_SHA256"
+          test "$(git hash-object --no-filters "$QYM_SOURCE")" = "$EXPECTED_QYM_BLOB"
+          test "$(git hash-object --no-filters "$M2_SOURCE")" = "$EXPECTED_M2_BLOB"
+          test "$(git hash-object --no-filters "$M2A_SOURCE")" = "$EXPECTED_M2A_BLOB"
+          test "$(git hash-object --no-filters "$FA_SOURCE")" = "$EXPECTED_FA_BLOB"
+          test "$(git hash-object --no-filters "$INTEGRATED_SOURCE")" = "$EXPECTED_INTEGRATED_BLOB"
+          test "$(git hash-object --no-filters lean-toolchain)" = "$EXPECTED_TOOLCHAIN_BLOB"
+          test "$(git hash-object --no-filters lake-manifest.json)" = "$EXPECTED_LAKE_MANIFEST_BLOB"
+          test "$(git hash-object --no-filters lakefile.lean)" = "$EXPECTED_LAKEFILE_BLOB"
+          test "$(sha256sum "$TRANSFORMER" | awk '{print $1}')" = "$EXPECTED_TRANSFORMER_SHA256"
+          test "$(sha256sum "$ALIAS_TRANSFORMER" | awk '{print $1}')" = "$EXPECTED_ALIAS_TRANSFORMER_SHA256"
+          test "$(sha256sum "$FINALIZER" | awk '{print $1}')" = "$EXPECTED_FINALIZER_SHA256"
+          test "$(sha256sum "$P3_LATE" | awk '{print $1}')" = "$EXPECTED_P3_LATE_SHA256"
+          test "$(sha256sum "$P3_EARLY" | awk '{print $1}')" = "$EXPECTED_P3_EARLY_SHA256"
+          test "$(sha256sum "$P3_MID_P0" | awk '{print $1}')" = "$EXPECTED_P3_MID_P0_SHA256"
+          test "$(sha256sum "$P3_MID_PATCH" | awk '{print $1}')" = "$EXPECTED_P3_MID_PATCH_SHA256"
+          test "$(sha256sum "$P3_FORWARDERS" | awk '{print $1}')" = "$EXPECTED_P3_FORWARDERS_SHA256"
+          test "$(sha256sum "$P3_INTEGRATOR" | awk '{print $1}')" = "$EXPECTED_P3_INTEGRATOR_SHA256"
+          test "$(sha256sum "$P4_EARLY" | awk '{print $1}')" = "$EXPECTED_P4_EARLY_SHA256"
+          test "$(sha256sum "$P4_MID" | awk '{print $1}')" = "$EXPECTED_P4_MID_SHA256"
+          test "$(sha256sum "$P4_LATE" | awk '{print $1}')" = "$EXPECTED_P4_LATE_SHA256"
+          test "$(sha256sum "$P4_INTEGRATOR" | awk '{print $1}')" = "$EXPECTED_P4_INTEGRATOR_SHA256"
+          test "$(sha256sum "$P5_FRONTIER" | awk '{print $1}')" = "$EXPECTED_P5_FRONTIER_SHA256"
+          test "$(sha256sum "$P5_LINE41115" | awk '{print $1}')" = "$EXPECTED_P5_LINE41115_SHA256"
+          test "$(sha256sum "$P5_EARLYMID" | awk '{print $1}')" = "$EXPECTED_P5_EARLYMID_SHA256"
+          test "$(sha256sum "$P5_REALPARTFORM" | awk '{print $1}')" = "$EXPECTED_P5_REALPARTFORM_SHA256"
+          test "$(sha256sum "$P5_SURVIVOR" | awk '{print $1}')" = "$EXPECTED_P5_SURVIVOR_SHA256"
+          test "$(sha256sum "$P5_LATE" | awk '{print $1}')" = "$EXPECTED_P5_LATE_SHA256"
+          test "$(sha256sum "$P5_INTEGRATOR" | awk '{print $1}')" = "$EXPECTED_P5_INTEGRATOR_SHA256"
+          test "$(sha256sum "$P6_FRONTIER" | awk '{print $1}')" = "$EXPECTED_P6_FRONTIER_SHA256"
+          test "$(sha256sum "$P6_FRONTIER_ADDON" | awk '{print $1}')" = "$EXPECTED_P6_FRONTIER_ADDON_SHA256"
+          test "$(sha256sum "$P6_CONDITIONAL" | awk '{print $1}')" = "$EXPECTED_P6_CONDITIONAL_SHA256"
+          test "$(sha256sum "$P6_LATE" | awk '{print $1}')" = "$EXPECTED_P6_LATE_SHA256"
+          test "$(sha256sum "$P6_INTEGRATOR" | awk '{print $1}')" = "$EXPECTED_P6_INTEGRATOR_SHA256"
+          cp "$QYM_SOURCE" "$OUT/QYM.authority.lean"
+          cp lean-toolchain "$OUT/lean-toolchain.txt"
+          git status --porcelain=v1 --untracked-files=all > "$OUT/git-status.before.txt"
+          test ! -s "$OUT/git-status.before.txt"
+
+
+      - name: Download immutable terminal Probe5 authority artifact
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: ${{ env.REQUIRED_PROBE5_ARTIFACT_NAME }}
+          path: ${{ runner.temp }}/probe5-authority
+          github-token: ${{ github.token }}
+          repository: leegahuyn/mathlib4
+          run-id: 31964319679
+
+      - name: Hard gate Probe6 activation on exact Probe5 bytes and survivors
+        shell: bash
+        run: |
+          set -euo pipefail
+          export OUT="$RUNNER_TEMP/qym-repair-probe6-integrated"
+          authority="$RUNNER_TEMP/probe5-authority"
+          test -f "$authority/PROBE_RESULT.json"
+          test -f "$authority/QYM.candidate-probe5.lean"
+          test -f "$authority/QYM.log"
+          test -f "$authority/QYM.error-headers.txt"
+          test -f "$authority/QYM.exit"
+          test "$(sha256sum "$authority/PROBE_RESULT.json" | awk '{print $1}')" = "$REQUIRED_PROBE5_RESULT_SHA256"
+          test "$(sha256sum "$authority/QYM.candidate-probe5.lean" | awk '{print $1}')" = "$EXPECTED_PROBE5_SHA256"
+          test "$(git hash-object --no-filters "$authority/QYM.candidate-probe5.lean")" = "$EXPECTED_PROBE5_BLOB"
+          test "$(sha256sum "$authority/QYM.log" | awk '{print $1}')" = "$REQUIRED_PROBE5_LOG_SHA256"
+          test "$(sha256sum "$authority/QYM.error-headers.txt" | awk '{print $1}')" = "$REQUIRED_PROBE5_HEADERS_SHA256"
+          test "$(tr -d '\r\n' < "$authority/QYM.exit")" = 1
+          python3 - "$authority/PROBE_RESULT.json" "$authority/QYM.error-headers.txt" <<'PY'
+          import json, os, re, sys
+          result = json.load(open(sys.argv[1], encoding='utf-8'))
+          headers = open(sys.argv[2], encoding='utf-8').read().splitlines()
+          assert result['schema'] == 'qym-deterministic-repair-probe5-conditional-v1'
+          assert result['github_sha'] == os.environ['REQUIRED_PROBE5_TRIGGER_SHA']
+          assert result['candidate_qym_sha256'] == os.environ['EXPECTED_PROBE5_SHA256']
+          assert result['candidate_qym_blob'] == os.environ['EXPECTED_PROBE5_BLOB']
+          assert result['log_sha256'] == os.environ['REQUIRED_PROBE5_LOG_SHA256']
+          assert result['exit'] == 1 and result['semantic_pass'] is False
+          assert result['error_headers'] == int(os.environ['REQUIRED_PROBE5_ERROR_HEADERS'])
+          assert result['warning_headers'] == int(os.environ['REQUIRED_PROBE5_WARNING_HEADERS'])
+          assert result['panic_lines'] == 0
+          required_lines = [21858, 23237, 23241, 24559, 26051, 26054, 26415, 26426, 27798, 27806, 27821, 27822, 27828, 27867, 27918, 28180, 28188, 28209, 28222, 28227, 28243, 28290, 28309, 28312, 28331, 28333, 28340, 28682, 28720, 28756, 28788, 29272, 29295, 29296, 29475, 29533, 30096, 30848, 30849, 43455, 44843, 45007, 46334, 47382, 48020, 48578, 48581, 55501, 56158, 56166, 57704, 57714, 57724, 57736, 57746, 57756, 58214]
+          observed = {
+              int(match.group(1))
+              for line in headers
+              if (match := re.search(r'QYM\.lean:(\d+):\d+: error', line))
+          }
+          missing = sorted(set(required_lines) - observed)
+          assert not missing, missing
+          evidence = {
+              'schema': 'qym-probe6-activation-evidence-v1',
+              'status': 'PASS_EXACT_PROBE5_TERMINAL_ARTIFACT_AND_SURVIVORS',
+              'probe5_run': int(os.environ['REQUIRED_PROBE5_RUN']),
+              'probe5_trigger_sha': result['github_sha'],
+              'probe5_candidate_sha256': result['candidate_qym_sha256'],
+              'probe5_log_sha256': result['log_sha256'],
+              'error_headers': result['error_headers'],
+              'warning_headers': result['warning_headers'],
+              'selected_survivor_lines': required_lines,
+              'promotion_authorized': False,
+          }
+          open(os.path.join(os.environ['OUT'], 'PROBE6_ACTIVATION_EVIDENCE.json'), 'w', encoding='utf-8').write(
+              json.dumps(evidence, indent=2, sort_keys=True) + '\n')
+          PY
+          cp "$authority/PROBE_RESULT.json" "$OUT/PROBE5_RESULT.json"
+          cp "$authority/QYM.error-headers.txt" "$OUT/PROBE5.error-headers.txt"
+          sha256sum "$authority/"* > "$OUT/PROBE5-authority-files.sha256"
+
+      - name: Install exact pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          export OUT="$RUNNER_TEMP/qym-repair-probe6-integrated"
+          test "$(tr -d '\r\n' < lean-toolchain)" = leanprover/lean4:v4.33.0-rc1
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none > "$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          printf '%s\n' "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" \
+            > "$OUT/toolchain.log" 2>&1
+          lake exe cache get > "$OUT/mathlib-cache.log" 2>&1
+          elan --version | tee "$OUT/elan-version.txt"
+          lean --version | tee "$OUT/lean-version.txt"
+          lake --version | tee "$OUT/lake-version.txt"
+
+      - name: Restore immutable dependency-output cache
+        id: project-cache
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: |
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.ilean
+          key: qym-probe4-deps-v1-${{ runner.os }}-${{ hashFiles('lean-toolchain', 'lake-manifest.json', 'lakefile.lean', 'PrimalitySheafVerification/Mock2.lean', 'PrimalitySheafVerification/Mock2_Advanced.lean', 'PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean', 'PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean') }}
+
+      - name: Validate cache state or build exact dependency chain
+        id: dependencies
+        shell: bash
+        env:
+          CACHE_HIT: ${{ steps.project-cache.outputs.cache-hit }}
+          CACHE_PRIMARY_KEY: ${{ steps.project-cache.outputs.cache-primary-key }}
+          CACHE_MATCHED_KEY: ${{ steps.project-cache.outputs.cache-matched-key }}
+        run: |
+          set -euo pipefail
+          export OUT="$RUNNER_TEMP/qym-repair-probe6-integrated"
+          mkdir -p "$OLEAN_ROOT"
+          test -n "$CACHE_PRIMARY_KEY"
+          case "$CACHE_HIT" in
+            true)
+              test "$CACHE_MATCHED_KEY" = "$CACHE_PRIMARY_KEY"
+              mode=hit-restored
+              built=false
+              ;;
+            '')
+              test -z "$CACHE_MATCHED_KEY"
+              mode=miss-built
+              built=true
+              ;;
+            *)
+              printf 'unexpected cache-hit state: <%s>\n' "$CACHE_HIT" >&2
+              exit 91
+              ;;
+          esac
+          if [[ "$built" = true ]]; then
+            stems=(Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated)
+            for stem in "${stems[@]}"; do
+              source="PrimalitySheafVerification/$stem.lean"
+              olean="$OLEAN_ROOT/$stem.olean"
+              ilean="$OLEAN_ROOT/$stem.ilean"
+              cap=1
+              [[ "$stem" = Mock2_FunctionalAnalysis || "$stem" = Mock2_FunctionalAnalysis_Integrated ]] && cap=2000
+              rm -f -- "$olean" "$ilean"
+              printf '%q ' lake env lean "-DmaxErrors=$cap" -DwarningAsError=false \
+                -o "$olean" -i "$ilean" "$source" > "$OUT/$stem.command"
+              printf '\n' >> "$OUT/$stem.command"
+              set +e
+              /usr/bin/time -v -o "$OUT/$stem.time" \
+                lake env lean "-DmaxErrors=$cap" -DwarningAsError=false \
+                  -o "$olean" -i "$ilean" "$source" > "$OUT/$stem.log" 2>&1
+              rc=$?
+              set -e
+              printf '%s\n' "$rc" > "$OUT/$stem.exit"
+              test "$rc" -eq 0
+              test -s "$olean" && test -s "$ilean"
+            done
+          fi
+          for stem in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated; do
+            test -s "$OLEAN_ROOT/$stem.olean"
+            test -s "$OLEAN_ROOT/$stem.ilean"
+            sha256sum "$OLEAN_ROOT/$stem.olean" "$OLEAN_ROOT/$stem.ilean"
+          done > "$OUT/dependency-outputs.sha256"
+          printf '%s\n' "$mode" > "$OUT/project-cache-status.txt"
+          printf '%s\n' "$CACHE_PRIMARY_KEY" > "$OUT/project-cache-primary-key.txt"
+          printf 'built=%s\n' "$built" >> "$GITHUB_OUTPUT"
+          printf 'cache_key=%s\n' "$CACHE_PRIMARY_KEY" >> "$GITHUB_OUTPUT"
+
+      # Intentional acceleration write: only a clean exact miss may publish
+      # these dependency outputs.  The key excludes QYM and is immutable over
+      # toolchain, Lake lockfiles, and all four dependency source identities.
+      - name: Save immutable dependency outputs after an exact miss
+        if: steps.project-cache.outputs.cache-hit == '' && steps.dependencies.outputs.built == 'true'
+        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: |
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.ilean
+          key: ${{ steps.dependencies.outputs.cache_key }}
+
+      - name: Materialize exact Probe3, Probe4, Probe5, then collision-checked Probe6 candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          export OUT="$RUNNER_TEMP/qym-repair-probe6-integrated"
+          python3 "$TRANSFORMER" --input "$OUT/QYM.authority.lean" \
+            --output "$OUT/QYM.pass1.lean" --audit "$OUT/TRANSFORM_AUDIT_PASS1.json"
+          test "$(sha256sum "$OUT/QYM.pass1.lean" | awk '{print $1}')" = "$EXPECTED_PASS1_SHA256"
+          python3 "$ALIAS_TRANSFORMER" --input "$OUT/QYM.pass1.lean" \
+            --output "$OUT/QYM.alias-safe.lean" --audit "$OUT/TRANSFORM_AUDIT_ALIASES.json"
+          test "$(sha256sum "$OUT/QYM.alias-safe.lean" | awk '{print $1}')" = "$EXPECTED_ALIAS_SAFE_SHA256"
+          python3 "$FINALIZER" --input "$OUT/QYM.alias-safe.lean" \
+            --output "$OUT/QYM.candidate64f.lean" --audit "$OUT/TRANSFORM_AUDIT_FINAL.json"
+          test "$(sha256sum "$OUT/QYM.candidate64f.lean" | awk '{print $1}')" = "$EXPECTED_CANDIDATE64_SHA256"
+          python3 "$P3_INTEGRATOR" --input "$OUT/QYM.candidate64f.lean" \
+            --output "$OUT/QYM.candidate-probe3.lean" --audit "$OUT/TRANSFORM_AUDIT_PROBE3.json" \
+            --late-transformer "$P3_LATE" --early-transformer "$P3_EARLY" \
+            --mid-p0-transformer "$P3_MID_P0" --mid-confirmed-patch "$P3_MID_PATCH" \
+            --forwarder-inventory "$P3_FORWARDERS"
+          test "$(sha256sum "$OUT/QYM.candidate-probe3.lean" | awk '{print $1}')" = "$EXPECTED_PROBE3_SHA256"
+          test "$(git hash-object --no-filters "$OUT/QYM.candidate-probe3.lean")" = "$EXPECTED_PROBE3_BLOB"
+          python3 "$P4_INTEGRATOR" --input "$OUT/QYM.candidate-probe3.lean" \
+            --output "$OUT/QYM.candidate-probe4.lean" --audit "$OUT/TRANSFORM_AUDIT_PROBE4.json" \
+            --patch "$OUT/QYM.probe3-to-probe4.patch" \
+            --early-transformer "$P4_EARLY" --mid-transformer "$P4_MID" \
+            --late-transformer "$P4_LATE"
+          test "$(sha256sum "$OUT/QYM.candidate-probe4.lean" | awk '{print $1}')" = "$EXPECTED_PROBE4_SHA256"
+          test "$(git hash-object --no-filters "$OUT/QYM.candidate-probe4.lean")" = "$EXPECTED_PROBE4_BLOB"
+          python3 "$P5_INTEGRATOR" --input "$OUT/QYM.candidate-probe4.lean" \
+            --output "$OUT/QYM.candidate-probe5.lean" --audit "$OUT/TRANSFORM_AUDIT_PROBE5.json" \
+            --patch "$OUT/QYM.probe4-to-probe5.patch" \
+            --frontier-transformer "$P5_FRONTIER" \
+            --line41115-transformer "$P5_LINE41115" \
+            --earlymid-transformer "$P5_EARLYMID" \
+            --realpartform-transformer "$P5_REALPARTFORM" \
+            --survivor-transformer "$P5_SURVIVOR" \
+            --late-transformer "$P5_LATE"
+          test "$(sha256sum "$OUT/QYM.candidate-probe5.lean" | awk '{print $1}')" = "$EXPECTED_PROBE5_SHA256"
+          test "$(git hash-object --no-filters "$OUT/QYM.candidate-probe5.lean")" = "$EXPECTED_PROBE5_BLOB"
+          cmp "$RUNNER_TEMP/probe5-authority/QYM.candidate-probe5.lean" "$OUT/QYM.candidate-probe5.lean"
+          python3 "$P6_INTEGRATOR" --input "$OUT/QYM.candidate-probe5.lean" \
+            --output "$QYM_SOURCE" --audit "$OUT/TRANSFORM_AUDIT_PROBE6.json" \
+            --patch "$OUT/QYM.probe5-to-probe6.patch" \
+            --probe4-authority "$OUT/QYM.candidate-probe4.lean" \
+            --frontier-transformer "$P6_FRONTIER" \
+            --frontier-addon-transformer "$P6_FRONTIER_ADDON" \
+            --conditional-transformer "$P6_CONDITIONAL" \
+            --late-transformer "$P6_LATE"
+          test "$(sha256sum "$QYM_SOURCE" | awk '{print $1}')" = "$EXPECTED_PROBE6_SHA256"
+          test "$(git hash-object --no-filters "$QYM_SOURCE")" = "$EXPECTED_PROBE6_BLOB"
+          cp "$QYM_SOURCE" "$OUT/QYM.candidate-probe6.lean"
+          python3 "$P6_INTEGRATOR" --mode inverse --input "$QYM_SOURCE" \
+            --output "$OUT/QYM.restored-probe5.lean" \
+            --audit "$OUT/TRANSFORM_AUDIT_PROBE6_INVERSE.json" \
+            --patch "$OUT/QYM.probe6-inverse.patch" \
+            --probe4-authority "$OUT/QYM.candidate-probe4.lean" \
+            --frontier-transformer "$P6_FRONTIER" \
+            --frontier-addon-transformer "$P6_FRONTIER_ADDON" \
+            --conditional-transformer "$P6_CONDITIONAL" \
+            --late-transformer "$P6_LATE"
+          test "$(sha256sum "$OUT/QYM.restored-probe5.lean" | awk '{print $1}')" = "$EXPECTED_PROBE5_SHA256"
+          cmp "$OUT/QYM.restored-probe5.lean" "$OUT/QYM.candidate-probe5.lean"
+          python3 "$P5_INTEGRATOR" --mode inverse --input "$OUT/QYM.restored-probe5.lean" \
+            --output "$OUT/QYM.restored-probe4.lean" --audit "$OUT/TRANSFORM_AUDIT_PROBE5_INVERSE.json" \
+            --patch "$OUT/QYM.probe5-inverse.patch" \
+            --frontier-transformer "$P5_FRONTIER" --line41115-transformer "$P5_LINE41115" \
+            --earlymid-transformer "$P5_EARLYMID" --realpartform-transformer "$P5_REALPARTFORM" \
+            --survivor-transformer "$P5_SURVIVOR" --late-transformer "$P5_LATE"
+          test "$(sha256sum "$OUT/QYM.restored-probe4.lean" | awk '{print $1}')" = "$EXPECTED_PROBE4_SHA256"
+          cmp "$OUT/QYM.restored-probe4.lean" "$OUT/QYM.candidate-probe4.lean"
+          python3 "$P4_INTEGRATOR" --mode inverse --input "$OUT/QYM.restored-probe4.lean" \
+            --output "$OUT/QYM.restored-probe3.lean" --audit "$OUT/TRANSFORM_AUDIT_PROBE4_INVERSE.json" \
+            --patch "$OUT/QYM.probe4-inverse.patch" \
+            --early-transformer "$P4_EARLY" --mid-transformer "$P4_MID" --late-transformer "$P4_LATE"
+          test "$(sha256sum "$OUT/QYM.restored-probe3.lean" | awk '{print $1}')" = "$EXPECTED_PROBE3_SHA256"
+          cmp "$OUT/QYM.restored-probe3.lean" "$OUT/QYM.candidate-probe3.lean"
+          sha256sum "$QYM_SOURCE" | tee "$OUT/QYM.candidate.sha256"
+          git hash-object --no-filters "$QYM_SOURCE" | tee "$OUT/QYM.candidate.git-blob"
+          git diff --binary -- "$QYM_SOURCE" > "$OUT/QYM.candidate.patch"
+          test -z "$(find scripts -type d -name __pycache__ -print -quit)"
+          changed="$(git status --porcelain=v1 --untracked-files=all)"
+          test "$changed" = " M $QYM_SOURCE"
+
+      - name: Compile exact integrated Probe6 QYM candidate
+        id: probe
+        shell: bash
+        run: |
+          set -euo pipefail
+          export OUT="$RUNNER_TEMP/qym-repair-probe6-integrated"
+          printf '%q ' lake env lean -DmaxErrors=10000 -DwarningAsError=false \
+            -o "$RUNNER_TEMP/QYM.probe6.olean" -i "$RUNNER_TEMP/QYM.probe6.ilean" \
+            "$QYM_SOURCE" > "$OUT/QYM.command"
+          printf '\n' >> "$OUT/QYM.command"
+          set +e
+          /usr/bin/time -v -o "$OUT/QYM.time" \
+            lake env lean -DmaxErrors=10000 -DwarningAsError=false \
+              -o "$RUNNER_TEMP/QYM.probe6.olean" -i "$RUNNER_TEMP/QYM.probe6.ilean" \
+              "$QYM_SOURCE" > "$OUT/QYM.log" 2>&1
+          rc=$?
+          set -e
+          printf '%s\n' "$rc" > "$OUT/QYM.exit"
+          if [[ "$rc" -eq 0 ]]; then
+            test -s "$RUNNER_TEMP/QYM.probe6.olean"
+            test -s "$RUNNER_TEMP/QYM.probe6.ilean"
+            sha256sum "$RUNNER_TEMP/QYM.probe6.olean" "$RUNNER_TEMP/QYM.probe6.ilean" \
+              > "$OUT/QYM.outputs.sha256"
+          fi
+          exit 0
+
+      - name: Restore canonical QYM and collect coded diagnostics
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          export OUT="$RUNNER_TEMP/qym-repair-probe6-integrated"
+          mkdir -p "$OUT"
+          if [[ -f "$OUT/QYM.authority.lean" ]]; then
+            cp "$OUT/QYM.authority.lean" "$QYM_SOURCE"
+          fi
+          test "$(sha256sum "$QYM_SOURCE" | awk '{print $1}')" = "$EXPECTED_QYM_SHA256"
+          test "$(git hash-object --no-filters "$QYM_SOURCE")" = "$EXPECTED_QYM_BLOB"
+          test -z "$(find scripts -type d -name __pycache__ -print -quit)"
+          git status --porcelain=v1 --untracked-files=all > "$OUT/git-status.after.txt"
+          test ! -s "$OUT/git-status.after.txt"
+          python3 - "$OUT" <<'PY'
+          import collections, hashlib, json, os, re, sys
+          from pathlib import Path
+
+          root = Path(sys.argv[1])
+          raw = (root / 'QYM.log').read_bytes() if (root / 'QYM.log').exists() else b''
+          text = raw.decode('utf-8', errors='replace')
+          header_re = re.compile(
+              r'^(?P<file>.*?\.lean):(?P<line>\d+):(?P<column>\d+): '
+              r'(?P<severity>error|warning)(?:\((?P<code>[^)]*)\))?:\s*'
+              r'(?P<message>.*)$', re.M)
+          rows = []
+          for match in header_re.finditer(text):
+              row = match.groupdict()
+              row['line'] = int(row['line'])
+              row['column'] = int(row['column'])
+              rows.append(row)
+          errors = [row for row in rows if row['severity'] == 'error']
+          warnings = [row for row in rows if row['severity'] == 'warning']
+          panic_re = re.compile(
+              r'(?im)^(?P<line>.*(?:internal error|uncaught exception|panic(?:!|:|\s)).*)$')
+          panics = [m.group('line') for m in panic_re.finditer(text)]
+          (root / 'QYM.diagnostics.jsonl').write_text(
+              ''.join(json.dumps(row, sort_keys=True) + '\n' for row in rows),
+              encoding='utf-8')
+          (root / 'QYM.error-headers.txt').write_text(
+              ''.join(
+                  "{}:{}:{}: error{}: {}\n".format(
+                      r['file'], r['line'], r['column'],
+                      f"({r['code']})" if r['code'] else '', r['message'])
+                  for r in errors), encoding='utf-8')
+          (root / 'QYM.panic-lines.txt').write_text(
+              ''.join(line + '\n' for line in panics), encoding='utf-8')
+          exit_code = None
+          if (root / 'QYM.exit').exists():
+              exit_code = int((root / 'QYM.exit').read_text().strip())
+          result = {
+              'schema': 'qym-deterministic-repair-probe6-integrated-v1',
+              'github_sha': os.environ['GITHUB_SHA'],
+              'install_parent_sha': os.environ['EXPECTED_INSTALL_PARENT'],
+              'authority_qym_sha256': os.environ['EXPECTED_QYM_SHA256'],
+              'probe3_qym_sha256': os.environ['EXPECTED_PROBE3_SHA256'],
+              'probe4_qym_sha256': os.environ['EXPECTED_PROBE4_SHA256'],
+              'probe5_qym_sha256': os.environ['EXPECTED_PROBE5_SHA256'],
+              'candidate_qym_sha256': os.environ['EXPECTED_PROBE6_SHA256'],
+              'candidate_qym_blob': os.environ['EXPECTED_PROBE6_BLOB'],
+              'exit': exit_code,
+              'error_headers': len(errors),
+              'warning_headers': len(warnings),
+              'error_codes': dict(sorted(collections.Counter(
+                  row['code'] or 'uncoded' for row in errors).items())),
+              'warning_codes': dict(sorted(collections.Counter(
+                  row['code'] or 'uncoded' for row in warnings).items())),
+              'first_error': errors[0] if errors else None,
+              'last_error': errors[-1] if errors else None,
+              'panic_lines': len(panics),
+              'log_bytes': len(raw),
+              'log_sha256': hashlib.sha256(raw).hexdigest(),
+              'semantic_pass': exit_code == 0 and not errors and not panics,
+          }
+          (root / 'PROBE_RESULT.json').write_text(
+              json.dumps(result, indent=2, sort_keys=True) + '\n', encoding='utf-8')
+          print(json.dumps(result, indent=2, sort_keys=True))
+          PY
+
+      - name: Upload immutable integrated Probe6 evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-repair-probe6-integrated-${{ github.sha }}-attempt${{ github.run_attempt }}
+          path: ${{ runner.temp }}/qym-repair-probe6-integrated/**
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Fail closed on exact integrated Probe6 result
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          export OUT="$RUNNER_TEMP/qym-repair-probe6-integrated"
+          test -f "$OUT/git-status.before.txt" && test ! -s "$OUT/git-status.before.txt"
+          test -f "$OUT/git-status.after.txt" && test ! -s "$OUT/git-status.after.txt"
+          test -f "$OUT/PROBE6_ACTIVATION_EVIDENCE.json"
+          test -z "$(find scripts -type d -name __pycache__ -print -quit)"
+          test "$(tr -d '\r\n' < "$OUT/QYM.exit")" = 0
+          test "$(sha256sum "$OUT/QYM.candidate-probe6.lean" | awk '{print $1}')" = "$EXPECTED_PROBE6_SHA256"
+          test "$(git hash-object --no-filters "$OUT/QYM.candidate-probe6.lean")" = "$EXPECTED_PROBE6_BLOB"
+          test "$(sha256sum "$OUT/QYM.restored-probe5.lean" | awk '{print $1}')" = "$EXPECTED_PROBE5_SHA256"
+          test "$(sha256sum "$OUT/QYM.restored-probe4.lean" | awk '{print $1}')" = "$EXPECTED_PROBE4_SHA256"
+          test "$(sha256sum "$OUT/QYM.restored-probe3.lean" | awk '{print $1}')" = "$EXPECTED_PROBE3_SHA256"
+          test "$(sha256sum "$QYM_SOURCE" | awk '{print $1}')" = "$EXPECTED_QYM_SHA256"
+          python3 - "$OUT/PROBE_RESULT.json" "$OUT/TRANSFORM_AUDIT_PROBE6.json" \
+            "$OUT/TRANSFORM_AUDIT_PROBE6_INVERSE.json" "$OUT/PROBE6_ACTIVATION_EVIDENCE.json" <<'PY'
+          import json, sys
+          result, forward, inverse, activation = (
+              json.load(open(path, encoding='utf-8')) for path in sys.argv[1:])
+          assert activation['status'] == 'PASS_EXACT_PROBE5_TERMINAL_ARTIFACT_AND_SURVIVORS'
+          assert activation['promotion_authorized'] is False
+          assert result['semantic_pass'] is True
+          assert result['exit'] == 0
+          assert result['error_headers'] == 0
+          assert result['first_error'] is None and result['last_error'] is None
+          assert result['panic_lines'] == 0
+          assert forward['probe6_integrated_candidate']['sha256'] == result['candidate_qym_sha256']
+          assert forward['probe6_integrated_candidate']['git_blob'] == result['candidate_qym_blob']
+          proof = forward['component_proof']
+          assert proof['collision_free'] is True
+          assert proof['permutations_checked'] == 6
+          assert proof['all_forward_permutations_identical'] is True
+          assert proof['all_reverse_orders_byte_exact'] is True
+          assert proof['frontier_internal_dependency']['forward'] == ['frontier_core', 'pmap_addon']
+          detail = proof['standalone']['conditional']['forward_detail']
+          assert detail['owned_rule_count'] == 31
+          assert len(detail['excluded_tail_labels']) == 7
+          assert detail['overlap_resolution'] == {
+              'owner': 'late',
+              'identical_green_argument_outputs': 6,
+              'stronger_explicit_idempotent_api': 1,
+          }
+          assert forward['inverse_byte_equal'] is True
+          assert forward['trust_delta_zero'] is True
+          assert not any(forward['trust_counts'].values())
+          assert inverse['mode'] == 'inverse'
+          assert inverse['inverse_byte_equal'] is True
+          assert inverse['result']['sha256'] == result['probe5_qym_sha256']
+          PY

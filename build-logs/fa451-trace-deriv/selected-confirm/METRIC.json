@@ -1,0 +1,107 @@
+{
+  "classification": "LEAN_FAILURE",
+  "authority": "direct Lean CLI on repository source path",
+  "variant": "trace_deriv_change_norm",
+  "source_path": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+  "source_sha256": "1f0a7e6c95691a89b3099a829da3e11fbbc731332f87e7c63d24eadade5692eb",
+  "candidate_metadata_sha256": "1f0a7e6c95691a89b3099a829da3e11fbbc731332f87e7c63d24eadade5692eb",
+  "source_metadata_identity": true,
+  "head_source_sha256_before_candidate_materialization": "1243b2ba563d364a6977cbf9aa867e628de50a28b0f56677dc70456a210e209a",
+  "baseline_sha256_required": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+  "line_count": 60450,
+  "required_line_count": 60450,
+  "target_declaration": "actualEdgeAmbientParam_hasDerivAt",
+  "target_declaration_index": 2624,
+  "target_header_sha256": "20f8d04dfc32eb6aa027b1523622e01b26feac09d7a78cbafac93f98b0abc84a",
+  "metadata_target_header_sha256": "20f8d04dfc32eb6aa027b1523622e01b26feac09d7a78cbafac93f98b0abc84a",
+  "declaration_count": 4397,
+  "declaration_sequence_sha256": "a9f15910d7e589feb18eac7d42370c5bfa07233a188d32554f5711a8e3446a5b",
+  "lean_executed": true,
+  "all_required_lean_executed": true,
+  "Mock2_executed": true,
+  "Mock2_exit": 0,
+  "Mock2_errors_under_cap": 0,
+  "Mock2_Advanced_executed": true,
+  "Mock2_Advanced_exit": 0,
+  "Mock2_Advanced_errors_under_cap": 0,
+  "FA_executed": true,
+  "FA_exit": 1,
+  "FA_error_headers_captured": 166,
+  "FA_first_actual_error_line": 33929,
+  "FA_first_actual_error_col": 4,
+  "FA_first_error_message": "Type mismatch: After simplification, term\n  IsCompact.mul (HasCompactSupport.norm hcompact) (HasCompactSupport.norm hcompact)\n has type\n  IsCompact ((tsupport fun x => ‖f x‖) * tsupport fun x => ‖f x‖)\nbut is expected to have type\n  HasCompactSupport fun y => ‖f y‖ * ‖f y‖",
+  "FA_first_error_declaration": "compactSupport_height_mul_normSq_le_energy_Ioi",
+  "FA_error_declaration_index": 2738,
+  "FA_error_declaration_start_line": 33919,
+  "exact_compile_commands": {
+    "Mock2": "lake env lean -DmaxErrors=50 -DwarningAsError=false -o .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean -i .lake/build/lib/lean/PrimalitySheafVerification/Mock2.ilean PrimalitySheafVerification/Mock2.lean",
+    "Mock2_Advanced": "lake env lean -DmaxErrors=50 -DwarningAsError=false -o .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean -i .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.ilean PrimalitySheafVerification/Mock2_Advanced.lean",
+    "Mock2_FunctionalAnalysis": "lake env lean -DmaxErrors=200 -DwarningAsError=false -o .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean -i .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean"
+  },
+  "maxErrors_cap": 200,
+  "maxErrors_interpretation": "diagnostic cap only; not total errors and not proof-progress evidence",
+  "lean_version": "Lean (version 4.33.0-rc1, x86_64-unknown-linux-gnu, commit 62eed1db4d67327ec8120be05f1a1b0847d74561, Release)",
+  "lake_version": "Lake version 5.0.0-src+62eed1d (Lean version 4.33.0-rc1)",
+  "lean_toolchain": "leanprover/lean4:v4.33.0-rc1",
+  "toolchain_install_exit": 0,
+  "cache_get_exit": 0,
+  "repository_head": "5d56d0e5a2c26f1f44897a61e245df505563d5e6",
+  "repository_tree": "166dad2581ac0d66f53ea78da8b5441811bb1199",
+  "lake_manifest_sha256": "672474eb93bc14c66cd1ff45203c451987fe525f7b5d13ecd83140be46434b26",
+  "candidate_forbidden_counts": {
+    "sorry": 0,
+    "admit": 0,
+    "new_global_axiom": 0,
+    "unsafe": 0,
+    "native_decide": 0,
+    "Lean.ofReduceBool": 0
+  },
+  "baseline_forbidden_counts": {
+    "sorry": 0,
+    "admit": 0,
+    "new_global_axiom": 0,
+    "unsafe": 0,
+    "native_decide": 0,
+    "Lean.ofReduceBool": 0
+  },
+  "forbidden_not_increased": true,
+  "forbidden_clean": true,
+  "repairs": [
+    {
+      "declaration": "selectedCuspRestrictionRepresentative_add",
+      "old_block_sha256": "ceb4a6cddc83c37824a08646b228b745e0ceb4124d0aefceae477b47b7fb269d",
+      "new_block_sha256": "87424ae15e6aaf28a34c7732232e35458a612608ba750f833827ee236a45b82e"
+    },
+    {
+      "declaration": "selectedCuspRestrictionRepresentative_memLp",
+      "old_block_sha256": "eaf85e2697904c49e9d81deeb0bb65c19bfd4a6b3f02062080deba60e77b6672",
+      "new_block_sha256": "1f7ad40be814db531292223af87ce5b9c4a28603fff810059694745306d52b0f"
+    },
+    {
+      "declaration": "coeFn_selectedCuspCoreTrace",
+      "old_block_sha256": "def63a84ba668f4f1809989d9b596a457f17c4aa23610f3a911157d26632e2be",
+      "new_block_sha256": "379775808fb590cce5c229fdfec7ab6432912b392d89e7bd2deb08629c2f17ff"
+    },
+    {
+      "declaration": "fixedPhaseCore_eventually_selectedCuspRepresentative_ae_zero",
+      "old_block_sha256": "e31b73645db1a275cf4aa5f4b47986f8edccb7fe9c90590b2655fc86e628891b",
+      "new_block_sha256": "449dd5af4582c60cc9f6cbfcbae54ef5946b1c6f7b3e83a4138e2247edbc2ab1"
+    },
+    {
+      "declaration": "fixedPhaseCore_eventually_selectedCuspCoreTrace_eq_zero",
+      "old_block_sha256": "9785505e8d1040d193731bc2227301cb0c54beaada04496826af7b2d4dd74ec6",
+      "new_block_sha256": "06d4d6ad707a64fc40e861c51d5a5dcfa1206087e5ea6e102804e06162ac70ff"
+    },
+    {
+      "declaration": "deriv_height_mul_normSq",
+      "old_block_sha256": "076e389efa7160bfa22146e0887105ab7cce3aa9578b156ce47dca01cd714276",
+      "new_block_sha256": "f09d494d692bb86921bbc2f3c56a687d3e735838cda393b002e1e08b4bc1e656"
+    },
+    {
+      "declaration": "norm_deriv_height_mul_normSq_le",
+      "old_block_sha256": "94e2b825d730acf79ac941d72950fdd13107d50afd1f50886c4275ef46a32d6c",
+      "new_block_sha256": "7930ac2c6ea58a1cf4a9b6e894e58cb443d4d62d8f909733fc0f6cb714b5f70b"
+    }
+  ],
+  "infra_reasons": []
+}

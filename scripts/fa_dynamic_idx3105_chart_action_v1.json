@@ -1,0 +1,12 @@
+{
+  "schema": "fa-dynamic-idx3105-chart-action-v1",
+  "status": "STATIC_STAGED_PENDING_DIRECT_LEAN",
+  "repairs": [
+    {
+      "declaration_index": 3105,
+      "declaration_name": "modularLogMaxHeight_upperLift_eventuallyEq_chart",
+      "old_fragment": "  filter_upwards [hLocal] with w hw\n  simpa only [integralLogHeightChart, integralMoebiusChart] using hw",
+      "new_fragment": "  filter_upwards [hLocal] with w hw\n  change modularLogMaxHeight (UpperHalfPlane.ofComplex w) =\n    Real.log ((((modularHeightMaximizer z : GL (Fin 2) ℝ) •\n      UpperHalfPlane.ofComplex w) : ℍ).im)\n  calc\n    modularLogMaxHeight (UpperHalfPlane.ofComplex w) =\n        Real.log (((modularHeightMaximizer z) •\n          UpperHalfPlane.ofComplex w).im) := hw\n    _ = Real.log ((((modularHeightMaximizer z : GL (Fin 2) ℝ) •\n          UpperHalfPlane.ofComplex w) : ℍ).im) := by\n      congr 2"
+    }
+  ]
+}

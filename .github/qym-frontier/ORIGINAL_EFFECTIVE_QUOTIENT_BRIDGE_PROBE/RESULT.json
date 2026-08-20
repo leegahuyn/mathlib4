@@ -1,0 +1,19 @@
+{
+  "schema": "qym-original-effective-quotient-bridge-probe-v1",
+  "authority": "actual direct Lean",
+  "branch": "gpt/qym-gb76-global-batch-repair-20260820",
+  "trigger_sha": "7e533a1ff157854e84d867e37f15d43cfaf1e282",
+  "run_id": 32297499038,
+  "exit": 1,
+  "error_headers": 1,
+  "warning_headers": 0,
+  "panic_lines": 0,
+  "elapsed_seconds": 3,
+  "first_error": ".github/qym-probes/GammaTwoQuotientBridge.lean:48:10: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern",
+  "source_sha256": "87f75fd38565ca386f13b947193e5f614b4aed3f7ff36f3980b2ec11dc5dfa86",
+  "source_blob": "d2e218e454b22c71d232367a40e576b68415fb59",
+  "log_sha256": "a59d4975ebcbf2b22275c7fcedbc99ca2b5b527e32d1a1920f8b4f869f3b871a",
+  "olean_exists": false,
+  "ilean_exists": false,
+  "pass": false
+}

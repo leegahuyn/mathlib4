@@ -1,0 +1,85 @@
+{
+  "schema": "fa-v42-declaration-local-repairs-v1",
+  "status": "PATCH_READY_STATIC_SINGLE_DELIMITER_DECONTAMINATION_DIRECT_LEAN_REQUIRED_V46_W21",
+  "worker_id": "W21",
+  "cluster_id": "V46-IDX3949-H13-INCOMPLETE-DECONTAMINATION-MISSING-RPAREN",
+  "authority": {
+    "repository": "leegahuyn/mathlib4",
+    "run_id": 31728453514,
+    "head_sha": "5ec44f3d343955f3124e7efecc048b648dccc5ab",
+    "job_id": 94542617528,
+    "artifact_id": 9192669673,
+    "artifact_digest": "sha256:8f07a678145b62342aaa9cb94ebbce6c9f7cc1a45c400560918d42499e67f2f3",
+    "variant": "all_probes",
+    "source_path": "work/v45-results/run-31728453514/all_probes/Mock2_FunctionalAnalysis-candidate.lean",
+    "source_sha256": "726f40d1dd03d32f03592adf4f6b02e3f7f52e7e1f71087ee53bdb83c4bb0caf",
+    "source_bytes": 2788764,
+    "source_lines": 62383,
+    "declaration_count": 4416,
+    "diagnostics_path": "work/v45-results/run-31728453514/all_probes/FULL_DIAGNOSTICS.json",
+    "diagnostics_sha256": "1fb14600849d7281df6ff65ae9213b6671b19a396cf539041f864fea157476a1",
+    "fa_log_path": "work/v45-results/run-31728453514/all_probes/Mock2_FunctionalAnalysis.log",
+    "fa_log_sha256": "bcc92a247a531419b25677cfdd5e28ce1705e6c3fb87301b93e24510932b4888"
+  },
+  "assignment": {
+    "declaration_index": 3949,
+    "declaration": "literalStagePlaneFiniteApproximation_tendsto",
+    "v45_error_ordinals": [23],
+    "v45_error_lines": [54221],
+    "v45_error_columns": [49],
+    "v45_error_signatures": [
+      "unexpected token '/--'; expected ')', ',' or ':'"
+    ],
+    "root_or_cascade": "INDEPENDENT_OWNER_LOCAL_PARSER_ROOT_FROM_INCOMPLETE_H13_DECONTAMINATION",
+    "ownership": "W21-only"
+  },
+  "diagnosis": {
+    "historical_root": "V43-E-H13 replaced the original inline Tendsto product with typed hconst/hinv factors. Its NEW string contained eleven literal leading ASCII plus diff prefixes and also omitted the closing parenthesis for squeeze_zero's third `(by ...)` argument.",
+    "v44_partial_repair": "V44-COMMON-HC02 removed exactly the eleven leading plus bytes and preserved the intended typed factors, but its NEW string retained the missing final parenthesis.",
+    "v45_evidence": "The owner has zero lines beginning with plus or minus, three legitimate arithmetic plus tokens, and raw parenthesis balance +1. The parser consumes through `simpa only [mul_zero] using hconst.mul hinv` and reports the next documentation comment as unexpected while explicitly expecting `)`, `,`, or `:`.",
+    "repair": "Append exactly one closing parenthesis to the final simpa line. This closes squeeze_zero's third `(by ...)` argument and restores the declaration terminator without changing any proof term or statement.",
+    "prior_good_shape": "The pre-H13 v42 body closes the same `(by ...)` argument with the fourth closing parenthesis at the end of its inline Tendsto proof. The typed H13 factorization has one fewer nested parenthesis, so one final `)` is still required after hconst.mul hinv.",
+    "semantic_risk": "MINIMAL_LEXICAL",
+    "confidence": "VERY_HIGH_EXACT_PARSER_EXPECTATION_HISTORY_AND_BALANCE",
+    "theorem_proposition_changed": false,
+    "disposition": "PATCH_READY"
+  },
+  "dependency_policy": {
+    "w15_idx3939": "Transitive mathematical producer for later tail bounds; compose before cumulative clean probing, but not required to establish this lexical root.",
+    "w18_idx3948": "Immediate predecessor theorem used as squeeze bound and currently has a separate whnf timeout. W18 should be composed before cumulative clean probing, but its elaboration cannot supply the missing delimiter and is not the cause of ordinal 23.",
+    "recommended_cumulative_order": [3939, 3948, 3949],
+    "atomic_group": "NONE"
+  },
+  "header_policy": "NO_HEADER_CHANGES_BODY_ONLY",
+  "trust_policy": {
+    "tokens": ["sorry", "admit", "axiom", "unsafe", "native_decide", "Lean.ofReduceBool"],
+    "required_before": 0,
+    "required_after": 0
+  },
+  "repairs": [
+    {
+      "id": "V46-W21-IDX3949-close-squeeze-third-argument-after-h13-decontamination",
+      "owner": "literalStagePlaneFiniteApproximation_tendsto",
+      "declaration_index": 3949,
+      "diagnostics": [23],
+      "kind": "body",
+      "classification": "APPEND-SINGLE-MISSING-RPAREN-NO-PROOF-TERM-CHANGE",
+      "confidence": "very-high-exact-parser-and-parenthesis-balance",
+      "expected_count_in_owner": 1,
+      "old": "      simpa only [mul_zero] using hconst.mul hinv",
+      "new": "      simpa only [mul_zero] using hconst.mul hinv)",
+      "evidence": "The old line occurs once in idx3949 and once globally. The owner is balanced after exactly this one-character insertion, and the v45 error says the next `/--` is unexpected because a `)` is required."
+    }
+  ],
+  "contamination_policy": {
+    "scan_new_lines_for_prefixes": ["+", "-"],
+    "required_new_prefix_count": 0,
+    "distinguish_legitimate_arithmetic_plus": true,
+    "authority_owner_leading_diff_prefix_count": 0,
+    "authority_owner_legitimate_arithmetic_plus_count": 3
+  },
+  "promotion_rule": "Compose only against exact v45 all_probes SHA 726f40d1. Require remote direct Mock2=0, Mock2_Advanced=0, whole-FA maxErrors=2000 execution, disappearance of ordinal 23 without replacement idx3949 diagnostics, complete residual comparison, 4416 byte-identical declaration headers, identical comments/attributes, and trust-six zero before promotion.",
+  "direct_lean_verified": false,
+  "clean_build_claimed": false,
+  "lean_lake_git_github_network_invoked_by_worker": false
+}

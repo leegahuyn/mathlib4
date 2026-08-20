@@ -1,0 +1,37 @@
+name: Codex FA API probe R006 core v1
+on:
+  push:
+    branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
+    paths: [.github/workflows/codex-fa-api-probe-r006-core-v1.yml]
+  workflow_dispatch:
+permissions: {contents: read}
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with: {ref: "${{ github.sha }}", fetch-depth: 1, persist-credentials: false}
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail; curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh; sh /tmp/elan.sh -y --default-toolchain none >/tmp/elan.log 2>&1; export PATH="$HOME/.elan/bin:$PATH"; elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1; lake exe cache get >/tmp/cache.log 2>&1
+      - name: Verify R006 core APIs
+        shell: bash
+        run: |
+          set -euo pipefail; export PATH="$HOME/.elan/bin:$PATH"
+          cat >/tmp/ProbeR006Core.lean <<'LEAN'
+          import Mathlib
+          #check ContinuousLinearMap.lsmul
+          #check ContinuousLinearMap.add_apply
+          #check ContinuousLinearMap.smul_apply
+          #check RingHom.id_apply
+          #check inner_conj_symm
+          example (u v : ℂ) : conj (inner ℂ u v) = inner ℂ v u := by
+            simpa using (inner_conj_symm u v)
+          LEAN
+          lake env lean -DwarningAsError=false /tmp/ProbeR006Core.lean | tee /tmp/probe.log
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with: {name: "codex-fa-api-probe-r006-core-v1-${{ github.sha }}", path: /tmp/probe.log, retention-days: 7}

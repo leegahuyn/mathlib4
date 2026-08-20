@@ -1,0 +1,137 @@
+{
+  "schema": "fa-v42-declaration-local-repairs-v1",
+  "status": "STAGED_STATIC_EXECUTABLE_COMPOSED_SUBTYPE_NEGATION_ATOMIC_W34_DIRECT_LEAN_REQUIRED_V46_W29",
+  "worker_id": "W29",
+  "cluster_id": "V46-IDX4298-EXPOSE-COMPOSED-SUBTYPE-NEGATION",
+  "authority": {
+    "repository": "leegahuyn/mathlib4",
+    "run_id": 31728453514,
+    "head_sha": "5ec44f3d343955f3124e7efecc048b648dccc5ab",
+    "job_id": 94542617528,
+    "artifact_id": 9192669673,
+    "artifact_digest": "sha256:8f07a678145b62342aaa9cb94ebbce6c9f7cc1a45c400560918d42499e67f2f3",
+    "variant": "all_probes",
+    "source_path": "work/v45-results/run-31728453514/all_probes/Mock2_FunctionalAnalysis-candidate.lean",
+    "source_sha256": "726f40d1dd03d32f03592adf4f6b02e3f7f52e7e1f71087ee53bdb83c4bb0caf",
+    "source_bytes": 2788764,
+    "source_lines": 62383,
+    "declaration_count": 4416,
+    "diagnostics_path": "work/v45-results/run-31728453514/all_probes/FULL_DIAGNOSTICS.json",
+    "diagnostics_sha256": "1fb14600849d7281df6ff65ae9213b6671b19a396cf539041f864fea157476a1",
+    "fa_log_path": "work/v45-results/run-31728453514/all_probes/Mock2_FunctionalAnalysis.log",
+    "fa_log_sha256": "bcc92a247a531419b25677cfdd5e28ce1705e6c3fb87301b93e24510932b4888"
+  },
+  "assignment": {
+    "declaration_index": 4298,
+    "declaration": "signedLowerPeriodization_isReducedChartGaugeModel",
+    "v45_error_ordinals": [40, 41],
+    "diagnostic_count": 2,
+    "lines": [59289, 59313],
+    "columns": [63, 63],
+    "normalized_signatures": ["unsolved goals", "unsolved goals"],
+    "baseline_status": "persisting",
+    "root_or_cascade": "TWO_INDEPENDENT_OCCURRENCES_OF_ONE_OWNER_LOCAL_NESTED_SUBTYPE_NEGATION_ROOT",
+    "ownership": "W29-only-with-W34-symmetric-atomic-promotion-contract"
+  },
+  "diagnosis": {
+    "exact_residual_shape": "Each goal is scalar * coe(coe(coe(-u))) z = -(scalar * coe(coe(coe(u))) z), with u the lowerFromSucc periodized core. The first occurs in the reduced-chart branch and the second in the outside-saturation zero branch.",
+    "root_cause": "fixedPhaseEuclideanGauge_apply exposes the core value through InverseEtaFixedPhaseCore.toSmoothQuotientCompactFunction, but that named projection is opaque to the listed simplifiers. The value then crosses three nested submodules: inverseEtaFixedPhaseStableCoreSubmodule, smoothQuotientCompactSubmodule, and realSmoothSubmodule. The current map_neg and Pi.neg_apply are both unused, so ring_nf treats the two projected values as unrelated atoms.",
+    "historical_runtime_evidence": [
+      "The V43 late explicit-subtype probe changed the goal to an explicit inverseEtaFixedPhaseStableCoreSubmodule.subtype application. Its first map_neg succeeded, proving the outer projection is the blocking layer.",
+      "That probe then failed only at Pi.neg_apply. The residual retained a negated SmoothQuotientCompactFunction behind two further subtype projections, so a function-negation rewrite still could not match.",
+      "V44 replaced the explicit probe with ring_nf; v45 all_probes still emits the original two unsolved goals and warns that map_neg and Pi.neg_apply are unused at both sites."
+    ],
+    "repair_strategy": "Change each identical proof block to the pointwise application of one composed linear map made from all three subtype maps. map_neg then rewrites the core negation directly to negation in the function codomain; Pi.neg_apply evaluates it, and ring closes scalar distributivity.",
+    "same_file_api_evidence": [
+      "inverseEtaFixedPhaseStableCoreSubmodule n is a Submodule of SmoothQuotientCompactFunction and InverseEtaFixedPhaseCore n abbreviates its subtype.",
+      "smoothQuotientCompactSubmodule is a Submodule of SmoothFunction; SmoothQuotientCompactFunction abbreviates that subtype and its CoeFun exposes the SmoothFunction value.",
+      "realSmoothSubmodule is a Submodule of the function space, and SmoothFunction abbreviates that subtype.",
+      "Submodule.subtype at each layer is a complex linear map, so their composition has an exact map_neg theorem with function-space codomain."
+    ],
+    "independence": {
+      "ordinal_40": "Independent local root. It occurs in the first calc equality before the subsequent rewrite of euclideanRaiseTestAdjoint_conjugate_eq_conj_affineTranspose from W26.",
+      "ordinal_41": "Independent local root. It is in the zero branch and does not reference the W26/W33 conjugate-adjoint pair.",
+      "not_W25_cascade": "The second branch has already constructed hBase and hLower. The failing equality precedes the use of hLower, so idx4288/W25 is not the cause of ordinal 41."
+    },
+    "required_imports": [],
+    "expected_owner_errors_closed": 2,
+    "semantic_risk": "LOW",
+    "elaboration_risk": "MEDIUM_LOW_COMPOSED_SUBTYPE_CHANGE_NOT_DIRECTLY_REPLAYED",
+    "confidence": "MEDIUM_HIGH_STATIC_WITH_REMOTE_ONE_LAYER_PROGRESS_DIRECT_LEAN_REQUIRED",
+    "theorem_proposition_changed": false,
+    "disposition": "STAGED"
+  },
+  "dependency_contract": {
+    "upstream_proof_trust_pair": {
+      "pair_id": "V46-PAIR-4296-4297-ORDERED-CONJUGATE-DERIVATIVES",
+      "selection_policy": "ALL_OR_NONE",
+      "repair_ids": [
+        "V46-W26-IDX4296-order-specialized-conjugate-derivatives-before-general-fderiv",
+        "V46-W33-IDX4297-order-specialized-conjugate-derivatives-before-general-fderiv"
+      ],
+      "relationship": "DOWNSTREAM_PROOF_TRUST_PREREQUISITE_NOT_DIAGNOSTIC_ROOT",
+      "reason": "After ordinal 40's local equality is closed, idx4298 rewrites with the W26 theorem. W33 is the required symmetric companion. Ordinal 41 has no dependency on either theorem."
+    },
+    "zero_branch_producer": {
+      "worker": "W25",
+      "declaration_index": 4288,
+      "declaration": "periodizedFixedPhaseGauge_eventuallyEq_zero_of_not_mem_saturation",
+      "relationship": "FINAL_VALIDATION_PREREQUISITE_NOT_CURRENT_ROOT",
+      "reason": "W25 supplies hBase, which already elaborates in the current context; the residual occurs in the earlier negation equality, before hLower is used."
+    },
+    "promotion_dag": [
+      "Promote and directly verify W26/W33 ALL_OR_NONE.",
+      "Promote and directly verify W29/W34 ALL_OR_NONE.",
+      "Revalidate W25 plus idx4298/idx4299 downstream declarations in the integrated candidate."
+    ]
+  },
+  "symmetric_atomic_pair": {
+    "pair_id": "V46-PAIR-4298-4299-EXPOSE-COMPOSED-SUBTYPE-NEGATION",
+    "selection_policy": "ALL_OR_NONE",
+    "application_order": [
+      "V46-W29-IDX4298-expose-composed-subtype-negation",
+      "V46-W34-IDX4299-expose-composed-subtype-negation"
+    ],
+    "owners": [
+      {
+        "declaration_index": 4298,
+        "declaration": "signedLowerPeriodization_isReducedChartGaugeModel",
+        "worker": "W29"
+      },
+      {
+        "declaration_index": 4299,
+        "declaration": "signedRaisePeriodization_isReducedChartGaugeModel",
+        "worker": "W34"
+      }
+    ],
+    "W34_mirror_contract": "Reuse the same composed three-subtype linear map and exact two-occurrence replacement shape, changing the core index from n to n + 1 and lowerFromSucc periodized term to raise n (gammaTwoPeriodizedPhysicalCore n a). Anchor only to idx4299's exact body; do not edit idx4298 from W34.",
+    "reason": "idx4298 and idx4299 are signed lowering/raising mirrors. Historical V43 probes selected them together, both progressed one subtype layer and failed at the same Pi.neg_apply boundary, and v45 gives each exactly two identical branch-local residuals."
+  },
+  "header_policy": "NO_HEADER_CHANGES_BODY_ONLY",
+  "trust_policy": {
+    "tokens": ["sorry", "admit", "axiom", "unsafe", "native_decide", "Lean.ofReduceBool"],
+    "required_before": 0,
+    "required_after": 0
+  },
+  "repairs": [
+    {
+      "id": "V46-W29-IDX4298-expose-composed-subtype-negation",
+      "pair_id": "V46-PAIR-4298-4299-EXPOSE-COMPOSED-SUBTYPE-NEGATION",
+      "owner": "signedLowerPeriodization_isReducedChartGaugeModel",
+      "declaration_index": 4298,
+      "diagnostics": [40, 41],
+      "kind": "body",
+      "classification": "EXPOSE_THREE_SUBTYPE_PROJECTIONS_AS_ONE_LINEAR_MAP_BEFORE_MAP_NEG",
+      "confidence": "medium-high-static-historical-outer-layer-runtime-progress-direct-Lean-required",
+      "expected_count_in_owner": 2,
+      "old": "        simp only [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,\n          Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.toSmoothQuotientCompactFunction,\n          map_neg, Pi.neg_apply]\n        ring_nf",
+      "new": "        change\n          _ *\n              (((realSmoothSubmodule.subtype.comp\n                    smoothQuotientCompactSubmodule.subtype).comp\n                  (inverseEtaFixedPhaseStableCoreSubmodule n).subtype)\n                (-(InverseEtaFixedPhaseCore.lowerFromSucc n)\n                  (gammaTwoPeriodizedPhysicalCore (n + 1) a))) z =\n            -(_ *\n              (((realSmoothSubmodule.subtype.comp\n                    smoothQuotientCompactSubmodule.subtype).comp\n                  (inverseEtaFixedPhaseStableCoreSubmodule n).subtype)\n                ((InverseEtaFixedPhaseCore.lowerFromSucc n)\n                  (gammaTwoPeriodizedPhysicalCore (n + 1) a))) z)\n        rw [map_neg, Pi.neg_apply]\n        ring",
+      "evidence": "The authority old block occurs exactly twice in idx4298. The composed map explicitly traverses exactly the three nested subtype layers printed by definitions and by the prior runtime residual, so map_neg lands in the function space where Pi.neg_apply matches.",
+      "expected_effect": "Remove authoritative ordinals 40 and 41 at idx4298 and remove the four unused simp-argument warnings attached to the two old blocks. Direct paired Lean replay with W34 is required before promotion."
+    }
+  ],
+  "promotion_rule": "Compose only against exact v45 all_probes SHA 726f40d1. First select the W26/W33 pair ALL_OR_NONE, then select this W29/W34 pair ALL_OR_NONE in declaration order. Require direct disappearance of idx4298 ordinals 40-41 and idx4299 ordinals 42-43 with no replacement errors or synthetic-sorry warnings. Revalidate W25 and all four downstream owners, then require Mock2=0, Mock2_Advanced=0, full FA maxErrors=2000 exit 0, complete diagnostic inventory comparison, 4416 byte-identical headers/order/comments/attributes, and trust-six zero.",
+  "direct_lean_verified": false,
+  "clean_build_claimed": false,
+  "lean_lake_git_github_network_invoked_by_worker": false
+}

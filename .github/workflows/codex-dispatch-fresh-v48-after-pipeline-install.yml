@@ -1,0 +1,56 @@
+name: Codex dispatch fresh FA v48 after pipeline installation
+run-name: "Codex: start fresh v48 from settled continuation branch"
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - codex/fa-qym-cleanbuild-final-20260811-fast
+    paths:
+      - .github/workflows/codex-dispatch-fresh-v48-after-pipeline-install.yml
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TARGET_BRANCH: codex/fa-qym-cleanbuild-final-20260811-fast
+    steps:
+      - name: Verify target workflow exists and dispatch it on the settled branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p build-logs/fresh-v48-dispatch
+          gh api \
+            "repos/${GITHUB_REPOSITORY}/actions/workflows/codex-fa-v48-auto-repair-highcap2000.yml" \
+            >build-logs/fresh-v48-dispatch/workflow.json
+          before="$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/codex-fa-v48-auto-repair-highcap2000.yml/runs?branch=${TARGET_BRANCH}&per_page=1" --jq '.workflow_runs[0].id // 0')"
+          gh workflow run codex-fa-v48-auto-repair-highcap2000.yml \
+            --repo "$GITHUB_REPOSITORY" \
+            --ref "$TARGET_BRANCH"
+          new_id=0
+          for attempt in $(seq 1 40); do
+            sleep 3
+            new_id="$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/codex-fa-v48-auto-repair-highcap2000.yml/runs?branch=${TARGET_BRANCH}&per_page=10" \
+              --jq ".workflow_runs[] | select(.event == \"workflow_dispatch\" and .id != ${before}) | .id" \
+              | head -n 1)"
+            if [[ -n "$new_id" && "$new_id" != 0 ]]; then break; fi
+          done
+          test -n "$new_id"
+          test "$new_id" != 0
+          printf '%s\n' "$new_id" | tee build-logs/fresh-v48-dispatch/run-id.txt
+          gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${new_id}" \
+            >build-logs/fresh-v48-dispatch/run.json
+
+      - name: Upload dispatch identity
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fresh-v48-dispatch-${{ github.run_id }}
+          path: build-logs/fresh-v48-dispatch
+          retention-days: 30

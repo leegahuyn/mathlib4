@@ -1,0 +1,52 @@
+{
+  "schema": "fa-v42-declaration-local-repairs-v1",
+  "status": "STAGED_STATIC_ONLY_DIRECT_LEAN_REQUIRED_V44_Q2",
+  "variant_base": "v43_middle_probe_authority",
+  "authority": {
+    "run_id": 31719983304,
+    "head_sha": "dda6274627f628eca6cbfcef48f0c6e572881f0c",
+    "job_id": 94514229853,
+    "artifact_id": 9189354873,
+    "artifact_digest": "sha256:78416b511693fe68bd556674246cc0815015f8fddb46afcdc1e34673eefe87e5",
+    "source_path": "work/v43-run-31719983304/9189354873/Mock2_FunctionalAnalysis-candidate.lean",
+    "source_sha256": "f8d1b152e1c12639e4fc4f126e501a2a309333c5b8a6f3c8645df3e433572109",
+    "source_bytes": 2785412,
+    "source_lines": 62304,
+    "declaration_count": 4416,
+    "diagnostics_sha256": "baab8be659f062f26d4b7563073c18480263747bfa45de88c642aeb13e1f4d07",
+    "fa_log_sha256": "4edd03f6c327dda4fa5a49cc3fac56e85004199d3a5dfa7aca0c726ab533a73c"
+  },
+  "slice": {
+    "queue": 2,
+    "residual_owner_count": 13,
+    "residual_diagnostic_count": 20,
+    "selected_owner_count": 1,
+    "selected_diagnostic_count": 1,
+    "selected_declaration_indices": [3883],
+    "selected_diagnostic_ordinals": [8],
+    "deferred_declaration_indices": [3653, 3923, 3930, 3939, 3948, 4020]
+  },
+  "header_policy": "NO_HEADER_CHANGES_BODY_ONLY",
+  "trust_policy": {
+    "tokens": ["sorry", "admit", "axiom", "unsafe", "native_decide", "Lean.ofReduceBool"],
+    "required_before": 0,
+    "required_after": 0
+  },
+  "repairs": [
+    {
+      "id": "V44-Q2-S01-normalize-hilbert-repr-coefficient-before-single-sum",
+      "owner": "repr_finiteHilbertProjection_sub_apply",
+      "declaration_index": 3883,
+      "diagnostics": [8],
+      "kind": "body",
+      "classification": "STAGED_EXACT_SINGLE_LEMMA_PROBE",
+      "confidence": "medium-high-residual-sum-needs-inner-coefficient-normalized-to-repr-application",
+      "expected_count_in_owner": 1,
+      "old": "      map_sub, map_sum, map_smul, b.repr_self, Finset.sum_apply,\n      Pi.smul_apply, lp.single_apply, hi]",
+      "new": "      map_sub, map_sum, map_smul, b.repr_self,\n      ← HilbertBasis.repr_apply_apply, Finset.sum_apply, Pi.smul_apply,\n      lp.single_apply, hi]",
+      "evidence": "The remote residual is the evaluated single-coordinate sum minus `b.repr f i`. The summand coefficient is still printed as `inner (b j) f`; the same file uses the reverse repr_apply_apply lemma to normalize exactly that coefficient before Fourier basis simplification."
+    }
+  ],
+  "direct_lean_verified": false,
+  "clean_build_claimed": false
+}

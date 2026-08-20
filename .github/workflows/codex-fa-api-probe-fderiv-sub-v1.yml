@@ -1,0 +1,59 @@
+name: Codex FA API probe fderiv sub v1
+on:
+  push:
+    branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
+    paths: [.github/workflows/codex-fa-api-probe-fderiv-sub-v1.yml]
+  workflow_dispatch:
+permissions: {contents: read}
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with: {ref: "${{ github.sha }}", fetch-depth: 1, persist-credentials: false}
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail;curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh;sh /tmp/elan.sh -y --default-toolchain none >/tmp/elan.log 2>&1;export PATH="$HOME/.elan/bin:$PATH";elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1;lake exe cache get >/tmp/cache.log 2>&1
+      - name: Probe local non-top fact for L2 translation and FullPlane type
+        shell: bash
+        run: |
+          set -euo pipefail;export PATH="$HOME/.elan/bin:$PATH"
+          cat >/tmp/ProbeFDerivSub.lean <<'LEAN'
+          import Mathlib
+          open Topology Filter MeasureTheory
+          open scoped ENNReal Distributions
+          #synth Fact (1 ≤ (2 : ℝ≥0∞))
+
+          noncomputable abbrev AmbientPlaneL2Probe := MeasureTheory.Lp ℂ 2 (volume : Measure ℂ)
+          example (f : AmbientPlaneL2Probe) :
+              Tendsto (fun t : ℂ ↦ DomAddAct.mk t +ᵥ f) (nhds 0) (nhds f) := by
+            letI : Fact ((2 : ℝ≥0∞) ≠ ∞) := ⟨by norm_num⟩
+            let F : ℂ → AmbientPlaneL2Probe := fun t ↦ DomAddAct.mk t +ᵥ f
+            have h : Continuous F := by
+              dsimp [F]
+              fun_prop
+            have h0 : Tendsto F (nhds 0) (nhds (F 0)) := h.continuousAt
+            have hz : F 0 = f := by
+              dsimp [F]
+              exact zero_vadd _ f
+            rw [hz] at h0
+            exact h0
+
+          example (f : AmbientPlaneL2Probe) :
+              Tendsto (fun t : ℂ ↦ ‖DomAddAct.mk t +ᵥ f - f‖) (nhds 0) (nhds 0) := by
+            letI : Fact ((2 : ℝ≥0∞) ≠ ∞) := ⟨by norm_num⟩
+            have h : Continuous (fun t : ℂ ↦ ‖DomAddAct.mk t +ᵥ f - f‖) := by
+              fun_prop
+            have h0 : ContinuousAt (fun t : ℂ ↦ ‖DomAddAct.mk t +ᵥ f - f‖) 0 := h.continuousAt
+            simpa using h0
+
+          abbrev FullPlaneTestProbe := TestFunction (⊤ : TopologicalSpace.Opens ℂ) ℂ (⊤ : ℕ∞)
+          example (v : FullPlaneTestProbe) : Continuous (v : ℂ → ℂ) := v.continuous
+          LEAN
+          lake env lean -DwarningAsError=false /tmp/ProbeFDerivSub.lean | tee /tmp/fderiv-sub.log
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with: {name: "codex-fa-api-probe-fderiv-sub-v1-${{ github.sha }}", path: /tmp/fderiv-sub.log, retention-days: 7}

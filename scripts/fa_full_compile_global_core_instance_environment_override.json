@@ -1,0 +1,96 @@
+{
+  "schema": "fa-environment-fragment-repair-override-v1",
+  "status": "FULL_INVENTORY_ROOTS_CONFIRMED_STATIC_ONLY_UNVERIFIED",
+  "scope": "file-tail canonical FixedPhaseGraphCompletion instances only; no namespace opens",
+  "source": {
+    "sha256": "d0a3decee1c0a7a781d14fdf122e235d71d8f210bb65a894dc4e518821bf03ec",
+    "bytes": 2702252,
+    "splitlines": 60573,
+    "declaration_count": 4397,
+    "declaration_sequence_sha256": "a33d2a1e132e47c9c6b31924ed1b8a04a50de709ed2149a9f9abfb0b052b25eb"
+  },
+  "inventory_authority": {
+    "run_id": 31495034235,
+    "artifact_id": 9103368138,
+    "log_sha256": "ff3ebeaec19a2a52276359267831bc5f8714d096926f705a6439fbfd042d468e",
+    "corrected_inventory_sha256": "26da4c2641c5065689d6a5e1adb4e154492e5cc3880419ff9a22361204609a99",
+    "errors": 1157,
+    "affected_declarations": 608,
+    "diagnostic_cap_reached": false
+  },
+  "confirmed_root_selectors": {
+    "diagnostic_ids": [
+      "E0068", "E0072", "E0073", "E0074", "E0148", "E0149", "E0166", "E0167",
+      "E0296", "E0297", "E0298", "E0299", "E0300", "E0301", "E0326", "E0329",
+      "E0330", "E0331", "E0332", "E0334", "E0335", "E0336", "E0337", "E0338",
+      "E0339", "E0340", "E0462", "E0463", "E0465", "E0466", "E0468", "E0469",
+      "E0471", "E0475", "E0476", "E0499", "E0951", "E0956", "E1157"
+    ],
+    "declaration_indices": [
+      3011, 3021, 3023, 3025, 3142, 3143, 3158, 3159, 3332, 3333, 3336, 3338,
+      3389, 3390, 3392, 3393, 3394, 3395, 3396, 3397, 3402, 3625, 3626, 3628,
+      3629, 3633, 3634, 3641, 3670, 4279, 4280, 4396
+    ],
+    "direct_error_count": 39,
+    "root_shapes": [
+      "AddCommGroup (InverseEtaFixedPhaseCore n)",
+      "HSub/Neg operations derived from AddCommGroup on InverseEtaFixedPhaseCore",
+      "SeminormedAddCommGroup SuccessorGraphCompletion cascading from its failed core construction"
+    ]
+  },
+  "environment_replacement": {
+    "placement": "immediately before the unique file-tail namespace Mock2FA.PaperCorrections.AutomorphicSobolev / FixedPhaseAdjointCutoffCore opening at source line 38200",
+    "old_fragment": "namespace Mock2FA.PaperCorrections.AutomorphicSobolev\nnamespace FixedPhaseAdjointCutoffCore",
+    "new_fragment": "attribute [local instance]\n  Mock2FA.PaperCorrections.AutomorphicSobolev.DefinitionOneSobolev.FixedPhaseGraphCompletion.fixedPhaseGraphCoreModule\n  Mock2FA.PaperCorrections.AutomorphicSobolev.DefinitionOneSobolev.FixedPhaseGraphCompletion.fixedPhaseGraphCoreAddCommGroup\n\nnamespace Mock2FA.PaperCorrections.AutomorphicSobolev\nnamespace FixedPhaseAdjointCutoffCore",
+    "old_sha256": "f82d4b7ad0f1059c4ae89c57c4c7f19a7fa51b6265b6481c4606972ca304132a",
+    "new_sha256": "dacce3cfa1856608ad364913c4904ce84c018ba8f5c8ea2f1b2f1e4e11d08dc4",
+    "old_global_count": 1,
+    "new_global_count_before": 0,
+    "authorized_effects": [
+      "re-register two already-defined canonical instance families as local instances",
+      "add no declaration, axiom, namespace open, theorem, or proof-body change"
+    ]
+  },
+  "standalone_candidate": {
+    "sha256": "f7d9835d9ffe3eaab2038475a2020dbeb0683ce67d3098ae4730ccf7434bc956",
+    "bytes": 2702524,
+    "splitlines": 60577,
+    "direct_lean_verified": false
+  },
+  "static_validation": {
+    "passed": true,
+    "declarations": 4397,
+    "documentation_and_comment_lexemes": 3129,
+    "at_attribute_lexemes": 498,
+    "declaration_names_preserved": true,
+    "all_existing_declaration_headers_preserved": true,
+    "documentation_and_comments_preserved": true,
+    "existing_at_attributes_preserved": true,
+    "candidate_sha256_recomputed": "f7d9835d9ffe3eaab2038475a2020dbeb0683ce67d3098ae4730ccf7434bc956",
+    "candidate_bytes_recomputed": 2702524,
+    "candidate_splitlines_recomputed": 60577,
+    "executable_forbidden_counts_after": {
+      "sorry": 0,
+      "admit": 0,
+      "new_global_axiom": 0,
+      "unsafe": 0,
+      "native_decide": 0,
+      "Lean.ofReduceBool": 0
+    }
+  },
+  "preservation_contract": {
+    "all_existing_documentation_and_comments_byte_preserved": true,
+    "all_existing_at_attributes_byte_preserved": true,
+    "all_existing_declaration_headers_and_claims_byte_preserved": true,
+    "declaration_sequence_preserved": true,
+    "executable_forbidden_six_zero_before_and_after": true,
+    "raw_forbidden_mention_ledger_unchanged": true,
+    "namespace_resolution_delta": "none; this overlay opens no namespace"
+  },
+  "local_execution": {
+    "lean": false,
+    "lake": false,
+    "git": false,
+    "github_write": false
+  }
+}

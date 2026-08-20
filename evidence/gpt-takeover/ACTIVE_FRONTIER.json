@@ -1,0 +1,59 @@
+{
+  "schema": "gpt-fa-qym-clean-active-frontier-v1",
+  "repository": "leegahuyn/mathlib4",
+  "working_branch": "gpt/fa-qym-clean-final-20260816",
+  "recorded_date_kst": "2026-08-16",
+  "global_best": {
+    "authority": "VERIFIED_DIRECT_LEAN_GLOBAL_BEST",
+    "source_path": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+    "source_sha256": "1c3d12594a3e8b14f9cf7b7294da7c29221758c72d00a596215198f7623fad8c",
+    "git_blob_sha": "f9697087ac0728667565cc1f7ad3e921119e66d4",
+    "preservation_branch": "codex/fa-global-best-4err-1c3d1259-20260816",
+    "preservation_commit": "4ce6f8216fff26e5c2cd28192d9f557c1d6c17a4",
+    "direct_run_id": 31887363172,
+    "artifact_id": 9247770461,
+    "Mock2_exit": 0,
+    "Mock2_Advanced_exit": 0,
+    "Mock2_FunctionalAnalysis_exit": 1,
+    "error_headers": 4,
+    "first_error_line": 55637,
+    "first_primary_blocker": "weightedFull_sub_weightedHard_eq_weightedTail",
+    "first_diagnostic": "deterministic timeout at whnf",
+    "canonical_true_pass": false
+  },
+  "active_validation": {
+    "local_wrapper_funnel": {
+      "run_id": 31938362335,
+      "candidate_commit": "988ce72842e6eb5af9f83fd45481b6f723d4a6ad",
+      "candidate_families": [
+        "additive-first Lp identity then scalar ring",
+        "generic frozen inner-subtraction lemma"
+      ],
+      "status_at_record": "IN_PROGRESS"
+    },
+    "authoritative_full_direct": {
+      "run_id": 31938619201,
+      "candidate_commit": "6753bbda895dc800c279cb52d9e3fa6f5546ea5c",
+      "candidate_source_sha256": "8922c3465fca807d2b34e8432c3e9704e9ab98303d4b414eabc12fa1d553ee72",
+      "validation_chain": [
+        "Mock2",
+        "Mock2_Advanced",
+        "Mock2_FunctionalAnalysis"
+      ],
+      "status_at_record": "IN_PROGRESS"
+    }
+  },
+  "downstream": {
+    "FA_TRUE_PASS": false,
+    "Integrated_direct_PASS": false,
+    "Mock3_QYM_bridge_PASS": false,
+    "QYM_TRUE_PASS": false,
+    "clean_pass_1": false,
+    "BuildAll_pass_1": false,
+    "clean_pass_2": false,
+    "BuildAll_pass_2": false,
+    "checklist_1_through_15_complete": false,
+    "final_evidence_bundle_complete": false
+  },
+  "authority_rule": "Only actual direct Lean exit codes and diagnostics may promote GLOBAL_BEST or declare module PASS."
+}

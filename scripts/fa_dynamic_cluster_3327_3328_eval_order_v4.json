@@ -1,0 +1,20 @@
+{
+  "schema": "fa-dynamic-cluster-3327-3328-eval-order-v4",
+  "status": "DIRECT_RESIDUAL_DERIVED_PENDING_MODULE_DIRECT_LEAN",
+  "source_run_id": 31568376320,
+  "source_sha256": "16e58495b6dcc663207792c4a3c2820cb35429c913346db61219222ba73ee10d",
+  "repairs": [
+    {
+      "declaration_index": 3327,
+      "declaration_name": "fderiv_height_mul_friedrichsMollifier_one",
+      "old_fragment": "  rw [fderiv_mul him hrho, hImOne]\n  simp only [ContinuousLinearMap.add_apply,\n    ContinuousLinearMap.smul_apply, smul_eq_mul, zero_mul, add_zero]",
+      "new_fragment": "  rw [fderiv_mul him hrho]\n  simp only [ContinuousLinearMap.add_apply,\n    ContinuousLinearMap.smul_apply, smul_eq_mul, hImOne, mul_zero, add_zero]"
+    },
+    {
+      "declaration_index": 3328,
+      "declaration_name": "fderiv_height_mul_friedrichsMollifier_I",
+      "old_fragment": "  rw [fderiv_mul him hrho, hImI]\n  simp only [ContinuousLinearMap.add_apply,\n    ContinuousLinearMap.smul_apply, smul_eq_mul, one_mul]\n  ring",
+      "new_fragment": "  rw [fderiv_mul him hrho]\n  simp only [ContinuousLinearMap.add_apply,\n    ContinuousLinearMap.smul_apply, smul_eq_mul, hImI, mul_one]\n  ring"
+    }
+  ]
+}

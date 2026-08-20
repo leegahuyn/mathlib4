@@ -1,0 +1,454 @@
+{
+  "schema": "fa-v61-independent-cross-manifest-audit-v1",
+  "status": "PASS_STATIC_ONLY_DIRECT_LEAN_UNVERIFIED",
+  "auditor_independence": {
+    "worker_audit_code_imported": false,
+    "worker_materializer_invoked": false,
+    "method": "independent UTF-8 exact-fragment parser and in-memory recomposition",
+    "locked_inventory_contract": "raw declaration-header universe used by the v59/v60 authority",
+    "full_materialized_candidates_written": false
+  },
+  "authority": {
+    "official_v60_winner": "A_no_idx3933",
+    "winner_clean": false,
+    "winner_evidence": {
+      "path": "work/v60-results/run-31857051709-b/ranking.json",
+      "sha256": "f026e851ca7f30869e9c581b2d305db906f580206268d108c88ee8971892f82a",
+      "bytes": 1906
+    },
+    "comparison_manifest": {
+      "path": "work/v60-results/run-31857051709-b/comparison-manifest.json",
+      "sha256": "2d506d0c1941aaac70c8b555b739f7dbee929391716367e3ce2f6713e2b3f1df",
+      "bytes": 4178
+    },
+    "github_run_id": 31857051709,
+    "github_head_sha": "21f3bd08703a2d3e73375d69cd2474a7366a4497",
+    "variant": "A_no_idx3933",
+    "source": {
+      "path": "work/v59-results/run-31857051709/A_no_idx3933/extracted/Mock2_FunctionalAnalysis-candidate.lean",
+      "sha256": "84e0a7843de9bcf99a25e51db95d48e9d5feceffe4e1b94f315b11d166792e5a",
+      "bytes": 2812433,
+      "lines": 62933,
+      "utf8_roundtrip_exact": true
+    },
+    "direct_run_evidence": {
+      "metric": {
+        "path": "work/v59-results/run-31857051709/A_no_idx3933/extracted/METRIC.json",
+        "sha256": "ca6f79f140363c29a5abacfd929e05f64099b5013bd3499c50e3975ed003354d",
+        "bytes": 3160
+      },
+      "final_gate": {
+        "path": "work/v59-results/run-31857051709/A_no_idx3933/extracted/FINAL_GATE.json",
+        "sha256": "81b42277b6f0063cb717a13d0d3734990a61469165fc1e7ea609f57f58a8711b",
+        "bytes": 2642
+      },
+      "toolchain_pin": {
+        "path": "work/v59-results/run-31857051709/A_no_idx3933/extracted/TOOLCHAIN_PIN.json",
+        "sha256": "3fcdaf1fb2568e48b557e44d215abffcd742c4154309c13bb8b9e735564ceee7",
+        "bytes": 393,
+        "content": "leanprover/lean4:v4.33.0-rc1"
+      },
+      "full_diagnostics": {
+        "path": "work/v59-results/run-31857051709/A_no_idx3933/extracted/FULL_DIAGNOSTICS.json",
+        "sha256": "0365e539e8e52b13bcbc9ca5d9f67e2e198274c83ff7a3a7db4b4620830d790b",
+        "bytes": 6332
+      },
+      "patch_audit": {
+        "path": "work/v59-results/run-31857051709/A_no_idx3933/extracted/PATCH_AUDIT.json",
+        "sha256": "94f10d6ca9316b7406dd96e8bab887cabb0423005c8931233010f52210c6bc08",
+        "bytes": 12670
+      },
+      "variant_index": {
+        "path": "work/v59-results/run-31857051709/A_no_idx3933/extracted/VARIANT_INDEX.json",
+        "sha256": "3bccb507dc1971c6a053b8e7dfe5c079b02f15dd85455aed136b8bab2facf45c",
+        "bytes": 16072
+      },
+      "Mock2_exit": 0,
+      "Mock2_Advanced_exit": 0,
+      "Mock2_FunctionalAnalysis_exit": 1,
+      "error_count": 9,
+      "warning_count": 462,
+      "unique_error_owners": 7,
+      "unique_error_signatures": 5,
+      "inventory_complete": true,
+      "error_cap_sentinel_present": false,
+      "direct_lean_verified_for_authority_only": true
+    }
+  },
+  "baseline_invariants": {
+    "locked_raw_declaration_count": 4416,
+    "locked_declaration_order_sha256": "86c5c7e17a324e7a39791a1aea25bfcdf6de09c5ac121510c9a31a0d3357c7ed",
+    "locked_raw_headers_sha256": "d616d3cd3bd95fe239dbb3de94f8688cf09a308e3cbf2e85fa07795e407b3654",
+    "supplemental_comment_and_string_masked_declaration_count": 4408,
+    "comments_count": 3128,
+    "comments_sha256": "87f419649edaa483bb6d30548f18462d519f173df7d71a8838821db74128cccf",
+    "attributes_count": 498,
+    "attributes_sha256": "061efdec374db092d0405def90727bca1242987d8ae8d2f2858e74e046303774",
+    "trust_six": {
+      "sorry": 0,
+      "admit": 0,
+      "axiom": 0,
+      "unsafe": 0,
+      "native_decide": 0,
+      "Lean.ofReduceBool": 0
+    },
+    "global_maxHeartbeats": {
+      "token_count": 8,
+      "set_option_count": 8,
+      "values_in_source_order": [
+        800000,
+        800000,
+        4000000,
+        800000,
+        4000000,
+        800000,
+        4000000,
+        3000000
+      ]
+    }
+  },
+  "package_records": [
+    {
+      "path": "work/v61-workers/fourier/fourier-repair-manifest.json",
+      "sha256": "cbc0c68e97bfcdcb31e8feb32a32094b07536171e4a343500a6834b5f9948255",
+      "bytes": 13866
+    },
+    {
+      "path": "work/v61-workers/fourier/fourier-static-audit.json",
+      "sha256": "e25447734ed32c9661bf78358b180dc95985f2f361aef9b691105d801f3c5d2c",
+      "bytes": 12223
+    },
+    {
+      "path": "work/v61-workers/fourier/fourier-hashes.json",
+      "sha256": "89c8f93f7896ef105da916d12e93542aa45c3469605438f00de2b9271cae10ec",
+      "bytes": 4295
+    },
+    {
+      "path": "work/v61-workers/weighted-producers/repair-registry.json",
+      "sha256": "7b4ecae3bbc686c7f4023743299116e05801ba56c7566619589d7ca8d58bfd93",
+      "bytes": 10831
+    },
+    {
+      "path": "work/v61-workers/weighted-producers/variant-matrix.json",
+      "sha256": "b7f8e64f3d4543032a02f736dcf45fa3b6bdf6a79b7fa6206438276194e4348a",
+      "bytes": 5244
+    },
+    {
+      "path": "work/v61-workers/weighted-producers/source-boundary-root-audit.json",
+      "sha256": "a6b38050883aa0d534e1226ec218dd98ba63388766f39aeb45b96a3280a1ac63",
+      "bytes": 6490
+    },
+    {
+      "path": "work/v61-workers/weighted-producers/static-audit.json",
+      "sha256": "9bc274056ea7573db67b3de0d2f0fead94a95477869c459f09ea4a7409999c8c",
+      "bytes": 6129
+    }
+  ],
+  "repair_audit": [
+    {
+      "key": "V61-FOURIER-IDX3930-RING-ALL-FIELDSIMP-GOALS",
+      "package": "fourier",
+      "owner": "inner_planeWave_ambientTestCore_eq_scale_mul_mFourierCoeff",
+      "declaration_index": 3930,
+      "old_sha256": "d05296934247aa5f4c19f2ba0220632a8ea77d70439b7bd548d1ff40bdc40846",
+      "old_bytes": 84,
+      "new_sha256": "762b740dc64acc1b05ac65a4ec05db96a02dcf94ba9a178bd88906f41096a948",
+      "new_bytes": 82,
+      "old_start_byte": 2382478,
+      "old_end_byte_exclusive": 2382562,
+      "old_start_line": 53694,
+      "old_global_count": 1,
+      "old_owner_count": 1,
+      "new_global_pre_count": 0,
+      "new_owner_pre_count": 0,
+      "body_only_fragment": true
+    },
+    {
+      "key": "V61-FOURIER-IDX3933-STAR-MUL-ISOLATED-PROBE",
+      "package": "fourier",
+      "owner": "inner_literalStagePlaneWave",
+      "declaration_index": 3933,
+      "old_sha256": "dd7b6af07cd37cd68cc3c0e4cd011cae2c8def73d977c98fdb13242b3dfee627",
+      "old_bytes": 119,
+      "new_sha256": "07e618ac2899b2dbcd839d00c456a26cf6b96f30ef05ba2407ef75ca881e4c2d",
+      "new_bytes": 143,
+      "old_start_byte": 2394345,
+      "old_end_byte_exclusive": 2394464,
+      "old_start_line": 53951,
+      "old_global_count": 1,
+      "old_owner_count": 1,
+      "new_global_pre_count": 0,
+      "new_owner_pre_count": 0,
+      "body_only_fragment": true
+    },
+    {
+      "key": "V61-FOURIER-IDX3939-AC-RFL-AFTER-RING-NF",
+      "package": "fourier",
+      "owner": "norm_planeFourierRemainder_eq_scale_mul_torusRemainder",
+      "declaration_index": 3939,
+      "old_sha256": "6565d26c8f2a90e4991f554433a6fdee6c0cdefdc5c703a3589f26a7a353cc6c",
+      "old_bytes": 110,
+      "new_sha256": "632a04b1e592d2f8db8cbb66cf76abda5f0fd8ced7846be8818b24fcc1df6d21",
+      "new_bytes": 121,
+      "old_start_byte": 2400222,
+      "old_end_byte_exclusive": 2400332,
+      "old_start_line": 54085,
+      "old_global_count": 1,
+      "old_owner_count": 1,
+      "new_global_pre_count": 0,
+      "new_owner_pre_count": 0,
+      "body_only_fragment": true
+    },
+    {
+      "key": "R17",
+      "id": "V61-IDX4017-WRAPPER-EVAL-THEN-TYPED-INNER-CHANGE",
+      "package": "weighted-producers",
+      "owner": "discriminantHardStageOperator_eq_weightedHard",
+      "declaration_index": 4017,
+      "old_sha256": "a6cb438373a967c65de82016f32d919e20c7b17e6ce79f86c6b78d442ca7fcd7",
+      "old_bytes": 341,
+      "new_sha256": "0bac3b416c945c5b3914b89f69b39a1c398f2b6993f857e4beaa8fb6984ddfad",
+      "new_bytes": 779,
+      "old_start_byte": 2464090,
+      "old_end_byte_exclusive": 2464431,
+      "old_start_line": 55493,
+      "old_global_count": 1,
+      "old_owner_count": 1,
+      "new_global_pre_count": 0,
+      "new_owner_pre_count": 0,
+      "body_only_fragment": true
+    },
+    {
+      "key": "R18E",
+      "id": "V61-IDX4018-EXPLICIT-TWO-LEVEL-CLM-EXT",
+      "package": "weighted-producers",
+      "owner": "weightedFull_sub_weightedHard_eq_weightedTail",
+      "declaration_index": 4018,
+      "old_sha256": "4b10676419c6498ee420f53ce6e1476987b1460fa0c802e409209ad2294f1b88",
+      "old_bytes": 219,
+      "new_sha256": "c4dd97090632edd0135c5487ccc9a5716f7f87f5e475d9216126c4b681b06494",
+      "new_bytes": 293,
+      "old_start_byte": 2466732,
+      "old_end_byte_exclusive": 2466951,
+      "old_start_line": 55554,
+      "old_global_count": 1,
+      "old_owner_count": 1,
+      "new_global_pre_count": 0,
+      "new_owner_pre_count": 0,
+      "body_only_fragment": true
+    },
+    {
+      "key": "R18T",
+      "id": "V61-IDX4018-TYPED-INNER-CONGRARG",
+      "package": "weighted-producers",
+      "owner": "weightedFull_sub_weightedHard_eq_weightedTail",
+      "declaration_index": 4018,
+      "old_sha256": "af1e4a62ee81c185dd3dec3eaf70aef479781eee14e572a1aef473ca490efcfa",
+      "old_bytes": 51,
+      "new_sha256": "3b451e3ce81e6454e4feae90e2ab419fdb86bd2f888de81fe5a48b570a4f50eb",
+      "new_bytes": 132,
+      "old_start_byte": 2466952,
+      "old_end_byte_exclusive": 2467003,
+      "old_start_line": 55559,
+      "old_global_count": 1,
+      "old_owner_count": 1,
+      "new_global_pre_count": 0,
+      "new_owner_pre_count": 0,
+      "body_only_fragment": true
+    }
+  ],
+  "fourier_lane_recomposition": [
+    {
+      "name": "replace_pair_idx3930_idx3939",
+      "sha256": "1badac1451e11708114eb5438616063379558bcf0579dc82a01c2200b501d365",
+      "bytes": 2812442,
+      "lines": 62933,
+      "manifest_identity_exact": true
+    },
+    {
+      "name": "isolated_idx3933",
+      "sha256": "c118058341d4cadecb73dea395d5fcc7c59a07d9173dd503202e15825e60527d",
+      "bytes": 2812457,
+      "lines": 62934,
+      "manifest_identity_exact": true
+    },
+    {
+      "name": "combined_all_three",
+      "sha256": "824de05e923943fbe1a30fe245a12c165f026a7d2ddb94ba7fdadddf9bda4e17",
+      "bytes": 2812466,
+      "lines": 62934,
+      "manifest_identity_exact": true
+    }
+  ],
+  "weighted_variant_recomposition": [
+    {
+      "name": "I_idx4017_wrapper_first",
+      "sha256": "6b9e3232af984882528a1945788047a8037d42885df00387bae401be79237c5d",
+      "bytes": 2812871,
+      "lines": 62943,
+      "matrix_identity_exact": true
+    },
+    {
+      "name": "I_idx4018_explicit_ext",
+      "sha256": "3c664a86fee618e50581a3d273095e04d486300e41a6bd49339615d778e2117c",
+      "bytes": 2812507,
+      "lines": 62936,
+      "matrix_identity_exact": true
+    },
+    {
+      "name": "I_idx4018_typed_congr",
+      "sha256": "8fa98f131c2ce64f924bfc5ff2e7bc34866dc7de13197b688eb7c2c2aecbce47",
+      "bytes": 2812514,
+      "lines": 62934,
+      "matrix_identity_exact": true
+    },
+    {
+      "name": "I_idx4018_full",
+      "sha256": "8a580de52538b0635dabb7934a06360d6697596d4c2754cf414746292dafeec0",
+      "bytes": 2812588,
+      "lines": 62937,
+      "matrix_identity_exact": true
+    },
+    {
+      "name": "C_producers_wrapper_plus_ext",
+      "sha256": "0a54b13dc941892e12f5397c2a7975fa7129ffb1cfd1170c2ddc84edb5925707",
+      "bytes": 2812945,
+      "lines": 62946,
+      "matrix_identity_exact": true
+    },
+    {
+      "name": "C_producers_full",
+      "sha256": "99f4c65980d223bfcee493f8912e98a9790b75a0faaa7f0826b2c898d11e2057",
+      "bytes": 2813026,
+      "lines": 62947,
+      "matrix_identity_exact": true
+    }
+  ],
+  "collision_audit": {
+    "cross_package_owner_collisions": [],
+    "old_fragment_interval_overlaps": [],
+    "cross_repair_old_new_equal_or_substring_collisions": [],
+    "within_package_shared_owners": {
+      "4018:weightedFull_sub_weightedHard_eq_weightedTail": [
+        "R18E",
+        "R18T"
+      ]
+    },
+    "shared_owner_intervals_disjoint": true,
+    "all_old_exactly_once_globally_and_in_owner": true,
+    "all_new_absent_from_authority": true
+  },
+  "commutativity_audit": {
+    "all_six_forward_reverse_byte_identical": true,
+    "all_six_sha256": "0b5b6553a3979efa48dac95436e61c559abcd8235d13de90eb5acdeed26b9ec8",
+    "fourier_then_weighted_equals_weighted_then_fourier": true,
+    "fourier_pair_then_weighted_equals_weighted_then_fourier_pair": true,
+    "all_no_3933_sha256": "c8720767c6041481ab8c742db46002c4aae738f213c30d70622ae055fcd3ed94"
+  },
+  "invariants_after_recomposition": {
+    "all_fourier_lanes": true,
+    "all_weighted_matrix_variants": true,
+    "all_recommended_variants": true,
+    "locked_4416_declaration_order_and_headers_identical": true,
+    "comments_identical": true,
+    "attributes_identical": true,
+    "trust_six_zero": true,
+    "global_maxHeartbeats_values_identical": true,
+    "imports_options_helpers_or_source_moves_added": false
+  },
+  "recommended_bounded_eight": [
+    {
+      "name": "core",
+      "selected_repairs": [],
+      "sha256": "84e0a7843de9bcf99a25e51db95d48e9d5feceffe4e1b94f315b11d166792e5a",
+      "bytes": 2812433,
+      "lines": 62933
+    },
+    {
+      "name": "fourier_pair",
+      "selected_repairs": [
+        "V61-FOURIER-IDX3930-RING-ALL-FIELDSIMP-GOALS",
+        "V61-FOURIER-IDX3939-AC-RFL-AFTER-RING-NF"
+      ],
+      "sha256": "1badac1451e11708114eb5438616063379558bcf0579dc82a01c2200b501d365",
+      "bytes": 2812442,
+      "lines": 62933
+    },
+    {
+      "name": "fourier_3933_isolated",
+      "selected_repairs": [
+        "V61-FOURIER-IDX3933-STAR-MUL-ISOLATED-PROBE"
+      ],
+      "sha256": "c118058341d4cadecb73dea395d5fcc7c59a07d9173dd503202e15825e60527d",
+      "bytes": 2812457,
+      "lines": 62934
+    },
+    {
+      "name": "weighted_r17",
+      "selected_repairs": [
+        "R17"
+      ],
+      "sha256": "6b9e3232af984882528a1945788047a8037d42885df00387bae401be79237c5d",
+      "bytes": 2812871,
+      "lines": 62943
+    },
+    {
+      "name": "weighted_r17_r18e",
+      "selected_repairs": [
+        "R17",
+        "R18E"
+      ],
+      "sha256": "0a54b13dc941892e12f5397c2a7975fa7129ffb1cfd1170c2ddc84edb5925707",
+      "bytes": 2812945,
+      "lines": 62946
+    },
+    {
+      "name": "weighted_r17_r18e_r18t",
+      "selected_repairs": [
+        "R17",
+        "R18E",
+        "R18T"
+      ],
+      "sha256": "99f4c65980d223bfcee493f8912e98a9790b75a0faaa7f0826b2c898d11e2057",
+      "bytes": 2813026,
+      "lines": 62947
+    },
+    {
+      "name": "all_no_3933",
+      "selected_repairs": [
+        "V61-FOURIER-IDX3930-RING-ALL-FIELDSIMP-GOALS",
+        "V61-FOURIER-IDX3939-AC-RFL-AFTER-RING-NF",
+        "R17",
+        "R18E",
+        "R18T"
+      ],
+      "sha256": "c8720767c6041481ab8c742db46002c4aae738f213c30d70622ae055fcd3ed94",
+      "bytes": 2813035,
+      "lines": 62947
+    },
+    {
+      "name": "all_full",
+      "selected_repairs": [
+        "V61-FOURIER-IDX3930-RING-ALL-FIELDSIMP-GOALS",
+        "V61-FOURIER-IDX3933-STAR-MUL-ISOLATED-PROBE",
+        "V61-FOURIER-IDX3939-AC-RFL-AFTER-RING-NF",
+        "R17",
+        "R18E",
+        "R18T"
+      ],
+      "sha256": "0b5b6553a3979efa48dac95436e61c559abcd8235d13de90eb5acdeed26b9ec8",
+      "bytes": 2813059,
+      "lines": 62948
+    }
+  ],
+  "recommendation": {
+    "decision": "KEEP_EXACT_BOUNDED_EIGHT_VARIANTS",
+    "adjustment_required": false,
+    "rationale": "The eight lanes cover authority control, the two Fourier axes, the dependency-ordered weighted escalation, and the two cross-cluster cumulative endpoints without any static collision. Direct Lean remains the discriminator."
+  },
+  "claim_limits": {
+    "new_v61_repairs_direct_lean_verified": false,
+    "clean_build_claimed": false,
+    "lean_lake_git_github_network_invoked": false
+  }
+}

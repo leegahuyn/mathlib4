@@ -1,0 +1,43 @@
+{
+  "schema": "fa-dynamic-cluster-3152-3157-extendofnorm-v1",
+  "status": "STATIC_STAGED_PENDING_DIRECT_LEAN",
+  "root_family": "same pinned LinearMap.extendOfNorm inference drift as idx3125-3127",
+  "repairs": [
+    {
+      "declaration_index": 3152,
+      "declaration_name": "intrinsicRaisePeterssonCommutator",
+      "old_fragment": "  (intrinsicRaisePeterssonCommutatorCoreMap N n).extendOfNorm\n    (l2Coordinate n)",
+      "new_fragment": "  LinearMap.extendOfNorm\n    (𝕜 := ℂ) (𝕜₂ := ℂ) (σ₁₂ := RingHom.id ℂ)\n    (E := Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n)\n    (Eₗ := OrbitPeterssonHilbert n)\n    (F := OrbitPeterssonHilbert (n + 1))\n    (intrinsicRaisePeterssonCommutatorCoreMap N n) (l2Coordinate n)"
+    },
+    {
+      "declaration_index": 3153,
+      "declaration_name": "intrinsicRaisePeterssonCommutator_l2Coordinate",
+      "old_fragment": "  exact LinearMap.extendOfNorm_eq (denseRange_l2Coordinate n)\n    ⟨intrinsicCommutatorUniformBound,\n      norm_intrinsicRaisePeterssonCommutatorCoreMap_le N n⟩ u",
+      "new_fragment": "  exact LinearMap.extendOfNorm_eq\n    (𝕜 := ℂ) (𝕜₂ := ℂ) (σ₁₂ := RingHom.id ℂ)\n    (E := Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n)\n    (Eₗ := OrbitPeterssonHilbert n)\n    (F := OrbitPeterssonHilbert (n + 1))\n    (f := intrinsicRaisePeterssonCommutatorCoreMap N n)\n    (e := l2Coordinate n)\n    (denseRange_l2Coordinate n)\n    ⟨intrinsicCommutatorUniformBound,\n      norm_intrinsicRaisePeterssonCommutatorCoreMap_le N n⟩ u"
+    },
+    {
+      "declaration_index": 3154,
+      "declaration_name": "intrinsicLowerFromSuccPeterssonCommutator",
+      "old_fragment": "  (intrinsicLowerFromSuccPeterssonCommutatorCoreMap N n).extendOfNorm\n    (l2Coordinate (n + 1))",
+      "new_fragment": "  LinearMap.extendOfNorm\n    (𝕜 := ℂ) (𝕜₂ := ℂ) (σ₁₂ := RingHom.id ℂ)\n    (E := Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore (n + 1))\n    (Eₗ := OrbitPeterssonHilbert (n + 1))\n    (F := OrbitPeterssonHilbert n)\n    (intrinsicLowerFromSuccPeterssonCommutatorCoreMap N n)\n    (l2Coordinate (n + 1))"
+    },
+    {
+      "declaration_index": 3155,
+      "declaration_name": "intrinsicLowerFromSuccPeterssonCommutator_l2Coordinate",
+      "old_fragment": "  exact LinearMap.extendOfNorm_eq (denseRange_l2Coordinate (n + 1))\n    ⟨intrinsicCommutatorUniformBound,\n      norm_intrinsicLowerFromSuccPeterssonCommutatorCoreMap_le N n⟩ u",
+      "new_fragment": "  exact LinearMap.extendOfNorm_eq\n    (𝕜 := ℂ) (𝕜₂ := ℂ) (σ₁₂ := RingHom.id ℂ)\n    (E := Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore (n + 1))\n    (Eₗ := OrbitPeterssonHilbert (n + 1))\n    (F := OrbitPeterssonHilbert n)\n    (f := intrinsicLowerFromSuccPeterssonCommutatorCoreMap N n)\n    (e := l2Coordinate (n + 1))\n    (denseRange_l2Coordinate (n + 1))\n    ⟨intrinsicCommutatorUniformBound,\n      norm_intrinsicLowerFromSuccPeterssonCommutatorCoreMap_le N n⟩ u"
+    },
+    {
+      "declaration_index": 3156,
+      "declaration_name": "norm_intrinsicRaisePeterssonCommutator_apply_le",
+      "old_fragment": "  exact LinearMap.norm_extendOfNorm_apply_le\n    (denseRange_l2Coordinate n) intrinsicCommutatorUniformBound\n    (norm_intrinsicRaisePeterssonCommutatorCoreMap_le N n) x",
+      "new_fragment": "  exact LinearMap.norm_extendOfNorm_apply_le\n    (𝕜 := ℂ) (𝕜₂ := ℂ) (σ₁₂ := RingHom.id ℂ)\n    (E := Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n)\n    (Eₗ := OrbitPeterssonHilbert n)\n    (F := OrbitPeterssonHilbert (n + 1))\n    (f := intrinsicRaisePeterssonCommutatorCoreMap N n)\n    (e := l2Coordinate n)\n    (denseRange_l2Coordinate n) intrinsicCommutatorUniformBound\n    (norm_intrinsicRaisePeterssonCommutatorCoreMap_le N n) x"
+    },
+    {
+      "declaration_index": 3157,
+      "declaration_name": "norm_intrinsicLowerFromSuccPeterssonCommutator_apply_le",
+      "old_fragment": "  exact LinearMap.norm_extendOfNorm_apply_le\n    (denseRange_l2Coordinate (n + 1)) intrinsicCommutatorUniformBound\n    (norm_intrinsicLowerFromSuccPeterssonCommutatorCoreMap_le N n) x",
+      "new_fragment": "  exact LinearMap.norm_extendOfNorm_apply_le\n    (𝕜 := ℂ) (𝕜₂ := ℂ) (σ₁₂ := RingHom.id ℂ)\n    (E := Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore (n + 1))\n    (Eₗ := OrbitPeterssonHilbert (n + 1))\n    (F := OrbitPeterssonHilbert n)\n    (f := intrinsicLowerFromSuccPeterssonCommutatorCoreMap N n)\n    (e := l2Coordinate (n + 1))\n    (denseRange_l2Coordinate (n + 1)) intrinsicCommutatorUniformBound\n    (norm_intrinsicLowerFromSuccPeterssonCommutatorCoreMap_le N n) x"
+    }
+  ]
+}

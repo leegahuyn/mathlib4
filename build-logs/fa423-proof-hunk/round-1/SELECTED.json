@@ -1,0 +1,535 @@
+{
+  "immutable": {
+    "ref": "origin/champion/fa-pass376-31725-07f6efd-immutable",
+    "sha256": "07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4",
+    "first_error_line": 31725
+  },
+  "selection_policy": "evidence SHA must match checked-in source; imports and declaration headers unchanged; direct Lean replay required",
+  "prerequisites": {
+    "Mock2": {
+      "exit_code": 0,
+      "errors": 0,
+      "first_line": null,
+      "first_col": null,
+      "first_message": "",
+      "artifacts_ok": true,
+      "source_sha256": "36a034721c389888b2c235d856753e5f2e38f9f6a258fddabbb70fe751ae3594",
+      "log_path": "build-logs/fa413-strict-transplant/Mock2-run1.log"
+    },
+    "Mock2_Advanced": {
+      "exit_code": 0,
+      "errors": 0,
+      "first_line": null,
+      "first_col": null,
+      "first_message": "",
+      "artifacts_ok": true,
+      "source_sha256": "cf44063abca1d5b47331a9001a3cff45a86b5e889865812fe4e7826c6af41526",
+      "log_path": "build-logs/fa413-strict-transplant/Mock2_Advanced-run1.log"
+    }
+  },
+  "selected": {
+    "ref": "origin/fix/fa422-canonical-decl-controller-20260809",
+    "source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+    "evidence_path": "build-logs/fa422-canonical-decl/CURRENT.json",
+    "complete": false,
+    "claimed_exit_code": 1,
+    "claimed_first_line": 31726,
+    "claimed_normalized_first_line": 31726,
+    "line_count": 60453,
+    "line_delta": 0,
+    "direct_metric": {
+      "exit_code": 1,
+      "errors": 2,
+      "first_line": 31726,
+      "first_col": 2,
+      "first_message": "Type mismatch: After simplification, term",
+      "artifacts_ok": false,
+      "source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+      "log_path": "build-logs/fa413-strict-transplant/selection-candidate-12.log"
+    },
+    "direct_normalized_first_line": 31726
+  },
+  "eligible_claims": [
+    {
+      "ref": "origin/champion/fa-pass376-31725-07f6efd-immutable",
+      "source_sha256": "07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4",
+      "evidence_path": "build-logs/pass376-champion-restore/CURRENT.json",
+      "complete": true,
+      "claimed_exit_code": 1,
+      "claimed_first_line": null,
+      "claimed_normalized_first_line": null,
+      "line_count": 60453,
+      "line_delta": 0
+    },
+    {
+      "ref": "origin/fix/fa423-proof-hunk-controller-20260809",
+      "source_sha256": "07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4",
+      "evidence_path": "build-logs/pass376-champion-restore/CURRENT.json",
+      "complete": true,
+      "claimed_exit_code": 1,
+      "claimed_first_line": null,
+      "claimed_normalized_first_line": null,
+      "line_count": 60453,
+      "line_delta": 0
+    },
+    {
+      "ref": "origin/fix/fa411-from-pass376-champion-20260809",
+      "source_sha256": "07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4",
+      "evidence_path": "build-logs/pass376-champion-restore/CURRENT.json",
+      "complete": true,
+      "claimed_exit_code": 1,
+      "claimed_first_line": null,
+      "claimed_normalized_first_line": null,
+      "line_count": 60453,
+      "line_delta": 0
+    },
+    {
+      "ref": "origin/fix/fa412-broad-from-pass376-20260809",
+      "source_sha256": "07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4",
+      "evidence_path": "build-logs/pass376-champion-restore/CURRENT.json",
+      "complete": true,
+      "claimed_exit_code": 1,
+      "claimed_first_line": null,
+      "claimed_normalized_first_line": null,
+      "line_count": 60453,
+      "line_delta": 0
+    },
+    {
+      "ref": "origin/fix/fa413-strict-transplant-from-31725-20260809",
+      "source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+      "evidence_path": "build-logs/pass376-champion-restore/CURRENT.json",
+      "complete": true,
+      "claimed_exit_code": 1,
+      "claimed_first_line": null,
+      "claimed_normalized_first_line": null,
+      "line_count": 60453,
+      "line_delta": 0
+    },
+    {
+      "ref": "origin/fix/fa414-full-script-tournament-from-31725-20260809",
+      "source_sha256": "07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4",
+      "evidence_path": "build-logs/pass376-champion-restore/CURRENT.json",
+      "complete": true,
+      "claimed_exit_code": 1,
+      "claimed_first_line": null,
+      "claimed_normalized_first_line": null,
+      "line_count": 60453,
+      "line_delta": 0
+    },
+    {
+      "ref": "origin/fix/fa415-fast-strict-tournament-20260809",
+      "source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+      "evidence_path": "build-logs/pass376-champion-restore/CURRENT.json",
+      "complete": true,
+      "claimed_exit_code": 1,
+      "claimed_first_line": null,
+      "claimed_normalized_first_line": null,
+      "line_count": 60453,
+      "line_delta": 0
+    },
+    {
+      "ref": "origin/fix/fa416-autonomous-strict-chain-20260809",
+      "source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+      "evidence_path": "build-logs/pass376-champion-restore/CURRENT.json",
+      "complete": true,
+      "claimed_exit_code": 1,
+      "claimed_first_line": null,
+      "claimed_normalized_first_line": null,
+      "line_count": 60453,
+      "line_delta": 0
+    },
+    {
+      "ref": "origin/fix/fa417-history-mining-chain-20260809",
+      "source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+      "evidence_path": "build-logs/pass376-champion-restore/CURRENT.json",
+      "complete": true,
+      "claimed_exit_code": 1,
+      "claimed_first_line": null,
+      "claimed_normalized_first_line": null,
+      "line_count": 60453,
+      "line_delta": 0
+    },
+    {
+      "ref": "origin/fix/fa418-lsp-strict-chain-20260809",
+      "source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+      "evidence_path": "build-logs/pass376-champion-restore/CURRENT.json",
+      "complete": true,
+      "claimed_exit_code": 1,
+      "claimed_first_line": null,
+      "claimed_normalized_first_line": null,
+      "line_count": 60453,
+      "line_delta": 0
+    },
+    {
+      "ref": "origin/fix/fa419-lsp-fixed-chain-20260809",
+      "source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+      "evidence_path": "build-logs/pass376-champion-restore/CURRENT.json",
+      "complete": true,
+      "claimed_exit_code": 1,
+      "claimed_first_line": null,
+      "claimed_normalized_first_line": null,
+      "line_count": 60453,
+      "line_delta": 0
+    },
+    {
+      "ref": "origin/fix/fa422-canonical-decl-controller-20260809",
+      "source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+      "evidence_path": "build-logs/fa422-canonical-decl/CURRENT.json",
+      "complete": false,
+      "claimed_exit_code": 1,
+      "claimed_first_line": 31726,
+      "claimed_normalized_first_line": 31726,
+      "line_count": 60453,
+      "line_delta": 0
+    },
+    {
+      "ref": "origin/fix/fa421-name-body-controller-20260809",
+      "source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+      "evidence_path": "build-logs/fa421-name-body/CURRENT.json",
+      "complete": false,
+      "claimed_exit_code": 1,
+      "claimed_first_line": 31726,
+      "claimed_normalized_first_line": 31726,
+      "line_count": 60453,
+      "line_delta": 0
+    },
+    {
+      "ref": "origin/fix/fa420-evidence-controller-20260809",
+      "source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+      "evidence_path": "build-logs/fa420-evidence-controller/CURRENT.json",
+      "complete": false,
+      "claimed_exit_code": 1,
+      "claimed_first_line": 31726,
+      "claimed_normalized_first_line": 31726,
+      "line_count": 60453,
+      "line_delta": 0
+    }
+  ],
+  "direct_probes": [
+    {
+      "ref": "origin/champion/fa-pass376-31725-07f6efd-immutable",
+      "source_sha256": "07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4",
+      "evidence_path": "build-logs/pass376-champion-restore/CURRENT.json",
+      "claimed": {
+        "ref": "origin/champion/fa-pass376-31725-07f6efd-immutable",
+        "source_sha256": "07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4",
+        "evidence_path": "build-logs/pass376-champion-restore/CURRENT.json",
+        "complete": true,
+        "claimed_exit_code": 1,
+        "claimed_first_line": null,
+        "claimed_normalized_first_line": null,
+        "line_count": 60453,
+        "line_delta": 0
+      },
+      "direct_metric": {
+        "exit_code": 1,
+        "errors": 2,
+        "first_line": 31725,
+        "first_col": 2,
+        "first_message": "Type mismatch: After simplification, term",
+        "artifacts_ok": false,
+        "source_sha256": "07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4",
+        "log_path": "build-logs/fa413-strict-transplant/selection-candidate-01.log"
+      },
+      "direct_normalized_first_line": 31725
+    },
+    {
+      "ref": "origin/fix/fa423-proof-hunk-controller-20260809",
+      "source_sha256": "07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4",
+      "evidence_path": "build-logs/pass376-champion-restore/CURRENT.json",
+      "claimed": {
+        "ref": "origin/fix/fa423-proof-hunk-controller-20260809",
+        "source_sha256": "07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4",
+        "evidence_path": "build-logs/pass376-champion-restore/CURRENT.json",
+        "complete": true,
+        "claimed_exit_code": 1,
+        "claimed_first_line": null,
+        "claimed_normalized_first_line": null,
+        "line_count": 60453,
+        "line_delta": 0
+      },
+      "direct_metric": {
+        "exit_code": 1,
+        "errors": 2,
+        "first_line": 31725,
+        "first_col": 2,
+        "first_message": "Type mismatch: After simplification, term",
+        "artifacts_ok": false,
+        "source_sha256": "07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4",
+        "log_path": "build-logs/fa413-strict-transplant/selection-candidate-02.log"
+      },
+      "direct_normalized_first_line": 31725
+    },
+    {
+      "ref": "origin/fix/fa411-from-pass376-champion-20260809",
+      "source_sha256": "07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4",
+      "evidence_path": "build-logs/pass376-champion-restore/CURRENT.json",
+      "claimed": {
+        "ref": "origin/fix/fa411-from-pass376-champion-20260809",
+        "source_sha256": "07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4",
+        "evidence_path": "build-logs/pass376-champion-restore/CURRENT.json",
+        "complete": true,
+        "claimed_exit_code": 1,
+        "claimed_first_line": null,
+        "claimed_normalized_first_line": null,
+        "line_count": 60453,
+        "line_delta": 0
+      },
+      "direct_metric": {
+        "exit_code": 1,
+        "errors": 2,
+        "first_line": 31725,
+        "first_col": 2,
+        "first_message": "Type mismatch: After simplification, term",
+        "artifacts_ok": false,
+        "source_sha256": "07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4",
+        "log_path": "build-logs/fa413-strict-transplant/selection-candidate-03.log"
+      },
+      "direct_normalized_first_line": 31725
+    },
+    {
+      "ref": "origin/fix/fa412-broad-from-pass376-20260809",
+      "source_sha256": "07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4",
+      "evidence_path": "build-logs/pass376-champion-restore/CURRENT.json",
+      "claimed": {
+        "ref": "origin/fix/fa412-broad-from-pass376-20260809",
+        "source_sha256": "07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4",
+        "evidence_path": "build-logs/pass376-champion-restore/CURRENT.json",
+        "complete": true,
+        "claimed_exit_code": 1,
+        "claimed_first_line": null,
+        "claimed_normalized_first_line": null,
+        "line_count": 60453,
+        "line_delta": 0
+      },
+      "direct_metric": {
+        "exit_code": 1,
+        "errors": 2,
+        "first_line": 31725,
+        "first_col": 2,
+        "first_message": "Type mismatch: After simplification, term",
+        "artifacts_ok": false,
+        "source_sha256": "07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4",
+        "log_path": "build-logs/fa413-strict-transplant/selection-candidate-04.log"
+      },
+      "direct_normalized_first_line": 31725
+    },
+    {
+      "ref": "origin/fix/fa413-strict-transplant-from-31725-20260809",
+      "source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+      "evidence_path": "build-logs/pass376-champion-restore/CURRENT.json",
+      "claimed": {
+        "ref": "origin/fix/fa413-strict-transplant-from-31725-20260809",
+        "source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+        "evidence_path": "build-logs/pass376-champion-restore/CURRENT.json",
+        "complete": true,
+        "claimed_exit_code": 1,
+        "claimed_first_line": null,
+        "claimed_normalized_first_line": null,
+        "line_count": 60453,
+        "line_delta": 0
+      },
+      "direct_metric": {
+        "exit_code": 1,
+        "errors": 2,
+        "first_line": 31726,
+        "first_col": 2,
+        "first_message": "Type mismatch: After simplification, term",
+        "artifacts_ok": false,
+        "source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+        "log_path": "build-logs/fa413-strict-transplant/selection-candidate-05.log"
+      },
+      "direct_normalized_first_line": 31726
+    },
+    {
+      "ref": "origin/fix/fa414-full-script-tournament-from-31725-20260809",
+      "source_sha256": "07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4",
+      "evidence_path": "build-logs/pass376-champion-restore/CURRENT.json",
+      "claimed": {
+        "ref": "origin/fix/fa414-full-script-tournament-from-31725-20260809",
+        "source_sha256": "07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4",
+        "evidence_path": "build-logs/pass376-champion-restore/CURRENT.json",
+        "complete": true,
+        "claimed_exit_code": 1,
+        "claimed_first_line": null,
+        "claimed_normalized_first_line": null,
+        "line_count": 60453,
+        "line_delta": 0
+      },
+      "direct_metric": {
+        "exit_code": 1,
+        "errors": 2,
+        "first_line": 31725,
+        "first_col": 2,
+        "first_message": "Type mismatch: After simplification, term",
+        "artifacts_ok": false,
+        "source_sha256": "07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4",
+        "log_path": "build-logs/fa413-strict-transplant/selection-candidate-06.log"
+      },
+      "direct_normalized_first_line": 31725
+    },
+    {
+      "ref": "origin/fix/fa415-fast-strict-tournament-20260809",
+      "source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+      "evidence_path": "build-logs/pass376-champion-restore/CURRENT.json",
+      "claimed": {
+        "ref": "origin/fix/fa415-fast-strict-tournament-20260809",
+        "source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+        "evidence_path": "build-logs/pass376-champion-restore/CURRENT.json",
+        "complete": true,
+        "claimed_exit_code": 1,
+        "claimed_first_line": null,
+        "claimed_normalized_first_line": null,
+        "line_count": 60453,
+        "line_delta": 0
+      },
+      "direct_metric": {
+        "exit_code": 1,
+        "errors": 2,
+        "first_line": 31726,
+        "first_col": 2,
+        "first_message": "Type mismatch: After simplification, term",
+        "artifacts_ok": false,
+        "source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+        "log_path": "build-logs/fa413-strict-transplant/selection-candidate-07.log"
+      },
+      "direct_normalized_first_line": 31726
+    },
+    {
+      "ref": "origin/fix/fa416-autonomous-strict-chain-20260809",
+      "source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+      "evidence_path": "build-logs/pass376-champion-restore/CURRENT.json",
+      "claimed": {
+        "ref": "origin/fix/fa416-autonomous-strict-chain-20260809",
+        "source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+        "evidence_path": "build-logs/pass376-champion-restore/CURRENT.json",
+        "complete": true,
+        "claimed_exit_code": 1,
+        "claimed_first_line": null,
+        "claimed_normalized_first_line": null,
+        "line_count": 60453,
+        "line_delta": 0
+      },
+      "direct_metric": {
+        "exit_code": 1,
+        "errors": 2,
+        "first_line": 31726,
+        "first_col": 2,
+        "first_message": "Type mismatch: After simplification, term",
+        "artifacts_ok": false,
+        "source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+        "log_path": "build-logs/fa413-strict-transplant/selection-candidate-08.log"
+      },
+      "direct_normalized_first_line": 31726
+    },
+    {
+      "ref": "origin/fix/fa417-history-mining-chain-20260809",
+      "source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+      "evidence_path": "build-logs/pass376-champion-restore/CURRENT.json",
+      "claimed": {
+        "ref": "origin/fix/fa417-history-mining-chain-20260809",
+        "source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+        "evidence_path": "build-logs/pass376-champion-restore/CURRENT.json",
+        "complete": true,
+        "claimed_exit_code": 1,
+        "claimed_first_line": null,
+        "claimed_normalized_first_line": null,
+        "line_count": 60453,
+        "line_delta": 0
+      },
+      "direct_metric": {
+        "exit_code": 1,
+        "errors": 2,
+        "first_line": 31726,
+        "first_col": 2,
+        "first_message": "Type mismatch: After simplification, term",
+        "artifacts_ok": false,
+        "source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+        "log_path": "build-logs/fa413-strict-transplant/selection-candidate-09.log"
+      },
+      "direct_normalized_first_line": 31726
+    },
+    {
+      "ref": "origin/fix/fa418-lsp-strict-chain-20260809",
+      "source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+      "evidence_path": "build-logs/pass376-champion-restore/CURRENT.json",
+      "claimed": {
+        "ref": "origin/fix/fa418-lsp-strict-chain-20260809",
+        "source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+        "evidence_path": "build-logs/pass376-champion-restore/CURRENT.json",
+        "complete": true,
+        "claimed_exit_code": 1,
+        "claimed_first_line": null,
+        "claimed_normalized_first_line": null,
+        "line_count": 60453,
+        "line_delta": 0
+      },
+      "direct_metric": {
+        "exit_code": 1,
+        "errors": 2,
+        "first_line": 31726,
+        "first_col": 2,
+        "first_message": "Type mismatch: After simplification, term",
+        "artifacts_ok": false,
+        "source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+        "log_path": "build-logs/fa413-strict-transplant/selection-candidate-10.log"
+      },
+      "direct_normalized_first_line": 31726
+    },
+    {
+      "ref": "origin/fix/fa419-lsp-fixed-chain-20260809",
+      "source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+      "evidence_path": "build-logs/pass376-champion-restore/CURRENT.json",
+      "claimed": {
+        "ref": "origin/fix/fa419-lsp-fixed-chain-20260809",
+        "source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+        "evidence_path": "build-logs/pass376-champion-restore/CURRENT.json",
+        "complete": true,
+        "claimed_exit_code": 1,
+        "claimed_first_line": null,
+        "claimed_normalized_first_line": null,
+        "line_count": 60453,
+        "line_delta": 0
+      },
+      "direct_metric": {
+        "exit_code": 1,
+        "errors": 2,
+        "first_line": 31726,
+        "first_col": 2,
+        "first_message": "Type mismatch: After simplification, term",
+        "artifacts_ok": false,
+        "source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+        "log_path": "build-logs/fa413-strict-transplant/selection-candidate-11.log"
+      },
+      "direct_normalized_first_line": 31726
+    },
+    {
+      "ref": "origin/fix/fa422-canonical-decl-controller-20260809",
+      "source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+      "evidence_path": "build-logs/fa422-canonical-decl/CURRENT.json",
+      "claimed": {
+        "ref": "origin/fix/fa422-canonical-decl-controller-20260809",
+        "source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+        "evidence_path": "build-logs/fa422-canonical-decl/CURRENT.json",
+        "complete": false,
+        "claimed_exit_code": 1,
+        "claimed_first_line": 31726,
+        "claimed_normalized_first_line": 31726,
+        "line_count": 60453,
+        "line_delta": 0
+      },
+      "direct_metric": {
+        "exit_code": 1,
+        "errors": 2,
+        "first_line": 31726,
+        "first_col": 2,
+        "first_message": "Type mismatch: After simplification, term",
+        "artifacts_ok": false,
+        "source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+        "log_path": "build-logs/fa413-strict-transplant/selection-candidate-12.log"
+      },
+      "direct_normalized_first_line": 31726
+    }
+  ],
+  "rejected": []
+}

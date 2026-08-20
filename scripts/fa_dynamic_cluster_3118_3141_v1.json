@@ -1,0 +1,76 @@
+{
+  "schema": "fa-dynamic-cluster-3118-3141-v1",
+  "status": "STATIC_STAGED_PENDING_DIRECT_LEAN",
+  "repairs": [
+    {
+      "declaration_index": 3118,
+      "declaration_name": "intrinsicCuspCutoffOperator",
+      "old_fragment": "  toFun u :=\n    invariantCutoffTimesOrbitSection n\n      (intrinsicCuspCutoffSmoothQuotient N)\n      (intrinsicCuspCutoffSmoothQuotient_invariant N)\n      (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.toWeightSection n u)\n      (u : SmoothQuotientCompactFunction).1.2\n  map_add' u v := by\n    apply Subtype.ext\n    apply Subtype.ext\n    apply Subtype.ext\n    funext z\n    rfl\n  map_smul' c u := by\n    apply Subtype.ext\n    apply Subtype.ext\n    apply Subtype.ext\n    funext z\n    rfl",
+      "new_fragment": "  toFun u :=\n    invariantCutoffTimesOrbitSection n\n      (intrinsicCuspCutoffSmoothQuotient N)\n      (intrinsicCuspCutoffSmoothQuotient_invariant N)\n      (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.toWeightSection n u)\n      (u : SmoothQuotientCompactFunction).1.2\n  map_add' u v := by\n    apply Subtype.ext\n    apply Subtype.ext\n    apply Subtype.ext\n    funext z\n    change\n      (intrinsicCuspCutoffSmoothQuotient N : ℍ → ℂ) z *\n          (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.toWeightSection n (u + v)) z =\n        (intrinsicCuspCutoffSmoothQuotient N : ℍ → ℂ) z *\n            (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.toWeightSection n u) z +\n          (intrinsicCuspCutoffSmoothQuotient N : ℍ → ℂ) z *\n            (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.toWeightSection n v) z\n    simp only [map_add, HalfIntegralMultiplier.WeightSection.add_apply, mul_add]\n  map_smul' c u := by\n    apply Subtype.ext\n    apply Subtype.ext\n    apply Subtype.ext\n    funext z\n    change\n      (intrinsicCuspCutoffSmoothQuotient N : ℍ → ℂ) z *\n          (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.toWeightSection n (c • u)) z =\n        c *\n          ((intrinsicCuspCutoffSmoothQuotient N : ℍ → ℂ) z *\n            (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.toWeightSection n u) z)\n    simp only [map_smul, HalfIntegralMultiplier.WeightSection.smul_apply, smul_eq_mul]\n    ring"
+    },
+    {
+      "declaration_index": 3121,
+      "declaration_name": "exists_intrinsicCuspCutoffOperator_eventually_eq",
+      "old_fragment": "      simpa only [w, gammaTwoQuotientMk_smul] using hzSupport",
+      "new_fragment": "      change gammaTwoQuotientMk w ∈\n        quotientTSupport\n          (((u : SmoothQuotientCompactFunction) : ℍ → ℂ))\n      simpa only [w, gammaTwoQuotientMk_smul] using hzSupport"
+    },
+    {
+      "declaration_index": 3128,
+      "declaration_name": "intrinsicPeterssonCuspCutoff_tendsto_id",
+      "old_fragment": "  rw [Metric.tendsto_atTop]\n  intro eps heps\n  obtain ⟨u, hu⟩ :=\n    (denseRange_l2Coordinate n).exists_dist_lt x (eps / 2)\n  obtain ⟨N, hN⟩ :=\n    exists_intrinsicCuspCutoffOperator_eventually_eq n u\n  refine ⟨N, fun M hM ↦ ?_⟩\n  have hCore : intrinsicPeterssonCuspCutoff M n (l2Coordinate n u) =\n      l2Coordinate n u := by\n    rw [intrinsicPeterssonCuspCutoff_l2Coordinate, hN M hM]\n  have hOne : ‖x - l2Coordinate n u‖ < eps / 2 := by\n    simpa only [dist_eq_norm, norm_sub_rev] using hu\n  have hTwo : ‖l2Coordinate n u - x‖ < eps / 2 := by\n    simpa only [dist_eq_norm] using hu\n  rw [dist_eq_norm]\n  have hRewrite : intrinsicPeterssonCuspCutoff M n x - x =\n      intrinsicPeterssonCuspCutoff M n (x - l2Coordinate n u) +\n        (l2Coordinate n u - x) := by\n    rw [map_sub, hCore]\n    abel\n  rw [hRewrite]\n  calc\n    ‖intrinsicPeterssonCuspCutoff M n (x - l2Coordinate n u) +\n        (l2Coordinate n u - x)‖ ≤\n      ‖intrinsicPeterssonCuspCutoff M n (x - l2Coordinate n u)‖ +\n        ‖l2Coordinate n u - x‖ := norm_add_le _ _\n    _ ≤ ‖x - l2Coordinate n u‖ + ‖l2Coordinate n u - x‖ :=\n      add_le_add_right\n        (norm_intrinsicPeterssonCuspCutoff_apply_le M n _) _\n    _ < eps / 2 + eps / 2 := add_lt_add hOne hTwo\n    _ = eps := by ring",
+      "new_fragment": "  rw [Metric.tendsto_atTop]\n  intro eps heps\n  obtain ⟨u, hu⟩ :=\n    (denseRange_l2Coordinate n).exists_dist_lt x (half_pos heps)\n  obtain ⟨N, hN⟩ :=\n    exists_intrinsicCuspCutoffOperator_eventually_eq n u\n  refine ⟨N, ?_⟩\n  intro M hM\n  have hCore : intrinsicPeterssonCuspCutoff M n (l2Coordinate n u) =\n      l2Coordinate n u := by\n    rw [intrinsicPeterssonCuspCutoff_l2Coordinate, hN M hM]\n  have hOne : ‖x - l2Coordinate n u‖ < eps / 2 := by\n    simpa only [dist_eq_norm, norm_sub_rev] using hu\n  have hTwo : ‖l2Coordinate n u - x‖ < eps / 2 := by\n    simpa only [norm_sub_rev] using hOne\n  have hRewrite : intrinsicPeterssonCuspCutoff M n x - x =\n      intrinsicPeterssonCuspCutoff M n (x - l2Coordinate n u) +\n        (l2Coordinate n u - x) := by\n    rw [map_sub, hCore]\n    abel\n  rw [dist_eq_norm, hRewrite]\n  calc\n    ‖intrinsicPeterssonCuspCutoff M n (x - l2Coordinate n u) +\n        (l2Coordinate n u - x)‖ ≤\n      ‖intrinsicPeterssonCuspCutoff M n (x - l2Coordinate n u)‖ +\n        ‖l2Coordinate n u - x‖ := norm_add_le _ _\n    _ ≤ ‖x - l2Coordinate n u‖ + ‖l2Coordinate n u - x‖ :=\n      add_le_add\n        (norm_intrinsicPeterssonCuspCutoff_apply_le M n\n          (x - l2Coordinate n u)) le_rfl\n    _ < eps / 2 + eps / 2 := add_lt_add hOne hTwo\n    _ = eps := by ring"
+    },
+    {
+      "declaration_index": 3129,
+      "declaration_name": "inner_intrinsicPeterssonCuspCutoffCoreMap",
+      "old_fragment": "      rw [hCu, hV, hU, hCv,\n        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,\n        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,\n        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,\n        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,\n        intrinsicCuspCutoffOperator_apply,\n        intrinsicCuspCutoffOperator_apply]\n      have hReal : star (intrinsicCuspCutoff N z) =\n          intrinsicCuspCutoff N z := by\n        simp only [intrinsicCuspCutoff, Complex.conj_ofReal]\n      simp only [map_mul, hReal]\n      ring",
+      "new_fragment": "      rw [hCu, hV, hU, hCv,\n        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,\n        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,\n        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,\n        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,\n        intrinsicCuspCutoffOperator_apply,\n        intrinsicCuspCutoffOperator_apply]\n      simp only [RCLike.inner_apply, starRingEnd_apply]\n      have hHeightStar :\n          star (((z.im ^\n            Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent n : ℝ)) : ℂ) =\n            (((z.im ^\n              Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent n : ℝ)) : ℂ) := by\n        rw [Complex.star_def, Complex.conj_ofReal]\n      have hCutoffStar : star (intrinsicCuspCutoff N z) =\n          intrinsicCuspCutoff N z := by\n        unfold intrinsicCuspCutoff\n        rw [Complex.star_def, Complex.conj_ofReal]\n      simp only [star_mul', hHeightStar, hCutoffStar]\n      ring"
+    },
+    {
+      "declaration_index": 3130,
+      "declaration_name": "intrinsicPeterssonCuspCutoff_isSelfAdjoint",
+      "old_fragment": "  intro v\n  rw [intrinsicPeterssonCuspCutoff_l2Coordinate,\n    intrinsicPeterssonCuspCutoff_l2Coordinate]\n  exact inner_intrinsicPeterssonCuspCutoffCoreMap N n u v",
+      "new_fragment": "  intro v\n  change inner ℂ\n      (intrinsicPeterssonCuspCutoff N n (l2Coordinate n u))\n      (l2Coordinate n v) =\n    inner ℂ (l2Coordinate n u)\n      (intrinsicPeterssonCuspCutoff N n (l2Coordinate n v))\n  rw [intrinsicPeterssonCuspCutoff_l2Coordinate,\n    intrinsicPeterssonCuspCutoff_l2Coordinate]\n  exact inner_intrinsicPeterssonCuspCutoffCoreMap N n u v"
+    },
+    {
+      "declaration_index": 3135,
+      "declaration_name": "intrinsicLowerCommutatorCoefficient_realSmooth",
+      "old_fragment": "  (realSmooth_heightC.inv heightC_ne_zero).mul\n    (realSmooth_lowerRaw 0 (intrinsicCuspCutoff_realSmooth N))",
+      "new_fragment": "  (RealSmooth.inv realSmooth_heightC heightC_ne_zero).mul\n    (realSmooth_lowerRaw 0 (intrinsicCuspCutoff_realSmooth N))"
+    },
+    {
+      "declaration_index": 3136,
+      "declaration_name": "intrinsicRaiseCommutatorCoefficient_quotientCompact",
+      "old_fragment": "  simpa only [intrinsicRaiseCommutatorCoefficient, mul_comm] using\n    ((intrinsicCuspCutoff_quotientCompact N).raiseRaw 0).mul_right heightC",
+      "new_fragment": "  change HasQuotientCompactSupport\n    (heightC * raiseRaw 0 (intrinsicCuspCutoff N))\n  rw [show heightC * raiseRaw 0 (intrinsicCuspCutoff N) =\n      raiseRaw 0 (intrinsicCuspCutoff N) * heightC by\n    funext z\n    exact mul_comm _ _]\n  exact (HasQuotientCompactSupport.raiseRaw\n    (intrinsicCuspCutoff_quotientCompact N) 0).mul_right heightC"
+    },
+    {
+      "declaration_index": 3137,
+      "declaration_name": "intrinsicLowerCommutatorCoefficient_quotientCompact",
+      "old_fragment": "  simpa only [intrinsicLowerCommutatorCoefficient, mul_comm] using\n    ((intrinsicCuspCutoff_quotientCompact N).lowerRaw 0).mul_right\n      (fun z ↦ (heightC z)⁻¹)",
+      "new_fragment": "  change HasQuotientCompactSupport\n    ((fun z ↦ (heightC z)⁻¹) * lowerRaw 0 (intrinsicCuspCutoff N))\n  rw [show (fun z ↦ (heightC z)⁻¹) * lowerRaw 0 (intrinsicCuspCutoff N) =\n      lowerRaw 0 (intrinsicCuspCutoff N) * (fun z ↦ (heightC z)⁻¹) by\n    funext z\n    exact mul_comm _ _]\n  exact (HasQuotientCompactSupport.lowerRaw\n    (intrinsicCuspCutoff_quotientCompact N) 0).mul_right\n      (fun z ↦ (heightC z)⁻¹)"
+    },
+    {
+      "declaration_index": 3140,
+      "declaration_name": "norm_intrinsicRaiseCommutatorCoefficient_le",
+      "old_fragment": "      simp only [norm_mul, norm_I, one_mul]\n      ring",
+      "new_fragment": "      simp only [norm_mul, Complex.norm_I, one_mul]\n      ring"
+    },
+    {
+      "declaration_index": 3141,
+      "declaration_name": "norm_intrinsicLowerCommutatorCoefficient_le",
+      "replacements": [
+        {
+          "id": "remove-field-simp-extra-ring",
+          "old_fragment": "    unfold intrinsicLowerCommutatorCoefficient lowerRaw\n    field_simp [heightC_ne_zero z]\n    ring",
+          "new_fragment": "    unfold intrinsicLowerCommutatorCoefficient lowerRaw\n    field_simp [heightC_ne_zero z]"
+        },
+        {
+          "id": "complex-norm-I",
+          "old_fragment": "      simp only [norm_mul, norm_neg, norm_I, one_mul]\n      ring",
+          "new_fragment": "      simp only [norm_mul, norm_neg, Complex.norm_I, one_mul]\n      ring"
+        }
+      ]
+    }
+  ]
+}

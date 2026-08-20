@@ -1,0 +1,84 @@
+name: Codex FA499 eta-expanded Complex.mk fast strict direct Lean
+# retrigger eta candidate after smoke success; prioritize full direct Lean
+
+on:
+  push:
+    branches:
+      - fix/fa499-height-basepoint-eta-continuity-20260811
+    paths:
+      - .github/workflows/codex-fa499-observe.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+  issues: write
+
+concurrency:
+  group: codex-fa499-observe
+  cancel-in-progress: true
+
+jobs:
+  observe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+    env:
+      FA_COMPILE_MAX_ERRORS: "1"
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Publish FA499 start identity
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          body="## FA499 authoritative fast observer started\n\n- run_id: \`${GITHUB_RUN_ID}\`\n- head_sha: \`${GITHUB_SHA}\`\n- sequence: \`FA475 -> ... -> FA498 -> FA499\`\n- upstream_FA498_run: \`31467555411\`\n- upstream_FA498_job: \`93703523832\`\n- upstream_FA498_source: \`a4c29aaf4669f99dbdfe7de1c2c4f305bfb7067e8cdc1b08aa3d2a6d6ec9b627\`\n- frontier: \`35657:8 selectedHeightBasePoint_continuousOn_Ioi / index 2822\`\n- patch: \`eta-expand Complex.mk t before mk_eq_add_mul_I\`\n- smoke_run: \`31468258552 success\`\n- FA_compile_maxErrors: \`1\`"
+          gh api "repos/${GITHUB_REPOSITORY}/issues/14/comments" -f body="$body"
+      - name: Run exact FA499 candidate/direct Lean and retain exit
+        id: run
+        shell: bash
+        run: |
+          set +e
+          bash scripts/fa499_height_basepoint_eta_continuity_candidate_ci.sh 2>&1 | tee /tmp/fa499.log
+          code=${PIPESTATUS[0]}
+          set -e
+          echo "exit_code=$code" >> "$GITHUB_OUTPUT"
+          exit 0
+      - name: Report FA499 evidence
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SCRIPT_EXIT: ${{ steps.run.outputs.exit_code }}
+        shell: bash
+        run: |
+          python3 - <<'PY' > /tmp/fa499.md
+          from pathlib import Path
+          import json, os
+          out=Path('build-logs/codex-fa499-height-basepoint-eta-continuity/candidates/norms'); p=out/'METRIC.json'; src=Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'); log=Path('/tmp/fa499.log')
+          xs=['## FA499 authoritative fast observer — actual direct Lean','',f"- run_id: `{os.environ.get('GITHUB_RUN_ID','')}`",f"- head_sha: `{os.environ.get('GITHUB_SHA','')}`",f"- script_exit: `{os.environ.get('SCRIPT_EXIT','')}`"]
+          m=None
+          if p.exists():
+              m=json.loads(p.read_text())
+              for k in ['classification','source_sha256','line_count','maxErrors_cap','Mock2_exit','Mock2_Advanced_exit','FA_exit','FA_error_headers_captured','FA_first_actual_error_line','FA_first_actual_error_col','FA_first_error_declaration','FA_error_declaration_index','infra_reasons']:
+                  xs.append(f'- {k}: `{m.get(k)}`')
+              xs += ['', '### first error','```text',str(m.get('FA_first_error_message',''))[:7000],'```']
+          else:
+              xs.append('- METRIC.json: `MISSING`')
+          if src.exists() and isinstance(m,dict) and m.get('FA_first_actual_error_line',0):
+              a=src.read_text(encoding='utf-8',errors='replace').splitlines(); c=m['FA_first_actual_error_line']; lo,hi=max(1,c-14),min(len(a),c+38); xs += ['',f'### candidate source around line {c}','```lean','\n'.join(f'{i}: {a[i-1]}' for i in range(lo,hi+1)),'```']
+          if log.exists():
+              xs += ['', '### tail','```text','\n'.join(log.read_text(encoding='utf-8',errors='replace').splitlines()[-110:])[-13000:],'```']
+          print('\n'.join(xs)[:32000])
+          PY
+          gh api "repos/${GITHUB_REPOSITORY}/issues/14/comments" -f body="$(cat /tmp/fa499.md)"
+      - name: Preserve result
+        if: always()
+        env:
+          SCRIPT_EXIT: ${{ steps.run.outputs.exit_code }}
+        shell: bash
+        run: |
+          test -n "$SCRIPT_EXIT"
+          exit "$SCRIPT_EXIT"

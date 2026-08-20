@@ -1,0 +1,43 @@
+name: GPT QYM disable unstable frontier revalidator
+
+on:
+  push:
+    branches:
+      - gpt/fa-qym-clean-final-20260816
+    paths:
+      - .github/workflows/gpt-qym-disable-old-revalidator.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  disable:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      BRANCH: gpt/fa-qym-clean-final-20260816
+
+    steps:
+      - name: Checkout latest branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: gpt/fa-qym-clean-final-20260816
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Remove unstable self-triggering revalidator
+        shell: bash
+        run: |
+          set -euo pipefail
+          target=.github/workflows/gpt-qym-frontier-revalidate.yml
+          if [[ ! -e "$target" ]]; then
+            echo 'Unstable revalidator already absent.'
+            exit 0
+          fi
+          git rm "$target"
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git commit -m "CI: remove unstable self-triggering frontier revalidator"
+          git pull --rebase origin "$BRANCH"
+          git push origin "HEAD:$BRANCH"

@@ -1,0 +1,24 @@
+name: Codex Actions connectivity probe
+
+on:
+  push:
+    branches:
+      - codex/fa-qym-cleanbuild-final-20260810
+    paths:
+      - .github/workflows/codex-actions-connectivity-probe.yml
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  ping:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Report runner connectivity
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          body="## Actions connectivity probe\n\n- run_id: \`${GITHUB_RUN_ID}\`\n- head_sha: \`${GITHUB_SHA}\`\n- runner: \`${RUNNER_OS}\`\n- status: \`RUNNER_STARTED\`"
+          gh api "repos/${GITHUB_REPOSITORY}/issues/14/comments" -f body="$body"

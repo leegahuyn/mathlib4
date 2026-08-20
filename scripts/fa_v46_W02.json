@@ -1,0 +1,49 @@
+{
+  "schema": "fa-v42-declaration-local-repairs-v1",
+  "status": "STATIC_EXACT_REMOTE_RESIDUAL_DIRECT_LEAN_REQUIRED_V46_W02",
+  "direct_lean_verified": false,
+  "full_fa_clean_claimed": false,
+  "authority": {
+    "repository": "leegahuyn/mathlib4",
+    "run_id": 31728453514,
+    "head_sha": "5ec44f3d343955f3124e7efecc048b648dccc5ab",
+    "job_id": 94542617528,
+    "artifact_id": 9192669673,
+    "artifact_digest": "sha256:8f07a678145b62342aaa9cb94ebbce6c9f7cc1a45c400560918d42499e67f2f3",
+    "variant": "all_probes",
+    "source_path": "work/v45-results/run-31728453514/all_probes/Mock2_FunctionalAnalysis-candidate.lean",
+    "source_sha256": "726f40d1dd03d32f03592adf4f6b02e3f7f52e7e1f71087ee53bdb83c4bb0caf",
+    "source_bytes": 2788764,
+    "source_lines": 62383,
+    "declaration_count": 4416,
+    "diagnostics_path": "work/v45-results/run-31728453514/all_probes/FULL_DIAGNOSTICS.json",
+    "diagnostics_sha256": "1fb14600849d7281df6ff65ae9213b6671b19a396cf539041f864fea157476a1",
+    "fa_log_path": "work/v45-results/run-31728453514/all_probes/Mock2_FunctionalAnalysis.log",
+    "fa_log_sha256": "bcc92a247a531419b25677cfdd5e28ce1705e6c3fb87301b93e24510932b4888"
+  },
+  "scope": {
+    "declaration_index": 3690,
+    "declaration": "jointGraphCoreDensityAt_of_strongCrossAdjoints",
+    "remote_error_line": 49679,
+    "remote_error_column": 4,
+    "remote_error_signature": "'change' tactic failed, pattern",
+    "v45_error_ordinal": 3,
+    "ownership": "W02-only"
+  },
+  "repairs": [
+    {
+      "id": "V46-W02-3690-reconstruct-ambient-endpoint-before-withlp-tendsto",
+      "owner": "jointGraphCoreDensityAt_of_strongCrossAdjoints",
+      "declaration_index": 3690,
+      "diagnostic_ordinals": [3],
+      "kind": "body",
+      "classification": "REPLACE_FAILED_GOAL_CHANGE_WITH_EXTENSIONAL_ENDPOINT_RECONSTRUCTION",
+      "confidence": "high-existing-withlp-injectivity-pattern-and-exact-remote-shape",
+      "expected_count_in_owner": 1,
+      "old": "    change Filter.Tendsto\n      (fun j : ℕ ↦ WithLp.toLp 2\n        (l2Coordinate (n + 1) (w j),\n          WithLp.toLp 2\n            (raisedCoordinate (n + 1) (w j),\n              lowerFromSuccCoordinate n (w j))))\n      Filter.atTop\n      (𝓝 (WithLp.toLp 2\n        (baseCoordinate n x,\n          WithLp.toLp 2\n            (raiseCoordinate n x, lowerCoordinate n x))))\n    simpa only [Function.comp_apply] using hOuter",
+      "new": "    have hxAmbient :\n        WithLp.toLp 2\n            (baseCoordinate n x,\n              WithLp.toLp 2\n                (raiseCoordinate n x, lowerCoordinate n x)) =\n          (x : WeakCoordinateAmbient n) := by\n      apply WithLp.ofLp_injective 2\n      apply Prod.ext\n      · exact baseCoordinate_apply n x\n      · apply WithLp.ofLp_injective 2\n        exact Prod.ext (raiseCoordinate_apply n x)\n          (lowerCoordinate_apply n x)\n    rw [← hxAmbient]\n    simpa only [coe_smoothCoreMap,\n      DefinitionOneSobolev.QuotientHilbertCoordinates.graph,\n      FixedPhaseClosedOperators.successorGraphCoordinates_base,\n      FixedPhaseClosedOperators.successorGraphCoordinates_raised,\n      FixedPhaseClosedOperators.successorGraphCoordinates_lowered,\n      FixedPhaseClosedOperators.reindexedActualLoweredCoordinate_eq_lowerFromSuccCoordinate,\n      baseCoordinate_apply, raiseCoordinate_apply, lowerCoordinate_apply,\n      Function.comp_apply, LinearMap.coe_mk, AddHom.coe_mk] using hOuter",
+      "evidence": "The v44 original simpa normalized the sequence but exposed a limit mismatch between the nested WithLp coordinate reconstruction and the ambient subtype coercion. The v45 goal-side change converted that mismatch into a definitional-equality failure. The replacement proves the missing endpoint equality extensionally with the same two-level WithLp.ofLp_injective plus Prod.ext pattern already used elsewhere in the authority source, rewrites only the endpoint, then reuses the original exact function normalization.",
+      "prior_relation": "Supersedes V44-Q3-S01-change-nested-withlp-carrier. Pure rollback is rejected because the v44 direct Lean log proves it restores the previous Type mismatch at this owner."
+    }
+  ]
+}

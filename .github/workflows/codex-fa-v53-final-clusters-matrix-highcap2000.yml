@@ -1,0 +1,133 @@
+name: Codex FA v53 final clusters matrix highcap2000
+run-name: "Codex: exclusive FA v53 final clusters full compile"
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [codex/fa-exclusive-focus-20260814]
+    paths:
+      - .github/workflows/codex-fa-v53-final-clusters-matrix-highcap2000.yml
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  direct:
+    name: direct-${{ matrix.variant }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        variant:
+          - ring_inline_hb10m
+          - ringnf_inline_hb10m
+          - ring_inline_hb0
+          - ring_no_gamma_hb10m
+    env:
+      VARIANT: ${{ matrix.variant }}
+      OUT: build-logs/codex-fa-v53/${{ matrix.variant }}
+      BASE_RUN: "31774351117"
+      BASE_ARTIFACT: "9209647939"
+      BASE_ARTIFACT_NAME: codex-fa-v51-ring_simpa_adj-highcap2000-0c0025aba1e08e59a416cc0d76bb13e4772af6c7
+      BASE_ARTIFACT_DIGEST: sha256:1b846f63ee8a8309ab1d72b062c7dc846a880be4db7be898a4ba609f13cdc8e0
+      BASE_SOURCE_SHA: 6093e976dd6c4d5217850ab39318eeef50531aef3acd8c6d66dcd0a4426c294d
+      BASE_SOURCE_BYTES: "2798992"
+      BASE_SOURCE_LINES: "62637"
+
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Verify v51 authority and materialize cumulative v53
+        id: materialize
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT" /tmp/v53-authority
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${BASE_ARTIFACT}" >"$OUT/authority.json"
+          python3 - <<'PY'
+          import json, os
+          a=json.load(open(os.path.join(os.environ['OUT'],'authority.json')))
+          assert a['id']==int(os.environ['BASE_ARTIFACT'])
+          assert a['name']==os.environ['BASE_ARTIFACT_NAME']
+          assert a['digest']==os.environ['BASE_ARTIFACT_DIGEST']
+          assert a['workflow_run']['id']==int(os.environ['BASE_RUN'])
+          assert a['expired'] is False
+          PY
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${BASE_ARTIFACT}/zip" >/tmp/v53-authority.zip
+          test "sha256:$(sha256sum /tmp/v53-authority.zip | awk '{print $1}')" = "$BASE_ARTIFACT_DIGEST"
+          unzip -q /tmp/v53-authority.zip -d /tmp/v53-authority
+          base="$(find /tmp/v53-authority -type f -name 'Mock2_FunctionalAnalysis-candidate.lean' -print -quit)"
+          test -n "$base"
+          test "$(sha256sum "$base" | awk '{print $1}')" = "$BASE_SOURCE_SHA"
+          test "$(wc -c < "$base" | tr -d ' ')" = "$BASE_SOURCE_BYTES"
+          test "$(wc -l < "$base" | tr -d ' ')" = "$BASE_SOURCE_LINES"
+          printf '%s' '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' | base64 -d | gzip -d > /tmp/fa_v53_materialize.py
+          python3 -m py_compile /tmp/fa_v53_materialize.py
+          sha256sum /tmp/fa_v53_materialize.py >"$OUT/materializer.sha256"
+          python3 /tmp/fa_v53_materialize.py \
+            --base "$base" --variant "$VARIANT" \
+            --out "$OUT/Mock2_FunctionalAnalysis-candidate.lean" \
+            --audit "$OUT/PATCH_AUDIT.json" | tee "$OUT/MATERIALIZATION.stdout.json"
+          cp "$OUT/Mock2_FunctionalAnalysis-candidate.lean" PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          sha="$(sha256sum PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | awk '{print $1}')"
+          printf 'FA_V42_EXPECTED_CANDIDATE_SHA256=%s\n' "$sha" >>"$GITHUB_ENV"
+          printf 'FA_V42_VARIANT=%s\n' "$VARIANT" >>"$GITHUB_ENV"
+          printf 'FA_V42_OUT=%s\n' "$OUT" >>"$GITHUB_ENV"
+          printf '%s\n' "$sha" >"$OUT/candidate.sha256"
+
+      - name: Install pinned Lean and cache
+        id: install
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none >"$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          printf '%s\n' "$HOME/.elan/bin" >>"$GITHUB_PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >"$OUT/toolchain.log" 2>&1
+          lake exe cache get >"$OUT/cache.log" 2>&1
+          lean --version | tee "$OUT/lean-version.txt"
+
+      - name: Direct Mock2 then Mock2 Advanced then full FA highcap2000
+        id: direct_lean
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          bash scripts/fa_v42_direct_compile_ci.sh
+
+      - name: Exact metrics and complete diagnostic inventory
+        id: collect
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          python3 scripts/fa_v42_collect_full_diagnostics.py \
+            --source PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+            --out "$OUT" --max-errors 2000 | tee "$OUT/metric-console.log"
+
+      - name: Upload exact variant source and all evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-v53-${{ matrix.variant }}-highcap2000-${{ github.sha }}
+          path: build-logs/codex-fa-v53/${{ matrix.variant }}
+          retention-days: 30
+
+      - name: Preserve actual FA direct exit
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f "$OUT/Mock2_FunctionalAnalysis.exit"
+          exit "$(tr -d '\r\n' < "$OUT/Mock2_FunctionalAnalysis.exit")"

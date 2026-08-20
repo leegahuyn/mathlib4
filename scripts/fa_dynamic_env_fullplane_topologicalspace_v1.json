@@ -1,0 +1,9 @@
+{
+  "schema": "fa-dynamic-env-fullplane-topologicalspace-v1",
+  "status": "HEADER_PRESERVING_ENVIRONMENT_PENDING_DIRECT_LEAN",
+  "environment_replacement": {
+    "id": "fullplane-open-topologicalspace",
+    "old_fragment": "open Set Function Topology Filter MeasureTheory Metric\nopen scoped Convolution ContDiff Distributions\nopen FixedPhaseAffineFriedrichs\n\nnoncomputable section\n\n/-- Full-plane compact smooth tests.",
+    "new_fragment": "open Set Function Topology Filter MeasureTheory Metric\nopen scoped Convolution ContDiff Distributions\nopen FixedPhaseAffineFriedrichs\nopen TopologicalSpace\n\nnoncomputable section\n\n/-- Full-plane compact smooth tests."
+  }
+}

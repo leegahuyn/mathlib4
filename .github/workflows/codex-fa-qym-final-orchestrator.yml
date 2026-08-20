@@ -1,0 +1,430 @@
+name: Codex evidence-driven FA QYM final orchestrator
+run-name: "Codex: continuously advance FA, QYM, 13 files, and 15 checks"
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - codex/fa-qym-cleanbuild-final-20260811-fast
+    paths:
+      - .github/workflows/codex-fa-qym-final-orchestrator.yml
+
+permissions:
+  actions: write
+  contents: read
+
+concurrency:
+  group: codex-fa-qym-final-orchestrator-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  orchestrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 355
+    env:
+      TARGET_BRANCH: codex/fa-qym-cleanbuild-final-20260811-fast
+      ORCH_OUT: build-logs/codex-fa-qym-final-orchestrator/${{ github.run_id }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: codex/fa-qym-cleanbuild-final-20260811-fast
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Orchestrate only from exact evidence, never from superficial job color
+        id: orchestrate
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$ORCH_OUT"
+          python3 - <<'PY'
+          from __future__ import annotations
+
+          import base64
+          import datetime as dt
+          import json
+          import os
+          import shutil
+          import subprocess
+          import time
+          import urllib.parse
+          import zipfile
+          from pathlib import Path
+
+          REPO = os.environ['GITHUB_REPOSITORY']
+          BRANCH = os.environ['TARGET_BRANCH']
+          OUT = Path(os.environ['ORCH_OUT'])
+          OUT.mkdir(parents=True, exist_ok=True)
+          STATE_PATH = OUT / 'ORCHESTRATION_STATE.json'
+          DEADLINE = time.monotonic() + 345 * 60
+
+          workflows = {
+              'selfcheck': 'codex-new-pipeline-selfcheck-and-fix.yml',
+              'fa_v48': 'codex-fa-v48-auto-repair-highcap2000.yml',
+              'fa_v49': 'codex-fa-v49-iterative-frontier.yml',
+              'qym_v1': 'codex-qym-v1-iterative-frontier.yml',
+              'final15': 'codex-final-13files-15checklist.yml',
+          }
+          state = {
+              'schema': 'fa-qym-final-orchestration-state-v1',
+              'repository': REPO,
+              'branch': BRANCH,
+              'orchestrator_run_id': os.environ['GITHUB_RUN_ID'],
+              'started_at_utc': dt.datetime.now(dt.timezone.utc).isoformat(),
+              'workflows': workflows,
+              'events': [],
+              'fa': {'status': 'UNKNOWN', 'iterations': []},
+              'qym': {'status': 'UNKNOWN', 'iterations': []},
+              'final15': {'status': 'NOT_STARTED'},
+              'status': 'RUNNING',
+          }
+
+          def save() -> None:
+              state['updated_at_utc'] = dt.datetime.now(dt.timezone.utc).isoformat()
+              STATE_PATH.write_text(json.dumps(state, indent=2, sort_keys=True) + '\n')
+
+          def event(kind: str, **data) -> None:
+              row = {'time_utc': dt.datetime.now(dt.timezone.utc).isoformat(), 'kind': kind, **data}
+              state['events'].append(row)
+              print(json.dumps(row, sort_keys=True), flush=True)
+              save()
+
+          def gh_json(args: list[str]) -> object:
+              proc = subprocess.run(
+                  ['gh', *args],
+                  text=True,
+                  stdout=subprocess.PIPE,
+                  stderr=subprocess.PIPE,
+              )
+              if proc.returncode != 0:
+                  raise RuntimeError(f"gh {' '.join(args)} failed ({proc.returncode}): {proc.stderr[-4000:]}")
+              return json.loads(proc.stdout) if proc.stdout.strip() else {}
+
+          def gh_bytes(endpoint: str) -> bytes:
+              proc = subprocess.run(
+                  ['gh', 'api', endpoint],
+                  stdout=subprocess.PIPE,
+                  stderr=subprocess.PIPE,
+              )
+              if proc.returncode != 0:
+                  raise RuntimeError(f'gh api {endpoint} failed ({proc.returncode}): {proc.stderr.decode(errors="replace")[-4000:]}')
+              return proc.stdout
+
+          def branch_sha() -> str:
+              data = gh_json(['api', f'repos/{REPO}/branches/{urllib.parse.quote(BRANCH, safe="")}'])
+              return str(data['commit']['sha'])
+
+          def workflow_metadata(workflow: str) -> dict:
+              return dict(gh_json(['api', f'repos/{REPO}/actions/workflows/{workflow}']))
+
+          def list_runs(workflow: str, per_page: int = 30) -> list[dict]:
+              query = urllib.parse.urlencode({'branch': BRANCH, 'per_page': per_page})
+              data = gh_json(['api', f'repos/{REPO}/actions/workflows/{workflow}/runs?{query}'])
+              return list(data.get('workflow_runs', []))
+
+          def active_run(workflow: str) -> dict | None:
+              for run in list_runs(workflow):
+                  if run.get('status') in {'queued', 'in_progress', 'waiting', 'requested', 'pending'}:
+                      return run
+              return None
+
+          def dispatch(workflow: str) -> dict:
+              before = {int(run['id']) for run in list_runs(workflow)}
+              proc = subprocess.run(
+                  ['gh', 'workflow', 'run', workflow, '--repo', REPO, '--ref', BRANCH],
+                  text=True,
+                  stdout=subprocess.PIPE,
+                  stderr=subprocess.PIPE,
+              )
+              if proc.returncode != 0:
+                  raise RuntimeError(f'dispatch {workflow} failed: {proc.stderr[-4000:]}')
+              for _ in range(40):
+                  time.sleep(3)
+                  for run in list_runs(workflow):
+                      if int(run['id']) not in before and run.get('event') == 'workflow_dispatch':
+                          event('workflow_dispatched', workflow=workflow, run_id=run['id'], head_sha=run.get('head_sha'))
+                          return run
+              raise RuntimeError(f'dispatched {workflow}, but no new workflow_dispatch run appeared')
+
+          def wait_run(run: dict, label: str) -> dict:
+              run_id = int(run['id'])
+              event('wait_run_start', label=label, run_id=run_id, status=run.get('status'), head_sha=run.get('head_sha'))
+              while time.monotonic() < DEADLINE:
+                  current = dict(gh_json(['api', f'repos/{REPO}/actions/runs/{run_id}']))
+                  if current.get('status') == 'completed':
+                      event('wait_run_complete', label=label, run_id=run_id, conclusion=current.get('conclusion'))
+                      return current
+                  time.sleep(20)
+              raise TimeoutError(f'orchestrator deadline reached while waiting for {label} run {run_id}')
+
+          def ensure_run(workflow: str, label: str, allow_completed_latest: bool = False) -> dict:
+              current = active_run(workflow)
+              if current is not None:
+                  return wait_run(current, label)
+              latest = list_runs(workflow)
+              if allow_completed_latest and latest:
+                  return wait_run(latest[0], label)
+              return wait_run(dispatch(workflow), label)
+
+          def read_repo_json(path: str) -> dict | None:
+              encoded_path = '/'.join(urllib.parse.quote(part, safe='') for part in path.split('/'))
+              endpoint = f'repos/{REPO}/contents/{encoded_path}?ref={urllib.parse.quote(BRANCH, safe="")}'
+              proc = subprocess.run(
+                  ['gh', 'api', endpoint],
+                  text=True,
+                  stdout=subprocess.PIPE,
+                  stderr=subprocess.PIPE,
+              )
+              if proc.returncode != 0:
+                  return None
+              data = json.loads(proc.stdout)
+              if data.get('encoding') != 'base64':
+                  return None
+              return json.loads(base64.b64decode(data['content']).decode())
+
+          def artifacts(run_id: int) -> list[dict]:
+              data = gh_json(['api', f'repos/{REPO}/actions/runs/{run_id}/artifacts?per_page=100'])
+              return list(data.get('artifacts', []))
+
+          def download_artifact_json(run_id: int, artifact_prefix: str, filename: str, destination: Path) -> dict | None:
+              matches = [a for a in artifacts(run_id) if str(a.get('name', '')).startswith(artifact_prefix)]
+              if not matches:
+                  return None
+              matches.sort(key=lambda row: int(row['id']), reverse=True)
+              artifact = matches[0]
+              raw = gh_bytes(f'repos/{REPO}/actions/artifacts/{artifact["id"]}/zip')
+              zip_path = destination / f'artifact-{artifact["id"]}.zip'
+              extract = destination / f'artifact-{artifact["id"]}'
+              destination.mkdir(parents=True, exist_ok=True)
+              zip_path.write_bytes(raw)
+              extract.mkdir(parents=True, exist_ok=True)
+              with zipfile.ZipFile(zip_path) as archive:
+                  archive.extractall(extract)
+              candidates = list(extract.rglob(filename))
+              if not candidates:
+                  return None
+              return json.loads(candidates[0].read_text())
+
+          def selection_for(prefix: str, run_id: int, repo_path: str) -> dict | None:
+              for _ in range(20):
+                  selection = read_repo_json(repo_path)
+                  if selection and str(selection.get('github_run_id')) == str(run_id):
+                      return selection
+                  artifact_selection = download_artifact_json(
+                      run_id,
+                      prefix,
+                      'SELECTION.json',
+                      OUT / f'selection-{run_id}',
+                  )
+                  if artifact_selection:
+                      return artifact_selection
+                  time.sleep(4)
+              return None
+
+          try:
+              for key, workflow in workflows.items():
+                  meta = workflow_metadata(workflow)
+                  event('workflow_recognized', key=key, workflow=workflow, workflow_id=meta.get('id'), state=meta.get('state'))
+
+              selfcheck_runs = list_runs(workflows['selfcheck'])
+              if selfcheck_runs:
+                  latest_selfcheck = selfcheck_runs[0]
+                  if latest_selfcheck.get('status') != 'completed':
+                      latest_selfcheck = wait_run(latest_selfcheck, 'pipeline self-check')
+                  state['selfcheck'] = {
+                      'run_id': latest_selfcheck.get('id'),
+                      'status': latest_selfcheck.get('status'),
+                      'conclusion': latest_selfcheck.get('conclusion'),
+                  }
+                  if latest_selfcheck.get('conclusion') != 'success':
+                      raise RuntimeError(f'pipeline self-check is not successful: {state["selfcheck"]}')
+              else:
+                  selfcheck = ensure_run(workflows['selfcheck'], 'pipeline self-check')
+                  state['selfcheck'] = {'run_id': selfcheck.get('id'), 'conclusion': selfcheck.get('conclusion')}
+                  if selfcheck.get('conclusion') != 'success':
+                      raise RuntimeError('pipeline self-check dispatch did not succeed')
+
+              v48_runs = list_runs(workflows['fa_v48'])
+              if v48_runs:
+                  v48_run = v48_runs[0]
+                  if v48_run.get('status') != 'completed':
+                      v48_run = wait_run(v48_run, 'FA v48')
+              else:
+                  v48_run = ensure_run(workflows['fa_v48'], 'FA v48')
+              v48_id = int(v48_run['id'])
+              v48_selection = selection_for(
+                  'codex-fa-v48-selector-',
+                  v48_id,
+                  'build-evidence/fa-v48/SELECTION.json',
+              )
+              state['fa']['v48_run_id'] = v48_id
+              state['fa']['v48_selection'] = v48_selection
+              save()
+              if v48_selection is None:
+                  event('fa_v48_no_selection', run_id=v48_id, conclusion=v48_run.get('conclusion'))
+              else:
+                  event(
+                      'fa_v48_selection',
+                      run_id=v48_id,
+                      status=v48_selection.get('status'),
+                      selected_variant=v48_selection.get('selected_variant'),
+                      selected_source_sha256=v48_selection.get('selected_source_sha256'),
+                  )
+
+              fa_clean = bool(v48_selection and v48_selection.get('status') == 'PASS')
+              if not fa_clean:
+                  for iteration in range(1, 9):
+                      active = active_run(workflows['fa_v49'])
+                      run = wait_run(active, f'FA v49 iteration {iteration}') if active else wait_run(dispatch(workflows['fa_v49']), f'FA v49 iteration {iteration}')
+                      run_id = int(run['id'])
+                      selection = selection_for(
+                          'codex-fa-v49-selector-',
+                          run_id,
+                          f'build-evidence/fa-v49/{run_id}/SELECTION.json',
+                      )
+                      record = {
+                          'iteration': iteration,
+                          'run_id': run_id,
+                          'workflow_conclusion': run.get('conclusion'),
+                          'selection': selection,
+                      }
+                      state['fa']['iterations'].append(record)
+                      save()
+                      if selection is None:
+                          event('fa_v49_no_selection', iteration=iteration, run_id=run_id)
+                          break
+                      status = selection.get('status')
+                      event(
+                          'fa_v49_selection',
+                          iteration=iteration,
+                          run_id=run_id,
+                          status=status,
+                          selected_rule=selection.get('selected_rule'),
+                          selected_source_sha256=selection.get('selected_source_sha256'),
+                      )
+                      if status == 'PASS':
+                          fa_clean = True
+                          break
+                      if status == 'NO_ADVANCE':
+                          break
+                      if status != 'IMPROVED':
+                          break
+                      time.sleep(8)
+
+              state['fa']['status'] = 'PASS' if fa_clean else 'BLOCKED'
+              save()
+              if not fa_clean:
+                  state['status'] = 'FA_BLOCKED'
+                  event('orchestration_stop', reason='FA did not reach direct Lean PASS under strict selector')
+                  raise SystemExit(2)
+
+              qym_clean = False
+              for iteration in range(1, 9):
+                  active = active_run(workflows['qym_v1'])
+                  run = wait_run(active, f'QYM iteration {iteration}') if active else wait_run(dispatch(workflows['qym_v1']), f'QYM iteration {iteration}')
+                  run_id = int(run['id'])
+                  baseline_gate = download_artifact_json(
+                      run_id,
+                      'codex-qym-v1-baseline-',
+                      'FINAL_GATE.json',
+                      OUT / f'qym-baseline-{run_id}',
+                  )
+                  selection = read_repo_json(f'build-evidence/qym-v1/{run_id}/SELECTION.json')
+                  if selection is None:
+                      selection = download_artifact_json(
+                          run_id,
+                          'codex-qym-v1-selector-',
+                          'SELECTION.json',
+                          OUT / f'qym-selection-{run_id}',
+                      )
+                  record = {
+                      'iteration': iteration,
+                      'run_id': run_id,
+                      'workflow_conclusion': run.get('conclusion'),
+                      'baseline_gate': baseline_gate,
+                      'selection': selection,
+                  }
+                  state['qym']['iterations'].append(record)
+                  save()
+                  if baseline_gate and baseline_gate.get('status') == 'PASS':
+                      qym_clean = True
+                      event('qym_baseline_pass', iteration=iteration, run_id=run_id, source_sha256=baseline_gate.get('source_sha256'))
+                      break
+                  if baseline_gate and baseline_gate.get('status') == 'BLOCKED_BY_FA':
+                      event('qym_blocked_by_fa', iteration=iteration, run_id=run_id)
+                      break
+                  if selection is None:
+                      event('qym_no_selection', iteration=iteration, run_id=run_id, baseline_gate=baseline_gate)
+                      break
+                  status = selection.get('status')
+                  event(
+                      'qym_selection',
+                      iteration=iteration,
+                      run_id=run_id,
+                      status=status,
+                      selected_rule=selection.get('selected_rule'),
+                      selected_source_sha256=selection.get('selected_source_sha256'),
+                  )
+                  if status == 'PASS':
+                      qym_clean = True
+                      break
+                  if status == 'NO_ADVANCE':
+                      break
+                  if status != 'IMPROVED':
+                      break
+                  time.sleep(8)
+
+              state['qym']['status'] = 'PASS' if qym_clean else 'BLOCKED'
+              save()
+              if not qym_clean:
+                  state['status'] = 'QYM_BLOCKED'
+                  event('orchestration_stop', reason='QYM did not reach direct Lean PASS under strict selector')
+                  raise SystemExit(3)
+
+              final_run = wait_run(dispatch(workflows['final15']), 'final 13-file 15-checklist gate')
+              final_id = int(final_run['id'])
+              final_gate = download_artifact_json(
+                  final_id,
+                  'codex-final13-15check-',
+                  'FINAL_15_CHECKLIST.json',
+                  OUT / f'final15-{final_id}',
+              )
+              state['final15'] = {
+                  'run_id': final_id,
+                  'workflow_conclusion': final_run.get('conclusion'),
+                  'gate': final_gate,
+                  'status': final_gate.get('status') if final_gate else 'MISSING_GATE',
+              }
+              if final_gate:
+                  (OUT / 'FINAL_15_CHECKLIST.json').write_text(json.dumps(final_gate, indent=2, sort_keys=True) + '\n')
+              if final_gate and final_gate.get('status') == 'PASS' and final_gate.get('passed_count') == 15:
+                  state['status'] = 'PASS'
+                  event('orchestration_complete', status='PASS', final_run_id=final_id, passed_count=15)
+              else:
+                  state['status'] = 'FINAL15_FAIL'
+                  event('orchestration_stop', reason='final 13-file 15-checklist gate is not 15/15 PASS', final_run_id=final_id, final_gate=final_gate)
+                  raise SystemExit(4)
+          except SystemExit:
+              state['finished_at_utc'] = dt.datetime.now(dt.timezone.utc).isoformat()
+              save()
+              raise
+          except Exception as exc:
+              state['status'] = 'ORCHESTRATOR_ERROR'
+              state['error'] = repr(exc)
+              state['finished_at_utc'] = dt.datetime.now(dt.timezone.utc).isoformat()
+              event('orchestrator_exception', error=repr(exc))
+              save()
+              raise
+          else:
+              state['finished_at_utc'] = dt.datetime.now(dt.timezone.utc).isoformat()
+              save()
+          PY
+
+      - name: Upload complete orchestration state and downloaded gates
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-qym-final-orchestration-${{ github.run_id }}
+          path: build-logs/codex-fa-qym-final-orchestrator/${{ github.run_id }}
+          retention-days: 90

@@ -1,0 +1,324 @@
+{
+  "schema": "fa-v59-independent-matrix-selection-v1",
+  "status": "READY",
+  "note": "Static six-way selection and every runtime promotion input are exact-locked. This index authorizes materialization and direct CI probes; it does not claim any direct Lean result or clean candidate.",
+  "index_sha256": null,
+  "index_identity_contract": "EXTERNAL_SHA256_LOCK_ONLY_NO_RECURSIVE_SELF_HASH",
+  "authority": {
+    "workflow_run_id": 31803223990,
+    "head_sha": "14e3e3f5e85f3c3ca7a1381eb88522552ffe29dc",
+    "head_branch": "codex/fa-exclusive-focus-20260814",
+    "artifact_id": 9220688452,
+    "artifact_name": "codex-fa-v58-core_base-highcap2000-14e3e3f5e85f3c3ca7a1381eb88522552ffe29dc",
+    "artifact_size_in_bytes": 619491,
+    "artifact_digest": "sha256:269100960a5e7ecd8b35e39cdde2c774f244b49c269e992aec00203bd2288ab4",
+    "variant": "core_base",
+    "source_sha256": "013f64cf5eaaab544629ad02fc2e33e63f90916e9b1e1581d73f2af2e7ba34ba",
+    "source_bytes": 2807163,
+    "source_lines": 62815,
+    "declaration_count": 4416,
+    "diagnostics_sha256": "a9ec828f9bbe0226b2bc694f26911cfd84fce016adca411f9bb8df52c6833db1",
+    "fa_log_sha256": "8395ab207c12ad32483166ec9a118b4fe1d82a1c772d5cd79d9237563efc9127",
+    "patch_audit_sha256": "372037c8eee8ce1a030e5085b831b5f04c9bfaaa9e8f707767ed48ecbe630b9a"
+  },
+  "activation": {
+    "materialization_allowed": true,
+    "workflow_matrix_allowed": true,
+    "direct_compile_allowed": true
+  },
+  "pending_inputs": {},
+  "locks": {
+    "base_runner": {
+      "runtime_path": "scripts/fa_v42_direct_compile_ci.sh",
+      "evidence_path": "work/v42-ci/fa_v42_direct_compile_ci.sh",
+      "sha256": "2459f0a2cd44f6a3716de1ed2934c7588ba1a1e27ef443947d9e6089af196514",
+      "bytes": 2554,
+      "role": "SHA_LOCKED_PROMOTED_V42_DIRECT_CHAIN"
+    },
+    "base_collector": {
+      "runtime_path": "scripts/fa_v42_collect_full_diagnostics.py",
+      "evidence_path": "work/v42-ci/fa_v42_collect_full_diagnostics.py",
+      "sha256": "7de7bc92e4e2735c0d25706d70777ea67340d8afcf67434e43b051d5cb8c90c6",
+      "bytes": 12932,
+      "role": "SHA_LOCKED_V42_PARSER_LOADED_ONLY_THROUGH_V59_PROVENANCE_ADAPTER"
+    },
+    "composer_materializer": {
+      "runtime_path": "scripts/fa_v59_compose_materialize.py",
+      "evidence_path": "work/v59-ci/fa_v59_compose_materialize.py",
+      "sha256": "10f617b0fcb5f77d72fbc625766ee27d35f325514c957cd33ca53c3e6d7ea272",
+      "bytes": 62949,
+      "role": "GENERIC_SHA_LOCKED_REGISTRY_POINTER_OWNER_LOCAL_COMPOSER"
+    },
+    "runner_adapter": {
+      "runtime_path": "scripts/fa_v59_direct_compile_ci.sh",
+      "evidence_path": "work/v59-ci/fa_v59_direct_compile_ci.sh",
+      "sha256": "f744a15a35c3dd38f4a5c5794073616ba626e389db6ca2c4256b12e7624c5ed4",
+      "bytes": 1073,
+      "role": "V59_ENVIRONMENT_AND_SHA_ADAPTER_FOR_LOCKED_V42_RUNNER"
+    },
+    "collector_adapter": {
+      "runtime_path": "scripts/fa_v59_collect_full_diagnostics.py",
+      "evidence_path": "work/v59-ci/fa_v59_collect_full_diagnostics.py",
+      "sha256": "8f3a79462c3d40ccc888536d42e8574aa1900f35a7acc2ba512163c79b10cf8b",
+      "bytes": 10290,
+      "role": "V59_FULL_AUTHORITY_OVERRIDE_AND_POST_VERIFICATION_FOR_LOCKED_V42_COLLECTOR"
+    }
+  },
+  "repair_registry": {
+    "status": "LOCKED",
+    "runtime_path": "scripts/fa_v59_normalized_repair_groups.json",
+    "evidence_path": "work/v59-cross-audit/normalized-repair-groups.json",
+    "sha256": "dd181f279be61ac4b77aff843989ac407ce29fe85d79b496479645128f025eec",
+    "bytes": 16106,
+    "schema": "fa-v59-cross-normalized-repair-groups-v1",
+    "payload_status": "LOCKED_STATIC_GROUPS_DIRECT_LEAN_UNVERIFIED",
+    "group_count": 7
+  },
+  "matrix_cross_audit": {
+    "status": "LOCKED",
+    "runtime_path": "scripts/fa_v59_variant_matrix_cross_audit.json",
+    "evidence_path": "work/v59-cross-audit/variant-matrix.json",
+    "sha256": "b1ed4d57f9932567005247923ce27a91b1c291f4e814fb2b1a691f67c87a5d3f",
+    "bytes": 10639,
+    "schema": "fa-v59-cross-variant-matrix-v1",
+    "payload_status": "STATIC_MATERIALIZATION_LOCKS_COMPLETE_DIRECT_LEAN_REQUIRED"
+  },
+  "cross_audit_support": {
+    "static_audit": {
+      "runtime_path": "scripts/fa_v59_cross_manifest_static_audit.json",
+      "evidence_path": "work/v59-cross-audit/cross-manifest-static-audit.json",
+      "sha256": "809035f32feaa18edebdafa04c2cd787813724a1e980c7b680487c92b8eec003",
+      "bytes": 18637
+    },
+    "hash_ledger": {
+      "runtime_path": "scripts/fa_v59_cross_hashes.sha256",
+      "evidence_path": "work/v59-cross-audit/HASHES.sha256",
+      "sha256": "439bc01717c27799990ef1df893cf2f8d1710102f01c931b25d3cd753e1a4717",
+      "bytes": 2029
+    },
+    "composition_recommendation": {
+      "runtime_path": "scripts/fa_v59_composition_recommendation.md",
+      "evidence_path": "work/v59-cross-audit/composition-recommendation.md",
+      "sha256": "13a03cccf0a877431410ecef0f9c820b5df885e5cac2b129fda343059d0175f9",
+      "bytes": 5493
+    }
+  },
+  "promotion_inputs": {
+    "fourier_manifest": {
+      "registry_path": "work/v58-workers/fourier/fourier-repair-manifest.json",
+      "runtime_path": "scripts/fa_v59_source_fourier_manifest.json",
+      "evidence_path": "work/v58-workers/fourier/fourier-repair-manifest.json",
+      "sha256": "243e6879937108ff21c4fa676745d00e3d1c90530508a00729d375297ecda934",
+      "bytes": 9318
+    },
+    "weighted_staged_manifest": {
+      "registry_path": "work/v58-workers/weighted/staged-manifest.json",
+      "runtime_path": "scripts/fa_v59_source_weighted_staged_manifest.json",
+      "evidence_path": "work/v58-workers/weighted/staged-manifest.json",
+      "sha256": "24fc203adb4bdc3ac00ec06f0039c0f5a0e5456a9ba8be3e26e5a9efb0a4ca44",
+      "bytes": 3864
+    },
+    "weighted_promoted_manifest": {
+      "registry_path": "work/v58-workers/weighted/promoted-manifest.json",
+      "runtime_path": "scripts/fa_v59_source_weighted_promoted_manifest.json",
+      "evidence_path": "work/v58-workers/weighted/promoted-manifest.json",
+      "sha256": "50b1f57b6c973a6314dc726e65a80b2787bf8dd068f32b69a6bc1aaa82d7fcee",
+      "bytes": 4116
+    },
+    "weighted_result_index": {
+      "registry_path": "work/v58-workers/weighted/result-index.json",
+      "runtime_path": "scripts/fa_v59_source_weighted_result_index.json",
+      "evidence_path": "work/v58-workers/weighted/result-index.json",
+      "sha256": "239a3c7a65815a05ac8e462ec5a5bdf244eaefde80b2417cd5ca73113439585c",
+      "bytes": 2572
+    },
+    "idx4018_p01_manifest": {
+      "registry_path": "work/v58-workers/weighted-idx4018/probe-01-mkcontinuous2-manifest.json",
+      "runtime_path": "scripts/fa_v59_source_idx4018_p01_manifest.json",
+      "evidence_path": "work/v58-workers/weighted-idx4018/probe-01-mkcontinuous2-manifest.json",
+      "sha256": "5674c746d28595cfaa492f7b116e4ee685f0b225bd2e50faf09c8f461970f5c9",
+      "bytes": 5319
+    },
+    "idx4018_result_index": {
+      "registry_path": "work/v58-workers/weighted-idx4018/result-index.json",
+      "runtime_path": "scripts/fa_v59_source_idx4018_result_index.json",
+      "evidence_path": "work/v58-workers/weighted-idx4018/result-index.json",
+      "sha256": "5c80df46f3f4dee2a17298a9e3d4fabc4cda12585ea01b04e181ea8b5c369b3a",
+      "bytes": 5217
+    },
+    "reduced_manifest": {
+      "registry_path": "work/v58-workers/reduced-chart/V58_IDX4198_STAGED_BODY_ONLY_MANIFEST.json",
+      "runtime_path": "scripts/fa_v59_source_reduced_manifest.json",
+      "evidence_path": "work/v58-workers/reduced-chart/V58_IDX4198_STAGED_BODY_ONLY_MANIFEST.json",
+      "sha256": "c9acdee76dc90a6104a920d85ca70980f0debb44f0116936f7243be4ab875add",
+      "bytes": 7095
+    },
+    "reduced_preview": {
+      "registry_path": "work/v58-workers/reduced-chart/idx4198-body-only-preview.lean",
+      "runtime_path": "scripts/fa_v59_source_reduced_preview.lean",
+      "evidence_path": "work/v58-workers/reduced-chart/idx4198-body-only-preview.lean",
+      "sha256": "8cebb44101b712d121aef1795cf626d47c3bcce72eb4a0bd16cc1a8771a7370c",
+      "bytes": 5821
+    }
+  },
+  "group_order": ["F3930", "F3933", "F3939", "W4017", "W4018P1", "W4019", "R4198"],
+  "group_repair_ids": {
+    "F3930": "V58-FOURIER-IDX3930-INVERSE-FIRST-REAL-COORDINATE",
+    "F3933": "V58-FOURIER-IDX3933-DETERMINISTIC-INNER-STAR-REWRITE",
+    "F3939": "V58-FOURIER-IDX3939-RING-NORMALIZE-CASTED-SQUARE",
+    "W4017": "V58-WEIGHTED-IDX4017-explicit-two-level-clm-ext",
+    "W4018P1": "V58-IDX4018-P01-EXPLICIT-MKCONTINUOUS2-EVALUATION",
+    "W4019": "V58-WEIGHTED-IDX4019-use-exact-norm-neg-term",
+    "R4198": "V58-IDX4198-INLINE-EFFECTIVE-FREENESS-BODY-ONLY"
+  },
+  "allowed_selection_map": {
+    "M_promoted_without_idx3933": ["F3930", "F3939", "W4019"],
+    "F_fourier_full": ["F3930", "F3933", "F3939"],
+    "W_weighted_structural": ["W4017", "W4018P1", "W4019"],
+    "R_reduced_inline_isolated": ["R4198"],
+    "A_all": ["F3930", "F3933", "F3939", "W4017", "W4018P1", "W4019", "R4198"],
+    "A_no_idx3933": ["F3930", "F3939", "W4017", "W4018P1", "W4019", "R4198"]
+  },
+  "variant_order": [
+    "M_promoted_without_idx3933",
+    "F_fourier_full",
+    "W_weighted_structural",
+    "R_reduced_inline_isolated",
+    "A_all",
+    "A_no_idx3933"
+  ],
+  "variants": [
+    {
+      "name": "M_promoted_without_idx3933",
+      "status": "LOCKED",
+      "lock_finalized": true,
+      "selected_group_keys": ["F3930", "F3939", "W4019"],
+      "selected_repair_ids": [
+        "V58-FOURIER-IDX3930-INVERSE-FIRST-REAL-COORDINATE",
+        "V58-FOURIER-IDX3939-RING-NORMALIZE-CASTED-SQUARE",
+        "V58-WEIGHTED-IDX4019-use-exact-norm-neg-term"
+      ],
+      "provisional_selected_repair_ids": [
+        "V58-FOURIER-IDX3930-INVERSE-FIRST-REAL-COORDINATE",
+        "V58-FOURIER-IDX3939-RING-NORMALIZE-CASTED-SQUARE",
+        "V58-WEIGHTED-IDX4019-use-exact-norm-neg-term"
+      ],
+      "provisional_expected_candidate": {"sha256": "c3311de418db700651ca9fd9b0e34f069c11e47e4eaa8171768fa722d8bc0c2a", "bytes": 2807131, "lines": 62813},
+      "expected_candidate": {"sha256": "c3311de418db700651ca9fd9b0e34f069c11e47e4eaa8171768fa722d8bc0c2a", "bytes": 2807131, "lines": 62813}
+    },
+    {
+      "name": "F_fourier_full",
+      "status": "LOCKED",
+      "lock_finalized": true,
+      "selected_group_keys": ["F3930", "F3933", "F3939"],
+      "selected_repair_ids": [
+        "V58-FOURIER-IDX3930-INVERSE-FIRST-REAL-COORDINATE",
+        "V58-FOURIER-IDX3933-DETERMINISTIC-INNER-STAR-REWRITE",
+        "V58-FOURIER-IDX3939-RING-NORMALIZE-CASTED-SQUARE"
+      ],
+      "provisional_selected_repair_ids": [
+        "V58-FOURIER-IDX3930-INVERSE-FIRST-REAL-COORDINATE",
+        "V58-FOURIER-IDX3933-DETERMINISTIC-INNER-STAR-REWRITE",
+        "V58-FOURIER-IDX3939-RING-NORMALIZE-CASTED-SQUARE"
+      ],
+      "provisional_expected_candidate": {"sha256": "25f1b28103e99dc3b7c70457d9ade2f137063c100878e73fd9bb3c50e8ff9b44", "bytes": 2807136, "lines": 62814},
+      "expected_candidate": {"sha256": "25f1b28103e99dc3b7c70457d9ade2f137063c100878e73fd9bb3c50e8ff9b44", "bytes": 2807136, "lines": 62814}
+    },
+    {
+      "name": "W_weighted_structural",
+      "status": "LOCKED",
+      "lock_finalized": true,
+      "selected_group_keys": ["W4017", "W4018P1", "W4019"],
+      "selected_repair_ids": [
+        "V58-WEIGHTED-IDX4017-explicit-two-level-clm-ext",
+        "V58-IDX4018-P01-EXPLICIT-MKCONTINUOUS2-EVALUATION",
+        "V58-WEIGHTED-IDX4019-use-exact-norm-neg-term"
+      ],
+      "provisional_selected_repair_ids": [
+        "V58-WEIGHTED-IDX4017-explicit-two-level-clm-ext",
+        "V58-IDX4018-P01-EXPLICIT-MKCONTINUOUS2-EVALUATION",
+        "V58-WEIGHTED-IDX4019-use-exact-norm-neg-term"
+      ],
+      "provisional_expected_candidate": {"sha256": "aae300cb43942895c02be3ca4da3a85276ef70c8af7fd8eec543be35a120810c", "bytes": 2807262, "lines": 62818},
+      "expected_candidate": {"sha256": "aae300cb43942895c02be3ca4da3a85276ef70c8af7fd8eec543be35a120810c", "bytes": 2807262, "lines": 62818}
+    },
+    {
+      "name": "R_reduced_inline_isolated",
+      "status": "LOCKED",
+      "lock_finalized": true,
+      "selected_group_keys": ["R4198"],
+      "selected_repair_ids": ["V58-IDX4198-INLINE-EFFECTIVE-FREENESS-BODY-ONLY"],
+      "provisional_selected_repair_ids": ["V58-IDX4198-INLINE-EFFECTIVE-FREENESS-BODY-ONLY"],
+      "provisional_expected_candidate": {"sha256": "5a231db840bc576a365fa3f9cd9aeaccab5ec98683834edb20d41e4ec5eaf5eb", "bytes": 2812354, "lines": 62931},
+      "expected_candidate": {"sha256": "5a231db840bc576a365fa3f9cd9aeaccab5ec98683834edb20d41e4ec5eaf5eb", "bytes": 2812354, "lines": 62931}
+    },
+    {
+      "name": "A_all",
+      "status": "LOCKED",
+      "lock_finalized": true,
+      "selected_group_keys": ["F3930", "F3933", "F3939", "W4017", "W4018P1", "W4019", "R4198"],
+      "selected_repair_ids": [
+        "V58-FOURIER-IDX3930-INVERSE-FIRST-REAL-COORDINATE",
+        "V58-FOURIER-IDX3933-DETERMINISTIC-INNER-STAR-REWRITE",
+        "V58-FOURIER-IDX3939-RING-NORMALIZE-CASTED-SQUARE",
+        "V58-WEIGHTED-IDX4017-explicit-two-level-clm-ext",
+        "V58-IDX4018-P01-EXPLICIT-MKCONTINUOUS2-EVALUATION",
+        "V58-WEIGHTED-IDX4019-use-exact-norm-neg-term",
+        "V58-IDX4198-INLINE-EFFECTIVE-FREENESS-BODY-ONLY"
+      ],
+      "provisional_selected_repair_ids": [
+        "V58-FOURIER-IDX3930-INVERSE-FIRST-REAL-COORDINATE",
+        "V58-FOURIER-IDX3933-DETERMINISTIC-INNER-STAR-REWRITE",
+        "V58-FOURIER-IDX3939-RING-NORMALIZE-CASTED-SQUARE",
+        "V58-WEIGHTED-IDX4017-explicit-two-level-clm-ext",
+        "V58-IDX4018-P01-EXPLICIT-MKCONTINUOUS2-EVALUATION",
+        "V58-WEIGHTED-IDX4019-use-exact-norm-neg-term",
+        "V58-IDX4198-INLINE-EFFECTIVE-FREENESS-BODY-ONLY"
+      ],
+      "provisional_expected_candidate": {"sha256": "dedbf67b514b3838c743c3eabe2bdf6b5482cdfd232556fc9acc4ab0138b68f8", "bytes": 2812426, "lines": 62933},
+      "expected_candidate": {"sha256": "dedbf67b514b3838c743c3eabe2bdf6b5482cdfd232556fc9acc4ab0138b68f8", "bytes": 2812426, "lines": 62933}
+    },
+    {
+      "name": "A_no_idx3933",
+      "status": "LOCKED",
+      "lock_finalized": true,
+      "selected_group_keys": ["F3930", "F3939", "W4017", "W4018P1", "W4019", "R4198"],
+      "selected_repair_ids": [
+        "V58-FOURIER-IDX3930-INVERSE-FIRST-REAL-COORDINATE",
+        "V58-FOURIER-IDX3939-RING-NORMALIZE-CASTED-SQUARE",
+        "V58-WEIGHTED-IDX4017-explicit-two-level-clm-ext",
+        "V58-IDX4018-P01-EXPLICIT-MKCONTINUOUS2-EVALUATION",
+        "V58-WEIGHTED-IDX4019-use-exact-norm-neg-term",
+        "V58-IDX4198-INLINE-EFFECTIVE-FREENESS-BODY-ONLY"
+      ],
+      "provisional_selected_repair_ids": [
+        "V58-FOURIER-IDX3930-INVERSE-FIRST-REAL-COORDINATE",
+        "V58-FOURIER-IDX3939-RING-NORMALIZE-CASTED-SQUARE",
+        "V58-WEIGHTED-IDX4017-explicit-two-level-clm-ext",
+        "V58-IDX4018-P01-EXPLICIT-MKCONTINUOUS2-EVALUATION",
+        "V58-WEIGHTED-IDX4019-use-exact-norm-neg-term",
+        "V58-IDX4198-INLINE-EFFECTIVE-FREENESS-BODY-ONLY"
+      ],
+      "provisional_expected_candidate": {"sha256": "84e0a7843de9bcf99a25e51db95d48e9d5feceffe4e1b94f315b11d166792e5a", "bytes": 2812433, "lines": 62933},
+      "expected_candidate": {"sha256": "84e0a7843de9bcf99a25e51db95d48e9d5feceffe4e1b94f315b11d166792e5a", "bytes": 2812433, "lines": 62933}
+    }
+  ],
+  "idx4018_policy": {
+    "selected": "W4018P1",
+    "classification": "STAGED_PREFERRED_PROBE_01_DIRECT_LEAN_REQUIRED",
+    "promotion_ready": false,
+    "excluded_serial_fallbacks": ["P02", "P03"]
+  },
+  "trust_tokens": ["sorry", "admit", "axiom", "unsafe", "native_decide", "Lean.ofReduceBool"],
+  "global_maxHeartbeats_contract": {"token_count_before_after": 8, "set_option_count_before_after": 8},
+  "selected_changed_region_maxHeartbeats_contract": {"token_count_before_after": 0, "set_option_count_before_after": 0},
+  "runtime_evidence_fallback_allowed": false,
+  "source_moves": [],
+  "direct_compile_chain": [
+    {"source": "Mock2", "max_errors": 1},
+    {"source": "Mock2_Advanced", "max_errors": 1},
+    {"source": "Mock2_FunctionalAnalysis", "max_errors": 2000}
+  ],
+  "direct_lean_verified": false,
+  "clean_build_claimed": false
+}

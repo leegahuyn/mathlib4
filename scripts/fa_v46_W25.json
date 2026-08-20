@@ -1,0 +1,140 @@
+{
+  "schema": "fa-v42-declaration-local-repairs-v1",
+  "status": "PATCH_READY_STATIC_EXACT_EVENTUALLYEQ_MEMBERSHIP_TO_UPPERLIFT_BRIDGE_DIRECT_LEAN_REQUIRED_V46_W25",
+  "worker_id": "W25",
+  "cluster_id": "V46-IDX4288-NEIGHBORHOOD-EQUALITY-MEMBERSHIP-THEN-UPPERLIFT-EVALUATION",
+  "authority": {
+    "repository": "leegahuyn/mathlib4",
+    "run_id": 31728453514,
+    "head_sha": "5ec44f3d343955f3124e7efecc048b648dccc5ab",
+    "job_id": 94542617528,
+    "artifact_id": 9192669673,
+    "artifact_digest": "sha256:8f07a678145b62342aaa9cb94ebbce6c9f7cc1a45c400560918d42499e67f2f3",
+    "variant": "all_probes",
+    "source_path": "work/v45-results/run-31728453514/all_probes/Mock2_FunctionalAnalysis-candidate.lean",
+    "source_sha256": "726f40d1dd03d32f03592adf4f6b02e3f7f52e7e1f71087ee53bdb83c4bb0caf",
+    "source_bytes": 2788764,
+    "source_lines": 62383,
+    "declaration_count": 4416,
+    "diagnostics_path": "work/v45-results/run-31728453514/all_probes/FULL_DIAGNOSTICS.json",
+    "diagnostics_sha256": "1fb14600849d7281df6ff65ae9213b6671b19a396cf539041f864fea157476a1",
+    "fa_log_path": "work/v45-results/run-31728453514/all_probes/Mock2_FunctionalAnalysis.log",
+    "fa_log_sha256": "bcc92a247a531419b25677cfdd5e28ce1705e6c3fb87301b93e24510932b4888",
+    "patch_audit_path": "work/v45-results/run-31728453514/all_probes/PATCH_AUDIT.json",
+    "patch_audit_sha256": "045fe75a7b0b7691e58b01dd97e87d1e9d76d4f84648b34745870d902df7ec94"
+  },
+  "assignment": {
+    "declaration_index": 4288,
+    "declaration": "periodizedFixedPhaseGauge_eventuallyEq_zero_of_not_mem_saturation",
+    "requested_expected_ordinal": 36,
+    "verified_authority_diagnostic_ordinals": [37],
+    "diagnostic_count": 1,
+    "lines": [59025],
+    "columns": [2],
+    "normalized_signatures": ["'change' tactic failed, pattern"],
+    "root_or_cascade": "INDEPENDENT_OWNER_LOCAL_ZERO_FUNCTION_DOMAIN_NORMALIZATION_FOLLOW_ON",
+    "ownership": "W25-only"
+  },
+  "exact_remote_residual": {
+    "failed_pattern": "fixedPhaseEuclideanGauge m (gammaTwoPeriodizedPhysicalCore m v) y = (0 : Complex -> Complex) (y : Complex)",
+    "actual_target": "upperLift (fixedPhaseEuclideanGauge m (gammaTwoPeriodizedPhysicalCore m v)) (y : Complex) = (0 : Complex -> Complex) (y : Complex)",
+    "failure_reason": "The second V44 change tries to remove upperLift by definitional equality. upperLift is an explicit composition with UpperHalfPlane.ofComplex, and the intended evaluation is provided by the theorem upperLift_apply rather than by this change.",
+    "log_lines": "4921-4924"
+  },
+  "diagnosis": {
+    "mem_nhds_shape": "mem_nhds_iff yields a set U together with hU : U is a subset of the EventuallyEq equality set. Consequently hU hy is initially membership in {y | gauge y = zeroFunction y}, not syntactically the scalar equality itself.",
+    "successful_existing_step": "The first V44 change at hyZero converts that equality-set membership into the explicit upper-half-plane scalar equality gauge y = (0 : UpperHalfPlane -> Complex) y. The remote diagnostic occurs only at the following goal change, so this source-side bridge should be retained.",
+    "failed_existing_step": "The second V44 change attempts to replace the goal upperLift gauge (y : Complex) = zeroComplexFunction (y : Complex) by gauge y = zeroComplexFunction (y : Complex). Remote ordinal 37 proves this is not accepted as a definitional change.",
+    "repair": "Delete only the failed second change. Normalize the original target with the already available simp theorem upperLift_apply and normalize both zero-function evaluations with Pi.zero_apply, using the explicitly typed hyZero proof.",
+    "same_file_api": {
+      "definition": "upperLift",
+      "authority_lines": "10963-10964",
+      "definition_shape": "u composed with UpperHalfPlane.ofComplex",
+      "evaluation_theorem": "upperLift_apply",
+      "authority_lines_evaluation": "10966-10969",
+      "attribute": "simp",
+      "statement_shape": "upperLift u (z : Complex) = u z"
+    },
+    "mathlib_api": {
+      "path": "C:/Users/사용자/Desktop/mathlib4_spt2/Mathlib/Topology/Neighborhoods.lean",
+      "line": 62,
+      "statement_shape": "s in nhds x iff there exists t subset s with IsOpen t and x in t",
+      "relevance": "Explains why hU hy has equality-set membership shape before the retained change-at-hypothesis."
+    },
+    "required_imports": [],
+    "expected_errors_closed": 1,
+    "semantic_risk": "LOW",
+    "confidence": "VERY_HIGH_EXACT_REMOTE_TARGET_AND_EXISTING_SIMP_EVALUATION_API_DIRECT_LEAN_REQUIRED",
+    "theorem_proposition_changed": false,
+    "disposition": "PATCH_READY"
+  },
+  "history": {
+    "v42_q2": {
+      "repair": "V42-Q2-4288-normalize-zero-function-evaluation",
+      "shape": "rw upperLift_apply and hU hy was changed to simp-only with the same terms plus Pi.zero_apply",
+      "outcome": "The zero application was normalized, but rewriting with hU hy treated equality-set membership as if it were already a scalar equality."
+    },
+    "v43_late": {
+      "repair": "V43-LATE-4288-use-neighborhood-zero-equality",
+      "shape": "simpa only [upperLift_apply, Pi.zero_apply] using hU hy",
+      "remote_outcome": "The source proof had type y in {x | gauge x = 0}, while the simplified goal required gauge y = 0. This exposed the membership-to-equality bridge still missing."
+    },
+    "v44_q3_hc04": {
+      "repair": "V44-Q3-HC04-normalize-neighborhood-zero-functions-at-both-domains",
+      "shape": "introduced hyZero, changed it to an UpperHalfPlane zero-function equality, then changed the target to a Complex zero-function equality",
+      "remote_outcome": "The first bridge advanced successfully; the second direct change failed because the target retained upperLift."
+    },
+    "w25": "Retain the successful membership-to-scalar change at hyZero and combine it with V43's correct target-side upperLift_apply normalization. This supersedes only the failed second V44 change."
+  },
+  "variant_stability": {
+    "v45_core": {"diagnostic_count": 1, "ordinal": 41, "line": 58973, "signature": "'change' tactic failed, pattern"},
+    "v45_common_probe": {"diagnostic_count": 1, "ordinal": 41, "line": 58986, "signature": "'change' tactic failed, pattern"},
+    "v45_q1_probe": {"diagnostic_count": 1, "ordinal": 41, "line": 58975, "signature": "'change' tactic failed, pattern"},
+    "v45_q2_probe": {"diagnostic_count": 1, "ordinal": 41, "line": 58974, "signature": "'change' tactic failed, pattern"},
+    "v45_q3_probe": {"diagnostic_count": 1, "ordinal": 37, "line": 59009, "signature": "'change' tactic failed, pattern"},
+    "v45_all_probes": {"diagnostic_count": 1, "ordinal": 37, "line": 59025, "signature": "'change' tactic failed, pattern"},
+    "reading": "The same owner-local failed second change survives all six variants. The ordinal requested as 36 is not the locked all_probes ordinal; exact coverage is ordinal 37."
+  },
+  "dependency_classification": {
+    "diagnostic_is_cascade": false,
+    "preceding_support_chain": [
+      "gammaTwoPeriodizationOrbitSupport_isClosed",
+      "support_gammaTwoPoincarePeriodization_subset_orbitSupport",
+      "tsupport_gammaTwoPoincarePeriodization_subset_orbitSupport",
+      "gammaTwoPeriodizationOrbitSupport_subset_saturation"
+    ],
+    "preceding_chain_authority_diagnostic_count": 0,
+    "reason": "The proof reaches the final goal-normalization tactic with hRaw, hGauge, the open-image neighborhood, and hyZero already constructed. The residual prints a complete local target mismatch rather than an unknown predecessor or inferred metavariable.",
+    "downstream_users": [
+      "euclideanRaiseGauge_eq_zero_of_eventuallyEq_zero",
+      "euclideanLowerFromSuccGauge_eq_zero_of_eventuallyEq_zero",
+      "periodizedPhysicalCore_isReducedChartGaugeModel and subsequent signed/forward chart-model proofs"
+    ],
+    "promotion_policy": "W25 may be composed independently. Re-run downstream chart-model owners in the cumulative FA build because several have their own independent diagnostics."
+  },
+  "header_policy": "NO_HEADER_OR_ATTRIBUTE_OR_COMMENT_CHANGES_BODY_ONLY",
+  "trust_policy": {
+    "tokens": ["sorry", "admit", "axiom", "unsafe", "native_decide", "Lean.ofReduceBool"],
+    "required_before": 0,
+    "required_after": 0
+  },
+  "repairs": [
+    {
+      "id": "V46-W25-IDX4288-simp-upperLift-after-equality-set-membership-bridge",
+      "owner": "periodizedFixedPhaseGauge_eventuallyEq_zero_of_not_mem_saturation",
+      "declaration_index": 4288,
+      "diagnostics": [37],
+      "kind": "body",
+      "classification": "RETAIN-HYPOTHESIS-CHANGE-REPLACE-GOAL-CHANGE-WITH-UPPERLIFT-API",
+      "confidence": "very-high-exact-remote-target-and-simp-theorem-direct-Lean-required",
+      "expected_count_in_owner": 1,
+      "old": "  have hyZero := hU hy\n  change\n    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge m\n        (gammaTwoPeriodizedPhysicalCore m v) y = (0 : ℍ → ℂ) y at hyZero\n  change\n    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge m\n        (gammaTwoPeriodizedPhysicalCore m v) y = (0 : ℂ → ℂ) (y : ℂ)\n  simpa only [Pi.zero_apply] using hyZero",
+      "new": "  have hyZero := hU hy\n  change\n    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge m\n        (gammaTwoPeriodizedPhysicalCore m v) y = (0 : ℍ → ℂ) y at hyZero\n  simpa only [upperLift_apply, Pi.zero_apply] using hyZero",
+      "evidence": "The exact old V44 follow-on occurs once in idx4288 and once globally. The first change makes the source proof scalar; upperLift_apply makes the target scalar; Pi.zero_apply normalizes the two typed zero functions to the same Complex zero."
+    }
+  ],
+  "promotion_rule": "Compose the exact body replacement and require locked all_probes ordinal 37 to disappear with no new idx4288 diagnostic. Do not score or report ordinal 36 as covered. Then require downstream chart-model checks, Mock2=0, Mock2_Advanced=0, full FA maxErrors=2000, 4416 declaration headers/order/comments/attributes unchanged, synthetic-sorry zero, and trust-six zero.",
+  "direct_lean_verified": false,
+  "clean_build_claimed": false,
+  "lean_lake_git_github_network_invoked_by_worker": false
+}

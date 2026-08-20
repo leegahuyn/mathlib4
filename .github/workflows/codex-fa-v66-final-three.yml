@@ -1,0 +1,133 @@
+name: Codex FA v66 targeted final-three direct Lean
+
+on:
+  push:
+    branches:
+      - codex/fa-v66-final-three-20260815
+    paths:
+      - .github/workflows/codex-fa-v66-final-three.yml
+      - scripts/fa_v66_patch_final_three.py
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: codex-fa-v66-final-three-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  direct-final-three:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    env:
+      OUT: build-logs/codex-fa-v66-final-three
+      SOURCE: PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+      V65_ARTIFACT_ID: "9246997507"
+      V65_SOURCE_SHA256: 71d8eeca6cce4e520754a3e45b43bf3d61a94f4f1bac6f452d0c8ae2c1ee853b
+      EXPECTED_BRANCH: codex/fa-v66-final-three-20260815
+
+    steps:
+      - name: Check out exact test branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: codex/fa-v66-final-three-20260815
+          fetch-depth: 1
+          persist-credentials: true
+
+      - name: Recover authoritative v65 winner source
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          [[ "$GITHUB_REF_NAME" == "$EXPECTED_BRANCH" ]]
+          mkdir -p "$OUT"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${V65_ARTIFACT_ID}/zip" > /tmp/fa-v65-best.zip
+          unzip -p /tmp/fa-v65-best.zip Mock2_FunctionalAnalysis-candidate.lean > "$SOURCE"
+          actual="$(sha256sum "$SOURCE" | awk '{print $1}')"
+          printf '%s\n' "$actual" > "$OUT/v65-source.sha256"
+          [[ "$actual" == "$V65_SOURCE_SHA256" ]]
+          [[ "$(wc -c < "$SOURCE" | tr -d '[:space:]')" == "2813986" ]]
+          [[ "$(python3 - "$SOURCE" <<'PY'
+          from pathlib import Path
+          import sys
+          print(len(Path(sys.argv[1]).read_text(encoding='utf-8').splitlines()))
+          PY
+          )" == "62963" ]]
+
+      - name: Apply scoped final-three patch
+        run: |
+          set -euo pipefail
+          python3 scripts/fa_v66_patch_final_three.py "$SOURCE" \
+            --audit "$OUT/PATCH_AUDIT.json" | tee "$OUT/PATCH_AUDIT.stdout.json"
+          patched_sha="$(sha256sum "$SOURCE" | awk '{print $1}')"
+          printf '%s\n' "$patched_sha" > "$OUT/candidate.sha256"
+          printf 'PATCHED_SHA=%s\n' "$patched_sha" >> "$GITHUB_ENV"
+          cp "$SOURCE" "$OUT/Mock2_FunctionalAnalysis-v66-candidate.lean"
+
+      - name: Install exact pinned Lean and Mathlib cache
+        run: |
+          set -euo pipefail
+          [[ "$(tr -d '\r\n' < lean-toolchain)" == "leanprover/lean4:v4.33.0-rc1" ]]
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none > "$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          printf '%s\n' "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" > "$OUT/toolchain.log" 2>&1
+          lake exe cache get > "$OUT/cache.log" 2>&1
+          lean --version | tee "$OUT/lean-version.txt"
+
+      - name: Run exact M2 then M2A then FA2000 direct chain
+        run: |
+          set -euo pipefail
+          export FA_V42_OUT="$OUT"
+          export FA_V42_EXPECTED_CANDIDATE_SHA256="$PATCHED_SHA"
+          bash scripts/fa_v42_direct_compile_ci.sh
+          printf 'M2_EXIT=%s\n' "$(tr -d '\r\n' < "$OUT/Mock2.exit")" >> "$GITHUB_ENV"
+          printf 'M2A_EXIT=%s\n' "$(tr -d '\r\n' < "$OUT/Mock2_Advanced.exit")" >> "$GITHUB_ENV"
+          printf 'FA_EXIT=%s\n' "$(tr -d '\r\n' < "$OUT/Mock2_FunctionalAnalysis.exit")" >> "$GITHUB_ENV"
+
+      - name: Collect exact diagnostics
+        if: always()
+        run: |
+          set -euo pipefail
+          python3 - "$OUT/Mock2_FunctionalAnalysis.log" "$OUT/DIAGNOSTICS.json" <<'PY'
+          import json, re, sys
+          from pathlib import Path
+          log = Path(sys.argv[1]).read_text(encoding='utf-8', errors='replace')
+          pat = re.compile(r'^([^\n:]+\.lean):(\d+):(\d+): (error|warning): (.*(?:\n(?![^\n:]+\.lean:\d+:\d+: (?:error|warning):).*)*)', re.M)
+          rows=[]
+          for m in pat.finditer(log):
+              rows.append({"file":m.group(1),"line":int(m.group(2)),"column":int(m.group(3)),"severity":m.group(4),"message":m.group(5).strip()})
+          Path(sys.argv[2]).write_text(json.dumps(rows, indent=2, ensure_ascii=False)+"\n", encoding='utf-8')
+          errors=[r for r in rows if r['severity']=='error']
+          print(json.dumps({"diagnostics":len(rows),"errors":len(errors),"first_error":errors[0] if errors else None}, ensure_ascii=False))
+          PY
+          grep -n ': error:' "$OUT/Mock2_FunctionalAnalysis.log" > "$OUT/error-headers.txt" || true
+          wc -l "$OUT/error-headers.txt" | tee "$OUT/error-count.txt"
+
+      - name: Upload complete v66 evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-v66-final-three-${{ github.sha }}
+          path: build-logs/codex-fa-v66-final-three/*
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Check in source only after exact TRUE PASS
+        if: always()
+        run: |
+          set -euo pipefail
+          m2="$(tr -d '\r\n' < "$OUT/Mock2.exit")"
+          m2a="$(tr -d '\r\n' < "$OUT/Mock2_Advanced.exit")"
+          fa="$(tr -d '\r\n' < "$OUT/Mock2_FunctionalAnalysis.exit")"
+          printf 'Mock2_exit=%s Mock2_Advanced_exit=%s FA_exit=%s\n' "$m2" "$m2a" "$fa"
+          [[ "$m2" == 0 && "$m2a" == 0 && "$fa" == 0 ]]
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "$SOURCE"
+          git commit -m "Codex: check in FA v66 direct-Lean clean candidate"
+          git push origin "HEAD:${EXPECTED_BRANCH}"

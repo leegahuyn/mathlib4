@@ -1,0 +1,91 @@
+{
+  "schema": "fa-v42-declaration-local-repairs-v1",
+  "status": "STATIC_ONLY_DIRECT_LEAN_UNVERIFIED_V44_Q2_HIGH_CONFIDENCE",
+  "variant_base": "v43_middle_probe_authority",
+  "authority": {
+    "run_id": 31719983304,
+    "head_sha": "dda6274627f628eca6cbfcef48f0c6e572881f0c",
+    "job_id": 94514229853,
+    "artifact_id": 9189354873,
+    "artifact_digest": "sha256:78416b511693fe68bd556674246cc0815015f8fddb46afcdc1e34673eefe87e5",
+    "source_path": "work/v43-run-31719983304/9189354873/Mock2_FunctionalAnalysis-candidate.lean",
+    "source_sha256": "f8d1b152e1c12639e4fc4f126e501a2a309333c5b8a6f3c8645df3e433572109",
+    "source_bytes": 2785412,
+    "source_lines": 62304,
+    "declaration_count": 4416,
+    "diagnostics_sha256": "baab8be659f062f26d4b7563073c18480263747bfa45de88c642aeb13e1f4d07",
+    "fa_log_sha256": "4edd03f6c327dda4fa5a49cc3fac56e85004199d3a5dfa7aca0c726ab533a73c"
+  },
+  "slice": {
+    "queue": 2,
+    "residual_owner_count": 13,
+    "residual_diagnostic_count": 20,
+    "selected_owner_count": 3,
+    "selected_diagnostic_count": 3,
+    "selected_declaration_indices": [3955, 4296, 4391],
+    "selected_diagnostic_ordinals": [36, 52, 59],
+    "excluded_known_regression_indices": [3924]
+  },
+  "header_policy": "NO_HEADER_CHANGES_BODY_ONLY",
+  "trust_policy": {
+    "tokens": ["sorry", "admit", "axiom", "unsafe", "native_decide", "Lean.ofReduceBool"],
+    "required_before": 0,
+    "required_after": 0
+  },
+  "repairs": [
+    {
+      "id": "V44-Q2-HC02-normalize-ringhom-id-scalar",
+      "owner": "ambientPlaneToUpperLinear",
+      "declaration_index": 3955,
+      "diagnostics": [36],
+      "kind": "body",
+      "classification": "HIGH_CONFIDENCE_EXACT_RESIDUAL_NORMALIZATION",
+      "confidence": "certain-remote-types-differ-only-by-RingHom-id-application",
+      "expected_count_in_owner": 1,
+      "old": "        simpa only [Pi.smul_apply, smul_eq_mul] using hsmul.symm",
+      "new": "        simpa only [Pi.smul_apply, smul_eq_mul, RingHom.id_apply] using\n          hsmul.symm",
+      "evidence": "The remote expected type differs from hsmul.symm only by `(RingHom.id ℂ) c` versus `c`; RingHom.id_apply is the exact missing normalization."
+    },
+    {
+      "id": "V44-Q2-HC03-unfold-conjugated-test-before-raising-adjoint",
+      "owner": "euclideanRaiseTestAdjoint_conjugate_eq_conj_affineTranspose",
+      "declaration_index": 4296,
+      "diagnostics": [52],
+      "kind": "body",
+      "classification": "HIGH_CONFIDENCE_EXACT_SYMMETRIC_SIBLING",
+      "confidence": "very-high-identical-bundled-function-rewrite-failure-as-q1-lowering-sibling",
+      "expected_count_in_owner": 1,
+      "old": "  have hfun :\n      (reducedChartConjugateAmbientTest v hv : ℂ → ℂ) =\n        fun z : ℂ ↦ star (v z) := by\n    funext z\n    exact reducedChartConjugateAmbientTest_apply v hv z\n  rw [hfun]\n  simp only [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanRaiseTestAdjoint,\n    fullPlaneAffineTranspose_apply, add_apply,",
+      "new": "  simp only [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanRaiseTestAdjoint,\n    reducedChartConjugateAmbientTest, fullPlaneAffineTranspose_apply, add_apply,",
+      "evidence": "The remote target contains the bundled AmbientTestCore argument, so rewriting its function coercion cannot match. The symmetric lowering declaration is repaired by unfolding the bundle before applying the existing conjugate derivative simp rules."
+    },
+    {
+      "id": "V44-Q2-HC03b-remove-obsolete-raising-pointwise-simp",
+      "owner": "euclideanRaiseTestAdjoint_conjugate_eq_conj_affineTranspose",
+      "declaration_index": 4296,
+      "diagnostics": [52],
+      "kind": "body",
+      "classification": "HIGH_CONFIDENCE_UNUSED_SIMP_PREVENTION",
+      "confidence": "very-high-definition-is-unfolded-by-the-parent-repair",
+      "expected_count_in_owner": 1,
+      "old": "    reducedChartConjugateAmbientTest_apply,\n    reducedChartAmbientTest_apply,",
+      "new": "    reducedChartAmbientTest_apply,",
+      "evidence": "After HC03 unfolds reducedChartConjugateAmbientTest, its pointwise theorem has no remaining occurrence and should not create a new unused-simp warning."
+    },
+    {
+      "id": "V44-Q2-HC04-expose-invariant-scalar-pointwise-action",
+      "owner": "finset_sum_invariantScalarMultipliers_eq_of_compactSupport",
+      "declaration_index": 4391,
+      "diagnostics": [59],
+      "kind": "body",
+      "classification": "HIGH_CONFIDENCE_EXACT_RESIDUAL_STAGING",
+      "confidence": "very-high-remote-target-is-function-smul-application-and-hmul-already-exposes-it",
+      "expected_count_in_owner": 1,
+      "old": "    rw [lpInfinityMultiplier_apply, hmul, Pi.smul_apply,\n      smul_eq_mul, hcval]",
+      "new": "    rw [lpInfinityMultiplier_apply, hmul]\n    change ↑↑(invariantScalarCarrierLInfinity (c i)) z *\n        ↑↑(Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n p) z =\n      ↑↑(c i) z *\n        ↑↑(Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n p) z\n    rw [hcval]",
+      "evidence": "After hmul the remote goal is a scalar action on coerced functions, where Pi.smul_apply does not match. Changing to the displayed pointwise multiplication leaves exactly hcval."
+    }
+  ],
+  "direct_lean_verified": false,
+  "clean_build_claimed": false
+}

@@ -1,0 +1,9 @@
+{
+  "schema": "fa-dynamic-env-joint-localization-support-namespace-v1",
+  "status": "STRUCTURAL_NAMESPACE_ROOT_PENDING_DIRECT_LEAN",
+  "environment_replacement": {
+    "id": "open-essential-core-route-for-joint-compact-support",
+    "old_fragment": "namespace FixedPhaseIntrinsicJointLocalization\n\nopen Set Function Topology Filter MeasureTheory\nopen scoped LinearPMap\nopen DefinitionOneSobolev\nopen DefinitionOneSobolev.FixedPhasePeterssonCoordinates\nopen FixedPhaseDensity\nopen FixedPhaseClosedOperators",
+    "new_fragment": "namespace FixedPhaseIntrinsicJointLocalization\n\nopen Set Function Topology Filter MeasureTheory\nopen scoped LinearPMap\nopen DefinitionOneSobolev\nopen DefinitionOneSobolev.FixedPhasePeterssonCoordinates\nopen FixedPhaseDensity\nopen FixedPhaseClosedOperators\nopen FixedPhaseEssentialCoreRoute"
+  }
+}

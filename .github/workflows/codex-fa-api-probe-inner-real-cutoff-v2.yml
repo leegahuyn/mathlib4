@@ -1,0 +1,54 @@
+name: Codex FA API probe inner real cutoff v2
+
+on:
+  push:
+    branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
+    paths: [.github/workflows/codex-fa-api-probe-inner-real-cutoff-v2.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none >/tmp/elan.log 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1
+          lake exe cache get >/tmp/cache.log 2>&1
+      - name: Probe fully expanded Complex inner algebra
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          cat >/tmp/ProbeInnerRealCutoffV2.lean <<'LEAN'
+          import Mathlib
+
+          example (g c u v : ℂ) (hc : star c = c) :
+              inner ℂ (g * (c * u)) (g * v) =
+                inner ℂ (g * u) (g * (c * v)) := by
+            simp only [RCLike.inner_apply, starRingEnd_apply]
+            rw [star_mul, star_mul, star_mul, hc]
+            ring
+          LEAN
+          lake env lean -DwarningAsError=false /tmp/ProbeInnerRealCutoffV2.lean | tee /tmp/inner-real-cutoff-v2.log
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-api-probe-inner-real-cutoff-v2-${{ github.sha }}
+          path: /tmp/inner-real-cutoff-v2.log
+          if-no-files-found: warn
+          retention-days: 7

@@ -1,0 +1,109 @@
+name: Codex FA v51 change-of-variables API probe
+run-name: "Codex: probe pinned complex set-integral change-of-variables v2"
+
+on:
+  push:
+    branches:
+      - codex/fa-exclusive-focus-20260814
+    paths:
+      - .github/workflows/codex-fa-v51-changevar-api-probe.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Install pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none >/tmp/elan.log 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          printf '%s\n' "$HOME/.elan/bin" >>"$GITHUB_PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)"
+          lake exe cache get
+          lean --version
+      - name: Compile exact pinned proof shapes
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          cat > /tmp/FAV51ChangeVarProbe.lean <<'LEAN'
+          import Mathlib.MeasureTheory.Measure.Haar.NormedSpace
+          import Mathlib.MeasureTheory.Integral.Bochner.Set
+          import Mathlib.MeasureTheory.Measure.Lebesgue.Complex
+          import Mathlib.LinearAlgebra.Complex.FiniteDimensional
+          import Mathlib.Tactic
+
+          open scoped Pointwise
+          open MeasureTheory Set
+
+          example (R : ℝ) (hR : 0 < R) (f : ℂ → ℂ) (s : Set ℂ) :
+              (∫ x in R • s, f x) =
+                (R : ℂ) ^ 2 * ∫ x in s, f (R • x) := by
+            have h := Measure.setIntegral_comp_smul_of_pos
+              (E := ℂ) (F := ℂ) volume f s hR
+            rw [Complex.finrank_real_complex] at h
+            calc
+              (∫ x in R • s, f x) =
+                  (R : ℂ) ^ 2 *
+                    (((R ^ 2)⁻¹ : ℝ) • ∫ x in R • s, f x) := by
+                simp only [Complex.real_smul]
+                push_cast
+                field_simp [hR.ne']
+              _ = (R : ℂ) ^ 2 * ∫ x in s, f (R • x) := by
+                rw [h]
+
+          example (g : ℂ → ℂ) (s : Set (Fin 2 → ℝ)) :
+              (∫ w in Complex.measurableEquivPi.symm '' s, g w) =
+                ∫ x in s, g (Complex.measurableEquivPi.symm x) := by
+            exact Complex.volume_preserving_equiv_pi.symm.setIntegral_image_emb
+              Complex.measurableEquivPi.symm.measurableEmbedding g s
+
+          example (R : ℝ) (hR : 0 < R) (g : ℂ → ℂ)
+              (s : Set (Fin 2 → ℝ)) :
+              (∫ w in R • (Complex.measurableEquivPi.symm '' s), g w) =
+                (R : ℂ) ^ 2 *
+                  ∫ x in s, g (R • Complex.measurableEquivPi.symm x) := by
+            calc
+              (∫ w in R • (Complex.measurableEquivPi.symm '' s), g w) =
+                  (R : ℂ) ^ 2 *
+                    ∫ w in Complex.measurableEquivPi.symm '' s, g (R • w) := by
+                have h := Measure.setIntegral_comp_smul_of_pos
+                  (E := ℂ) (F := ℂ) volume g
+                  (Complex.measurableEquivPi.symm '' s) hR
+                rw [Complex.finrank_real_complex] at h
+                calc
+                  _ = (R : ℂ) ^ 2 *
+                      (((R ^ 2)⁻¹ : ℝ) •
+                        ∫ w in R • (Complex.measurableEquivPi.symm '' s), g w) := by
+                    simp only [Complex.real_smul]
+                    push_cast
+                    field_simp [hR.ne']
+                  _ = _ := by rw [h]
+              _ = (R : ℂ) ^ 2 *
+                    ∫ x in s, g (R • Complex.measurableEquivPi.symm x) := by
+                rw [Complex.volume_preserving_equiv_pi.symm.setIntegral_image_emb
+                  Complex.measurableEquivPi.symm.measurableEmbedding
+                  (fun w : ℂ => g (R • w)) s]
+          LEAN
+          lake env lean -DwarningAsError=false /tmp/FAV51ChangeVarProbe.lean 2>&1 | tee /tmp/FAV51ChangeVarProbe.log
+      - name: Upload probe evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-v51-changevar-api-probe-v2-${{ github.sha }}
+          path: |
+            /tmp/FAV51ChangeVarProbe.lean
+            /tmp/FAV51ChangeVarProbe.log
+          retention-days: 30

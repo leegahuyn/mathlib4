@@ -1,0 +1,488 @@
+name: Ordered first-three pass324
+
+on:
+  push:
+    branches: [fix/primality-sheaf-clean-build]
+    paths:
+      - '.github/workflows/ordered-first-three-pass324.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: mock2-advanced-pass322-latest-head
+  cancel-in-progress: true
+
+jobs:
+  advanced-fa-qym:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 360
+    env:
+      BRANCH: fix/primality-sheaf-clean-build
+      TRIGGER_SHA: ${{ github.sha }}
+      MOCK2: PrimalitySheafVerification/Mock2.lean
+      ADVANCED: PrimalitySheafVerification/Mock2_Advanced.lean
+      FA: PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+      INTEGRATED: PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean
+      QYM: PrimalitySheafVerification/QYM.lean
+      ADVANCED_BASELINE_COMMIT: 623dfac27a24c170330d6218005e67b06490b814
+      FA_BASELINE_COMMIT: 402e2b7aa053b9c43d95f24e6146efbc5ccf714b
+      OUTDIR: .lake/build/lib/lean/PrimalitySheafVerification
+      EVIDENCE: /tmp/ordered-first-three-pass324
+
+    steps:
+      - name: Cancel obsolete focused runs
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh api \
+            -H 'Accept: application/vnd.github+json' \
+            "repos/${GITHUB_REPOSITORY}/actions/runs?branch=${BRANCH//\//%2F}&status=in_progress&per_page=100" \
+            > /tmp/in-progress-runs.json
+          python3 - /tmp/in-progress-runs.json "${GITHUB_RUN_ID}" <<'PY' \
+            > /tmp/cancel-run-ids.txt
+          import json
+          import sys
+          data=json.load(open(sys.argv[1],encoding='utf-8'))
+          current=int(sys.argv[2])
+          needles=('pass318','pass319','pass320','pass321','pass322','pass323',
+                   'mock2 advanced','functional analysis','functionalanalysis','qym direct')
+          for run in data.get('workflow_runs',[]):
+              name=(run.get('name') or '').lower()
+              if run.get('id') != current and any(n in name for n in needles):
+                  print(run['id'])
+          PY
+          while IFS= read -r run_id; do
+            [[ -z "${run_id}" ]] && continue
+            gh api -X POST "repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}/cancel" || true
+          done < /tmp/cancel-run-ids.txt
+
+      - name: Clone exact latest branch head
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git init .
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git fetch --depth=1 origin "refs/heads/${BRANCH}:refs/remotes/origin/${BRANCH}"
+          git checkout --detach "refs/remotes/origin/${BRANCH}"
+          base_sha="$(git rev-parse HEAD)"
+          echo "BASE_SHA=${base_sha}" >> "${GITHUB_ENV}"
+          mkdir -p "${EVIDENCE}/logs" "${EVIDENCE}/source" "${EVIDENCE}/artifacts" "${OUTDIR}"
+          for path in "${ADVANCED}" "${FA}" "${INTEGRATED}" "${QYM}"; do
+            if [[ -f "${path}" ]]; then
+              cp "${path}" "${EVIDENCE}/source/$(basename "${path}" .lean)-before.lean"
+            fi
+          done
+          printf '%s\n' \
+            "repository=${GITHUB_REPOSITORY}" \
+            "branch=${BRANCH}" \
+            "trigger_sha=${TRIGGER_SHA}" \
+            "base_sha=${base_sha}" \
+            "advanced_start_blob=$(git hash-object "${ADVANCED}")" \
+            "fa_start_blob=$(git hash-object "${FA}")" \
+            "integrated_exists=$([[ -f "${INTEGRATED}" ]] && echo 1 || echo 0)" \
+            "qym_blob=$(git hash-object "${QYM}")" \
+            "utc_started=$(date -u +%FT%TZ)" \
+            | tee "${EVIDENCE}/snapshot.txt"
+
+      - name: Install pinned Lean and restore Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          elan toolchain install "$(cat lean-toolchain)"
+          lean --version | tee "${EVIDENCE}/lean-version.txt"
+          lake --version | tee "${EVIDENCE}/lake-version.txt"
+          cp lean-toolchain lake-manifest.json "${EVIDENCE}/"
+          lake exe cache get 2>&1 | tee "${EVIDENCE}/logs/cache-get.log"
+
+      - name: Define compilation helper
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > /tmp/pass324-compile.sh <<'SH'
+          compile_module() {
+            local phase="$1" pass="$2" module="$3"
+            local source="PrimalitySheafVerification/${module}.lean"
+            local log="${EVIDENCE}/logs/${phase}-${module}-pass${pass}.log"
+            mkdir -p "${OUTDIR}"
+            rm -f "${OUTDIR}/${module}.olean" "${OUTDIR}/${module}.ilean" \
+              "${OUTDIR}/${module}.olean.private"
+            set +e
+            lake env lean "${source}" \
+              -o "${OUTDIR}/${module}.olean" \
+              -i "${OUTDIR}/${module}.ilean" >"${log}" 2>&1
+            local code=$?
+            set -e
+            local errors warnings
+            errors="$(grep -c 'error:' "${log}" || true)"
+            warnings="$(grep -c 'warning:' "${log}" || true)"
+            printf '%s,%s,%s,%s,%s,%s\n' \
+              "${phase}" "${pass}" "${module}" "${code}" "${errors}" "${warnings}" \
+              >> "${EVIDENCE}/compile-summary.csv"
+            if [[ "${code}" -ne 0 ]]; then
+              {
+                echo "phase=${phase} pass=${pass} module=${module} exit=${code} errors=${errors}"
+                grep -n 'error:' "${log}" | head -50 || true
+                grep -n 'error:' "${log}" | tail -1 || true
+                tail -420 "${log}" || true
+              } > "${EVIDENCE}/logs/${phase}-${module}-pass${pass}-failure-summary.txt"
+              return "${code}"
+            fi
+            test "${errors}" -eq 0
+            test -s "${OUTDIR}/${module}.olean"
+            test -s "${OUTDIR}/${module}.ilean"
+            if grep -Eqi \
+              "maximum number of errors|missing object file|sorryAx|declaration uses 'sorry'|PANIC|segmentation fault|stack overflow" \
+              "${log}"; then
+              echo "forbidden compiler diagnostic in ${log}" >&2
+              return 1
+            fi
+          }
+          SH
+          echo 'phase,pass,module,exit_code,error_count,warning_count' > "${EVIDENCE}/compile-summary.csv"
+
+      - name: Stage 1 - make Mock2 Advanced pass directly
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          source /tmp/pass324-compile.sh
+          compile_module Advanced 0 Mock2
+          if compile_module Advanced direct1 Mock2_Advanced; then
+            compile_module Advanced direct2 Mock2_Advanced
+            advanced_mode=direct
+          else
+            git restore --source=HEAD --worktree -- "${ADVANCED}"
+            scripts=(
+              apply_two_hundred_eighty_ninth_pass_repairs.py
+              apply_two_hundred_ninetieth_pass_repairs.py
+              apply_two_hundred_ninety_first_pass_repairs.py
+              apply_two_hundred_ninety_second_pass_repairs.py
+              apply_two_hundred_ninety_third_pass_repairs.py
+              apply_two_hundred_ninety_fourth_pass_repairs.py
+              apply_two_hundred_ninety_fifth_pass_repairs.py
+              apply_two_hundred_ninety_seventh_pass_repairs.py
+              apply_two_hundred_ninety_eighth_pass_repairs.py
+              apply_two_hundred_ninety_ninth_pass_repairs.py
+              apply_three_hundredth_pass_repairs.py
+              apply_three_hundred_ninth_pass_repairs.py
+              apply_three_hundred_tenth_pass_repairs.py
+              apply_three_hundred_eleventh_pass_repairs.py
+              apply_three_hundred_twelfth_pass_repairs.py
+              apply_three_hundred_twenty_third_pass_mock2_advanced_repairs.py
+            )
+            : > "${EVIDENCE}/logs/advanced-repair-application.log"
+            for script in "${scripts[@]}"; do
+              echo "===== ${script} =====" | tee -a "${EVIDENCE}/logs/advanced-repair-application.log"
+              python3 "scripts/${script}" 2>&1 | tee -a "${EVIDENCE}/logs/advanced-repair-application.log"
+            done
+            while IFS= read -r changed; do
+              if [[ -n "${changed}" && "${changed}" != "${ADVANCED}" ]]; then
+                git restore --source=HEAD --worktree -- "${changed}"
+              fi
+            done < <(git diff --name-only)
+            test "$(git diff --name-only)" = "${ADVANCED}"
+            git diff --check
+            compile_module Advanced repaired0 Mock2
+            compile_module Advanced repaired1 Mock2_Advanced
+            compile_module Advanced repaired2 Mock2_Advanced
+            advanced_mode=repaired
+          fi
+          cp "${ADVANCED}" "${EVIDENCE}/source/Mock2_Advanced-final.lean"
+          cp "${OUTDIR}/Mock2_Advanced.olean" "${OUTDIR}/Mock2_Advanced.ilean" \
+            "${EVIDENCE}/artifacts/"
+          echo "advanced_mode=${advanced_mode}" | tee -a "${EVIDENCE}/snapshot.txt"
+
+      - name: Stage 2 - make Mock2 FunctionalAnalysis pass directly
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          source /tmp/pass324-compile.sh
+
+          fa_direct=0
+          if [[ -f "${INTEGRATED}" ]]; then
+            if grep -Fq 'import PrimalitySheafVerification.Mock2_FunctionalAnalysis_Integrated' "${FA}"; then
+              if compile_module FA direct1 Mock2_FunctionalAnalysis_Integrated && \
+                 compile_module FA direct1 Mock2_FunctionalAnalysis; then
+                compile_module FA direct2 Mock2_FunctionalAnalysis_Integrated
+                compile_module FA direct2 Mock2_FunctionalAnalysis
+                fa_direct=1
+              fi
+            elif grep -Fq 'import PrimalitySheafVerification.Mock2_FunctionalAnalysis' "${INTEGRATED}"; then
+              if compile_module FA direct1 Mock2_FunctionalAnalysis && \
+                 compile_module FA direct1 Mock2_FunctionalAnalysis_Integrated; then
+                compile_module FA direct2 Mock2_FunctionalAnalysis
+                compile_module FA direct2 Mock2_FunctionalAnalysis_Integrated
+                fa_direct=1
+              fi
+            else
+              if compile_module FA direct1 Mock2_FunctionalAnalysis_Integrated && \
+                 compile_module FA direct1 Mock2_FunctionalAnalysis; then
+                compile_module FA direct2 Mock2_FunctionalAnalysis_Integrated
+                compile_module FA direct2 Mock2_FunctionalAnalysis
+                fa_direct=1
+              fi
+            fi
+          fi
+
+          if [[ "${fa_direct}" -eq 1 ]]; then
+            fa_mode=direct
+          else
+            cp "${ADVANCED}" /tmp/pass324-final-advanced.lean
+            git fetch --depth=1 origin "${ADVANCED_BASELINE_COMMIT}"
+            git fetch --depth=1 origin "${FA_BASELINE_COMMIT}"
+            git show "${FA_BASELINE_COMMIT}:${FA}" > "${FA}"
+            git show "${ADVANCED_BASELINE_COMMIT}:${ADVANCED}" > "${ADVANCED}"
+            if git cat-file -e "${FA_BASELINE_COMMIT}:${INTEGRATED}" 2>/dev/null; then
+              git show "${FA_BASELINE_COMMIT}:${INTEGRATED}" > "${INTEGRATED}"
+            else
+              rm -f "${INTEGRATED}"
+            fi
+            scripts=(
+              apply_two_hundred_eighty_ninth_pass_repairs.py
+              apply_two_hundred_ninetieth_pass_repairs.py
+              apply_two_hundred_ninety_first_pass_repairs.py
+              apply_two_hundred_ninety_second_pass_repairs.py
+              apply_two_hundred_ninety_third_pass_repairs.py
+              apply_two_hundred_ninety_fourth_pass_repairs.py
+              apply_two_hundred_ninety_fifth_pass_repairs.py
+              apply_two_hundred_ninety_seventh_pass_repairs.py
+              apply_two_hundred_ninety_eighth_pass_repairs.py
+              apply_two_hundred_ninety_ninth_pass_repairs.py
+              apply_three_hundredth_pass_repairs.py
+              apply_three_hundred_ninth_pass_repairs.py
+              apply_three_hundred_tenth_pass_repairs.py
+              apply_three_hundred_eleventh_pass_repairs.py
+              apply_three_hundred_twelfth_pass_repairs.py
+              apply_three_hundred_thirteenth_pass_repairs.py
+              apply_three_hundred_fourteenth_pass_repairs.py
+              apply_three_hundred_fifteenth_pass_repairs.py
+            )
+            : > "${EVIDENCE}/logs/fa-repair-application.log"
+            for script in "${scripts[@]}"; do
+              echo "===== ${script} =====" | tee -a "${EVIDENCE}/logs/fa-repair-application.log"
+              python3 "scripts/${script}" 2>&1 | tee -a "${EVIDENCE}/logs/fa-repair-application.log"
+            done
+            cp /tmp/pass324-final-advanced.lean "${ADVANCED}"
+            while IFS= read -r changed; do
+              case "${changed}" in
+                "${ADVANCED}"|"${FA}"|"${INTEGRATED}") ;;
+                *) git restore --source=HEAD --worktree -- "${changed}" ;;
+              esac
+            done < <(git diff --name-only)
+            git diff --check
+            compile_module FA candidate0 Mock2
+            compile_module FA candidate0 Mock2_Advanced
+            compile_module FA full1 Mock2_FunctionalAnalysis
+            compile_module FA full2 Mock2_FunctionalAnalysis
+
+            cp "${FA}" "${INTEGRATED}"
+            cat > "${FA}" <<'LEAN'
+            /-!
+            # Mock2 FunctionalAnalysis compatibility entry point
+
+            The complete source-level implementation is stored in
+            `PrimalitySheafVerification.Mock2_FunctionalAnalysis_Integrated`.
+            This module preserves the historical import path and re-exports the
+            same public declarations without duplicating their definitions.
+            -/
+            import PrimalitySheafVerification.Mock2_FunctionalAnalysis_Integrated
+            LEAN
+            git diff --check
+            compile_module FA integrated1 Mock2_FunctionalAnalysis_Integrated
+            compile_module FA wrapper1 Mock2_FunctionalAnalysis
+            compile_module FA integrated2 Mock2_FunctionalAnalysis_Integrated
+            compile_module FA wrapper2 Mock2_FunctionalAnalysis
+            fa_mode=repaired
+          fi
+          cp "${FA}" "${EVIDENCE}/source/Mock2_FunctionalAnalysis-final.lean"
+          cp "${INTEGRATED}" "${EVIDENCE}/source/Mock2_FunctionalAnalysis_Integrated-final.lean"
+          cp "${OUTDIR}/Mock2_FunctionalAnalysis_Integrated.olean" \
+            "${OUTDIR}/Mock2_FunctionalAnalysis_Integrated.ilean" \
+            "${OUTDIR}/Mock2_FunctionalAnalysis.olean" \
+            "${OUTDIR}/Mock2_FunctionalAnalysis.ilean" \
+            "${EVIDENCE}/artifacts/"
+          echo "functional_analysis_mode=${fa_mode}" | tee -a "${EVIDENCE}/snapshot.txt"
+
+      - name: Stage 3 - make QYM pass twice from deleted dependency artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          source /tmp/pass324-compile.sh
+          modules=(
+            Mock2 Mock2_Advanced
+            Mock2_FunctionalAnalysis_Integrated
+            Mock2_FunctionalAnalysis QYM
+          )
+          for pass in 1 2; do
+            rm -rf "${OUTDIR}"
+            mkdir -p "${OUTDIR}"
+            for module in "${modules[@]}"; do
+              compile_module QYM-chain "${pass}" "${module}"
+            done
+          done
+          cp "${OUTDIR}/QYM.olean" "${OUTDIR}/QYM.ilean" "${EVIDENCE}/artifacts/"
+          echo 'qym_mode=direct-two-clean-passes' | tee -a "${EVIDENCE}/snapshot.txt"
+
+      - name: Audit final first-three sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - "${ADVANCED}" "${FA}" "${INTEGRATED}" "${QYM}" <<'PY' \
+            | tee "${EVIDENCE}/trust-audit.txt"
+          from pathlib import Path
+          import re
+          import sys
+
+          def strip(src:str)->str:
+              out=[];i=0;depth=0;string=False;escaped=False
+              while i<len(src):
+                  if depth:
+                      if src.startswith('/-',i):depth+=1;out.extend('  ');i+=2
+                      elif src.startswith('-/',i):depth-=1;out.extend('  ');i+=2
+                      else:out.append('\n' if src[i]=='\n' else ' ');i+=1
+                  elif string:
+                      ch=src[i];out.append('\n' if ch=='\n' else ' ')
+                      if escaped:escaped=False
+                      elif ch=='\\':escaped=True
+                      elif ch=='"':string=False
+                      i+=1
+                  elif src.startswith('/-',i):depth=1;out.extend('  ');i+=2
+                  elif src.startswith('--',i):
+                      while i<len(src) and src[i]!='\n':out.append(' ');i+=1
+                  elif src[i]=='"':string=True;out.append(' ');i+=1
+                  else:out.append(src[i]);i+=1
+              if depth or string:raise SystemExit('unterminated comment or string')
+              return ''.join(out)
+
+          checks={'sorry':r'\bsorry\b','admit':r'\badmit\b',
+                  'global_axiom':r'(?m)^\s*axiom\b','unsafe':r'\bunsafe\b',
+                  'native_decide':r'\bnative_decide\b',
+                  'Lean.ofReduceBool':r'\bLean\.ofReduceBool\b'}
+          bad=False
+          for raw in sys.argv[1:]:
+              path=Path(raw);code=strip(path.read_text(encoding='utf-8'))
+              print(f'[{path}]')
+              for name,pat in checks.items():
+                  count=len(re.findall(pat,code));print(f'{name}={count}');bad|=count!=0
+          if bad:raise SystemExit('first-three trust audit failed')
+          PY
+          git diff --check
+          sha256sum "${ADVANCED}" "${FA}" "${INTEGRATED}" "${QYM}" \
+            "${OUTDIR}/Mock2_Advanced.olean" \
+            "${OUTDIR}/Mock2_FunctionalAnalysis_Integrated.olean" \
+            "${OUTDIR}/QYM.olean" | tee "${EVIDENCE}/provenance-sha256.txt"
+
+      - name: Commit verified source changes locally
+        id: materialize
+        shell: bash
+        run: |
+          set -euo pipefail
+          # These two obsolete trigger workflows are removed only after all
+          # three requested stages have passed, preventing a post-push race.
+          git rm -f --ignore-unmatch \
+            .github/workflows/mock2-functional-analysis-pass318-materialize.yml \
+            .github/workflows/qym-pass319-direct-clean.yml
+          allowed=(
+            "${ADVANCED}" "${FA}" "${INTEGRATED}"
+            .github/workflows/mock2-functional-analysis-pass318-materialize.yml
+            .github/workflows/qym-pass319-direct-clean.yml
+          )
+          while IFS= read -r changed; do
+            [[ -z "${changed}" ]] && continue
+            ok=0
+            for path in "${allowed[@]}"; do
+              [[ "${changed}" = "${path}" ]] && ok=1
+            done
+            if [[ "${ok}" -ne 1 ]]; then
+              echo "unexpected changed path: ${changed}" >&2
+              exit 1
+            fi
+          done < <(git diff --name-only)
+          git diff --check
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "${ADVANCED}" "${FA}" "${INTEGRATED}"
+          git add -u .github/workflows
+          if git diff --cached --quiet; then
+            echo 'materialized=false' >> "${GITHUB_OUTPUT}"
+          else
+            git commit -m 'fix: materialize ordered Mock2 Advanced FA QYM prerequisites'
+            echo 'materialized=true' >> "${GITHUB_OUTPUT}"
+          fi
+          git diff --exit-code
+
+      - name: Rebase and reverify the checked-in first-three chain twice
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          source /tmp/pass324-compile.sh
+          git fetch origin "refs/heads/${BRANCH}:refs/remotes/origin/${BRANCH}"
+          remote_sha="$(git rev-parse "refs/remotes/origin/${BRANCH}")"
+          if [[ "${{ steps.materialize.outputs.materialized }}" = true && "${remote_sha}" != "${BASE_SHA}" ]]; then
+            git rebase "${remote_sha}"
+          elif [[ "${{ steps.materialize.outputs.materialized }}" != true ]]; then
+            git reset --hard "${remote_sha}"
+          fi
+          git diff --exit-code
+          modules=(
+            Mock2 Mock2_Advanced
+            Mock2_FunctionalAnalysis_Integrated
+            Mock2_FunctionalAnalysis QYM
+          )
+          for pass in committed1 committed2; do
+            rm -rf "${OUTDIR}"
+            mkdir -p "${OUTDIR}"
+            for module in "${modules[@]}"; do
+              compile_module committed "${pass}" "${module}"
+            done
+          done
+          printf '%s\n' \
+            "remote_before_push=${remote_sha}" \
+            "verified_commit=$(git rev-parse HEAD)" \
+            | tee "${EVIDENCE}/materialization.txt"
+
+      - name: Push source materialization and dispatch next ordered phase
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if [[ "${{ steps.materialize.outputs.materialized }}" = true ]]; then
+            git push origin "HEAD:${BRANCH}"
+          fi
+          final_sha="$(git rev-parse HEAD)"
+          printf '%s\n' \
+            "first_three_final_sha=${final_sha}" \
+            "utc_first_three_completed=$(date -u +%FT%TZ)" \
+            | tee -a "${EVIDENCE}/snapshot.txt"
+          curl --fail --silent --show-error \
+            -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/workflows/post-qym-pass325-verification.yml/dispatches" \
+            -d "{\"ref\":\"${BRANCH}\"}"
+
+      - name: Upload ordered first-three evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: ordered-first-three-pass324-${{ env.BASE_SHA }}
+          path: /tmp/ordered-first-three-pass324
+          if-no-files-found: warn
+          retention-days: 90

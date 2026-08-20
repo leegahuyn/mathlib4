@@ -1,0 +1,226 @@
+name: Codex cumulative FA dynamic direct engine
+
+on:
+  push:
+    branches:
+      - codex/fa-qym-cleanbuild-final-20260811-fast
+    paths:
+      - .github/workflows/codex-fa-dynamic-engine.yml
+      - scripts/fa_dynamic_apply_repairs.py
+      - scripts/fa_dynamic_active_repairs.json
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+
+concurrency:
+  group: codex-fa-dynamic-engine
+  cancel-in-progress: true
+
+env:
+  BASE_RUN_ID: "31495034235"
+  BASE_JOB_ID: "93790488049"
+  BASE_HEAD_SHA: "989132c0ac49fdfd7ff637a5b77c45b73e02f32f"
+  BASE_ARTIFACT_ID: "9103368138"
+  BASE_ARTIFACT_NAME: "codex-fa506r2-full-diagnostic-d0a3-989132c0ac49fdfd7ff637a5b77c45b73e02f32f"
+  BASE_ARTIFACT_SIZE: "1446570"
+  BASE_ARTIFACT_DIGEST: "sha256:eb21e1d4fe0c0652e6d8463592fd4c550005f29bcb9611f18c8533ba888bd6f4"
+  BASE_SOURCE_SHA256: "d0a3decee1c0a7a781d14fdf122e235d71d8f210bb65a894dc4e518821bf03ec"
+  BASE_SOURCE_BYTES: "2702252"
+  BASE_SOURCE_LINES: "60573"
+  FA_MAX_ERRORS: "2000"
+
+jobs:
+  direct:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Attest exact d0a3 base artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT=build-logs/codex-fa-dynamic-engine
+          mkdir -p "$OUT" /tmp/fa-engine-base
+          gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${BASE_RUN_ID}" > "$OUT/base-run.json"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/jobs/${BASE_JOB_ID}" > "$OUT/base-job.json"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${BASE_ARTIFACT_ID}" > "$OUT/base-artifact.json"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${BASE_ARTIFACT_ID}/zip" > /tmp/fa-engine-base.zip
+          unzip -q /tmp/fa-engine-base.zip -d /tmp/fa-engine-base
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib
+          import json
+          import os
+          out=Path('build-logs/codex-fa-dynamic-engine')
+          run=json.loads((out/'base-run.json').read_text())
+          job=json.loads((out/'base-job.json').read_text())
+          artifact=json.loads((out/'base-artifact.json').read_text())
+          archive=Path('/tmp/fa-engine-base.zip').read_bytes()
+          checks={
+            'run_id': run.get('id') == int(os.environ['BASE_RUN_ID']),
+            'run_head': run.get('head_sha') == os.environ['BASE_HEAD_SHA'],
+            'job_id': job.get('id') == int(os.environ['BASE_JOB_ID']),
+            'job_run': job.get('run_id') == int(os.environ['BASE_RUN_ID']),
+            'artifact_id': artifact.get('id') == int(os.environ['BASE_ARTIFACT_ID']),
+            'artifact_name': artifact.get('name') == os.environ['BASE_ARTIFACT_NAME'],
+            'artifact_size': artifact.get('size_in_bytes') == int(os.environ['BASE_ARTIFACT_SIZE']),
+            'artifact_digest': artifact.get('digest') == os.environ['BASE_ARTIFACT_DIGEST'],
+            'artifact_live': artifact.get('expired') is False,
+            'archive_digest': 'sha256:' + hashlib.sha256(archive).hexdigest() == os.environ['BASE_ARTIFACT_DIGEST'],
+          }
+          if not all(checks.values()):
+            raise SystemExit('base artifact attestation failed: ' + repr([k for k,v in checks.items() if not v]))
+          hits=sorted(p for p in Path('/tmp/fa-engine-base').rglob('Mock2_FunctionalAnalysis.lean') if 'PrimalitySheafVerification' in p.as_posix())
+          if not hits:
+            raise SystemExit('base source missing')
+          for p in hits:
+            data=p.read_bytes()
+            if hashlib.sha256(data).hexdigest() != os.environ['BASE_SOURCE_SHA256']:
+              raise SystemExit('base source SHA drift')
+            if len(data) != int(os.environ['BASE_SOURCE_BYTES']) or len(data.decode('utf-8').splitlines()) != int(os.environ['BASE_SOURCE_LINES']):
+              raise SystemExit('base source size or line drift')
+            if b'\r' in data:
+              raise SystemExit('base source contains CR')
+          selected=min(hits,key=lambda p:(len(p.parts),p.as_posix()))
+          with Path(os.environ['GITHUB_ENV']).open('a') as f:
+            f.write('ATTESTED_BASE_SOURCE=' + str(selected.resolve()) + '\n')
+          (out/'BASE_ATTESTATION.json').write_text(json.dumps({'checks':checks,'selected_source':str(selected.resolve()),'source_sha256':os.environ['BASE_SOURCE_SHA256']},indent=2,sort_keys=True)+'\n')
+          PY
+
+      - name: Apply active cumulative proof-body repairs
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT=build-logs/codex-fa-dynamic-engine
+          python3 scripts/fa_dynamic_apply_repairs.py \
+            --base-source "$ATTESTED_BASE_SOURCE" \
+            --manifest scripts/fa_dynamic_active_repairs.json \
+            --target PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+            --audit-out "$OUT/PREPARATION.json"
+          cp PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean "$OUT/Mock2_FunctionalAnalysis-candidate.lean"
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          import os
+          a=json.loads(Path('build-logs/codex-fa-dynamic-engine/PREPARATION.json').read_text())
+          with Path(os.environ['GITHUB_ENV']).open('a') as f:
+            f.write('CANDIDATE_SHA256=' + a['candidate_source_sha256'] + '\n')
+            f.write('CANDIDATE_BYTES=' + str(a['candidate_bytes']) + '\n')
+            f.write('CANDIDATE_LINES=' + str(a['candidate_lines']) + '\n')
+          PY
+
+      - name: Install repository-pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT=build-logs/codex-fa-dynamic-engine
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/fa-engine-elan-init.sh
+          sh /tmp/fa-engine-elan-init.sh -y --default-toolchain none > "$OUT/elan-init.log" 2>&1
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          toolchain="$(tr -d '\r\n' < lean-toolchain)"
+          test -n "$toolchain"
+          elan toolchain install "$toolchain" > "$OUT/toolchain-install.log" 2>&1
+          lean --version | tee "$OUT/lean-version.txt"
+          lake --version | tee "$OUT/lake-version.txt"
+          sha256sum lean-toolchain lake-manifest.json > "$OUT/pin-identities.txt"
+          lake exe cache get > "$OUT/cache-get.log" 2>&1
+
+      - name: Direct full-source compile in dependency order
+        id: compile
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          OUT=build-logs/codex-fa-dynamic-engine
+          mkdir -p .lake/build/lib/lean/PrimalitySheafVerification
+          attest_candidate() {
+            test "$(sha256sum PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | awk '{print $1}')" = "$CANDIDATE_SHA256"
+            test "$(wc -c < PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean)" -eq "$CANDIDATE_BYTES"
+            test "$(wc -l < PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean)" -eq "$CANDIDATE_LINES"
+          }
+          compile_one() {
+            local stem="$1" cap="$2"
+            local src="PrimalitySheafVerification/${stem}.lean"
+            local olean=".lake/build/lib/lean/PrimalitySheafVerification/${stem}.olean"
+            local ilean=".lake/build/lib/lean/PrimalitySheafVerification/${stem}.ilean"
+            rm -f -- "$olean" "$ilean"
+            printf 'lake env lean -DmaxErrors=%s -DwarningAsError=false -o %q -i %q %q\n' "$cap" "$olean" "$ilean" "$src" > "$OUT/${stem}.command"
+            : > "$OUT/${stem}.executed"
+            set +e
+            lake env lean "-DmaxErrors=${cap}" -DwarningAsError=false -o "$olean" -i "$ilean" "$src" > "$OUT/${stem}.log" 2>&1
+            local code=$?
+            set -e
+            printf '%s\n' "$code" > "$OUT/${stem}.exit"
+            if [[ -s "$olean" ]]; then echo nonempty > "$OUT/${stem}.olean.status"; else echo missing-or-empty > "$OUT/${stem}.olean.status"; fi
+            if [[ -s "$ilean" ]]; then echo nonempty > "$OUT/${stem}.ilean.status"; else echo missing-or-empty > "$OUT/${stem}.ilean.status"; fi
+          }
+          compile_one Mock2 3
+          compile_one Mock2_Advanced 3
+          attest_candidate
+          compile_one Mock2_FunctionalAnalysis "$FA_MAX_ERRORS"
+          attest_candidate
+
+          python3 - <<'PY'
+          from pathlib import Path
+          from bisect import bisect_right
+          from collections import Counter
+          import hashlib
+          import json
+          import os
+          import re
+          out=Path('build-logs/codex-fa-dynamic-engine')
+          srcp=Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean')
+          source=srcp.read_text(encoding='utf-8')
+          decl_re=re.compile(r'(?m)^(?:protected\s+|private\s+|noncomputable\s+)?(?:theorem|lemma|def|abbrev|instance|structure|class)\s+(?P<name>[^\s(:]+)')
+          diag_re=re.compile(r'^.+?\.lean:(?P<line>[0-9]+):(?P<col>[0-9]+): error(?:\((?P<code>[^)\r\n]+)\))?:(?P<message>.*)$')
+          decls=list(decl_re.finditer(source))
+          starts=[source.count('\n',0,m.start())+1 for m in decls]
+          errors=[]
+          for raw in (out/'Mock2_FunctionalAnalysis.log').read_text(encoding='utf-8',errors='replace').splitlines():
+            m=diag_re.match(raw)
+            if not m:
+              continue
+            line=int(m.group('line')); pos=bisect_right(starts,line)-1
+            errors.append({'line':line,'col':int(m.group('col')),'diagnostic_code':m.group('code'),'message':m.group('message').lstrip(),'declaration':decls[pos].group('name') if pos>=0 else None,'declaration_index':pos if pos>=0 else None,'declaration_start_line':starts[pos] if pos>=0 else None})
+          exits={s:int((out/f'{s}.exit').read_text().strip()) for s in ('Mock2','Mock2_Advanced','Mock2_FunctionalAnalysis')}
+          prep=json.loads((out/'PREPARATION.json').read_text())
+          first=errors[0] if errors else {}
+          data=srcp.read_bytes()
+          metric={'schema':'fa-dynamic-direct-metric-engine-v1','run_id':os.environ['GITHUB_RUN_ID'],'head_sha':os.environ['GITHUB_SHA'],'source_sha256':hashlib.sha256(data).hexdigest(),'source_bytes':len(data),'source_lines':len(source.splitlines()),'source_identity_locked_after_materialization':hashlib.sha256(data).hexdigest()==os.environ['CANDIDATE_SHA256'],'Mock2_executed':(out/'Mock2.executed').is_file(),'Mock2_exit':exits['Mock2'],'Mock2_Advanced_executed':(out/'Mock2_Advanced.executed').is_file(),'Mock2_Advanced_exit':exits['Mock2_Advanced'],'FA_executed':(out/'Mock2_FunctionalAnalysis.executed').is_file(),'FA_exit':exits['Mock2_FunctionalAnalysis'],'all_required_lean_executed':all((out/f'{s}.executed').is_file() for s in ('Mock2','Mock2_Advanced','Mock2_FunctionalAnalysis')),'FA_error_headers_captured':len(errors),'FA_first_actual_error_line':first.get('line'),'FA_first_actual_error_col':first.get('col'),'FA_first_error_message':first.get('message'),'FA_first_error_declaration':first.get('declaration'),'FA_error_declaration_index':first.get('declaration_index'),'FA_error_declaration_start_line':first.get('declaration_start_line'),'repair_declaration_indices':[x['declaration_index'] for x in prep['repairs_applied']],'maxErrors_cap':int(os.environ['FA_MAX_ERRORS']),'public_declaration_headers_preserved':prep['public_declaration_headers_preserved'],'declaration_sequence_preserved':prep['declaration_sequence_preserved'],'forbidden_counts_before':prep['forbidden_counts_before'],'forbidden_counts_after':prep['forbidden_counts_after']}
+          (out/'METRIC.json').write_text(json.dumps(metric,indent=2,sort_keys=True)+'\n')
+          (out/'ERROR_HEADERS.json').write_text(json.dumps(errors,indent=2,sort_keys=True)+'\n')
+          PY
+          fa_exit="$(cat "$OUT/Mock2_FunctionalAnalysis.exit")"
+          echo "fa_exit=$fa_exit" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Upload exact candidate and complete evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-dynamic-engine-${{ github.sha }}
+          path: |
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+            scripts/fa_dynamic_active_repairs.json
+            build-logs/codex-fa-dynamic-engine
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Preserve authoritative FA exit
+        if: always()
+        env:
+          FA_EXIT: ${{ steps.compile.outputs.fa_exit }}
+        shell: bash
+        run: |
+          test -n "${FA_EXIT:-}" || exit 86
+          exit "$FA_EXIT"

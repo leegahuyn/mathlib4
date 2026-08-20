@@ -1,0 +1,101 @@
+name: Final isolated PASS 345 FunctionalAnalysis Ubuntu
+
+on:
+  push:
+    branches: [fix/fa345-final-isolated-20260808]
+    paths:
+      - '.github/workflows/final-isolated-pass345-fa-ubuntu.yml'
+      - 'scripts/diagnose_pass345_fa.sh'
+      - 'scripts/apply_three_hundred_forty_fifth_pass_functional_analysis_repairs.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: final-isolated-fa345-diagnostic-ubuntu
+  cancel-in-progress: true
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+    steps:
+      - name: Checkout exact isolated head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 320
+          persist-credentials: false
+
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          elan toolchain install "$(cat lean-toolchain)"
+          mkdir -p /tmp/diagnose-pass345-fa/logs
+          lean --version | tee /tmp/diagnose-pass345-fa/lean-version.txt
+          lake --version | tee /tmp/diagnose-pass345-fa/lake-version.txt
+          lake exe cache get 2>&1 | tee /tmp/diagnose-pass345-fa/logs/cache-get.log
+
+      - name: Reconstruct and compile PASS 345 FA
+        id: diagnostic
+        shell: bash
+        run: |
+          set +e
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          bash scripts/diagnose_pass345_fa.sh
+          rc=$?
+          set -e
+          echo "exit_code=${rc}" >> "${GITHUB_OUTPUT}"
+          exit 0
+
+      - name: Upload Ubuntu PASS 345 diagnostic
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: final-isolated-pass345-fa-ubuntu-${{ github.sha }}
+          path: /tmp/diagnose-pass345-fa
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Publish concise PASS 345 result
+        if: always()
+        shell: bash
+        env:
+          DIAGNOSTIC_EXIT_CODE: ${{ steps.diagnostic.outputs.exit_code }}
+        run: |
+          set -euo pipefail
+          evidence='/tmp/diagnose-pass345-fa'
+          {
+            echo '## PASS 345 FunctionalAnalysis'
+            echo
+            echo "- tested SHA: ${GITHUB_SHA}"
+            echo "- diagnostic exit code: ${DIAGNOSTIC_EXIT_CODE:-missing}"
+            echo
+            echo '```text'
+            test -f "${evidence}/summary.txt" && cat "${evidence}/summary.txt" || true
+            echo '```'
+            echo
+            echo '<details><summary>First and last diagnostics</summary>'
+            echo
+            echo '```text'
+            test -f "${evidence}/logs/failure-summary.txt" && head -300 "${evidence}/logs/failure-summary.txt" || true
+            echo '```'
+            echo '</details>'
+          } >> "${GITHUB_STEP_SUMMARY}"
+
+      - name: Enforce PASS 345 result
+        if: always()
+        shell: bash
+        env:
+          DIAGNOSTIC_EXIT_CODE: ${{ steps.diagnostic.outputs.exit_code }}
+        run: |
+          test -n "${DIAGNOSTIC_EXIT_CODE:-}"
+          exit "${DIAGNOSTIC_EXIT_CODE}"

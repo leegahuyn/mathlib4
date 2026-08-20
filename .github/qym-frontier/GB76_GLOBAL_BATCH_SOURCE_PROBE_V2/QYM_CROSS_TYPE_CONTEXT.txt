@@ -1,0 +1,1599 @@
+===== PrimalitySheafVerification/QYM.lean:48039-48106 =====
+48039: Consequently the actual quotient fibre is a one-dimensional complex module,
+48040: the inverse-eta Hermitian pairing descends, and arbitrary covariant scalar
+48041: lifts are equivalent to actual sections of the quotient projection.
+48042: 
+48043: No smooth vector-bundle structure is inserted as an assumption.  A final
+48044: predicate at the end isolates only the atlas-level smoothness statement; the
+48045: algebraic and topological trivializations themselves are constructed here.
+48046: -/
+48047: 
+48048: /-! ## 1. Exact specializations of the existing Mock2 quotient -/
+48049: 
+48050: /-- The upper half-plane used by the exact eta multiplier. -/
+48051: abbrev H := Mock2.Definition15Geometry.H
+48052: 
+48053: /-- The actual principal congruence subgroup `Gamma(2)`. -/
+48054: abbrev Gamma2 := Mock2.Definition15Geometry.Gamma2
+48055: 
+48056: /-- The literal orbit quotient `Gamma(2) \ H` from Mock2. -/
+48057: abbrev InverseEtaBase := Mock2.Definition15Geometry.X
+48058: 
+48059: /-- The exact inverse-eta multiplier already constructed by Mock2. -/
+48060: noncomputable abbrev inverseEtaMultiplier := QYM.FullCertification.Mock2EtaPeterssonCarrierExtension.etaMultiplier
+48061: 
+48062: /-- The actual orbit-quotient total space of the inverse-eta line. -/
+48063: noncomputable abbrev InverseEtaTotal := QYM.FullCertification.Mock2EtaPeterssonCarrierExtension.EtaAutomorphicLineBundle.Total
+48064: 
+48065: /-- Re-expose the topology already carried by the concrete orbit quotient.
+48066: This does not choose a new topology: it unfolds the stored bundle carrier to
+48067: the exact `Quotient (lineOrbitRel inverseEtaMultiplier)` representation and
+48068: uses Mathlib's existing quotient instance. -/
+48069: noncomputable instance inverseEtaTotalTopologicalSpace :
+48070:     TopologicalSpace InverseEtaTotal := by
+48071:   change TopologicalSpace
+48072:     (Quotient (Mock2.Definition15Geometry.lineOrbitRel inverseEtaMultiplier))
+48073:   infer_instance
+48074: 
+48075: /-- The same exact re-exposure for the quotient measurable structure. -/
+48076: noncomputable instance inverseEtaTotalMeasurableSpace :
+48077:     MeasurableSpace InverseEtaTotal := by
+48078:   change MeasurableSpace
+48079:     (Quotient (Mock2.Definition15Geometry.lineOrbitRel inverseEtaMultiplier))
+48080:   infer_instance
+48081: 
+48082: /-- The already constructed projection of the quotient total space. -/
+48083: noncomputable abbrev inverseEtaProjection :
+48084:     InverseEtaTotal -> InverseEtaBase :=
+48085:   QYM.FullCertification.Mock2EtaPeterssonCarrierExtension.EtaAutomorphicLineBundle.projection
+48086: 
+48087: /-- The actual fibre over a quotient point. -/
+48088: noncomputable abbrev InverseEtaFibre (x : InverseEtaBase) :=
+48089:   QYM.FullCertification.Mock2EtaPeterssonCarrierExtension.EtaAutomorphicLineBundle.Fibre x
+48090: 
+48091: /-- The quotient class of an upstairs point and a local fibre coordinate. -/
+48092: noncomputable def inverseEtaTotalMk (tau : H) (z : ℂ) : InverseEtaTotal :=
+48093:   Mock2.Definition15Geometry.lineBundleMk inverseEtaMultiplier (tau, z)
+48094: 
+48095: @[simp] theorem inverseEtaProjection_mk (tau : H) (z : ℂ) :
+48096:     inverseEtaProjection (inverseEtaTotalMk tau z) =
+48097:       Mock2.Definition15Geometry.quotientMap tau := by
+48098:   rfl
+48099: 
+48100: /-- Mock2's quotient constructor identifies every point with its exact
+48101: inverse-eta line action translate. -/
+48102: @[simp] theorem inverseEtaTotalMk_lineSmul
+48103:     (gamma : Gamma2) (p : H × ℂ) :
+48104:     Mock2.Definition15Geometry.lineBundleMk inverseEtaMultiplier
+48105:         (Mock2.Definition15Geometry.lineSmul inverseEtaMultiplier gamma p) =
+48106:       Mock2.Definition15Geometry.lineBundleMk inverseEtaMultiplier p :=
+===== PrimalitySheafVerification/QYM.lean:48198-48299 =====
+48198:     (hts : MulAction.orbitRel Gamma2 H tau sigma) :
+48199:     inverseEtaTotalMk tau (QYM.FullCertification.Mock2EtaPeterssonCarrierExtension.inverseEtaSection tau * c) =
+48200:       inverseEtaTotalMk sigma (QYM.FullCertification.Mock2EtaPeterssonCarrierExtension.inverseEtaSection sigma * c) := by
+48201:   change tau ∈ MulAction.orbit Gamma2 sigma at hts
+48202:   rcases hts with ⟨gamma, hgamma⟩
+48203:   rw [← hgamma]
+48204:   change
+48205:     Mock2.Definition15Geometry.lineBundleMk inverseEtaMultiplier
+48206:         (gamma • sigma, QYM.FullCertification.Mock2EtaPeterssonCarrierExtension.inverseEtaSection (gamma • sigma) * c) =
+48207:       Mock2.Definition15Geometry.lineBundleMk inverseEtaMultiplier
+48208:         (sigma, QYM.FullCertification.Mock2EtaPeterssonCarrierExtension.inverseEtaSection sigma * c)
+48209:   rw [← inverseEtaScaled_lineSmul gamma sigma c]
+48210:   exact inverseEtaTotalMk_lineSmul gamma
+48211:     (sigma, QYM.FullCertification.Mock2EtaPeterssonCarrierExtension.inverseEtaSection sigma * c)
+48212: 
+48213: /-- Reconstruct a point of the quotient total space from a base orbit and its
+48214: eta-trivialized complex coordinate. -/
+48215: noncomputable def totalOfBaseScalar
+48216:     (x : InverseEtaBase) (c : ℂ) : InverseEtaTotal :=
+48217:   Quotient.lift
+48218:     (fun tau : H =>
+48219:       inverseEtaTotalMk tau (QYM.FullCertification.Mock2EtaPeterssonCarrierExtension.inverseEtaSection tau * c))
+48220:     (inverseEtaScaledMk_respects_baseOrbit c) x
+48221: 
+48222: @[simp] theorem totalOfBaseScalar_quotientMap (tau : H) (c : ℂ) :
+48223:     totalOfBaseScalar (Mock2.Definition15Geometry.quotientMap tau) c =
+48224:       inverseEtaTotalMk tau (QYM.FullCertification.Mock2EtaPeterssonCarrierExtension.inverseEtaSection tau * c) := by
+48225:   rfl
+48226: 
+48227: @[simp] theorem inverseEtaProjection_totalOfBaseScalar
+48228:     (x : InverseEtaBase) (c : ℂ) :
+48229:     inverseEtaProjection (totalOfBaseScalar x c) = x := by
+48230:   refine Quotient.inductionOn x ?_
+48231:   intro tau
+48232:   rfl
+48233: 
+48234: @[simp] theorem etaTrivializedCoordinate_totalOfBaseScalar
+48235:     (x : InverseEtaBase) (c : ℂ) :
+48236:     etaTrivializedCoordinate (totalOfBaseScalar x c) = c := by
+48237:   refine Quotient.inductionOn x ?_
+48238:   intro tau
+48239:   change
+48240:     Mock2.Definition15Geometry.EtaHalfWeight.etaValue tau * (QYM.FullCertification.Mock2EtaPeterssonCarrierExtension.inverseEtaSection tau * c) = c
+48241:   simp [QYM.FullCertification.Mock2EtaPeterssonCarrierExtension.inverseEtaSection, Mock2.Definition15Geometry.EtaHalfWeight.etaValue_ne_zero, mul_assoc]
+48242: 
+48243: /-- Reconstruction from the projection and invariant coordinate returns the
+48244: original total-space point. -/
+48245: theorem totalOfBaseScalar_projection_coordinate (u : InverseEtaTotal) :
+48246:     totalOfBaseScalar (inverseEtaProjection u)
+48247:         (etaTrivializedCoordinate u) = u := by
+48248:   refine Quotient.inductionOn u ?_
+48249:   rintro ⟨tau, z⟩
+48250:   change
+48251:     Mock2.Definition15Geometry.lineBundleMk inverseEtaMultiplier
+48252:         (tau, QYM.FullCertification.Mock2EtaPeterssonCarrierExtension.inverseEtaSection tau * (Mock2.Definition15Geometry.EtaHalfWeight.etaValue tau * z)) =
+48253:       Mock2.Definition15Geometry.lineBundleMk inverseEtaMultiplier (tau, z)
+48254:   apply congrArg
+48255:     (Mock2.Definition15Geometry.lineBundleMk inverseEtaMultiplier)
+48256:   apply Prod.ext
+48257:   · rfl
+48258:   · simp [QYM.FullCertification.Mock2EtaPeterssonCarrierExtension.inverseEtaSection, Mock2.Definition15Geometry.EtaHalfWeight.etaValue_ne_zero, mul_assoc]
+48259: 
+48260: /-! ## 4. Global algebraic and topological trivialization -/
+48261: 
+48262: /-- The exact set-level trivialization of the actual quotient total space. -/
+48263: noncomputable def inverseEtaTotalTrivialization :
+48264:     InverseEtaTotal ≃ InverseEtaBase × ℂ where
+48265:   toFun u := (inverseEtaProjection u, etaTrivializedCoordinate u)
+48266:   invFun p := totalOfBaseScalar p.1 p.2
+48267:   left_inv := totalOfBaseScalar_projection_coordinate
+48268:   right_inv p := by
+48269:     rcases p with ⟨x, c⟩
+48270:     apply Prod.ext
+48271:     · exact inverseEtaProjection_totalOfBaseScalar x c
+48272:     · exact etaTrivializedCoordinate_totalOfBaseScalar x c
+48273: 
+48274: @[simp] theorem inverseEtaTotalTrivialization_apply
+48275:     (u : InverseEtaTotal) :
+48276:     inverseEtaTotalTrivialization u =
+48277:       (inverseEtaProjection u, etaTrivializedCoordinate u) :=
+48278:   rfl
+48279: 
+48280: @[simp] theorem inverseEtaTotalTrivialization_symm_apply
+48281:     (p : InverseEtaBase × ℂ) :
+48282:     inverseEtaTotalTrivialization.symm p =
+48283:       totalOfBaseScalar p.1 p.2 :=
+48284:   rfl
+48285: 
+48286: @[simp] theorem inverseEtaTotalTrivialization_mk
+48287:     (tau : H) (z : ℂ) :
+48288:     inverseEtaTotalTrivialization (inverseEtaTotalMk tau z) =
+48289:       (Mock2.Definition15Geometry.quotientMap tau,
+48290:         Mock2.Definition15Geometry.EtaHalfWeight.etaValue tau * z) := by
+48291:   rfl
+48292: 
+48293: /-- Every arithmetic deck transformation is continuous after explicitly
+48294: viewing its matrix as an element of `GL(2, R)`.  This lemma avoids relying on
+48295: a nonexistent automatic `ContinuousConstSMul Gamma2 H` instance. -/
+48296: theorem inverseEtaDeckAction_continuous (gamma : Gamma2) :
+48297:     Continuous (fun tau : H => gamma • tau) := by
+48298:   change Continuous
+48299:     (fun tau : H =>
+===== PrimalitySheafVerification/QYM.lean:48312-48486 =====
+48312:     (@Quotient.mk' H (MulAction.orbitRel Gamma2 H))
+48313:   exact
+48314:     ⟨Quotient.mk'_surjective, continuous_quotient_mk',
+48315:       isOpenMap_quotient_mk'_mul⟩
+48316: 
+48317: /-- The product of the base quotient map with the identity fibre coordinate
+48318: is again an open quotient map. -/
+48319: theorem inverseEtaBaseQuotientMap_prod_id_isOpenQuotientMap :
+48320:     IsOpenQuotientMap
+48321:       (fun p : H × ℂ =>
+48322:         (Mock2.Definition15Geometry.quotientMap p.1, p.2)) := by
+48323:   exact inverseEtaBaseQuotientMap_isOpenQuotientMap.prodMap
+48324:     IsOpenQuotientMap.id
+48325: 
+48326: /-- Joint continuity of reconstruction.  Openness of the orbit projection is
+48327: the key fact allowing the complex parameter to vary simultaneously. -/
+48328: theorem totalOfBaseScalar_continuous :
+48329:     Continuous
+48330:       (fun p : InverseEtaBase × ℂ => totalOfBaseScalar p.1 p.2) := by
+48331:   apply
+48332:     (inverseEtaBaseQuotientMap_prod_id_isOpenQuotientMap.isQuotientMap.continuous_iff).mpr
+48333:   change Continuous
+48334:     (fun p : H × ℂ =>
+48335:       inverseEtaTotalMk p.1 (QYM.FullCertification.Mock2EtaPeterssonCarrierExtension.inverseEtaSection p.1 * p.2))
+48336:   exact continuous_quotient_mk'.comp
+48337:     (continuous_fst.prodMk
+48338:       ((QYM.FullCertification.Mock2EtaPeterssonCarrierExtension.inverseEtaSection_continuous.comp continuous_fst).mul
+48339:         continuous_snd))
+48340: 
+48341: /-- Continuity of the forward eta trivialization. -/
+48342: theorem inverseEtaTotalTrivialization_continuous :
+48343:     Continuous inverseEtaTotalTrivialization := by
+48344:   apply isQuotientMap_quotient_mk'.continuous_iff.mpr
+48345:   change Continuous
+48346:     (fun p : H × ℂ =>
+48347:       (Mock2.Definition15Geometry.quotientMap p.1,
+48348:         Mock2.Definition15Geometry.EtaHalfWeight.etaValue p.1 * p.2))
+48349:   exact
+48350:     (QYM.FullCertification.Mock2EtaQuotientMeasureExtension.quotientMap_continuous.comp continuous_fst).prodMk
+48351:       etaTrivializedCoordinateUpstairs_continuous
+48352: 
+48353: /-- The quotient line is globally homeomorphic, over its base, to the trivial
+48354: complex line bundle. -/
+48355: noncomputable def inverseEtaTotalTrivializationHomeomorph :
+48356:     InverseEtaTotal ≃ₜ InverseEtaBase × ℂ where
+48357:   toEquiv := inverseEtaTotalTrivialization
+48358:   continuous_toFun := inverseEtaTotalTrivialization_continuous
+48359:   continuous_invFun := totalOfBaseScalar_continuous
+48360: 
+48361: /-- The homeomorphism is fibre-preserving on the nose. -/
+48362: @[simp] theorem inverseEtaTotalTrivializationHomeomorph_fst
+48363:     (u : InverseEtaTotal) :
+48364:     (inverseEtaTotalTrivializationHomeomorph u).1 =
+48365:       inverseEtaProjection u :=
+48366:   rfl
+48367: 
+48368: /-- The actual quotient projection is a topologically trivial fibre bundle
+48369: with fibre `C`. -/
+48370: theorem inverseEta_isHomeomorphicTrivialFiberBundle :
+48371:     IsHomeomorphicTrivialFiberBundle ℂ inverseEtaProjection :=
+48372:   ⟨inverseEtaTotalTrivializationHomeomorph,
+48373:     inverseEtaTotalTrivializationHomeomorph_fst⟩
+48374: 
+48375: /-! ## 5. The actual quotient fibre as a one-dimensional complex module -/
+48376: 
+48377: /-- The invariant complex coordinate of a point in a fixed actual fibre. -/
+48378: noncomputable def inverseEtaFibreCoordinate
+48379:     {x : InverseEtaBase} (u : InverseEtaFibre x) : ℂ :=
+48380:   etaTrivializedCoordinate u.1
+48381: 
+48382: /-- Build a point of the actual fibre from its unique complex coordinate. -/
+48383: noncomputable def inverseEtaFibreOfCoordinate
+48384:     (x : InverseEtaBase) (c : ℂ) : InverseEtaFibre x :=
+48385:   ⟨totalOfBaseScalar x c,
+48386:     inverseEtaProjection_totalOfBaseScalar x c⟩
+48387: 
+48388: @[simp] theorem inverseEtaFibreCoordinate_ofCoordinate
+48389:     (x : InverseEtaBase) (c : ℂ) :
+48390:     inverseEtaFibreCoordinate (inverseEtaFibreOfCoordinate x c) = c :=
+48391:   etaTrivializedCoordinate_totalOfBaseScalar x c
+48392: 
+48393: @[simp] theorem inverseEtaFibreOfCoordinate_coordinate
+48394:     (x : InverseEtaBase) (u : InverseEtaFibre x) :
+48395:     inverseEtaFibreOfCoordinate x (inverseEtaFibreCoordinate u) = u := by
+48396:   apply Subtype.ext
+48397:   change
+48398:     totalOfBaseScalar x (etaTrivializedCoordinate u.1) = u.1
+48399:   rw [← u.2]
+48400:   exact totalOfBaseScalar_projection_coordinate u.1
+48401: 
+48402: /-- Every actual quotient fibre is canonically equivalent to `C`. -/
+48403: noncomputable def inverseEtaFibreCoordinateEquiv (x : InverseEtaBase) :
+48404:     InverseEtaFibre x ≃ ℂ where
+48405:   toFun := inverseEtaFibreCoordinate
+48406:   invFun := inverseEtaFibreOfCoordinate x
+48407:   left_inv := inverseEtaFibreOfCoordinate_coordinate x
+48408:   right_inv := inverseEtaFibreCoordinate_ofCoordinate x
+48409: 
+48410: /-- The fibre coordinate is continuous for the actual quotient-subspace
+48411: topology. -/
+48412: theorem inverseEtaFibreCoordinate_continuous (x : InverseEtaBase) :
+48413:     Continuous (inverseEtaFibreCoordinate (x := x)) :=
+48414:   etaTrivializedCoordinate_continuous.comp continuous_subtype_val
+48415: 
+48416: /-- Reconstruction of one fixed fibre is continuous. -/
+48417: theorem inverseEtaFibreOfCoordinate_continuous (x : InverseEtaBase) :
+48418:     Continuous (inverseEtaFibreOfCoordinate x) := by
+48419:   have hTotal : Continuous
+48420:       (fun c : ℂ => totalOfBaseScalar x c) := by
+48421:     simpa only [Function.comp_apply] using
+48422:       totalOfBaseScalar_continuous.comp
+48423:         (continuous_const.prodMk continuous_id)
+48424:   exact hTotal.subtype_mk
+48425:     (fun c => inverseEtaProjection_totalOfBaseScalar x c)
+48426: 
+48427: /-- Each actual quotient fibre is homeomorphic to the standard complex line,
+48428: not merely in bijection with it. -/
+48429: noncomputable def inverseEtaFibreCoordinateHomeomorph
+48430:     (x : InverseEtaBase) : InverseEtaFibre x ≃ₜ ℂ where
+48431:   toEquiv := inverseEtaFibreCoordinateEquiv x
+48432:   continuous_toFun := inverseEtaFibreCoordinate_continuous x
+48433:   continuous_invFun := inverseEtaFibreOfCoordinate_continuous x
+48434: 
+48435: /-- Transport the additive complex-line structure to the actual quotient
+48436: fibre along the proved coordinate equivalence. -/
+48437: noncomputable instance inverseEtaFibreAddCommGroup (x : InverseEtaBase) :
+48438:     AddCommGroup (InverseEtaFibre x) :=
+48439:   (inverseEtaFibreCoordinateEquiv x).addCommGroup
+48440: 
+48441: /-- Transport complex scalar multiplication to the actual quotient fibre. -/
+48442: noncomputable instance inverseEtaFibreModule (x : InverseEtaBase) :
+48443:     Module ℂ (InverseEtaFibre x) :=
+48444:   Equiv.module ℂ (inverseEtaFibreCoordinateEquiv x)
+48445: 
+48446: /-- The coordinate equivalence is complex linear for the transported fibre
+48447: operations. -/
+48448: noncomputable def inverseEtaFibreCoordinateLinearEquiv
+48449:     (x : InverseEtaBase) : InverseEtaFibre x ≃ₗ[ℂ] ℂ :=
+48450:   (inverseEtaFibreCoordinateEquiv x).linearEquiv ℂ
+48451: 
+48452: @[simp] theorem inverseEtaFibreCoordinate_zero (x : InverseEtaBase) :
+48453:     inverseEtaFibreCoordinate (0 : InverseEtaFibre x) = 0 :=
+48454:   (inverseEtaFibreCoordinateLinearEquiv x).map_zero
+48455: 
+48456: @[simp] theorem inverseEtaFibreCoordinate_add
+48457:     {x : InverseEtaBase} (u v : InverseEtaFibre x) :
+48458:     inverseEtaFibreCoordinate (u + v) =
+48459:       inverseEtaFibreCoordinate u + inverseEtaFibreCoordinate v :=
+48460:   (inverseEtaFibreCoordinateLinearEquiv x).map_add u v
+48461: 
+48462: @[simp] theorem inverseEtaFibreCoordinate_neg
+48463:     {x : InverseEtaBase} (u : InverseEtaFibre x) :
+48464:     inverseEtaFibreCoordinate (-u) = -inverseEtaFibreCoordinate u :=
+48465:   (inverseEtaFibreCoordinateLinearEquiv x).map_neg u
+48466: 
+48467: @[simp] theorem inverseEtaFibreCoordinate_smul
+48468:     {x : InverseEtaBase} (c : ℂ) (u : InverseEtaFibre x) :
+48469:     inverseEtaFibreCoordinate (c • u) =
+48470:       c * inverseEtaFibreCoordinate u := by
+48471:   simpa only [smul_eq_mul] using
+48472:     (inverseEtaFibreCoordinateLinearEquiv x).map_smul c u
+48473: 
+48474: /-- A local coordinate represented at an upstairs point, packaged as a point
+48475: of the corresponding actual quotient fibre. -/
+48476: noncomputable def inverseEtaFibreMk (tau : H) (z : ℂ) :
+48477:     InverseEtaFibre (Mock2.Definition15Geometry.quotientMap tau) :=
+48478:   ⟨inverseEtaTotalMk tau z, inverseEtaProjection_mk tau z⟩
+48479: 
+48480: @[simp] theorem inverseEtaFibreCoordinate_mk (tau : H) (z : ℂ) :
+48481:     inverseEtaFibreCoordinate (inverseEtaFibreMk tau z) =
+48482:       Mock2.Definition15Geometry.EtaHalfWeight.etaValue tau * z := by
+48483:   rfl
+48484: 
+48485: @[simp] theorem inverseEtaFibreMk_zero (tau : H) :
+48486:     inverseEtaFibreMk tau 0 =
+===== PrimalitySheafVerification/QYM.lean:48495-48655 =====
+48495:       inverseEtaFibreMk tau z + inverseEtaFibreMk tau w := by
+48496:   apply (inverseEtaFibreCoordinateEquiv _).injective
+48497:   simp only [inverseEtaFibreCoordinate_mk,
+48498:     inverseEtaFibreCoordinate_add, mul_add]
+48499: 
+48500: @[simp] theorem inverseEtaFibreMk_smul
+48501:     (tau : H) (c z : ℂ) :
+48502:     inverseEtaFibreMk tau (c * z) =
+48503:       c • inverseEtaFibreMk tau z := by
+48504:   apply (inverseEtaFibreCoordinateEquiv _).injective
+48505:   simp only [inverseEtaFibreCoordinate_mk,
+48506:     inverseEtaFibreCoordinate_smul]
+48507:   ring
+48508: 
+48509: /-! ## 6. Descent of the exact inverse-eta Hermitian metric -/
+48510: 
+48511: /-- The descended Hermitian pairing on a fixed actual quotient fibre. -/
+48512: noncomputable def inverseEtaFibreHermitian
+48513:     {x : InverseEtaBase}
+48514:     (u v : InverseEtaFibre x) : ℂ :=
+48515:   ⟪inverseEtaFibreCoordinate u, inverseEtaFibreCoordinate v⟫_ℂ
+48516: 
+48517: /-- The descended pairing pulls back exactly to the base-dependent metric
+48518: already constructed in P1. -/
+48519: @[simp] theorem inverseEtaFibreHermitian_mk
+48520:     (tau : H) (z w : ℂ) :
+48521:     inverseEtaFibreHermitian
+48522:         (inverseEtaFibreMk tau z) (inverseEtaFibreMk tau w) =
+48523:       QYM.FullCertification.P1AdmissibleBackgroundExtension.inverseEtaHermitianMetricData.pairing tau z w := by
+48524:   rw [inverseEtaFibreHermitian,
+48525:     inverseEtaFibreCoordinate_mk, inverseEtaFibreCoordinate_mk,
+48526:     QYM.FullCertification.P1AdmissibleBackgroundExtension.inverseEtaHermitianMetricData_pairing]
+48527: 
+48528: /-- Conjugate symmetry of the descended pairing. -/
+48529: theorem inverseEtaFibreHermitian_conj_symm
+48530:     {x : InverseEtaBase} (u v : InverseEtaFibre x) :
+48531:     conj (inverseEtaFibreHermitian v u) =
+48532:       inverseEtaFibreHermitian u v := by
+48533:   exact inner_conj_symm _ _
+48534: 
+48535: /-- Additivity in the second argument. -/
+48536: theorem inverseEtaFibreHermitian_add_right
+48537:     {x : InverseEtaBase} (u v w : InverseEtaFibre x) :
+48538:     inverseEtaFibreHermitian u (v + w) =
+48539:       inverseEtaFibreHermitian u v +
+48540:         inverseEtaFibreHermitian u w := by
+48541:   simp only [inverseEtaFibreHermitian,
+48542:     inverseEtaFibreCoordinate_add, inner_add_right]
+48543: 
+48544: /-- Complex linearity in the second argument. -/
+48545: theorem inverseEtaFibreHermitian_smul_right
+48546:     {x : InverseEtaBase} (c : ℂ) (u v : InverseEtaFibre x) :
+48547:     inverseEtaFibreHermitian u (c • v) =
+48548:       c * inverseEtaFibreHermitian u v := by
+48549:   simp only [inverseEtaFibreHermitian,
+48550:     inverseEtaFibreCoordinate_smul, inner_smul_right]
+48551: 
+48552: /-- The real part on the diagonal is the square of the descended norm. -/
+48553: theorem inverseEtaFibreHermitian_self_re
+48554:     {x : InverseEtaBase} (u : InverseEtaFibre x) :
+48555:     (inverseEtaFibreHermitian u u).re =
+48556:       ‖inverseEtaFibreCoordinate u‖ ^ 2 := by
+48557:   unfold inverseEtaFibreHermitian
+48558:   exact inner_self_eq_norm_sq (𝕜 := ℂ)
+48559:     (inverseEtaFibreCoordinate u)
+48560: 
+48561: /-- Positive definiteness on the actual quotient fibre. -/
+48562: theorem inverseEtaFibreHermitian_self_pos
+48563:     {x : InverseEtaBase} {u : InverseEtaFibre x} (hu : u ≠ 0) :
+48564:     0 < (inverseEtaFibreHermitian u u).re := by
+48565:   unfold inverseEtaFibreHermitian
+48566:   rw [re_inner_self_pos (𝕜 := ℂ)]
+48567:   intro hCoordinate
+48568:   apply hu
+48569:   apply (inverseEtaFibreCoordinateEquiv x).injective
+48570:   simpa using hCoordinate
+48571: 
+48572: /-- The Hermitian norm on the actual quotient total space. -/
+48573: noncomputable def inverseEtaTotalHermitianNorm
+48574:     (u : InverseEtaTotal) : ℝ :=
+48575:   ‖etaTrivializedCoordinate u‖
+48576: 
+48577: @[simp] theorem inverseEtaTotalHermitianNorm_mk
+48578:     (tau : H) (z : ℂ) :
+48579:     inverseEtaTotalHermitianNorm (inverseEtaTotalMk tau z) =
+48580:       ‖Mock2.Definition15Geometry.EtaHalfWeight.etaValue tau * z‖ := by
+48581:   rfl
+48582: 
+48583: /-- The same norm restricted to one actual quotient fibre. -/
+48584: noncomputable def inverseEtaFibreHermitianNorm
+48585:     {x : InverseEtaBase} (u : InverseEtaFibre x) : ℝ :=
+48586:   ‖inverseEtaFibreCoordinate u‖
+48587: 
+48588: theorem inverseEtaFibreHermitian_self_eq_norm_sq
+48589:     {x : InverseEtaBase} (u : InverseEtaFibre x) :
+48590:     (inverseEtaFibreHermitian u u).re =
+48591:       inverseEtaFibreHermitianNorm u ^ 2 :=
+48592:   by
+48593:     simpa only [inverseEtaFibreHermitianNorm] using
+48594:       inverseEtaFibreHermitian_self_re u
+48595: 
+48596: /-! ## 7. Covariant scalar lifts are exactly quotient sections -/
+48597: 
+48598: /-- All inverse-eta-covariant scalar lifts, with their actual pointwise
+48599: complex-module structure. -/
+48600: noncomputable def etaCovariantLiftModule : Submodule ℂ (H -> ℂ) where
+48601:   carrier := QYM.FullCertification.Mock2EtaPeterssonCarrierExtension.EtaCovariant
+48602:   zero_mem' := by
+48603:     intro gamma tau
+48604:     simp [QYM.FullCertification.Mock2EtaPeterssonCarrierExtension.etaAutomorphyFactor]
+48605:   add_mem' := by
+48606:     intro f g hf hg gamma tau
+48607:     change
+48608:       f (gamma • tau) + g (gamma • tau) =
+48609:         QYM.FullCertification.Mock2EtaPeterssonCarrierExtension.etaAutomorphyFactor gamma tau * (f tau + g tau)
+48610:     rw [hf gamma tau, hg gamma tau, mul_add]
+48611:   smul_mem' := by
+48612:     intro c f hf gamma tau
+48613:     change
+48614:       c * f (gamma • tau) =
+48615:         QYM.FullCertification.Mock2EtaPeterssonCarrierExtension.etaAutomorphyFactor gamma tau * (c * f tau)
+48616:     rw [hf gamma tau]
+48617:     ring
+48618: 
+48619: /-- A scalar lift satisfying the exact inverse-eta covariance law. -/
+48620: abbrev EtaCovariantLift := etaCovariantLiftModule
+48621: 
+48622: /-- An actual section of the quotient projection.  The section law is a
+48623: proved field about a function into the already constructed quotient total
+48624: space; no local coordinate is stored. -/
+48625: structure InverseEtaQuotientSection where
+48626:   toFun : InverseEtaBase -> InverseEtaTotal
+48627:   projection_toFun :
+48628:     ∀ x : InverseEtaBase, inverseEtaProjection (toFun x) = x
+48629: 
+48630: namespace InverseEtaQuotientSection
+48631: 
+48632: instance : CoeFun InverseEtaQuotientSection
+48633:     (fun _ => InverseEtaBase -> InverseEtaTotal) :=
+48634:   ⟨InverseEtaQuotientSection.toFun⟩
+48635: 
+48636: @[ext] theorem ext {s t : InverseEtaQuotientSection}
+48637:     (h : ∀ x : InverseEtaBase, s x = t x) : s = t := by
+48638:   cases s with
+48639:   | mk sf hs =>
+48640:       cases t with
+48641:       | mk tf ht =>
+48642:           have hfun : sf = tf := funext h
+48643:           cases hfun
+48644:           rfl
+48645: 
+48646: end InverseEtaQuotientSection
+48647: 
+48648: /-- The upstairs total-space lift associated to a covariant scalar. -/
+48649: noncomputable def covariantTotalLift
+48650:     (f : EtaCovariantLift) (tau : H) : InverseEtaTotal :=
+48651:   inverseEtaTotalMk tau (f : H -> ℂ) tau
+48652: 
+48653: /-- Exact invariance of the total-space lift. -/
+48654: theorem covariantTotalLift_invariant
+48655:     (f : EtaCovariantLift) (gamma : Gamma2) (tau : H) :
+===== PrimalitySheafVerification/QYM.lean:48659-48695 =====
+48659:         Mock2.Definition15Geometry.lineSmul inverseEtaMultiplier gamma
+48660:           (tau, (f : H -> ℂ) tau) := by
+48661:     apply Prod.ext
+48662:     · rfl
+48663:     · exact f.2 gamma tau
+48664:   change
+48665:     inverseEtaTotalMk (gamma • tau) ((f : H -> ℂ) (gamma • tau)) =
+48666:       inverseEtaTotalMk tau ((f : H -> ℂ) tau)
+48667:   change
+48668:     Mock2.Definition15Geometry.lineBundleMk inverseEtaMultiplier
+48669:         (gamma • tau, (f : H -> ℂ) (gamma • tau)) =
+48670:       Mock2.Definition15Geometry.lineBundleMk inverseEtaMultiplier
+48671:         (tau, (f : H -> ℂ) tau)
+48672:   rw [hPair]
+48673:   exact inverseEtaTotalMk_lineSmul gamma (tau, (f : H -> ℂ) tau)
+48674: 
+48675: /-- Descent of a covariant lift to a quotient-total-space-valued function. -/
+48676: noncomputable def covariantToSectionFun
+48677:     (f : EtaCovariantLift) : InverseEtaBase -> InverseEtaTotal := by
+48678:   refine Quotient.lift (covariantTotalLift f) ?_
+48679:   intro tau sigma hts
+48680:   change tau ∈ MulAction.orbit Gamma2 sigma at hts
+48681:   rcases hts with ⟨gamma, hgamma⟩
+48682:   rw [← hgamma]
+48683:   exact covariantTotalLift_invariant f gamma sigma
+48684: 
+48685: @[simp] theorem covariantToSectionFun_quotientMap
+48686:     (f : EtaCovariantLift) (tau : H) :
+48687:     covariantToSectionFun f
+48688:         (Mock2.Definition15Geometry.quotientMap tau) =
+48689:       inverseEtaTotalMk tau ((f : H -> ℂ) tau) := by
+48690:   rfl
+48691: 
+48692: /-- Every exact covariant scalar lift defines an actual quotient section. -/
+48693: noncomputable def covariantToSection
+48694:     (f : EtaCovariantLift) : InverseEtaQuotientSection where
+48695:   toFun := covariantToSectionFun f
+===== PrimalitySheafVerification/QYM.lean:48796-48876 =====
+48796: /-- The nowhere-zero inverse-eta scalar as an element of the full covariant
+48797: lift module. -/
+48798: noncomputable def distinguishedInverseEtaLift : EtaCovariantLift :=
+48799:   ⟨QYM.FullCertification.Mock2EtaPeterssonCarrierExtension.inverseEtaSection, QYM.FullCertification.Mock2EtaPeterssonCarrierExtension.inverseEtaSection_covariant⟩
+48800: 
+48801: /-- The general descent map specializes to the previously constructed
+48802: descended inverse-eta bundle section. -/
+48803: theorem covariantToSection_distinguished_toFun :
+48804:     (covariantToSection distinguishedInverseEtaLift).toFun =
+48805:       QYM.FullCertification.Mock2EtaQuotientMeasureExtension.descendedInverseEtaBundleSection := by
+48806:   funext x
+48807:   refine Quotient.inductionOn x ?_
+48808:   intro tau
+48809:   rfl
+48810: 
+48811: /-- In eta coordinates the distinguished inverse-eta section is exactly the
+48812: constant section `1`. -/
+48813: @[simp] theorem distinguishedInverseEtaSection_coordinate
+48814:     (x : InverseEtaBase) :
+48815:     etaTrivializedCoordinate
+48816:         (covariantToSection distinguishedInverseEtaLift x) = 1 := by
+48817:   obtain ⟨tau, rfl⟩ := QYM.FullCertification.Mock2EtaQuotientMeasureExtension.quotientMap_surjective x
+48818:   change Mock2.Definition15Geometry.EtaHalfWeight.etaValue tau * QYM.FullCertification.Mock2EtaPeterssonCarrierExtension.inverseEtaSection tau = 1
+48819:   simp [QYM.FullCertification.Mock2EtaPeterssonCarrierExtension.inverseEtaSection, Mock2.Definition15Geometry.EtaHalfWeight.etaValue_ne_zero]
+48820: 
+48821: /-- Its descended Hermitian norm is one in every fibre. -/
+48822: @[simp] theorem distinguishedInverseEtaSection_norm
+48823:     (x : InverseEtaBase) :
+48824:     inverseEtaTotalHermitianNorm
+48825:         (covariantToSection distinguishedInverseEtaLift x) = 1 := by
+48826:   rw [inverseEtaTotalHermitianNorm,
+48827:     distinguishedInverseEtaSection_coordinate, norm_one]
+48828: 
+48829: /-! ## 9. Aggregate theorem and the exact remaining smooth-atlas statement -/
+48830: 
+48831: /-- The algebraic and topological quotient-bundle endpoint.  Every conjunct
+48832: is a theorem about the concrete inverse-eta quotient; none is a supplier field.
+48833: -/
+48834: theorem inverseEtaQuotientBundleCertificate :
+48835:     IsHomeomorphicTrivialFiberBundle ℂ inverseEtaProjection ∧
+48836:       (∀ x : InverseEtaBase,
+48837:         Function.Bijective
+48838:           (inverseEtaFibreCoordinate (x := x))) ∧
+48839:       Function.Bijective covariantToSection ∧
+48840:       (∀ (tau : H) (z w : ℂ),
+48841:         inverseEtaFibreHermitian
+48842:             (inverseEtaFibreMk tau z) (inverseEtaFibreMk tau w) =
+48843:           QYM.FullCertification.P1AdmissibleBackgroundExtension.inverseEtaHermitianMetricData.pairing tau z w) := by
+48844:   refine
+48845:     ⟨inverseEta_isHomeomorphicTrivialFiberBundle,
+48846:       ?_, etaCovariantLiftEquivQuotientSection.bijective, ?_⟩
+48847:   · intro x
+48848:     exact (inverseEtaFibreCoordinateEquiv x).bijective
+48849:   · intro tau z w
+48850:     exact inverseEtaFibreHermitian_mk tau z w
+48851: 
+48852: /-- The sole atlas-level statement not claimed by the preceding certificate.
+48853: It asks that the already constructed global homeomorphism and its inverse be
+48854: smooth for chosen two-complex-dimensional charts on the total space and the
+48855: product.  This predicate contains no assertion of its own and is not used as
+48856: a field of any bundle datum. -/
+48857: def InverseEtaSmoothGlobalTrivializationResidual
+48858:     [ChartedSpace ℂ InverseEtaBase]
+48859:     [ChartedSpace (ModelProd ℂ ℂ) InverseEtaTotal] : Prop :=
+48860:   ContMDiff (𝓘(ℂ).prod 𝓘(ℂ)) (𝓘(ℂ).prod 𝓘(ℂ)) ∞
+48861:       inverseEtaTotalTrivializationHomeomorph ∧
+48862:     ContMDiff (𝓘(ℂ).prod 𝓘(ℂ)) (𝓘(ℂ).prod 𝓘(ℂ)) ∞
+48863:       inverseEtaTotalTrivializationHomeomorph.symm
+48864: 
+48865: end QYM.FullCertification.P3InverseEtaQuotientBundleExtension
+48866: 
+48867: namespace P3InverseEtaQuotientBundleAxiomAudit
+48868: 
+48869: #print axioms QYM.FullCertification.P3InverseEtaQuotientBundleExtension.eta_coordinate_transport
+48870: #print axioms QYM.FullCertification.P3InverseEtaQuotientBundleExtension.etaTrivializedCoordinate
+48871: #print axioms QYM.FullCertification.P3InverseEtaQuotientBundleExtension.totalOfBaseScalar
+48872: #print axioms QYM.FullCertification.P3InverseEtaQuotientBundleExtension.inverseEtaTotalTrivialization
+48873: #print axioms QYM.FullCertification.P3InverseEtaQuotientBundleExtension.inverseEtaDeckAction_continuous
+48874: #print axioms QYM.FullCertification.P3InverseEtaQuotientBundleExtension.inverseEtaBaseQuotientMap_isOpenQuotientMap
+48875: #print axioms QYM.FullCertification.P3InverseEtaQuotientBundleExtension.inverseEtaTotalTrivializationHomeomorph
+48876: #print axioms QYM.FullCertification.P3InverseEtaQuotientBundleExtension.inverseEta_isHomeomorphicTrivialFiberBundle
+===== PrimalitySheafVerification/QYM.lean:50511-50579 =====
+50511: 
+50512: /-! ## 2. The actual finite-stage scalar and bundle-section Hilbert spaces -/
+50513: 
+50514: /-- The concrete scalar `L²` carrier on the intrinsic compact quotient stage. -/
+50515: abbrev ActualStageScalarL2 (Y : ℝ) :=
+50516:   MeasureTheory.Lp ℂ 2 (actualStageMeasure Y)
+50517: 
+50518: /-- The inverse-eta bundle `L²` section carrier.
+50519: 
+50520: This is definitionally the scalar `L²` carrier because the preceding producer
+50521: proved a global eta-coordinate homeomorphism of the *actual* quotient total
+50522: space.  The definitions below reconstruct the literal fibre value and prove
+50523: that this coordinate presentation is exact. -/
+50524: abbrev ActualStageInverseEtaL2Section (Y : ℝ) :=
+50525:   ActualStageScalarL2 Y
+50526: 
+50527: /-- Reconstruct the actual quotient-total-space value of an `L²` section from
+50528: its eta coordinate. -/
+50529: noncomputable def actualStageBundleValue
+50530:     {Y : ℝ} (u : ActualStageInverseEtaL2Section Y) (x : QYM.FullCertification.P2IntrinsicTruncatedQuotientExtension.X Y) :
+50531:     QYM.FullCertification.P3InverseEtaQuotientBundleExtension.InverseEtaTotal :=
+50532:   QYM.FullCertification.P3InverseEtaQuotientBundleExtension.totalOfBaseScalar (x : Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.GammaTwoQuotient) (u x)
+50533: 
+50534: /-- The chosen point representative of every stage `L²` class reconstructs
+50535: an almost-everywhere measurable actual total-space representative.  The
+50536: statement is deliberately a.e.-measurability, since an `L²` class has no
+50537: canonical everywhere-measurable point representative. -/
+50538: theorem actualStageBundleValue_aemeasurable
+50539:     {Y : ℝ} (u : ActualStageInverseEtaL2Section Y) :
+50540:     AEMeasurable (actualStageBundleValue u) (actualStageMeasure Y) := by
+50541:   have hPair : AEMeasurable
+50542:       (fun x : QYM.FullCertification.P2IntrinsicTruncatedQuotientExtension.X Y =>
+50543:         ((x : Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.GammaTwoQuotient), (u x : ℂ)))
+50544:       (actualStageMeasure Y) :=
+50545:     measurable_subtype_coe.aemeasurable.prodMk
+50546:       (MeasureTheory.Lp.aestronglyMeasurable u).aemeasurable
+50547:   exact QYM.FullCertification.P3InverseEtaQuotientBundleExtension.totalOfBaseScalar_continuous.measurable.comp_aemeasurable hPair
+50548: 
+50549: /-- The reconstructed value lies over the requested quotient point exactly. -/
+50550: @[simp] theorem actualStageBundleValue_projection
+50551:     {Y : ℝ} (u : ActualStageInverseEtaL2Section Y) (x : QYM.FullCertification.P2IntrinsicTruncatedQuotientExtension.X Y) :
+50552:     QYM.FullCertification.P3InverseEtaQuotientBundleExtension.inverseEtaProjection (actualStageBundleValue u x) =
+50553:       (x : Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.GammaTwoQuotient) := by
+50554:   exact QYM.FullCertification.P3InverseEtaQuotientBundleExtension.inverseEtaProjection_totalOfBaseScalar _ _
+50555: 
+50556: /-- The same value, now typed in the actual fibre over `x`. -/
+50557: noncomputable def actualStageFibreValue
+50558:     {Y : ℝ} (u : ActualStageInverseEtaL2Section Y) (x : QYM.FullCertification.P2IntrinsicTruncatedQuotientExtension.X Y) :
+50559:     QYM.FullCertification.P3InverseEtaQuotientBundleExtension.InverseEtaFibre (x : Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.GammaTwoQuotient) :=
+50560:   ⟨actualStageBundleValue u x,
+50561:     actualStageBundleValue_projection u x⟩
+50562: 
+50563: /-- Eta trivialization recovers the original `L²` representative pointwise. -/
+50564: @[simp] theorem actualStageFibreValue_coordinate
+50565:     {Y : ℝ} (u : ActualStageInverseEtaL2Section Y) (x : QYM.FullCertification.P2IntrinsicTruncatedQuotientExtension.X Y) :
+50566:     QYM.FullCertification.P3InverseEtaQuotientBundleExtension.inverseEtaFibreCoordinate (actualStageFibreValue u x) = u x := by
+50567:   exact QYM.FullCertification.P3InverseEtaQuotientBundleExtension.etaTrivializedCoordinate_totalOfBaseScalar _ _
+50568: 
+50569: /-- Equality of reconstructed values at one point is exactly equality of the
+50570: chosen `L²` representatives at that point.  No false point-evaluation
+50571: injectivity statement for `L²` equivalence classes is asserted. -/
+50572: theorem actualStageFibreValue_eq_iff
+50573:     {Y : ℝ} (u v : ActualStageInverseEtaL2Section Y) (x : QYM.FullCertification.P2IntrinsicTruncatedQuotientExtension.X Y) :
+50574:     actualStageFibreValue u x = actualStageFibreValue v x ↔
+50575:       u x = v x := by
+50576:   constructor
+50577:   · intro huv
+50578:     have hCoordinate := congrArg QYM.FullCertification.P3InverseEtaQuotientBundleExtension.inverseEtaFibreCoordinate huv
+50579:     simpa only [actualStageFibreValue_coordinate] using hCoordinate
+===== PrimalitySheafVerification/QYM.lean:50598-50852 =====
+50598:     {Y : ℝ} (u v : ActualStageInverseEtaL2Section Y)
+50599:     (x : QYM.FullCertification.P2IntrinsicTruncatedQuotientExtension.X Y) :
+50600:     actualStagePointwiseHermitian u v x = inner ℂ (u x) (v x) := by
+50601:   rw [actualStagePointwiseHermitian, QYM.FullCertification.P3InverseEtaQuotientBundleExtension.inverseEtaFibreHermitian]
+50602:   simp only [actualStageFibreValue_coordinate]
+50603: 
+50604: /-- The actual descended fibrewise Hermitian pairing is Bochner integrable
+50605: for every pair of stage `L²` sections. -/
+50606: theorem actualStagePointwiseHermitian_integrable
+50607:     {Y : ℝ} (u v : ActualStageInverseEtaL2Section Y) :
+50608:     Integrable (actualStagePointwiseHermitian u v)
+50609:       (actualStageMeasure Y) := by
+50610:   exact (MeasureTheory.L2.integrable_inner u v).congr
+50611:     (Filter.Eventually.of_forall fun x =>
+50612:       (actualStagePointwiseHermitian_eq_inner u v x).symm)
+50613: 
+50614: /-- The finite-stage Petersson inner product is the Hilbert inner product on
+50615: the concrete `L²` carrier. -/
+50616: noncomputable def actualStagePeterssonInner
+50617:     {Y : ℝ} (u v : ActualStageInverseEtaL2Section Y) : ℂ :=
+50618:   inner ℂ u v
+50619: 
+50620: /-- The Hilbert inner product is exactly integration of the actual descended
+50621: fibrewise Hermitian metric. -/
+50622: theorem actualStagePeterssonInner_eq_integral
+50623:     {Y : ℝ} (u v : ActualStageInverseEtaL2Section Y) :
+50624:     actualStagePeterssonInner u v =
+50625:       ∫ x : QYM.FullCertification.P2IntrinsicTruncatedQuotientExtension.X Y, actualStagePointwiseHermitian u v x
+50626:         ∂actualStageMeasure Y := by
+50627:   rw [actualStagePeterssonInner, MeasureTheory.L2.inner_def]
+50628:   refine integral_congr_ae ?_
+50629:   filter_upwards with x
+50630:   exact (actualStagePointwiseHermitian_eq_inner u v x).symm
+50631: 
+50632: /-- Positivity of the concrete Petersson form. -/
+50633: theorem actualStagePeterssonInner_self_re_nonneg
+50634:     {Y : ℝ} (u : ActualStageInverseEtaL2Section Y) :
+50635:     0 ≤ (actualStagePeterssonInner u u).re := by
+50636:   unfold actualStagePeterssonInner
+50637:   exact inner_self_nonneg (𝕜 := ℂ)
+50638: 
+50639: /-- Definiteness of the concrete Petersson form. -/
+50640: theorem actualStagePeterssonInner_self_re_eq_zero_iff
+50641:     {Y : ℝ} (u : ActualStageInverseEtaL2Section Y) :
+50642:     (actualStagePeterssonInner u u).re = 0 ↔ u = 0 := by
+50643:   unfold actualStagePeterssonInner
+50644:   rw [inner_self_eq_norm_sq_to_K]
+50645:   simp only [Complex.ofReal_pow, Complex.ofReal_re,
+50646:     sq_eq_zero_iff, norm_eq_zero]
+50647: 
+50648: /-! ## 4. Restriction of genuine quotient sections -/
+50649: 
+50650: /-- Eta coordinate of a genuine quotient section after restriction to the
+50651: intrinsic stage. -/
+50652: noncomputable def actualStageSectionCoordinate
+50653:     (Y : ℝ) (s : QYM.FullCertification.P3InverseEtaQuotientBundleExtension.InverseEtaQuotientSection) : QYM.FullCertification.P2IntrinsicTruncatedQuotientExtension.X Y -> ℂ :=
+50654:   fun x => QYM.FullCertification.P3InverseEtaQuotientBundleExtension.etaTrivializedCoordinate (s (x : Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.GammaTwoQuotient))
+50655: 
+50656: /-- The actual global inverse-eta quotient section obtained by descending
+50657: the proved covariant inverse-eta lift. -/
+50658: noncomputable def distinguishedInverseEtaQuotientSection :
+50659:     QYM.FullCertification.P3InverseEtaQuotientBundleExtension.InverseEtaQuotientSection :=
+50660:   QYM.FullCertification.P3InverseEtaQuotientBundleExtension.covariantToSection QYM.FullCertification.P3InverseEtaQuotientBundleExtension.distinguishedInverseEtaLift
+50661: 
+50662: @[simp]
+50663: theorem distinguishedInverseEtaQuotientSection_coordinate
+50664:     (x : Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.GammaTwoQuotient) :
+50665:     QYM.FullCertification.P3InverseEtaQuotientBundleExtension.etaTrivializedCoordinate
+50666:         (distinguishedInverseEtaQuotientSection x) = 1 := by
+50667:   exact QYM.FullCertification.P3InverseEtaQuotientBundleExtension.distinguishedInverseEtaSection_coordinate x
+50668: 
+50669: /-- The distinguished quotient section is literally reconstruction from
+50670: base point and constant eta coordinate one. -/
+50671: theorem distinguishedInverseEtaQuotientSection_eq_totalOfBaseScalar
+50672:     (x : Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.GammaTwoQuotient) :
+50673:     distinguishedInverseEtaQuotientSection x =
+50674:       QYM.FullCertification.P3InverseEtaQuotientBundleExtension.totalOfBaseScalar x 1 := by
+50675:   calc
+50676:     distinguishedInverseEtaQuotientSection x =
+50677:         QYM.FullCertification.P3InverseEtaQuotientBundleExtension.totalOfBaseScalar
+50678:           (QYM.FullCertification.P3InverseEtaQuotientBundleExtension.inverseEtaProjection
+50679:             (distinguishedInverseEtaQuotientSection x))
+50680:           (QYM.FullCertification.P3InverseEtaQuotientBundleExtension.etaTrivializedCoordinate
+50681:             (distinguishedInverseEtaQuotientSection x)) :=
+50682:       (QYM.FullCertification.P3InverseEtaQuotientBundleExtension.totalOfBaseScalar_projection_coordinate _).symm
+50683:     _ = QYM.FullCertification.P3InverseEtaQuotientBundleExtension.totalOfBaseScalar x 1 := by
+50684:       rw [distinguishedInverseEtaQuotientSection_coordinate,
+50685:         distinguishedInverseEtaQuotientSection.projection_toFun]
+50686: 
+50687: /-- Unlike an arbitrary set-theoretic quotient section, the distinguished
+50688: inverse-eta quotient section is continuous. -/
+50689: theorem distinguishedInverseEtaQuotientSection_continuous :
+50690:     Continuous distinguishedInverseEtaQuotientSection.toFun := by
+50691:   rw [show distinguishedInverseEtaQuotientSection.toFun =
+50692:       (fun x : Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.GammaTwoQuotient => QYM.FullCertification.P3InverseEtaQuotientBundleExtension.totalOfBaseScalar x 1) by
+50693:     funext x
+50694:     exact distinguishedInverseEtaQuotientSection_eq_totalOfBaseScalar x]
+50695:   exact QYM.FullCertification.P3InverseEtaQuotientBundleExtension.totalOfBaseScalar_continuous.comp
+50696:     (continuous_id.prodMk continuous_const)
+50697: 
+50698: theorem distinguishedInverseEtaQuotientSection_measurable :
+50699:     Measurable distinguishedInverseEtaQuotientSection.toFun :=
+50700:   distinguishedInverseEtaQuotientSection_continuous.measurable
+50701: 
+50702: @[simp]
+50703: theorem actualStageSectionCoordinate_distinguished
+50704:     (Y : ℝ) (x : QYM.FullCertification.P2IntrinsicTruncatedQuotientExtension.X Y) :
+50705:     actualStageSectionCoordinate Y
+50706:         distinguishedInverseEtaQuotientSection x = 1 := by
+50707:   exact distinguishedInverseEtaQuotientSection_coordinate
+50708:     (x : Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.GammaTwoQuotient)
+50709: 
+50710: /-- A measurable quotient section has measurable eta coordinate on every
+50711: actual stage. -/
+50712: theorem actualStageSectionCoordinate_measurable
+50713:     (Y : ℝ) (s : QYM.FullCertification.P3InverseEtaQuotientBundleExtension.InverseEtaQuotientSection)
+50714:     (hs : Measurable s.toFun) :
+50715:     Measurable (actualStageSectionCoordinate Y s) := by
+50716:   exact QYM.FullCertification.P3InverseEtaQuotientBundleExtension.etaTrivializedCoordinate_continuous.measurable.comp
+50717:     (hs.comp measurable_subtype_coe)
+50718: 
+50719: /-- Exact square-integrability predicate for a genuine quotient section on the
+50720: actual stage.  Unlike an abstract certificate, this is `MemLp` of its explicit
+50721: eta-coordinate function. -/
+50722: def IsSquareIntegrableOnActualStage
+50723:     (Y : ℝ) (s : QYM.FullCertification.P3InverseEtaQuotientBundleExtension.InverseEtaQuotientSection) : Prop :=
+50724:   MemLp (actualStageSectionCoordinate Y s) 2 (actualStageMeasure Y)
+50725: 
+50726: /-- The genuine global distinguished quotient section is square integrable
+50727: on every compact stage because its actual eta coordinate is exactly one. -/
+50728: theorem distinguishedInverseEtaQuotientSection_isSquareIntegrable
+50729:     (Y : ℝ) :
+50730:     IsSquareIntegrableOnActualStage Y
+50731:       distinguishedInverseEtaQuotientSection := by
+50732:   unfold IsSquareIntegrableOnActualStage
+50733:   have hCoordinate :
+50734:       actualStageSectionCoordinate Y
+50735:           distinguishedInverseEtaQuotientSection =
+50736:         (fun _ : QYM.FullCertification.P2IntrinsicTruncatedQuotientExtension.X Y => (1 : ℂ)) := by
+50737:     funext x
+50738:     exact actualStageSectionCoordinate_distinguished Y x
+50739:   rw [hCoordinate]
+50740:   exact memLp_const (1 : ℂ)
+50741: 
+50742: /-- A genuinely square-integrable quotient section determines an element of
+50743: the concrete stage Hilbert space. -/
+50744: noncomputable def quotientSectionToActualStageL2
+50745:     (Y : ℝ) (s : QYM.FullCertification.P3InverseEtaQuotientBundleExtension.InverseEtaQuotientSection)
+50746:     (hs : IsSquareIntegrableOnActualStage Y s) :
+50747:     ActualStageInverseEtaL2Section Y :=
+50748:   MeasureTheory.MemLp.toLp (actualStageSectionCoordinate Y s) hs
+50749: 
+50750: /-- The `L²` representative agrees almost everywhere with the explicit eta
+50751: coordinate of the original section. -/
+50752: theorem quotientSectionToActualStageL2_coeFn_ae
+50753:     (Y : ℝ) (s : QYM.FullCertification.P3InverseEtaQuotientBundleExtension.InverseEtaQuotientSection)
+50754:     (hs : IsSquareIntegrableOnActualStage Y s) :
+50755:     ((quotientSectionToActualStageL2 Y s hs :
+50756:         ActualStageInverseEtaL2Section Y) : QYM.FullCertification.P2IntrinsicTruncatedQuotientExtension.X Y -> ℂ) =ᵐ[
+50757:           actualStageMeasure Y]
+50758:       actualStageSectionCoordinate Y s := by
+50759:   exact hs.coeFn_toLp
+50760: 
+50761: /-- Reconstructing actual fibre values from the restricted `L²` coordinate
+50762: recovers the original quotient section almost everywhere. -/
+50763: theorem quotientSectionToActualStageL2_bundleValue_ae
+50764:     (Y : ℝ) (s : QYM.FullCertification.P3InverseEtaQuotientBundleExtension.InverseEtaQuotientSection)
+50765:     (hs : IsSquareIntegrableOnActualStage Y s) :
+50766:     (fun x : QYM.FullCertification.P2IntrinsicTruncatedQuotientExtension.X Y =>
+50767:       actualStageBundleValue
+50768:         (quotientSectionToActualStageL2 Y s hs) x) =ᵐ[
+50769:           actualStageMeasure Y]
+50770:       (fun x : QYM.FullCertification.P2IntrinsicTruncatedQuotientExtension.X Y => s (x : Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.GammaTwoQuotient)) := by
+50771:   filter_upwards [quotientSectionToActualStageL2_coeFn_ae Y s hs]
+50772:     with x hx
+50773:   rw [actualStageBundleValue, hx, actualStageSectionCoordinate]
+50774:   rw [← s.projection_toFun (x : Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.GammaTwoQuotient)]
+50775:   exact QYM.FullCertification.P3InverseEtaQuotientBundleExtension.totalOfBaseScalar_projection_coordinate
+50776:     (s (x : Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.GammaTwoQuotient))
+50777: 
+50778: /-! ## 5. The distinguished inverse-eta `L²` section -/
+50779: 
+50780: /-- The distinguished inverse-eta section on the actual stage.  Its proved eta
+50781: coordinate is the constant `1`, which is in `L²` because the stage measure is
+50782: finite. -/
+50783: noncomputable def actualStageDistinguishedInverseEtaSection (Y : ℝ) :
+50784:     ActualStageInverseEtaL2Section Y :=
+50785:   MeasureTheory.Lp.const 2 (actualStageMeasure Y) (1 : ℂ)
+50786: 
+50787: /-- Restriction of the genuine global distinguished quotient section agrees
+50788: exactly, as an `L²` class, with the independently defined constant-one stage
+50789: section. -/
+50790: theorem quotientDistinguishedInverseEtaSection_toActualStageL2
+50791:     (Y : ℝ) :
+50792:     quotientSectionToActualStageL2 Y
+50793:         distinguishedInverseEtaQuotientSection
+50794:         (distinguishedInverseEtaQuotientSection_isSquareIntegrable Y) =
+50795:       actualStageDistinguishedInverseEtaSection Y := by
+50796:   change quotientSectionToActualStageL2 Y
+50797:       distinguishedInverseEtaQuotientSection
+50798:       (distinguishedInverseEtaQuotientSection_isSquareIntegrable Y) =
+50799:     MeasureTheory.Lp.const 2 (actualStageMeasure Y) (1 : ℂ)
+50800:   rw [MeasureTheory.Lp.ext_iff]
+50801:   filter_upwards
+50802:     [quotientSectionToActualStageL2_coeFn_ae Y
+50803:       distinguishedInverseEtaQuotientSection
+50804:       (distinguishedInverseEtaQuotientSection_isSquareIntegrable Y),
+50805:     MeasureTheory.Lp.coeFn_const
+50806:       (α := QYM.FullCertification.P2IntrinsicTruncatedQuotientExtension.X Y) (p := (2 : ℝ≥0∞))
+50807:       (μ := actualStageMeasure Y) (c := (1 : ℂ))]
+50808:     with x hxSection hxConst
+50809:   calc
+50810:     quotientSectionToActualStageL2 Y
+50811:           distinguishedInverseEtaQuotientSection
+50812:           (distinguishedInverseEtaQuotientSection_isSquareIntegrable Y) x =
+50813:         actualStageSectionCoordinate Y
+50814:           distinguishedInverseEtaQuotientSection x := hxSection
+50815:     _ = 1 := actualStageSectionCoordinate_distinguished Y x
+50816:     _ = MeasureTheory.Lp.const 2
+50817:           (actualStageMeasure Y) (1 : ℂ) x := by
+50818:       simpa only [Function.const_apply] using hxConst.symm
+50819: 
+50820: /-- Fibre reconstruction from the constant-one stage `L²` class recovers
+50821: the genuine global inverse-eta quotient section almost everywhere. -/
+50822: theorem actualStageDistinguishedInverseEtaSection_bundleValue_ae
+50823:     (Y : ℝ) :
+50824:     (fun x : QYM.FullCertification.P2IntrinsicTruncatedQuotientExtension.X Y =>
+50825:       actualStageBundleValue
+50826:         (actualStageDistinguishedInverseEtaSection Y) x) =ᵐ[
+50827:           actualStageMeasure Y]
+50828:       (fun x : QYM.FullCertification.P2IntrinsicTruncatedQuotientExtension.X Y =>
+50829:         distinguishedInverseEtaQuotientSection
+50830:           (x : Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.GammaTwoQuotient)) := by
+50831:   simpa only [quotientDistinguishedInverseEtaSection_toActualStageL2] using
+50832:     (quotientSectionToActualStageL2_bundleValue_ae Y
+50833:       distinguishedInverseEtaQuotientSection
+50834:       (distinguishedInverseEtaQuotientSection_isSquareIntegrable Y))
+50835: 
+50836: /-- The actual fibre coordinate of the distinguished section is one almost
+50837: everywhere. -/
+50838: theorem actualStageDistinguishedInverseEtaSection_coordinate_ae
+50839:     (Y : ℝ) :
+50840:     (fun x : QYM.FullCertification.P2IntrinsicTruncatedQuotientExtension.X Y =>
+50841:       QYM.FullCertification.P3InverseEtaQuotientBundleExtension.inverseEtaFibreCoordinate
+50842:         (actualStageFibreValue
+50843:           (actualStageDistinguishedInverseEtaSection Y) x)) =ᵐ[
+50844:             actualStageMeasure Y]
+50845:       (fun _ : QYM.FullCertification.P2IntrinsicTruncatedQuotientExtension.X Y => (1 : ℂ)) := by
+50846:   filter_upwards [MeasureTheory.Lp.coeFn_const
+50847:       (α := QYM.FullCertification.P2IntrinsicTruncatedQuotientExtension.X Y) (p := (2 : ℝ≥0∞))
+50848:       (μ := actualStageMeasure Y) (c := (1 : ℂ))]
+50849:     with x hx
+50850:   simpa only [actualStageDistinguishedInverseEtaSection,
+50851:     actualStageFibreValue_coordinate, Function.const_apply] using hx
+50852: 
+===== PrimalitySheafVerification/QYM.lean:50884-50969 =====
+50884: every cutoff in the certified paper range. -/
+50885: theorem actualStageDistinguishedInverseEtaSection_ne_zero
+50886:     {Y : ℝ} (hY : 1 < Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.gammaTwoCuspLevel Y) :
+50887:     actualStageDistinguishedInverseEtaSection Y ≠ 0 := by
+50888:   letI : NeZero (actualStageMeasure Y) :=
+50889:     ⟨actualStageMeasure_ne_zero_of_one_lt_level hY⟩
+50890:   apply norm_pos_iff.mp
+50891:   rw [actualStageDistinguishedInverseEtaSection_norm hY]
+50892:   exact Real.rpow_pos_of_pos measureReal_univ_pos _
+50893: 
+50894: /-! ## 6. Aggregate unconditional endpoint -/
+50895: 
+50896: /-- The finite-stage inverse-eta `L²` endpoint.  Every component is a theorem
+50897: about the concrete quotient, concrete compact stage, canonical quotient
+50898: measure, and actual quotient line bundle. -/
+50899: theorem actualStageInverseEtaL2Certificate (Y : ℝ) :
+50900:     actualStageMeasure Y Set.univ < (∞ : ℝ≥0∞) ∧
+50901:       (∀ (u : ActualStageInverseEtaL2Section Y) (x : QYM.FullCertification.P2IntrinsicTruncatedQuotientExtension.X Y),
+50902:         QYM.FullCertification.P3InverseEtaQuotientBundleExtension.inverseEtaProjection (actualStageBundleValue u x) =
+50903:           (x : Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.GammaTwoQuotient)) ∧
+50904:       (∀ u v : ActualStageInverseEtaL2Section Y,
+50905:         actualStagePeterssonInner u v =
+50906:           ∫ x : QYM.FullCertification.P2IntrinsicTruncatedQuotientExtension.X Y, actualStagePointwiseHermitian u v x
+50907:             ∂actualStageMeasure Y) ∧
+50908:       (∀ u : ActualStageInverseEtaL2Section Y,
+50909:         (actualStagePeterssonInner u u).re = 0 ↔ u = 0) ∧
+50910:       ((fun x : QYM.FullCertification.P2IntrinsicTruncatedQuotientExtension.X Y =>
+50911:         QYM.FullCertification.P3InverseEtaQuotientBundleExtension.inverseEtaFibreCoordinate
+50912:           (actualStageFibreValue
+50913:             (actualStageDistinguishedInverseEtaSection Y) x)) =ᵐ[
+50914:               actualStageMeasure Y]
+50915:         (fun _ : QYM.FullCertification.P2IntrinsicTruncatedQuotientExtension.X Y => (1 : ℂ))) := by
+50916:   exact
+50917:     ⟨actualStageMeasure_univ_lt_top Y,
+50918:       actualStageBundleValue_projection,
+50919:       actualStagePeterssonInner_eq_integral,
+50920:       actualStagePeterssonInner_self_re_eq_zero_iff,
+50921:       actualStageDistinguishedInverseEtaSection_coordinate_ae Y⟩
+50922: 
+50923: /-- Positive-mass refinement above the normalized height-one threshold,
+50924: including genuine
+50925: nontriviality and compatibility with the descended global quotient section.
+50926: -/
+50927: theorem actualStageInverseEtaL2PositiveCertificate
+50928:     {Y : ℝ} (hY : 1 < Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.gammaTwoCuspLevel Y) :
+50929:     0 < actualStageMeasure Y Set.univ ∧
+50930:       actualStageDistinguishedInverseEtaSection Y ≠ 0 ∧
+50931:       (fun x : QYM.FullCertification.P2IntrinsicTruncatedQuotientExtension.X Y =>
+50932:         actualStageBundleValue
+50933:           (actualStageDistinguishedInverseEtaSection Y) x) =ᵐ[
+50934:             actualStageMeasure Y]
+50935:         (fun x : QYM.FullCertification.P2IntrinsicTruncatedQuotientExtension.X Y =>
+50936:           distinguishedInverseEtaQuotientSection
+50937:             (x : Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.GammaTwoQuotient)) := by
+50938:   exact ⟨actualStageMeasure_univ_pos_of_one_lt_level hY,
+50939:     actualStageDistinguishedInverseEtaSection_ne_zero hY,
+50940:     actualStageDistinguishedInverseEtaSection_bundleValue_ae Y⟩
+50941: 
+50942: end QYM.FullCertification.P3ActualStageL2SectionsExtension
+50943: 
+50944: namespace P3ActualStageL2SectionsAxiomAudit
+50945: 
+50946: #print axioms QYM.FullCertification.P3ActualStageL2SectionsExtension.actualStageMeasure_univ_lt_top
+50947: #print axioms QYM.FullCertification.P3ActualStageL2SectionsExtension.actualStageMeasure_univ_pos_of_one_lt_level
+50948: #print axioms QYM.FullCertification.P3ActualStageL2SectionsExtension.actualStageMeasure_univ_pos_of_two_le_level
+50949: #print axioms QYM.FullCertification.P3ActualStageL2SectionsExtension.actualStageBundleValue_aemeasurable
+50950: #print axioms QYM.FullCertification.P3ActualStageL2SectionsExtension.actualStagePointwiseHermitian_integrable
+50951: #print axioms QYM.FullCertification.P3ActualStageL2SectionsExtension.actualStagePeterssonInner_eq_integral
+50952: #print axioms QYM.FullCertification.P3ActualStageL2SectionsExtension.quotientSectionToActualStageL2_bundleValue_ae
+50953: #print axioms QYM.FullCertification.P3ActualStageL2SectionsExtension.quotientDistinguishedInverseEtaSection_toActualStageL2
+50954: #print axioms QYM.FullCertification.P3ActualStageL2SectionsExtension.actualStageDistinguishedInverseEtaSection_coordinate_ae
+50955: #print axioms QYM.FullCertification.P3ActualStageL2SectionsExtension.actualStageDistinguishedInverseEtaSection_ne_zero
+50956: #print axioms QYM.FullCertification.P3ActualStageL2SectionsExtension.actualStageInverseEtaL2Certificate
+50957: #print axioms QYM.FullCertification.P3ActualStageL2SectionsExtension.actualStageInverseEtaL2PositiveCertificate
+50958: 
+50959: end P3ActualStageL2SectionsAxiomAudit
+50960: 
+50961: 
+50962: open Function Set Topology MeasureTheory
+50963: open scoped ENNReal InnerProductSpace
+50964: 
+50965: namespace QYM.FullCertification.P14ActualStageL2MapsExtension
+50966: 
+50967: 
+50968: 
+50969: 
+===== PrimalitySheafVerification/QYM.lean:51558-52015 =====
+51558: 
+51559: namespace QYM.FullCertification.P3InverseEtaSmoothTrivializationClosureExtension
+51560: 
+51561: 
+51562: 
+51563: 
+51564: 
+51565: 
+51566: 
+51567: 
+51568: /-!
+51569: # P3 closure: a transported smooth structure on the inverse-eta total space
+51570: 
+51571: This file closes the smooth-trivialization residual by making the atlas on the
+51572: total space explicit.  The construction is deliberately a *transported*
+51573: atlas.  First the global homeomorphism
+51574: 
+51575: `P3.inverseEtaTotalTrivializationHomeomorph :
+51576:     P3.InverseEtaTotal ≃ₜ P3.InverseEtaBase × ℂ`
+51577: 
+51578: is installed as a one-chart atlas with intermediate model
+51579: `P3.InverseEtaBase × ℂ`.  This is then composed, using
+51580: `ChartedSpace.comp`, with the product of the P2 smooth quotient atlas and the
+51581: standard complex atlas.  Therefore the preferred chart on the total space is
+51582: literally the global trivialization followed by the preferred product chart.
+51583: 
+51584: The two smoothness proofs below are not assumptions.  In the corresponding
+51585: extended charts their coordinate representatives agree locally with the
+51586: identity; `writtenInExtChartAt_chartAt_comp` and its inverse version are the
+51587: exact Mathlib lemmas which express those identities.
+51588: 
+51589: Semantic boundary: no theorem in this file claims that this transported
+51590: atlas agrees with any independently proposed smooth atlas on the quotient
+51591: total space.  Such a compatibility theorem would be a separate result.
+51592: -/
+51593: 
+51594: /-! ## 1. The unconditional P2 base atlas -/
+51595: 
+51596: /-- The inverse-eta base is definitionally the effective `Gamma(2)` quotient
+51597: constructed in P2. -/
+51598: abbrev InverseEtaBase := QYM.FullCertification.P3InverseEtaQuotientBundleExtension.InverseEtaBase
+51599: 
+51600: /-- The actual inverse-eta orbit-quotient total space. -/
+51601: abbrev InverseEtaTotal := QYM.FullCertification.P3InverseEtaQuotientBundleExtension.InverseEtaTotal
+51602: 
+51603: /-- The P2 all-covering-sheets atlas before composition with the standard
+51604: complex atlas of the upper half-plane. -/
+51605: noncomputable def inverseEtaBaseChartedSpaceH :
+51606:     ChartedSpace ℍ InverseEtaBase :=
+51607:   QYM.FullCertification.P2SmoothQuotientAtlasExtension.allCoveringSheetsChartedSpaceH
+51608: 
+51609: /-- The chosen complex smooth atlas on the inverse-eta base. -/
+51610: noncomputable def inverseEtaBaseChartedSpaceComplex :
+51611:     ChartedSpace ℂ InverseEtaBase := by
+51612:   letI : ChartedSpace ℍ InverseEtaBase :=
+51613:     inverseEtaBaseChartedSpaceH
+51614:   exact ChartedSpace.comp ℂ ℍ InverseEtaBase
+51615: 
+51616: /-- The chosen P2 base atlas has the ordinary smooth structure groupoid. -/
+51617: theorem inverseEtaBase_hasGroupoid :
+51618:     letI : ChartedSpace ℍ InverseEtaBase :=
+51619:       inverseEtaBaseChartedSpaceH
+51620:     letI : HasGroupoid InverseEtaBase
+51621:         QYM.FullCertification.P2SmoothQuotientAtlasExtension.upperHalfPlaneSmoothGroupoid :=
+51622:       QYM.FullCertification.P2SmoothQuotientAtlasExtension.allCoveringSheets_hasGroupoid
+51623:         QYM.FullCertification.P2SmoothTransitionClosureExtension.smoothTransitionResidual
+51624:     letI : ChartedSpace ℂ InverseEtaBase :=
+51625:       ChartedSpace.comp ℂ ℍ InverseEtaBase
+51626:     HasGroupoid InverseEtaBase
+51627:       (contDiffGroupoid ∞ 𝓘(ℂ)) :=
+51628:   QYM.FullCertification.P2SmoothTransitionClosureExtension.allCoveringSheets_hasComplexGroupoid
+51629: 
+51630: /-- The chosen P2 base atlas is an unconditional complex smooth manifold. -/
+51631: theorem inverseEtaBase_isManifold :
+51632:     letI : ChartedSpace ℍ InverseEtaBase :=
+51633:       inverseEtaBaseChartedSpaceH
+51634:     letI : HasGroupoid InverseEtaBase
+51635:         QYM.FullCertification.P2SmoothQuotientAtlasExtension.upperHalfPlaneSmoothGroupoid :=
+51636:       QYM.FullCertification.P2SmoothQuotientAtlasExtension.allCoveringSheets_hasGroupoid
+51637:         QYM.FullCertification.P2SmoothTransitionClosureExtension.smoothTransitionResidual
+51638:     letI : ChartedSpace ℂ InverseEtaBase :=
+51639:       ChartedSpace.comp ℂ ℍ InverseEtaBase
+51640:     IsManifold 𝓘(ℂ) ∞ InverseEtaBase :=
+51641:   QYM.FullCertification.P2SmoothTransitionClosureExtension.gammaTwoQuotient_isManifold
+51642: 
+51643: /-! ## 2. The explicitly transported atlas on the total space -/
+51644: 
+51645: /-- The global trivialization, regarded as the unique intermediate chart.
+51646: Its source is all of the actual quotient total space. -/
+51647: noncomputable def inverseEtaTotalSingletonProductChartedSpace :
+51648:     ChartedSpace (InverseEtaBase × ℂ) InverseEtaTotal :=
+51649:   QYM.FullCertification.P3InverseEtaQuotientBundleExtension.inverseEtaTotalTrivializationHomeomorph.toOpenPartialHomeomorph
+51650:     |>.singletonChartedSpace (by simp)
+51651: 
+51652: /-- Compose the one-chart product atlas with the chosen product complex
+51653: atlas.  This is the transported smooth atlas used throughout this file. -/
+51654: noncomputable def inverseEtaTotalTransportedChartedSpace :
+51655:     ChartedSpace (ModelProd ℂ ℂ) InverseEtaTotal := by
+51656:   letI : ChartedSpace ℂ InverseEtaBase :=
+51657:     inverseEtaBaseChartedSpaceComplex
+51658:   letI : ChartedSpace (InverseEtaBase × ℂ) InverseEtaTotal :=
+51659:     inverseEtaTotalSingletonProductChartedSpace
+51660:   exact ChartedSpace.comp
+51661:     (ModelProd ℂ ℂ) (InverseEtaBase × ℂ) InverseEtaTotal
+51662: 
+51663: /-- The intermediate preferred chart is exactly the global homeomorphism. -/
+51664: @[simp] theorem inverseEtaTotalSingletonProduct_chartAt
+51665:     (u : InverseEtaTotal) :
+51666:     @chartAt (InverseEtaBase × ℂ) _ InverseEtaTotal _
+51667:         inverseEtaTotalSingletonProductChartedSpace u =
+51668:       QYM.FullCertification.P3InverseEtaQuotientBundleExtension.inverseEtaTotalTrivializationHomeomorph.toOpenPartialHomeomorph :=
+51669:   rfl
+51670: 
+51671: /-- Exact preferred-chart formula for the transported atlas. -/
+51672: theorem inverseEtaTotalTransported_chartAt
+51673:     (u : InverseEtaTotal) :
+51674:     letI : ChartedSpace ℂ InverseEtaBase :=
+51675:       inverseEtaBaseChartedSpaceComplex
+51676:     @chartAt (ModelProd ℂ ℂ) _ InverseEtaTotal _
+51677:         inverseEtaTotalTransportedChartedSpace u =
+51678:       QYM.FullCertification.P3InverseEtaQuotientBundleExtension.inverseEtaTotalTrivializationHomeomorph.toOpenPartialHomeomorph.trans
+51679:         (chartAt (ModelProd ℂ ℂ)
+51680:           (QYM.FullCertification.P3InverseEtaQuotientBundleExtension.inverseEtaTotalTrivializationHomeomorph u)) := by
+51681:   letI : ChartedSpace ℂ InverseEtaBase :=
+51682:     inverseEtaBaseChartedSpaceComplex
+51683:   letI : ChartedSpace (InverseEtaBase × ℂ) InverseEtaTotal :=
+51684:     inverseEtaTotalSingletonProductChartedSpace
+51685:   rfl
+51686: 
+51687: /-- The target of a transported extended chart is exactly the target of the
+51688: corresponding product extended chart.  The extra intermediate chart imposes
+51689: no restriction because it is a global homeomorphism. -/
+51690: theorem inverseEtaTotalTransported_extChartAt_target
+51691:     (u : InverseEtaTotal) :
+51692:     letI : ChartedSpace ℂ InverseEtaBase :=
+51693:       inverseEtaBaseChartedSpaceComplex
+51694:     letI : ChartedSpace (ModelProd ℂ ℂ) InverseEtaTotal :=
+51695:       inverseEtaTotalTransportedChartedSpace
+51696:     (extChartAt (𝓘(ℂ).prod 𝓘(ℂ)) u).target =
+51697:       (extChartAt (𝓘(ℂ).prod 𝓘(ℂ))
+51698:         (QYM.FullCertification.P3InverseEtaQuotientBundleExtension.inverseEtaTotalTrivializationHomeomorph u)).target := by
+51699:   letI : ChartedSpace ℂ InverseEtaBase :=
+51700:     inverseEtaBaseChartedSpaceComplex
+51701:   letI : ChartedSpace (InverseEtaBase × ℂ) InverseEtaTotal :=
+51702:     inverseEtaTotalSingletonProductChartedSpace
+51703:   letI : ChartedSpace (ModelProd ℂ ℂ) InverseEtaTotal :=
+51704:     ChartedSpace.comp
+51705:       (ModelProd ℂ ℂ) (InverseEtaBase × ℂ) InverseEtaTotal
+51706:   rw [extChartAt_comp]
+51707:   simp only [PartialEquiv.trans_target,
+51708:     Homeomorph.toOpenPartialHomeomorph_target,
+51709:     preimage_univ, inter_univ]
+51710: 
+51711: /-! ## 3. The forward and inverse coordinate identities -/
+51712: 
+51713: /-- On the target of every transported extended chart, the forward global
+51714: trivialization is represented by the identity map. -/
+51715: theorem inverseEta_forward_writtenInExtChartAt_eq_id
+51716:     (u : InverseEtaTotal) {z : ℂ × ℂ}
+51717:     (hz :
+51718:       letI : ChartedSpace ℂ InverseEtaBase :=
+51719:         inverseEtaBaseChartedSpaceComplex
+51720:       letI : ChartedSpace (ModelProd ℂ ℂ) InverseEtaTotal :=
+51721:         inverseEtaTotalTransportedChartedSpace
+51722:       z ∈ (extChartAt (𝓘(ℂ).prod 𝓘(ℂ)) u).target) :
+51723:     letI : ChartedSpace ℂ InverseEtaBase :=
+51724:       inverseEtaBaseChartedSpaceComplex
+51725:     letI : ChartedSpace (ModelProd ℂ ℂ) InverseEtaTotal :=
+51726:       inverseEtaTotalTransportedChartedSpace
+51727:     writtenInExtChartAt (𝓘(ℂ).prod 𝓘(ℂ))
+51728:         (𝓘(ℂ).prod 𝓘(ℂ)) u
+51729:         QYM.FullCertification.P3InverseEtaQuotientBundleExtension.inverseEtaTotalTrivializationHomeomorph z = z := by
+51730:   letI : ChartedSpace ℂ InverseEtaBase :=
+51731:     inverseEtaBaseChartedSpaceComplex
+51732:   letI : ChartedSpace (InverseEtaBase × ℂ) InverseEtaTotal :=
+51733:     inverseEtaTotalSingletonProductChartedSpace
+51734:   letI : ChartedSpace (ModelProd ℂ ℂ) InverseEtaTotal :=
+51735:     ChartedSpace.comp
+51736:       (ModelProd ℂ ℂ) (InverseEtaBase × ℂ) InverseEtaTotal
+51737:   exact writtenInExtChartAt_chartAt_comp u hz
+51738: 
+51739: /-- On the same chart target, the inverse global trivialization is also
+51740: represented by the identity map. -/
+51741: theorem inverseEta_inverse_writtenInExtChartAt_eq_id
+51742:     (u : InverseEtaTotal) {z : ℂ × ℂ}
+51743:     (hz :
+51744:       letI : ChartedSpace ℂ InverseEtaBase :=
+51745:         inverseEtaBaseChartedSpaceComplex
+51746:       letI : ChartedSpace (ModelProd ℂ ℂ) InverseEtaTotal :=
+51747:         inverseEtaTotalTransportedChartedSpace
+51748:       z ∈ (extChartAt (𝓘(ℂ).prod 𝓘(ℂ)) u).target) :
+51749:     letI : ChartedSpace ℂ InverseEtaBase :=
+51750:       inverseEtaBaseChartedSpaceComplex
+51751:     letI : ChartedSpace (ModelProd ℂ ℂ) InverseEtaTotal :=
+51752:       inverseEtaTotalTransportedChartedSpace
+51753:     writtenInExtChartAt (𝓘(ℂ).prod 𝓘(ℂ))
+51754:         (𝓘(ℂ).prod 𝓘(ℂ))
+51755:         (QYM.FullCertification.P3InverseEtaQuotientBundleExtension.inverseEtaTotalTrivializationHomeomorph u)
+51756:         QYM.FullCertification.P3InverseEtaQuotientBundleExtension.inverseEtaTotalTrivializationHomeomorph.symm z = z := by
+51757:   letI : ChartedSpace ℂ InverseEtaBase :=
+51758:     inverseEtaBaseChartedSpaceComplex
+51759:   letI : ChartedSpace (InverseEtaBase × ℂ) InverseEtaTotal :=
+51760:     inverseEtaTotalSingletonProductChartedSpace
+51761:   letI : ChartedSpace (ModelProd ℂ ℂ) InverseEtaTotal :=
+51762:     ChartedSpace.comp
+51763:       (ModelProd ℂ ℂ) (InverseEtaBase × ℂ) InverseEtaTotal
+51764:   exact writtenInExtChartAt_chartAt_symm_comp u hz
+51765: 
+51766: /-! ## 4. Unconditional smoothness and the residual inhabitant -/
+51767: 
+51768: /-- The forward global trivialization is smooth for the transported atlas. -/
+51769: theorem inverseEtaTotalTrivialization_contMDiff :
+51770:     letI : ChartedSpace ℂ InverseEtaBase :=
+51771:       inverseEtaBaseChartedSpaceComplex
+51772:     letI : ChartedSpace (ModelProd ℂ ℂ) InverseEtaTotal :=
+51773:       inverseEtaTotalTransportedChartedSpace
+51774:     ContMDiff (𝓘(ℂ).prod 𝓘(ℂ)) (𝓘(ℂ).prod 𝓘(ℂ)) ∞
+51775:       QYM.FullCertification.P3InverseEtaQuotientBundleExtension.inverseEtaTotalTrivializationHomeomorph := by
+51776:   letI : ChartedSpace ℂ InverseEtaBase :=
+51777:     inverseEtaBaseChartedSpaceComplex
+51778:   letI : ChartedSpace (ModelProd ℂ ℂ) InverseEtaTotal :=
+51779:     inverseEtaTotalTransportedChartedSpace
+51780:   intro u
+51781:   rw [contMDiffAt_iff]
+51782:   refine
+51783:     ⟨QYM.FullCertification.P3InverseEtaQuotientBundleExtension.inverseEtaTotalTrivializationHomeomorph.continuous.continuousAt,
+51784:       ?_⟩
+51785:   apply contDiffWithinAt_id.congr_of_eventuallyEq
+51786:   · filter_upwards
+51787:       [extChartAt_target_mem_nhdsWithin u] with z hz
+51788:     exact inverseEta_forward_writtenInExtChartAt_eq_id u hz
+51789:   · exact inverseEta_forward_writtenInExtChartAt_eq_id u (by simp)
+51790: 
+51791: /-- The inverse global trivialization is smooth for the transported atlas. -/
+51792: theorem inverseEtaTotalTrivialization_symm_contMDiff :
+51793:     letI : ChartedSpace ℂ InverseEtaBase :=
+51794:       inverseEtaBaseChartedSpaceComplex
+51795:     letI : ChartedSpace (ModelProd ℂ ℂ) InverseEtaTotal :=
+51796:       inverseEtaTotalTransportedChartedSpace
+51797:     ContMDiff (𝓘(ℂ).prod 𝓘(ℂ)) (𝓘(ℂ).prod 𝓘(ℂ)) ∞
+51798:       QYM.FullCertification.P3InverseEtaQuotientBundleExtension.inverseEtaTotalTrivializationHomeomorph.symm := by
+51799:   letI : ChartedSpace ℂ InverseEtaBase :=
+51800:     inverseEtaBaseChartedSpaceComplex
+51801:   letI : ChartedSpace (ModelProd ℂ ℂ) InverseEtaTotal :=
+51802:     inverseEtaTotalTransportedChartedSpace
+51803:   intro p
+51804:   rw [contMDiffAt_iff]
+51805:   refine
+51806:     ⟨QYM.FullCertification.P3InverseEtaQuotientBundleExtension.inverseEtaTotalTrivializationHomeomorph.symm.continuous.continuousAt,
+51807:       ?_⟩
+51808:   let u : InverseEtaTotal :=
+51809:     QYM.FullCertification.P3InverseEtaQuotientBundleExtension.inverseEtaTotalTrivializationHomeomorph.symm p
+51810:   have hup : QYM.FullCertification.P3InverseEtaQuotientBundleExtension.inverseEtaTotalTrivializationHomeomorph u = p :=
+51811:     QYM.FullCertification.P3InverseEtaQuotientBundleExtension.inverseEtaTotalTrivializationHomeomorph.apply_symm_apply p
+51812:   have htarget :
+51813:       (extChartAt (𝓘(ℂ).prod 𝓘(ℂ)) u).target =
+51814:         (extChartAt (𝓘(ℂ).prod 𝓘(ℂ)) p).target := by
+51815:     simpa only [hup] using
+51816:       inverseEtaTotalTransported_extChartAt_target u
+51817:   apply contDiffWithinAt_id.congr_of_eventuallyEq
+51818:   · filter_upwards
+51819:       [extChartAt_target_mem_nhdsWithin p] with z hz
+51820:     have hzu : z ∈
+51821:         (extChartAt (𝓘(ℂ).prod 𝓘(ℂ)) u).target := by
+51822:       rwa [htarget]
+51823:     simpa only [u, hup] using
+51824:       inverseEta_inverse_writtenInExtChartAt_eq_id u hzu
+51825:   · have hzu : extChartAt (𝓘(ℂ).prod 𝓘(ℂ)) p p ∈
+51826:         (extChartAt (𝓘(ℂ).prod 𝓘(ℂ)) u).target := by
+51827:       rw [htarget]
+51828:       simp
+51829:     simpa only [u, hup] using
+51830:       inverseEta_inverse_writtenInExtChartAt_eq_id u hzu
+51831: 
+51832: /-- The residual left by P3 is unconditionally inhabited once its total
+51833: space is equipped with the explicitly transported atlas above. -/
+51834: theorem inverseEtaSmoothGlobalTrivializationResidual :
+51835:     letI : ChartedSpace ℂ InverseEtaBase :=
+51836:       inverseEtaBaseChartedSpaceComplex
+51837:     letI : ChartedSpace (ModelProd ℂ ℂ) InverseEtaTotal :=
+51838:       inverseEtaTotalTransportedChartedSpace
+51839:     QYM.FullCertification.P3InverseEtaQuotientBundleExtension.InverseEtaSmoothGlobalTrivializationResidual :=
+51840:   ⟨inverseEtaTotalTrivialization_contMDiff,
+51841:     inverseEtaTotalTrivialization_symm_contMDiff⟩
+51842: 
+51843: /-- The actual quotient total space is smoothly equivalent to the trivial
+51844: product for the chosen transported atlas. -/
+51845: noncomputable def inverseEtaTotalTrivializationDiffeomorph :
+51846:     letI : ChartedSpace ℂ InverseEtaBase :=
+51847:       inverseEtaBaseChartedSpaceComplex
+51848:     letI : ChartedSpace (ModelProd ℂ ℂ) InverseEtaTotal :=
+51849:       inverseEtaTotalTransportedChartedSpace
+51850:     InverseEtaTotal ≃ₘ⟮𝓘(ℂ).prod 𝓘(ℂ), 𝓘(ℂ).prod 𝓘(ℂ)⟯
+51851:       (InverseEtaBase × ℂ) where
+51852:   toEquiv := QYM.FullCertification.P3InverseEtaQuotientBundleExtension.inverseEtaTotalTrivializationHomeomorph.toEquiv
+51853:   contMDiff_toFun := inverseEtaTotalTrivialization_contMDiff
+51854:   contMDiff_invFun := inverseEtaTotalTrivialization_symm_contMDiff
+51855: 
+51856: /-! ## 5. Minimal smooth bundle API -/
+51857: 
+51858: /-- The actual quotient projection is smooth for the transported atlas. -/
+51859: theorem inverseEtaProjection_contMDiff :
+51860:     letI : ChartedSpace ℂ InverseEtaBase :=
+51861:       inverseEtaBaseChartedSpaceComplex
+51862:     letI : ChartedSpace (ModelProd ℂ ℂ) InverseEtaTotal :=
+51863:       inverseEtaTotalTransportedChartedSpace
+51864:     ContMDiff (𝓘(ℂ).prod 𝓘(ℂ)) 𝓘(ℂ) ∞
+51865:       QYM.FullCertification.P3InverseEtaQuotientBundleExtension.inverseEtaProjection := by
+51866:   letI : ChartedSpace ℂ InverseEtaBase :=
+51867:     inverseEtaBaseChartedSpaceComplex
+51868:   letI : ChartedSpace (ModelProd ℂ ℂ) InverseEtaTotal :=
+51869:     inverseEtaTotalTransportedChartedSpace
+51870:   simpa only [Function.comp_apply,
+51871:     QYM.FullCertification.P3InverseEtaQuotientBundleExtension.inverseEtaTotalTrivializationHomeomorph_fst] using
+51872:     (contMDiff_fst.comp inverseEtaTotalTrivialization_contMDiff)
+51873: 
+51874: /-- A quotient section together with smoothness for the chosen transported
+51875: atlas.  The section law is inherited from P3's actual quotient-section type. -/
+51876: structure SmoothInverseEtaQuotientSection where
+51877:   toQuotientSection : QYM.FullCertification.P3InverseEtaQuotientBundleExtension.InverseEtaQuotientSection
+51878:   contMDiff_toFun :
+51879:     letI : ChartedSpace ℂ InverseEtaBase :=
+51880:       inverseEtaBaseChartedSpaceComplex
+51881:     letI : ChartedSpace (ModelProd ℂ ℂ) InverseEtaTotal :=
+51882:       inverseEtaTotalTransportedChartedSpace
+51883:     ContMDiff 𝓘(ℂ) (𝓘(ℂ).prod 𝓘(ℂ)) ∞
+51884:       toQuotientSection.toFun
+51885: 
+51886: namespace SmoothInverseEtaQuotientSection
+51887: 
+51888: instance : CoeFun SmoothInverseEtaQuotientSection
+51889:     (fun _ => InverseEtaBase → InverseEtaTotal) :=
+51890:   ⟨fun s => s.toQuotientSection.toFun⟩
+51891: 
+51892: @[simp] theorem projection_apply
+51893:     (s : SmoothInverseEtaQuotientSection) (x : InverseEtaBase) :
+51894:     QYM.FullCertification.P3InverseEtaQuotientBundleExtension.inverseEtaProjection (s x) = x :=
+51895:   s.toQuotientSection.projection_toFun x
+51896: 
+51897: theorem contMDiff (s : SmoothInverseEtaQuotientSection) :
+51898:     letI : ChartedSpace ℂ InverseEtaBase :=
+51899:       inverseEtaBaseChartedSpaceComplex
+51900:     letI : ChartedSpace (ModelProd ℂ ℂ) InverseEtaTotal :=
+51901:       inverseEtaTotalTransportedChartedSpace
+51902:     ContMDiff 𝓘(ℂ) (𝓘(ℂ).prod 𝓘(ℂ)) ∞ s :=
+51903:   s.contMDiff_toFun
+51904: 
+51905: /-- Eta-trivialized fibre coordinates of a smooth quotient section are
+51906: smooth complex-valued functions. -/
+51907: theorem etaCoordinate_contMDiff
+51908:     (s : SmoothInverseEtaQuotientSection) :
+51909:     letI : ChartedSpace ℂ InverseEtaBase :=
+51910:       inverseEtaBaseChartedSpaceComplex
+51911:     letI : ChartedSpace (ModelProd ℂ ℂ) InverseEtaTotal :=
+51912:       inverseEtaTotalTransportedChartedSpace
+51913:     ContMDiff 𝓘(ℂ) 𝓘(ℂ) ∞
+51914:       (fun x : InverseEtaBase =>
+51915:         QYM.FullCertification.P3InverseEtaQuotientBundleExtension.etaTrivializedCoordinate (s x)) := by
+51916:   letI : ChartedSpace ℂ InverseEtaBase :=
+51917:     inverseEtaBaseChartedSpaceComplex
+51918:   letI : ChartedSpace (ModelProd ℂ ℂ) InverseEtaTotal :=
+51919:     inverseEtaTotalTransportedChartedSpace
+51920:   simpa only [Function.comp_apply] using
+51921:     (contMDiff_snd.comp
+51922:       (inverseEtaTotalTrivialization_contMDiff.comp s.contMDiff))
+51923: 
+51924: end SmoothInverseEtaQuotientSection
+51925: 
+51926: /-! ## 6. The distinguished smooth inverse-eta section -/
+51927: 
+51928: /-- The distinguished inverse-eta quotient section becomes `(x, 1)` under
+51929: the global trivialization. -/
+51930: theorem distinguishedInverseEtaSection_trivialization
+51931:     (x : InverseEtaBase) :
+51932:     QYM.FullCertification.P3InverseEtaQuotientBundleExtension.inverseEtaTotalTrivializationHomeomorph
+51933:         (QYM.FullCertification.P3InverseEtaQuotientBundleExtension.covariantToSection QYM.FullCertification.P3InverseEtaQuotientBundleExtension.distinguishedInverseEtaLift x) =
+51934:       (x, 1) := by
+51935:   apply Prod.ext
+51936:   · calc
+51937:       (QYM.FullCertification.P3InverseEtaQuotientBundleExtension.inverseEtaTotalTrivializationHomeomorph
+51938:           (QYM.FullCertification.P3InverseEtaQuotientBundleExtension.covariantToSection QYM.FullCertification.P3InverseEtaQuotientBundleExtension.distinguishedInverseEtaLift x)).1 =
+51939:           QYM.FullCertification.P3InverseEtaQuotientBundleExtension.inverseEtaProjection
+51940:             (QYM.FullCertification.P3InverseEtaQuotientBundleExtension.covariantToSection QYM.FullCertification.P3InverseEtaQuotientBundleExtension.distinguishedInverseEtaLift x) :=
+51941:         QYM.FullCertification.P3InverseEtaQuotientBundleExtension.inverseEtaTotalTrivializationHomeomorph_fst _
+51942:       _ = x :=
+51943:         (QYM.FullCertification.P3InverseEtaQuotientBundleExtension.covariantToSection
+51944:           QYM.FullCertification.P3InverseEtaQuotientBundleExtension.distinguishedInverseEtaLift).projection_toFun x
+51945:   · exact QYM.FullCertification.P3InverseEtaQuotientBundleExtension.distinguishedInverseEtaSection_coordinate x
+51946: 
+51947: /-- Reconstruction of the distinguished section from the constant-one
+51948: product section. -/
+51949: theorem distinguishedInverseEtaSection_eq_symm_prodOne
+51950:     (x : InverseEtaBase) :
+51951:     QYM.FullCertification.P3InverseEtaQuotientBundleExtension.covariantToSection QYM.FullCertification.P3InverseEtaQuotientBundleExtension.distinguishedInverseEtaLift x =
+51952:       QYM.FullCertification.P3InverseEtaQuotientBundleExtension.inverseEtaTotalTrivializationHomeomorph.symm (x, 1) := by
+51953:   apply QYM.FullCertification.P3InverseEtaQuotientBundleExtension.inverseEtaTotalTrivializationHomeomorph.injective
+51954:   rw [QYM.FullCertification.P3InverseEtaQuotientBundleExtension.inverseEtaTotalTrivializationHomeomorph.apply_symm_apply]
+51955:   exact distinguishedInverseEtaSection_trivialization x
+51956: 
+51957: /-- The actual distinguished quotient section is smooth for the transported
+51958: atlas. -/
+51959: theorem distinguishedInverseEtaSection_contMDiff :
+51960:     letI : ChartedSpace ℂ InverseEtaBase :=
+51961:       inverseEtaBaseChartedSpaceComplex
+51962:     letI : ChartedSpace (ModelProd ℂ ℂ) InverseEtaTotal :=
+51963:       inverseEtaTotalTransportedChartedSpace
+51964:     ContMDiff 𝓘(ℂ) (𝓘(ℂ).prod 𝓘(ℂ)) ∞
+51965:       (QYM.FullCertification.P3InverseEtaQuotientBundleExtension.covariantToSection QYM.FullCertification.P3InverseEtaQuotientBundleExtension.distinguishedInverseEtaLift).toFun := by
+51966:   letI : ChartedSpace ℂ InverseEtaBase :=
+51967:     inverseEtaBaseChartedSpaceComplex
+51968:   letI : ChartedSpace (ModelProd ℂ ℂ) InverseEtaTotal :=
+51969:     inverseEtaTotalTransportedChartedSpace
+51970:   have hPair : ContMDiff 𝓘(ℂ) (𝓘(ℂ).prod 𝓘(ℂ)) ∞
+51971:       (fun x : InverseEtaBase => (x, (1 : ℂ))) :=
+51972:     contMDiff_id.prodMk contMDiff_const
+51973:   exact
+51974:     (inverseEtaTotalTrivialization_symm_contMDiff.comp hPair).congr
+51975:       distinguishedInverseEtaSection_eq_symm_prodOne
+51976: 
+51977: /-- The distinguished inverse-eta section as an inhabitant of the smooth
+51978: section API. -/
+51979: noncomputable def distinguishedSmoothInverseEtaQuotientSection :
+51980:     SmoothInverseEtaQuotientSection where
+51981:   toQuotientSection :=
+51982:     QYM.FullCertification.P3InverseEtaQuotientBundleExtension.covariantToSection QYM.FullCertification.P3InverseEtaQuotientBundleExtension.distinguishedInverseEtaLift
+51983:   contMDiff_toFun := distinguishedInverseEtaSection_contMDiff
+51984: 
+51985: /-- Aggregate certificate: the P2 base is smooth, the total atlas is the
+51986: explicit transport, and the global topological trivialization is a genuine
+51987: smooth diffeomorphism. -/
+51988: structure InverseEtaSmoothTrivialBundleCertificate : Prop where
+51989:   baseResidualClosed : QYM.FullCertification.P2SmoothQuotientAtlasExtension.SmoothTransitionResidual
+51990:   smoothResidual :
+51991:     letI : ChartedSpace ℂ InverseEtaBase :=
+51992:       inverseEtaBaseChartedSpaceComplex
+51993:     letI : ChartedSpace (ModelProd ℂ ℂ) InverseEtaTotal :=
+51994:       inverseEtaTotalTransportedChartedSpace
+51995:     QYM.FullCertification.P3InverseEtaQuotientBundleExtension.InverseEtaSmoothGlobalTrivializationResidual
+51996:   projectionSmooth :
+51997:     letI : ChartedSpace ℂ InverseEtaBase :=
+51998:       inverseEtaBaseChartedSpaceComplex
+51999:     letI : ChartedSpace (ModelProd ℂ ℂ) InverseEtaTotal :=
+52000:       inverseEtaTotalTransportedChartedSpace
+52001:     ContMDiff (𝓘(ℂ).prod 𝓘(ℂ)) 𝓘(ℂ) ∞
+52002:       QYM.FullCertification.P3InverseEtaQuotientBundleExtension.inverseEtaProjection
+52003: 
+52004: /-- The smooth trivial-bundle certificate is inhabited only by proved
+52005: producers. -/
+52006: theorem inverseEtaSmoothTrivialBundleCertificate :
+52007:     InverseEtaSmoothTrivialBundleCertificate where
+52008:   baseResidualClosed := QYM.FullCertification.P2SmoothTransitionClosureExtension.smoothTransitionResidual
+52009:   smoothResidual := inverseEtaSmoothGlobalTrivializationResidual
+52010:   projectionSmooth := inverseEtaProjection_contMDiff
+52011: 
+52012: end QYM.FullCertification.P3InverseEtaSmoothTrivializationClosureExtension
+52013: 
+52014: namespace P3InverseEtaSmoothTrivializationClosureAxiomAudit
+52015: 
+===== PrimalitySheafVerification/QYM.lean:52325-52366 =====
+52325:       QYM.FullCertification.P3ActualStageL2SectionsExtension.ActualStageInverseEtaL2Section Y :=
+52326:   ContinuousMap.toLp 2 (QYM.FullCertification.P3ActualStageL2SectionsExtension.actualStageMeasure Y) ℂ
+52327: 
+52328: /-- A continuous coordinate and its `L²` realization agree almost everywhere. -/
+52329: theorem actualStageContinuousToL2_coeFn_ae
+52330:     (Y : ℝ) (f : ActualStageContinuousInverseEtaSection Y) :
+52331:     ((actualStageContinuousToL2 Y f :
+52332:         QYM.FullCertification.P3ActualStageL2SectionsExtension.ActualStageInverseEtaL2Section Y) : QYM.FullCertification.P2IntrinsicTruncatedQuotientExtension.X Y → ℂ) =ᵐ[
+52333:           QYM.FullCertification.P3ActualStageL2SectionsExtension.actualStageMeasure Y]
+52334:       (f : QYM.FullCertification.P2IntrinsicTruncatedQuotientExtension.X Y → ℂ) := by
+52335:   exact ContinuousMap.coeFn_toLp (QYM.FullCertification.P3ActualStageL2SectionsExtension.actualStageMeasure Y) f
+52336: 
+52337: /-- Reconstructing actual quotient-total-space values from the `L²`
+52338: realization recovers the literal fibre reconstruction of the continuous
+52339: coordinate almost everywhere. -/
+52340: theorem actualStageContinuousToL2_bundleValue_ae
+52341:     (Y : ℝ) (f : ActualStageContinuousInverseEtaSection Y) :
+52342:     (fun x : QYM.FullCertification.P2IntrinsicTruncatedQuotientExtension.X Y =>
+52343:       QYM.FullCertification.P3ActualStageL2SectionsExtension.actualStageBundleValue (actualStageContinuousToL2 Y f) x) =ᵐ[
+52344:         QYM.FullCertification.P3ActualStageL2SectionsExtension.actualStageMeasure Y]
+52345:       (fun x : QYM.FullCertification.P2IntrinsicTruncatedQuotientExtension.X Y =>
+52346:         QYM.FullCertification.P3InverseEtaQuotientBundleExtension.totalOfBaseScalar (x : Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.GammaTwoQuotient) (f x)) := by
+52347:   filter_upwards [actualStageContinuousToL2_coeFn_ae Y f] with x hx
+52348:   rw [QYM.FullCertification.P3ActualStageL2SectionsExtension.actualStageBundleValue, hx]
+52349: 
+52350: /-- The actual fibre coordinate of the reconstructed value is the original
+52351: continuous coordinate almost everywhere. -/
+52352: theorem actualStageContinuousToL2_fibreCoordinate_ae
+52353:     (Y : ℝ) (f : ActualStageContinuousInverseEtaSection Y) :
+52354:     (fun x : QYM.FullCertification.P2IntrinsicTruncatedQuotientExtension.X Y =>
+52355:       QYM.FullCertification.P3InverseEtaQuotientBundleExtension.inverseEtaFibreCoordinate
+52356:         (QYM.FullCertification.P3ActualStageL2SectionsExtension.actualStageFibreValue (actualStageContinuousToL2 Y f) x)) =ᵐ[
+52357:           QYM.FullCertification.P3ActualStageL2SectionsExtension.actualStageMeasure Y]
+52358:       (f : QYM.FullCertification.P2IntrinsicTruncatedQuotientExtension.X Y → ℂ) := by
+52359:   filter_upwards [actualStageContinuousToL2_coeFn_ae Y f] with x hx
+52360:   simpa only [QYM.FullCertification.P3ActualStageL2SectionsExtension.actualStageFibreValue_coordinate] using hx
+52361: 
+52362: /-! ## 4. Density, injectivity, and the distinguished section -/
+52363: 
+52364: /-- Continuous actual bundle sections are dense in the concrete stage
+52365: Petersson `L²` space. -/
+52366: theorem actualStageContinuousToL2_denseRange (Y : ℝ) :
+===== PrimalitySheafVerification/QYM.lean:53121-53171 =====
+53121:   apply ContinuousLinearMap.ext_on
+53122:     (s := Set.range (actualStageContinuousPivotEmbedding Y))
+53123:     ((actualStageContinuousPivotEmbedding_denseRange Y).mono
+53124:       Submodule.subset_span)
+53125:   intro x hx
+53126:   rcases hx with ⟨v, rfl⟩
+53127:   simpa only [InnerProductSpace.toDualMap_apply_apply,
+53128:     actualStagePivotToContinuousAntiDual_apply] using
+53129:       congrArg
+53130:         (fun L : ActualStageContinuousFormDomain Y →L[ℂ] ℂ => L v)
+53131:         hEq
+53132: 
+53133: /-! ## 4. Pairing compatibility with the actual Petersson form -/
+53134: 
+53135: theorem actualStagePivotToContinuousAntiDual_eq_petersson
+53136:     (Y : ℝ) (h : ActualStagePivotHilbert Y)
+53137:     (v : ActualStageContinuousFormDomain Y) :
+53138:     actualStagePivotToContinuousAntiDual Y h v =
+53139:       QYM.FullCertification.P3ActualStageL2SectionsExtension.actualStagePeterssonInner h
+53140:         (actualStageContinuousPivotEmbedding Y v) := by
+53141:   rfl
+53142: 
+53143: /-- Aggregate continuous-core pivot certificate. -/
+53144: theorem actualStageContinuousPivotCertificate
+53145:     {Y : ℝ} (hY : 2 ≤ Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.gammaTwoCuspLevel Y) :
+53146:     Function.Injective (actualStageContinuousPivotEmbedding Y) ∧
+53147:       DenseRange (actualStageContinuousPivotEmbedding Y) ∧
+53148:       (actualStageContinuousPivotEmbedding Y).ker = ⊥ ∧
+53149:       Function.Injective (actualStagePivotToContinuousAntiDual Y) ∧
+53150:       (∀ (h : ActualStagePivotHilbert Y)
+53151:           (v : ActualStageContinuousFormDomain Y),
+53152:         actualStagePivotToContinuousAntiDual Y h v =
+53153:           QYM.FullCertification.P3ActualStageL2SectionsExtension.actualStagePeterssonInner h
+53154:             (actualStageContinuousPivotEmbedding Y v)) := by
+53155:   exact
+53156:     ⟨actualStageContinuousPivotEmbedding_injective hY,
+53157:       actualStageContinuousPivotEmbedding_denseRange Y,
+53158:       actualStageContinuousPivotEmbedding_ker_eq_bot hY,
+53159:       actualStagePivotToContinuousAntiDual_injective Y,
+53160:       actualStagePivotToContinuousAntiDual_eq_petersson Y⟩
+53161: 
+53162: end QYM.FullCertification.P6ActualStageContinuousPivotExtension
+53163: 
+53164: namespace P6ActualStageContinuousPivotAxiomAudit
+53165: 
+53166: #print axioms QYM.FullCertification.P6ActualStageContinuousPivotExtension.actualStageContinuousPivotEmbedding_injective
+53167: #print axioms QYM.FullCertification.P6ActualStageContinuousPivotExtension.actualStageContinuousPivotEmbedding_denseRange
+53168: #print axioms QYM.FullCertification.P6ActualStageContinuousPivotExtension.actualStagePivotToContinuousAntiDual_smul
+53169: #print axioms QYM.FullCertification.P6ActualStageContinuousPivotExtension.norm_actualStagePivotToContinuousAntiDual_apply_le
+53170: #print axioms QYM.FullCertification.P6ActualStageContinuousPivotExtension.actualStagePivotToContinuousAntiDual_injective
+53171: #print axioms QYM.FullCertification.P6ActualStageContinuousPivotExtension.actualStageContinuousPivotCertificate
+
+MATCH_COUNT=176

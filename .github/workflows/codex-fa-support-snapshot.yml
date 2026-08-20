@@ -1,0 +1,61 @@
+name: Codex FA support snapshot
+
+on:
+  push:
+    branches:
+      - codex/fa-qym-cleanbuild-final-20260811-fast
+    paths:
+      - .github/workflows/codex-fa-support-snapshot.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  statuses: write
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Inventory support files
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p build-logs/codex-fa-support-snapshot
+          find scripts -maxdepth 1 -type f \
+            \( -name 'fa_d0a3*' -o -name 'fa_full_compile*' -o -name 'fa_full_cumulative*' -o -name 'fa506r2*' \) \
+            -print | sort > build-logs/codex-fa-support-snapshot/files.txt
+          while IFS= read -r f; do
+            sha256sum "$f"
+            wc -c "$f"
+          done < build-logs/codex-fa-support-snapshot/files.txt \
+            > build-logs/codex-fa-support-snapshot/identities.txt
+
+      - name: Upload support snapshot
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-support-snapshot-${{ github.sha }}
+          path: |
+            scripts/fa_d0a3*
+            scripts/fa_full_compile*
+            scripts/fa_full_cumulative*
+            scripts/fa506r2*
+            build-logs/codex-fa-support-snapshot
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Publish snapshot locator
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          gh api --method POST "repos/${GITHUB_REPOSITORY}/statuses/${GITHUB_SHA}" \
+            -f state=success \
+            -f context='codex/fa-support-snapshot' \
+            -f description="support snapshot run ${GITHUB_RUN_ID}" \
+            -f target_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"

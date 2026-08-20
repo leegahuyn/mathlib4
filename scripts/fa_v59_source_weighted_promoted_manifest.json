@@ -1,0 +1,69 @@
+{
+  "schema": "fa-v58-weighted-local-repairs-v1",
+  "status": "PROMOTE_BODY_ONLY_STATIC_DIRECT_LEAN_REQUIRED",
+  "worker_id": "v58-weighted",
+  "cluster_id": "V58-WEIGHTED-NORM-NEGATION-EXACT-TERM",
+  "authority": {
+    "variant": "core_base",
+    "artifact_id": 9220688452,
+    "source_path": "work/v58-artifact-9220688452/Mock2_FunctionalAnalysis-candidate.lean",
+    "source_sha256": "013f64cf5eaaab544629ad02fc2e33e63f90916e9b1e1581d73f2af2e7ba34ba",
+    "source_bytes": 2807163,
+    "source_lines": 62815,
+    "declaration_count": 4416,
+    "diagnostics_path": "work/v58-artifact-9220688452/FULL_DIAGNOSTICS.json",
+    "diagnostics_sha256": "a9ec828f9bbe0226b2bc694f26911cfd84fce016adca411f9bb8df52c6833db1",
+    "fa_log_path": "work/v58-artifact-9220688452/Mock2_FunctionalAnalysis.log",
+    "fa_log_sha256": "8395ab207c12ad32483166ec9a118b4fe1d82a1c772d5cd79d9237563efc9127"
+  },
+  "assignment": {
+    "declaration_index": 4019,
+    "declaration": "norm_discriminantHardStageOperator_sub_graphPotential_le",
+    "authority_diagnostic_ordinal": 6,
+    "location": {
+      "line": 55586,
+      "column": 10
+    },
+    "signature": "Tactic `rewrite` failed: Did not find an occurrence of the pattern",
+    "owner_region_sha256": "b9b7da78961ca8abdbc6b0a9d33c3dfcd05954f154799bf87f046334f834b55b"
+  },
+  "classification": {
+    "root_or_cascade": "OWNER_LOCAL_EXACT_PROOF_TERM_REPAIR",
+    "confidence": "HIGH_STATIC_EXACT_TARGET_AND_HISTORICAL_SAME_BODY_DIRECT_LEAN_REQUIRED",
+    "independent_of_missing_hsplit": true,
+    "reason": "The log prints the fully elaborated local target as exactly norm of the negated operator difference equals norm of that operator difference. The generic rewrite invocation searches for a polymorphic pattern and reports no occurrence, but `norm_neg _` has exactly the required instantiated proposition and was the earlier same-theorem proof shape."
+  },
+  "repairs": [
+    {
+      "id": "V58-WEIGHTED-IDX4019-use-exact-norm-neg-term",
+      "owner": "norm_discriminantHardStageOperator_sub_graphPotential_le",
+      "declaration_index": 4019,
+      "diagnostics": [6],
+      "kind": "body",
+      "classification": "REPLACE-FAILING-REWRITE-WITH-EXACT-PROOF-TERM",
+      "expected_count_in_owner": 1,
+      "global_old_count": 1,
+      "old": "    _ = ‖weightedGraphOperator n discriminantFullCarrierWeightLp -\n        discriminantHardStageOperator N n‖ := by\n      rw [norm_neg]",
+      "new": "    _ = ‖weightedGraphOperator n discriminantFullCarrierWeightLp -\n        discriminantHardStageOperator N n‖ := norm_neg _",
+      "exact_target_from_log": "‖-(weightedGraphOperator n discriminantFullCarrierWeightLp - discriminantHardStageOperator N n)‖ = ‖weightedGraphOperator n discriminantFullCarrierWeightLp - discriminantHardStageOperator N n‖",
+      "theorem_availability": "`norm_neg` is imported and is used earlier in the same authority source; the exact-term form also occurs in the historical weighted proof body.",
+      "proposition_changed": false,
+      "header_changed": false,
+      "comments_or_attributes_changed": false
+    }
+  ],
+  "expected_diagnostic_effect": {
+    "direct_expected_clearance": [6],
+    "not_claimed_here": [7, 8, 9],
+    "reason": "Ordinal 7 is the unavailable idx4018 split-producer cascade. Ordinals 8-9 consume failed idx4019 and must be replayed unchanged only after the producer chain is real."
+  },
+  "promotion_gate": [
+    "Compose only against authority SHA-256 013f64cf5eaaab544629ad02fc2e33e63f90916e9b1e1581d73f2af2e7ba34ba.",
+    "Directly compile after restoring idx4017 and the adjacent idx4018 producer; require ordinal 6 to disappear with no replacement diagnostic.",
+    "Require Mock2 exit 0, Mock2_Advanced exit 0, and full Mock2_FunctionalAnalysis maxErrors=2000 exit 0 with no cap sentinel.",
+    "Require all 4416 declaration headers/order, comments, and attributes unchanged, executable trust-six zero, and synthetic declaration-uses-sorry warnings zero."
+  ],
+  "direct_lean_verified_by_worker": false,
+  "clean_build_claimed": false,
+  "lean_lake_git_github_network_invoked_by_worker": false
+}

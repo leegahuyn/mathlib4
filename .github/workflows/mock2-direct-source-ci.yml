@@ -1,0 +1,254 @@
+name: Mock2 Direct Source Clean CI
+
+on:
+  pull_request:
+    branches: [master]
+    paths:
+      - 'PrimalitySheafVerification/Mock2.lean'
+      - 'PrimalitySheafVerification/QYM.lean'
+      - '.github/workflows/mock2-direct-source-ci.yml'
+      - '.github/workflows/primality-sheaf-repair-matrix.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mock2-direct-source-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Direct-source Mock2
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+
+    steps:
+      - name: Checkout triggering head commit
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 1
+
+      - name: Select checked-in source without runtime repair
+        shell: bash
+        run: |
+          set -euo pipefail
+          logdir='build-logs/Mock2-direct'
+          mkdir -p "$logdir"
+          git diff --exit-code -- PrimalitySheafVerification/Mock2.lean
+          grep -Fq 'theorem standaloneZeroProfile_certificate' \
+            PrimalitySheafVerification/Mock2.lean
+          grep -Fq 'theorem checklist_9_standalone_zeroProfile' \
+            PrimalitySheafVerification/Mock2.lean
+          grep -Fq 'theorem canonicalZeroBridgeModel_certificate' \
+            PrimalitySheafVerification/Mock2.lean
+          grep -Fq 'theorem certificate : Certificate where' \
+            PrimalitySheafVerification/Mock2.lean
+          grep -Fq 'theorem staticAcceptance_certificate' \
+            PrimalitySheafVerification/Mock2.lean
+          cp PrimalitySheafVerification/Mock2.lean "$logdir/repaired-source.lean"
+          cmp -s PrimalitySheafVerification/Mock2.lean "$logdir/repaired-source.lean"
+          git rev-parse HEAD > "$logdir/head-sha.txt"
+          git rev-parse HEAD:PrimalitySheafVerification/Mock2.lean \
+            > "$logdir/blob-sha.txt"
+          printf '%s\n' \
+            'PASS: checked-in Mock2.lean selected directly' \
+            'PASS: public proof certificate declarations remain theorems' \
+            'PASS: no repair script or source mutation executed' \
+            > "$logdir/source-selection.txt"
+
+      - name: Set up Lean
+        uses: leanprover/lean-action@38fbc41a8c28c4cbaec22d7f7de508ec2e7c0dd9
+        with:
+          build: false
+          test: false
+          lint: false
+
+      - name: Restore Mathlib cache
+        run: lake exe cache get
+
+      - name: Compile checked-in Mock2 twice from clean project artifacts
+        shell: bash
+        run: |
+          set +e
+          outdir='.lake/build/lib/lean/PrimalitySheafVerification'
+          logdir='build-logs/Mock2-direct'
+          mkdir -p "$outdir" "$logdir"
+          : > "$logdir/Mock2.log"
+
+          for pass in 1 2; do
+            rm -f \
+              "$outdir/Mock2.olean" \
+              "$outdir/Mock2.ilean" \
+              "$outdir/Mock2.olean.private"
+            echo "===== Mock2 direct clean compile pass ${pass}/2 =====" \
+              | tee -a "$logdir/Mock2.log"
+            lake env lean PrimalitySheafVerification/Mock2.lean \
+              -o "$outdir/Mock2.olean" \
+              -i "$outdir/Mock2.ilean" 2>&1 \
+              | tee "$logdir/Mock2-pass${pass}.log" \
+              | tee -a "$logdir/Mock2.log"
+            code=${PIPESTATUS[0]}
+            echo "$code" > "$logdir/exit-code-pass${pass}.txt"
+            if [[ "$code" -ne 0 ]]; then
+              echo "$code" > "$logdir/exit-code.txt"
+              exit "$code"
+            fi
+            test -s "$outdir/Mock2.olean"
+            test -s "$outdir/Mock2.ilean"
+          done
+
+          echo 0 > "$logdir/exit-code.txt"
+          grep -c 'error:' "$logdir/Mock2-pass2.log" \
+            > "$logdir/error-count.txt" || true
+          grep -c 'warning:' "$logdir/Mock2-pass2.log" \
+            > "$logdir/warning-count.txt" || true
+          sha256sum \
+            PrimalitySheafVerification/Mock2.lean \
+            "$outdir/Mock2.olean" \
+            "$outdir/Mock2.ilean" \
+            > "$logdir/sha256.txt"
+          cp "$outdir/Mock2.olean" "$logdir/Mock2.olean"
+          cp "$outdir/Mock2.ilean" "$logdir/Mock2.ilean"
+          cmp -s PrimalitySheafVerification/Mock2.lean "$logdir/repaired-source.lean"
+          git diff --exit-code -- PrimalitySheafVerification/Mock2.lean
+
+      - name: Audit Mock2 proof trust and printed axioms
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          source_path = Path('PrimalitySheafVerification/Mock2.lean')
+          log_path = Path('build-logs/Mock2-direct/Mock2-pass2.log')
+          source = source_path.read_text(encoding='utf-8')
+          log = log_path.read_text(encoding='utf-8', errors='replace')
+
+          out = []
+          i = 0
+          block_depth = 0
+          in_string = False
+          escaped = False
+          while i < len(source):
+              if block_depth:
+                  if source.startswith('/-', i):
+                      block_depth += 1
+                      out.extend('  ')
+                      i += 2
+                  elif source.startswith('-/', i):
+                      block_depth -= 1
+                      out.extend('  ')
+                      i += 2
+                  else:
+                      out.append('\n' if source[i] == '\n' else ' ')
+                      i += 1
+                  continue
+              if in_string:
+                  ch = source[i]
+                  out.append('\n' if ch == '\n' else ' ')
+                  if escaped:
+                      escaped = False
+                  elif ch == '\\':
+                      escaped = True
+                  elif ch == '"':
+                      in_string = False
+                  i += 1
+                  continue
+              if source.startswith('--', i):
+                  while i < len(source) and source[i] != '\n':
+                      out.append(' ')
+                      i += 1
+                  continue
+              if source.startswith('/-', i):
+                  block_depth = 1
+                  out.extend('  ')
+                  i += 2
+                  continue
+              if source[i] == '"':
+                  in_string = True
+                  out.append(' ')
+                  i += 1
+                  continue
+              out.append(source[i])
+              i += 1
+
+          code = ''.join(out)
+          patterns = {
+              'sorry': re.compile(r'\bsorry\b'),
+              'admit': re.compile(r'\badmit\b'),
+              'axiom': re.compile(r'^\s*axiom\b', re.M),
+              'unsafe': re.compile(r'\bunsafe\b'),
+              'native_decide': re.compile(r'\bnative_decide\b'),
+              'by_contra!': re.compile(r'\bby_contra!\b'),
+              'Lean.ofReduceBool': re.compile(r'\bLean\.ofReduceBool\b'),
+          }
+          counts = {}
+          findings = []
+          for label, pattern in patterns.items():
+              matches = list(pattern.finditer(code))
+              counts[label] = len(matches)
+              for match in matches:
+                  line = code.count('\n', 0, match.start()) + 1
+                  findings.append((label, line))
+
+          allowed = {'propext', 'Classical.choice', 'Quot.sound'}
+          used = set()
+          for block in re.findall(r'depends on axioms:\s*\[([^\]]*)\]', log, flags=re.S):
+              for item in block.replace('\n', ' ').split(','):
+                  item = item.strip()
+                  if item:
+                      used.add(item)
+          unexpected = sorted(used - allowed)
+          sorry_ax_count = log.count('sorryAx')
+
+          Path('build-logs/Mock2-direct/trust-audit.txt').write_text(
+              f'counts={counts}\nfindings={findings}\n', encoding='utf-8')
+          Path('build-logs/Mock2-direct/axiom-audit.txt').write_text(
+              f'allowed={sorted(allowed)}\nused={sorted(used)}\n'
+              f'unexpected={unexpected}\nsorryAx_count={sorry_ax_count}\n',
+              encoding='utf-8')
+          Path('build-logs/Mock2-direct/sorryAx-count.txt').write_text(
+              f'{sorry_ax_count}\n', encoding='utf-8')
+          Path('build-logs/Mock2-direct/user-axiom-count.txt').write_text(
+              f'{len(unexpected)}\n', encoding='utf-8')
+
+          if findings or unexpected or sorry_ax_count:
+              raise SystemExit(
+                  f'trust audit failed: findings={findings}, '
+                  f'unexpected={unexpected}, sorryAx={sorry_ax_count}')
+          PY
+
+      - name: Confirm QYM no longer reports missing Mock2.olean
+        shell: bash
+        run: |
+          set +e
+          outdir='.lake/build/lib/lean/PrimalitySheafVerification'
+          logdir='build-logs/Mock2-direct'
+          test -s "$outdir/Mock2.olean"
+          lake env lean PrimalitySheafVerification/QYM.lean \
+            -o "$outdir/QYM-dependency-check.olean" \
+            -i "$outdir/QYM-dependency-check.ilean" 2>&1 \
+            | tee "$logdir/QYM-dependency-check.log"
+          code=${PIPESTATUS[0]}
+          echo "$code" > "$logdir/QYM-dependency-check.exit-code.txt"
+          if grep -Eq "Mock2\.olean.*does not exist|object file .*Mock2\.olean.*does not exist" \
+              "$logdir/QYM-dependency-check.log"; then
+            echo 'FAIL: QYM still reports missing Mock2.olean' \
+              | tee "$logdir/QYM-missing-Mock2-status.txt"
+            exit 1
+          fi
+          echo 'PASS: QYM no longer reports missing Mock2.olean' \
+            | tee "$logdir/QYM-missing-Mock2-status.txt"
+          exit 0
+
+      - name: Upload direct-source proof artifact
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: mock2-direct-source-proof
+          path: build-logs/Mock2-direct
+          if-no-files-found: error
+          retention-days: 30

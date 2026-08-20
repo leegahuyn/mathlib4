@@ -1,0 +1,77 @@
+{
+  "baseline_artifact_id": 9369764112,
+  "baseline_error_headers": 78,
+  "baseline_job_id": 96099391097,
+  "baseline_qym_blob": "029620c5d7085dbc7a11c8eaaa485a67fe9312fe",
+  "baseline_qym_sha256": "1a1abeeb248031cd91577034329944caab08fd9f9e6c70f7a913c1dd66e0e714",
+  "baseline_run_id": 32262658070,
+  "baseline_warning_headers": 358,
+  "branch": "gpt/qym-gb78-authority-v12-repair-20260820",
+  "candidate_qym_blob": "c6e8883353b350f22b7f48d955fc5cfa4e61f88f",
+  "candidate_qym_sha256": "b6f0126c27dfc08b5f81c306a7140f9531fcc3d6ca6b75dd8abbd71101d458fd",
+  "error_codes": {
+    "lean.synthInstanceFailed": 8,
+    "uncoded": 69
+  },
+  "error_headers": 77,
+  "exit": 1,
+  "first_blocker_advanced": true,
+  "first_error": {
+    "code": null,
+    "column": 18,
+    "file": "PrimalitySheafVerification/QYM.lean",
+    "line": 44769,
+    "message": "unsolved goals",
+    "severity": "error"
+  },
+  "forbidden_after": {
+    "Lean.ofReduceBool": 0,
+    "admit": 0,
+    "global_axiom": 0,
+    "maxHeartbeats_zero": 0,
+    "native_decide": 0,
+    "sorry": 0,
+    "unsafe": 0
+  },
+  "full_compile_executed": true,
+  "head_sha": "152b48db09f32d7a88fc88c7fb88f9bfb2e3830a",
+  "last_error": {
+    "code": null,
+    "column": 78,
+    "file": "PrimalitySheafVerification/QYM.lean",
+    "line": 59270,
+    "message": "unsolved goals",
+    "severity": "error"
+  },
+  "local_gate": {
+    "candidate_qym_blob": "c6e8883353b350f22b7f48d955fc5cfa4e61f88f",
+    "candidate_qym_sha256": "b6f0126c27dfc08b5f81c306a7140f9531fcc3d6ca6b75dd8abbd71101d458fd",
+    "error_headers": 2,
+    "exit": 1,
+    "first_error": {
+      "code": null,
+      "column": 18,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 44769,
+      "message": "unsolved goals",
+      "severity": "error"
+    },
+    "gate_label": "C9 theorem start",
+    "gate_line": 44766,
+    "gate_pass": true,
+    "log_sha256": "aaf0545c8478046d39d85c38aa62141150ddf29b814ec487dc297e3ef6cea691",
+    "schema": "qym-exact-gb78-v12-local-gate-v1",
+    "variant": "c8_structural_rw",
+    "warning_headers": 232
+  },
+  "log_sha256": "9e99e02d8e6a3dad73f95b5ec487e0e428b2f76e72e58de810da7e711e796891",
+  "panic_lines": 0,
+  "patch_candidate_blob": "c6e8883353b350f22b7f48d955fc5cfa4e61f88f",
+  "patch_candidate_sha256": "b6f0126c27dfc08b5f81c306a7140f9531fcc3d6ca6b75dd8abbd71101d458fd",
+  "run_id": 32273170823,
+  "schema": "qym-exact-gb78-authority-v12-result-v1",
+  "semantic_pass": false,
+  "strict_improvement": true,
+  "variant": "c8_structural_rw",
+  "warning_headers": 360
+}

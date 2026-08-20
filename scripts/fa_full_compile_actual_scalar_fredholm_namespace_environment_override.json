@@ -1,0 +1,42 @@
+{
+  "schema": "fa-environment-fragment-repair-override-v1",
+  "status": "FULL_INVENTORY_ROOTS_CONFIRMED_STATIC_ONLY_UNVERIFIED",
+  "scope": "reopened ActualScalarDiscriminantPDE endpoint namespace only, source lines 54315-54486",
+  "source_sha256": "d0a3decee1c0a7a781d14fdf122e235d71d8f210bb65a894dc4e518821bf03ec",
+  "analysis_note": "coerciveFormEquiv is declared in the nested FredholmBypass.FredholmBypassData namespace. The endpoint reopens ActualScalarDiscriminantPDE and opens only the parent FredholmBypass, which does not expose declarations in its child namespace. Add the precise nested open for this bounded endpoint.",
+  "confirmed_root_selectors": {
+    "diagnostic_ids": ["E0774", "E0775"],
+    "declaration_indices": [4147, 4154],
+    "symbol": "coerciveFormEquiv",
+    "owner_namespace": "FredholmBypass.FredholmBypassData"
+  },
+  "environment_replacement": {
+    "old_fragment": "namespace ActualScalarDiscriminantPDE\n\nopen ComplexLaxMilgram FredholmBypass\nopen ExplicitDiscriminantPotential.FixedPhaseGraphPotential",
+    "new_fragment": "namespace ActualScalarDiscriminantPDE\n\nopen ComplexLaxMilgram FredholmBypass\nopen FredholmBypass.FredholmBypassData\nopen ExplicitDiscriminantPotential.FixedPhaseGraphPotential",
+    "old_sha256": "dcac92bd01b17e153c6cdbb0df0ca6952ff0989d3bb424e948497992ce512834",
+    "new_sha256": "e67c85e9583877336952a5d0708920c96973eb6b7ae3cf327772b7ac3f6b1aff",
+    "old_bytes": 136,
+    "new_bytes": 175,
+    "old_global_count": 1,
+    "new_global_count_before": 0
+  },
+  "standalone_candidate": {
+    "sha256": "c20348acded0c7e260e2f0d253ece17a28f101876990b044fb24ac4fe37159cd",
+    "bytes": 2702291,
+    "splitlines": 60574,
+    "direct_lean_verified": false
+  },
+  "static_validation": {
+    "declaration_sequence_preserved": true,
+    "all_existing_declaration_headers_preserved": true,
+    "documentation_and_comments_preserved": true,
+    "existing_at_attributes_preserved": true,
+    "executable_forbidden_six_zero": true
+  },
+  "local_execution": {
+    "lean": false,
+    "lake": false,
+    "git": false,
+    "github_write": false
+  }
+}

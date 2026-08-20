@@ -1,0 +1,54 @@
+name: Codex FA API probe Fourier basis repr v1
+on:
+  push:
+    branches:
+      - codex/fa-qym-cleanbuild-final-20260811-fast
+    paths:
+      - .github/workflows/codex-fa-api-probe-fourier-basis-repr-v1.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none
+          export PATH="$HOME/.elan/bin:$PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)"
+          lake exe cache get
+      - name: Compile exact Fourier basis normalization probe
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          cat >/tmp/FourierBasisProbe.lean <<'LEAN'
+          import Mathlib.Analysis.Fourier.AddCircleMulti
+          import Mathlib.Analysis.InnerProductSpace.Basic
+          open MeasureTheory
+          attribute [local instance 10000] instMeasureSpaceUnitAddCircle
+          noncomputable section
+          abbrev ProbeTwoTorus := UnitAddTorus (Fin 2)
+          noncomputable abbrev ProbeTwoTorusL2 :=
+            MeasureTheory.Lp ℂ 2 (volume : Measure ProbeTwoTorus)
+          noncomputable def probeBasis :
+              HilbertBasis (Fin 2 → ℤ) ℂ ProbeTwoTorusL2 :=
+            UnitAddTorus.mFourierBasis
+          example (f : ProbeTwoTorusL2) (k : Fin 2 → ℤ) :
+              (probeBasis.repr f k) • probeBasis k =
+                UnitAddTorus.mFourierCoeff f k • UnitAddTorus.mFourierLp 2 k := by
+            simp only [probeBasis]
+            rw [UnitAddTorus.mFourierBasis_repr]
+            simp only [UnitAddTorus.coe_mFourierBasis]
+          LEAN
+          lake env lean /tmp/FourierBasisProbe.lean

@@ -1,0 +1,10 @@
+{
+  "schema": "fa-dynamic-env-nnreal-scope-followup-v1",
+  "status": "STATIC_STAGED_PENDING_DIRECT_LEAN",
+  "base_direct_tested_source_sha256": "d4a9ba6c41d2d4bd656d597a3e85a1c2a240352155a2ba9128f0d43a9bde7109",
+  "environment_replacement": {
+    "id": "intrinsic-cutoff-nnreal-scope",
+    "old_fragment": "open Set Function Topology Filter MeasureTheory Metric\nopen scoped LinearPMap ContDiff\nlocal syntax:max \"nhds[\" term \"]\" term:max : term",
+    "new_fragment": "open Set Function Topology Filter MeasureTheory Metric\nopen scoped LinearPMap ContDiff NNReal\nlocal syntax:max \"nhds[\" term \"]\" term:max : term"
+  }
+}

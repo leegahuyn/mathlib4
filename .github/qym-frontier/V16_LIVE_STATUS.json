@@ -1,0 +1,9 @@
+{
+  "schema": "qym-gb77-fixedorigin-v16-no-improvement-v1",
+  "fixed_origin": "GB77",
+  "fixed_origin_errors": 77,
+  "verified_parent_errors": 76,
+  "run_id": 32287620627,
+  "immutable_gb77_preserved": true,
+  "status": "NO_VERIFIED_RESULT_BELOW_76"
+}

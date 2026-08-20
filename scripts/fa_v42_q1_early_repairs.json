@@ -1,0 +1,165 @@
+{
+  "schema": "fa-v42-declaration-local-repairs-v1",
+  "status": "STATIC_ONLY_DIRECT_LEAN_UNVERIFIED",
+  "variant_base": "with_conditional_bodies",
+  "authority": {
+    "run_id": 31699916923,
+    "head_sha": "6867203e032c9711b47d8c2e1bd74f30d15cbd59",
+    "artifact_id": 9181214334,
+    "artifact_digest": "sha256:bb18b117b461a4fd36746685ce4437d835382989d4b7e1cff87bb6ebbcc9c870",
+    "source_path": "work/v41-run-31699916923/9181214334/Mock2_FunctionalAnalysis-candidate.lean",
+    "source_sha256": "d7e99092e79b26af21cd8c960b8e9c811731e27343757b750b62c53608805937",
+    "source_bytes": 2774362,
+    "source_lines": 62065,
+    "declaration_count": 4416,
+    "diagnostics_path": "work/v41-run-31699916923/9181214334/FULL_DIAGNOSTICS.json",
+    "diagnostics_sha256": "b50357457a8213b1a53ae353c67fd7639334a9db4b5f7a4e61ad9c00b9f07fcf",
+    "raw_log_path": "work/v41-run-31699916923/9181214334/Mock2_FunctionalAnalysis.log",
+    "raw_log_sha256": "dc4370280c35eb1b8565e9776d9e93e42f4bf299b543a4bdaea029f438445530",
+    "diagnostic_count": 110,
+    "declaration_count_with_errors": 72,
+    "max_errors": 2000,
+    "cap_sentinel_present": false
+  },
+  "purpose": "Audit and propose the next header-preserving repairs for every residual root declaration in the fixed Q1 declaration-index interval 3653 through 3830.",
+  "owned_declaration_index_range": [3653, 3830],
+  "owned_declaration_indices": [3653, 3669, 3689, 3690, 3798],
+  "observed_error_ordinals": [1, 2, 3, 4, 5, 6],
+  "root_declarations": [
+    "energyForm_eq_inner_strongPrincipalCore",
+    "integrable_fullPlaneTest_mul_kernel_mul_translate",
+    "cauchySeq_lowerFromSuccCoordinate_of_base_raise_tendsto",
+    "localizedGauge_planarDensity_le_on_cutoffSupport"
+  ],
+  "root_after_parent_declarations": [
+    "jointGraphCoreDensityAt_of_strongCrossAdjoints"
+  ],
+  "cascade_only_declarations": [],
+  "existing_selected_manifest_overlap": {
+    "selected_index_path": "work/v41-run-31699916923/9181214334/SELECTED_MANIFESTS.json",
+    "selected_index_sha256": "5bcb95973890efa0024ec48ff704ab03d7d77f6fb6a72df8596e48246887a1b9",
+    "overlapping_owners": [
+      {
+        "owner": "integrable_fullPlaneTest_mul_kernel_mul_translate",
+        "prior_repair_id": "G1-P02-uncurry-apply-pair",
+        "relation": "prior fragment is already present; V42-Q1-02 is a non-duplicate follow-on that moves the definitional change to the goal"
+      },
+      {
+        "owner": "jointGraphCoreDensityAt_of_strongCrossAdjoints",
+        "prior_repair_id": "G1-P04-package-inner-and-outer-withlp",
+        "relation": "prior nested WithLp construction is already present; V42-Q1-04 only exposes the remaining coercion and composition reductions"
+      }
+    ],
+    "nonoverlapping_owners": [
+      "energyForm_eq_inner_strongPrincipalCore",
+      "cauchySeq_lowerFromSuccCoordinate_of_base_raise_tendsto",
+      "localizedGauge_planarDensity_le_on_cutoffSupport"
+    ]
+  },
+  "header_policy": "NO_HEADER_CHANGES",
+  "trust_policy": {
+    "tokens": ["sorry", "admit", "axiom", "unsafe", "native_decide", "Lean.ofReduceBool"],
+    "required_before": 0,
+    "required_after": 0
+  },
+  "repairs": [
+    {
+      "id": "V42-Q1-01-specialize-after-dependent-index-normalization",
+      "owner": "energyForm_eq_inner_strongPrincipalCore",
+      "declaration_index": 3653,
+      "diagnostics": [1],
+      "kind": "body",
+      "classification": "STAGE_PROBE",
+      "confidence": "medium-dependent-transport-static-only",
+      "expected_count_in_owner": 1,
+      "old": "  have hs :=\n    successorEnergyForm_eq_inner_strongPrincipalCore (n - 1)\n  simpa only [successorGraphCoordinates, transportSuccessorCoordinates,\n    successorIndexEq, sub_add_cancel] using hs\n",
+      "new": "  have hs :\n      ∀ (v u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n),\n        (coordinates n).energyForm v u =\n          inner ℂ (l2Coordinate n v)\n            (l2Coordinate n (strongPrincipalCore n u)) := by\n    simpa only [successorGraphCoordinates, transportSuccessorCoordinates,\n      successorIndexEq, sub_add_cancel] using\n      (successorEnergyForm_eq_inner_strongPrincipalCore (n - 1))\n  exact hs v u\n",
+      "evidence": "The residual term is still universally quantified while the theorem goal is specialized to the current v and u. Normalizing the dependent index at the forall level avoids applying n-indexed arguments to an n-1+1 domain before simplification.",
+      "probe_risk": "Eq.mp transport inside successorGraphCoordinates may still need an explicit proof-irrelevance or cast-normalization lemma."
+    },
+    {
+      "id": "V42-Q1-02-change-uncurry-goal-before-measurability-reuse",
+      "owner": "integrable_fullPlaneTest_mul_kernel_mul_translate",
+      "declaration_index": 3669,
+      "diagnostics": [2],
+      "kind": "body",
+      "classification": "HIGH_CONFIDENCE_STATIC",
+      "confidence": "very-high-definitional-uncurry-and-mul-assoc",
+      "expected_count_in_owner": 1,
+      "supersedes_prior_repair": "G1-P02-uncurry-apply-pair",
+      "old": "    have h := hMeasV.mul hMeasBase\n    change AEStronglyMeasurable\n      (fun p : ℂ × ℂ ↦ v p.1 * (K p.2 * u (p.1 - p.2)))\n      ((volume : Measure ℂ).prod (volume : Measure ℂ)) at h\n    simpa only [Function.uncurry_apply_pair, mul_assoc] using h\n",
+      "new": "    change AEStronglyMeasurable\n      (fun p : ℂ × ℂ ↦ v p.1 * K p.2 * u (p.1 - p.2))\n      ((volume : Measure ℂ).prod (volume : Measure ℂ))\n    simpa only [mul_assoc] using hMeasV.mul hMeasBase\n",
+      "evidence": "The current code changes the reusable hypothesis and leaves Function.uncurry opaque in the goal. Function.uncurry is definitionally the displayed pair lambda, and mul_assoc then aligns it with hMeasV.mul hMeasBase."
+    },
+    {
+      "id": "V42-Q1-03-normalize-zero-square-with-pow-two",
+      "owner": "cauchySeq_lowerFromSuccCoordinate_of_base_raise_tendsto",
+      "declaration_index": 3689,
+      "diagnostics": [3],
+      "kind": "body",
+      "classification": "HIGH_CONFIDENCE_STATIC",
+      "confidence": "high-exact-residual-algebra",
+      "expected_count_in_owner": 1,
+      "old": "    simpa only [Pi.zero_apply, zero_pow, OfNat.ofNat, mul_zero,\n      sub_zero, sub_eq_add_neg] using hModel.congr'\n",
+      "new": "    simpa only [Pi.zero_apply, pow_two, zero_mul, mul_zero, neg_zero,\n      add_zero, sub_zero, sub_eq_add_neg] using hModel.congr'\n",
+      "evidence": "The pointwise congruence has already succeeded. Only the target limit Zero.zero^2 + -(c * Zero.zero^2) remains; pow_two removes the nonzero-exponent side condition that prevented zero_pow from closing it."
+    },
+    {
+      "id": "V42-Q1-04-expose-linear-map-coercion-and-composition",
+      "owner": "jointGraphCoreDensityAt_of_strongCrossAdjoints",
+      "declaration_index": 3690,
+      "diagnostics": [4],
+      "kind": "body",
+      "classification": "HIGH_CONFIDENCE_STATIC_AFTER_PARENT",
+      "confidence": "high-api-confirmed-in-same-artifact",
+      "depends_on": ["cauchySeq_lowerFromSuccCoordinate_of_base_raise_tendsto"],
+      "expected_count_in_owner": 1,
+      "extends_prior_repair": "G1-P04-package-inner-and-outer-withlp",
+      "old": "    simpa only [coe_smoothCoreMap,\n      DefinitionOneSobolev.QuotientHilbertCoordinates.graph,\n      FixedPhaseClosedOperators.successorGraphCoordinates_base,\n      FixedPhaseClosedOperators.successorGraphCoordinates_raised,\n      FixedPhaseClosedOperators.successorGraphCoordinates_lowered,\n      FixedPhaseClosedOperators.reindexedActualLoweredCoordinate_eq_lowerFromSuccCoordinate,\n      baseCoordinate_apply, raiseCoordinate_apply, lowerCoordinate_apply] using hOuter\n",
+      "new": "    simpa only [coe_smoothCoreMap,\n      DefinitionOneSobolev.QuotientHilbertCoordinates.graph,\n      FixedPhaseClosedOperators.successorGraphCoordinates_base,\n      FixedPhaseClosedOperators.successorGraphCoordinates_raised,\n      FixedPhaseClosedOperators.successorGraphCoordinates_lowered,\n      FixedPhaseClosedOperators.reindexedActualLoweredCoordinate_eq_lowerFromSuccCoordinate,\n      baseCoordinate_apply, raiseCoordinate_apply, lowerCoordinate_apply,\n      Function.comp_apply, LinearMap.coe_mk, AddHom.coe_mk] using hOuter\n",
+      "evidence": "The residual expected term is the literal LinearMap structure application and the actual term retains two Function.comp nodes. All three reduction lemmas are valid in the same toolchain; LinearMap.coe_mk and AddHom.coe_mk occur in the artifact's clean Mock2 Advanced compile."
+    },
+    {
+      "id": "V42-Q1-05-horizontal-product-square-bounds",
+      "owner": "localizedGauge_planarDensity_le_on_cutoffSupport",
+      "declaration_index": 3798,
+      "diagnostics": [5],
+      "kind": "body",
+      "classification": "STAGE_PROBE",
+      "confidence": "medium-high-explicit-polynomial-bridge",
+      "expected_count_in_owner": 1,
+      "old": "    dsimp only [Fx, F, X, Xx] at hadd hFxgraph hFgraph hXle hXxle ⊢\n    nlinarith [sq_nonneg (Fx * X - F * Xx),\n      mul_le_mul_of_nonneg_left hFxgraph (sq_nonneg X),\n      mul_le_mul_of_nonneg_right\n        ((sq_le_sq₀ hX hC).2 hXle) (mul_nonneg hh hG),\n      mul_le_mul_of_nonneg_left hFgraph (sq_nonneg Xx),\n      mul_le_mul_of_nonneg_right\n        ((sq_le_sq₀ hXx hC).2 hXxle) hG]\n",
+      "new": "    change\n      ‖dx (fixedPhaseEuclideanGauge n u) z *\n            literalStageCutoff Y (z : ℂ) +\n          fixedPhaseEuclideanGauge n u z *\n            HalfWeightCompactCoordinateGreen.dx\n              (literalStageCutoff Y) (z : ℂ)‖ ≤\n        Fx * X + F * Xx at hadd\n    have hXsq : X ^ 2 ≤ C ^ 2 :=\n      (sq_le_sq₀ hX hC).2 hXle\n    have hXxsq : Xx ^ 2 ≤ C ^ 2 :=\n      (sq_le_sq₀ hXx hC).2 hXxle\n    have hFxX : (Fx * X) ^ 2 ≤ (h * G) * C ^ 2 := by\n      rw [mul_pow]\n      exact mul_le_mul hFxgraph hXsq (sq_nonneg X)\n        (mul_nonneg hh hG)\n    have hFXx : (F * Xx) ^ 2 ≤ G * C ^ 2 := by\n      rw [mul_pow]\n      exact mul_le_mul hFgraph hXxsq (sq_nonneg Xx) hG\n    have hsum : 0 ≤ Fx * X + F * Xx :=\n      add_nonneg (mul_nonneg hFx hX) (mul_nonneg hF hXx)\n    have hnormSq :=\n      (sq_le_sq₀ (norm_nonneg _) hsum).2 hadd\n    nlinarith [hnormSq, hFxX, hFXx,\n      sq_nonneg (Fx * X - F * Xx)]\n",
+      "evidence": "The failing dsimp expands the local abbreviations in the hypotheses. The replacement changes only hadd to the named variables, proves the two squared product bounds with mul_le_mul, squares norm_add_le via sq_le_sq₀, and supplies the exact (a-b)^2 witness.",
+      "probe_risk": "The polynomial closure is static-only and must be checked in the full direct chain."
+    },
+    {
+      "id": "V42-Q1-06-vertical-product-square-bounds",
+      "owner": "localizedGauge_planarDensity_le_on_cutoffSupport",
+      "declaration_index": 3798,
+      "diagnostics": [6],
+      "kind": "body",
+      "classification": "STAGE_PROBE",
+      "confidence": "medium-high-explicit-polynomial-bridge",
+      "expected_count_in_owner": 1,
+      "old": "    dsimp only [Fy, F, X, Xy] at hadd hFygraph hFgraph hXle hXyle ⊢\n    nlinarith [sq_nonneg (Fy * X - F * Xy),\n      mul_le_mul_of_nonneg_left hFygraph (sq_nonneg X),\n      mul_le_mul_of_nonneg_right\n        ((sq_le_sq₀ hX hC).2 hXle) (mul_nonneg hh hG),\n      mul_le_mul_of_nonneg_left hFgraph (sq_nonneg Xy),\n      mul_le_mul_of_nonneg_right\n        ((sq_le_sq₀ hXy hC).2 hXyle) hG]\n",
+      "new": "    change\n      ‖dy (fixedPhaseEuclideanGauge n u) z *\n            literalStageCutoff Y (z : ℂ) +\n          fixedPhaseEuclideanGauge n u z *\n            HalfWeightCompactCoordinateGreen.dy\n              (literalStageCutoff Y) (z : ℂ)‖ ≤\n        Fy * X + F * Xy at hadd\n    have hXsq : X ^ 2 ≤ C ^ 2 :=\n      (sq_le_sq₀ hX hC).2 hXle\n    have hXysq : Xy ^ 2 ≤ C ^ 2 :=\n      (sq_le_sq₀ hXy hC).2 hXyle\n    have hFyX : (Fy * X) ^ 2 ≤ (h * G) * C ^ 2 := by\n      rw [mul_pow]\n      exact mul_le_mul hFygraph hXsq (sq_nonneg X)\n        (mul_nonneg hh hG)\n    have hFXy : (F * Xy) ^ 2 ≤ G * C ^ 2 := by\n      rw [mul_pow]\n      exact mul_le_mul hFgraph hXysq (sq_nonneg Xy) hG\n    have hsum : 0 ≤ Fy * X + F * Xy :=\n      add_nonneg (mul_nonneg hFy hX) (mul_nonneg hF hXy)\n    have hnormSq :=\n      (sq_le_sq₀ (norm_nonneg _) hsum).2 hadd\n    nlinarith [hnormSq, hFyX, hFXy,\n      sq_nonneg (Fy * X - F * Xy)]\n",
+      "evidence": "This is the vertical copy of V42-Q1-05 and addresses the second independent linarith failure without changing the theorem claim.",
+      "probe_risk": "The polynomial closure is static-only and must be checked in the full direct chain."
+    }
+  ],
+  "promotion_groups": {
+    "high_confidence_static": [
+      "V42-Q1-02-change-uncurry-goal-before-measurability-reuse",
+      "V42-Q1-03-normalize-zero-square-with-pow-two",
+      "V42-Q1-04-expose-linear-map-coercion-and-composition"
+    ],
+    "staged_probe": [
+      "V42-Q1-01-specialize-after-dependent-index-normalization",
+      "V42-Q1-05-horizontal-product-square-bounds",
+      "V42-Q1-06-vertical-product-square-bounds"
+    ]
+  },
+  "promotion_rule": "Apply only to the exact d7e99092 authority, preserve headers byte-for-byte, and validate with the full direct Mock2 to Mock2 Advanced to FA maxErrors=2000 chain. V42-Q1-04 is evaluated only after V42-Q1-03 restores its producer.",
+  "direct_lean_verified": false
+}

@@ -1,0 +1,283 @@
+name: GPT QYM GB0 independent canonical replay
+
+on:
+  push:
+    branches:
+      - gpt/qym-gb5-semantic-round4-matrix-20260820
+    paths:
+      - .github/workflows/gpt-qym-checked-in-true-pass.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: gpt-qym-gb0-independent-replay-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  BRANCH: gpt/qym-gb5-semantic-round4-matrix-20260820
+  QYM: PrimalitySheafVerification/QYM.lean
+  FROZEN: .github/qym-frontier/GB0_TRUE_PASS/QYM_TRUE_PASS.lean
+  EVIDENCE: .github/qym-frontier/GB0_TRUE_PASS
+  OLEAN: .lake/build/lib/lean/PrimalitySheafVerification
+  OUT: /tmp/qym-gb0-independent-replay
+  EXPECTED_SHA256: ab7c394f68b812046bcfae109b274a2d4fa42479bf8e76461c73a9c190fb3204
+  EXPECTED_BLOB: 7afb309d7c4da97da7bc6b922931734d72830d41
+
+jobs:
+  replay:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+    steps:
+      - name: Checkout exact canonical commit
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Gate exact frozen and canonical GB0 bytes
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT" "$OLEAN"
+          test "$GITHUB_REF_NAME" = "$BRANCH"
+          test "$(tr -d '\r\n' < lean-toolchain)" = leanprover/lean4:v4.33.0-rc1
+          test -s "$QYM"
+          test -s "$FROZEN"
+          test -z "$(git status --porcelain=v1 --untracked-files=all)"
+          cmp -s "$QYM" "$FROZEN"
+          actual_sha="$(sha256sum "$QYM" | awk '{print $1}')"
+          actual_blob="$(git hash-object --no-filters "$QYM")"
+          test "$actual_sha" = "$EXPECTED_SHA256"
+          test "$actual_blob" = "$EXPECTED_BLOB"
+          printf '%s\n' "$actual_sha" > "$OUT/source-sha256.txt"
+          printf '%s\n' "$actual_blob" > "$OUT/source-blob.txt"
+          awk 'END {print NR}' "$QYM" > "$OUT/line-count.txt"
+          git rev-parse HEAD > "$OUT/checked-out-commit.txt"
+
+      - name: Audit forbidden executable tokens and parser safety
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - "$QYM" "$OUT" <<'PY'
+          from pathlib import Path
+          import json, re, sys
+          source = Path(sys.argv[1]).read_text(encoding='utf-8')
+          out=[]; i=0; depth=0; in_string=False; escape=False
+          while i < len(source):
+              if depth:
+                  if source.startswith('/-', i): depth += 1; i += 2; continue
+                  if source.startswith('-/', i): depth -= 1; i += 2; continue
+                  i += 1; continue
+              if in_string:
+                  if escape: escape=False
+                  elif source[i] == '\\': escape=True
+                  elif source[i] == '"': in_string=False
+                  i += 1; continue
+              if source.startswith('/-', i): depth=1; i += 2; continue
+              if source.startswith('--', i):
+                  j=source.find('\n', i)
+                  i=len(source) if j < 0 else j
+                  continue
+              if source[i] == '"': in_string=True; i += 1; continue
+              out.append(source[i]); i += 1
+          executable=''.join(out)
+          audit={
+              'sorry': len(re.findall(r'\bsorry\b', executable)),
+              'admit': len(re.findall(r'\badmit\b', executable)),
+              'native_decide': len(re.findall(r'\bnative_decide\b', executable)),
+              'Lean.ofReduceBool': executable.count('Lean.ofReduceBool'),
+              'global_axiom': len(re.findall(r'(?m)^\s*axiom\s+', executable)),
+              'unsafe': len(re.findall(r'(?m)^\s*unsafe\s+', executable)),
+              'maxHeartbeats_zero': len(re.findall(r'set_option\s+maxHeartbeats\s+0\b', executable)),
+              'unclosed_block_comment_depth': depth,
+              'unterminated_string': int(in_string),
+          }
+          audit['forbidden_count']=sum(v for k,v in audit.items()
+                                       if k not in {'unclosed_block_comment_depth','unterminated_string'})
+          audit['parser_clean']=(depth == 0 and not in_string)
+          Path(sys.argv[2], 'REPLAY_FORBIDDEN_AUDIT.json').write_text(
+              json.dumps(audit, indent=2, sort_keys=True)+'\n', encoding='utf-8')
+          if audit['forbidden_count'] != 0 or not audit['parser_clean']:
+              raise SystemExit(audit)
+          PY
+
+      - name: Install pinned Lean and Mathlib dependency cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none > "$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" > "$OUT/toolchain-install.log" 2>&1
+          lake exe cache get > "$OUT/mathlib-cache.log" 2>&1
+          lean --version | tee "$OUT/lean-version.txt"
+          lake --version | tee "$OUT/lake-version.txt"
+
+      - name: Restore verified exact upstream dependency objects
+        id: depcache
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: |
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.ilean
+          key: qym-probe4-deps-v1-${{ runner.os }}-${{ hashFiles('lean-toolchain', 'lake-manifest.json', 'lakefile.lean', 'PrimalitySheafVerification/Mock2.lean', 'PrimalitySheafVerification/Mock2_Advanced.lean', 'PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean', 'PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean') }}
+
+      - name: Ensure exact upstream objects exist
+        shell: bash
+        env:
+          HIT: ${{ steps.depcache.outputs.cache-hit }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$OLEAN"
+          if [[ "$HIT" != true ]]; then
+            for s in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated; do
+              cap=1
+              [[ "$s" = Mock2_FunctionalAnalysis || "$s" = Mock2_FunctionalAnalysis_Integrated ]] && cap=2000
+              rm -f "$OLEAN/$s.olean" "$OLEAN/$s.ilean"
+              lake env lean "-DmaxErrors=$cap" -DwarningAsError=false \
+                -o "$OLEAN/$s.olean" -i "$OLEAN/$s.ilean" \
+                "PrimalitySheafVerification/$s.lean" > "$OUT/$s.log" 2>&1
+            done
+          fi
+          for s in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated; do
+            test -s "$OLEAN/$s.olean"
+            test -s "$OLEAN/$s.ilean"
+          done
+          printf '%s\n' "$HIT" > "$OUT/dependency-cache-hit.txt"
+
+      - name: Remove every prior project QYM object
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f "$OLEAN/QYM.olean" "$OLEAN/QYM.ilean" "$OLEAN/QYM.olean.private"
+          test ! -e "$OLEAN/QYM.olean"
+          test ! -e "$OLEAN/QYM.ilean"
+
+      - name: Execute independent complete canonical QYM direct Lean
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf '%q ' lake env lean -DmaxErrors=2000 -DwarningAsError=false \
+            -o "$OLEAN/QYM.olean" -i "$OLEAN/QYM.ilean" "$QYM" > "$OUT/REPLAY_COMMAND.txt"
+          printf '\n' >> "$OUT/REPLAY_COMMAND.txt"
+          set +e
+          start="$(date +%s)"
+          /usr/bin/time -v -o "$OUT/REPLAY_TIME.txt" \
+            lake env lean -DmaxErrors=2000 -DwarningAsError=false \
+              -o "$OLEAN/QYM.olean" -i "$OLEAN/QYM.ilean" \
+              "$QYM" > "$OUT/REPLAY_FULL.log" 2>&1
+          rc=$?
+          end="$(date +%s)"
+          set -e
+          printf '%s\n' "$rc" > "$OUT/exit.txt"
+          printf '%s\n' "$((end-start))" > "$OUT/elapsed-seconds.txt"
+          exit 0
+
+      - name: Produce authoritative replay result
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - "$QYM" "$OLEAN" "$OUT" <<'PY'
+          from pathlib import Path
+          import collections, hashlib, json, os, re, subprocess, sys
+          source, olean_root, out = map(Path, sys.argv[1:])
+          raw=(out/'REPLAY_FULL.log').read_bytes() if (out/'REPLAY_FULL.log').exists() else b''
+          text=raw.decode(errors='replace')
+          p=re.compile(r'^(?P<file>.*?\.lean):(?P<line>\d+):(?P<column>\d+): '
+                       r'(?P<severity>error|warning)(?:\((?P<code>[^)]*)\))?:\s*'
+                       r'(?P<message>.*)$', re.M)
+          rows=[]
+          for m in p.finditer(text):
+              x=m.groupdict(); x['line']=int(x['line']); x['column']=int(x['column']); rows.append(x)
+          errors=[x for x in rows if x['severity']=='error']
+          warnings=[x for x in rows if x['severity']=='warning']
+          panics=re.findall(r'(?im)^.*(?:internal error|uncaught exception|panic(?:!|:|\s)).*$', text)
+          rc=int((out/'exit.txt').read_text().strip()) if (out/'exit.txt').exists() else None
+          audit=json.loads((out/'REPLAY_FORBIDDEN_AUDIT.json').read_text())
+          source_raw=source.read_bytes()
+          blob=subprocess.check_output(['git','hash-object','--no-filters',str(source)], text=True).strip()
+          olean=olean_root/'QYM.olean'; ilean=olean_root/'QYM.ilean'
+          result={
+              'schema':'qym-gb0-independent-canonical-replay-v1',
+              'authority':'actual complete canonical QYM direct Lean replay',
+              'run_id':os.environ['GITHUB_RUN_ID'],
+              'run_attempt':os.environ['GITHUB_RUN_ATTEMPT'],
+              'trigger_sha':os.environ['GITHUB_SHA'],
+              'source_sha256':hashlib.sha256(source_raw).hexdigest(),
+              'source_blob':blob,
+              'line_count':source_raw.count(b'\n'),
+              'exit':rc,
+              'error_headers':len(errors),
+              'warning_headers':len(warnings),
+              'error_codes':dict(sorted(collections.Counter(x['code'] or 'uncoded' for x in errors).items())),
+              'panic_lines':len(panics),
+              'forbidden':audit['forbidden_count'],
+              'parser_clean':audit['parser_clean'],
+              'first_error':errors[0] if errors else None,
+              'last_error':errors[-1] if errors else None,
+              'olean_exists':olean.is_file() and olean.stat().st_size>0,
+              'ilean_exists':ilean.is_file() and ilean.stat().st_size>0,
+              'olean_sha256':hashlib.sha256(olean.read_bytes()).hexdigest() if olean.is_file() else None,
+              'ilean_sha256':hashlib.sha256(ilean.read_bytes()).hexdigest() if ilean.is_file() else None,
+              'log_sha256':hashlib.sha256(raw).hexdigest(),
+              'elapsed_seconds':int((out/'elapsed-seconds.txt').read_text().strip()) if (out/'elapsed-seconds.txt').exists() else None,
+          }
+          result['pass']=(result['source_sha256']==os.environ['EXPECTED_SHA256'] and
+                          result['source_blob']==os.environ['EXPECTED_BLOB'] and
+                          result['exit']==0 and result['error_headers']==0 and
+                          result['panic_lines']==0 and result['forbidden']==0 and
+                          result['parser_clean'] and result['olean_exists'] and result['ilean_exists'])
+          (out/'REPLAY_RESULT.json').write_text(json.dumps(result,indent=2,sort_keys=True)+'\n')
+          (out/'error-headers.txt').write_text(''.join(
+              f"{x['file']}:{x['line']}:{x['column']}: error: {x['message']}\n" for x in errors))
+          (out/'panic-lines.txt').write_text(''.join(x+'\n' for x in panics))
+          print(json.dumps(result,indent=2,sort_keys=True))
+          PY
+
+      - name: Upload independent replay evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-gb0-independent-replay-${{ github.run_id }}-attempt${{ github.run_attempt }}
+          path: /tmp/qym-gb0-independent-replay/**
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Persist confirmed replay beside immutable GB0
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - "$OUT/REPLAY_RESULT.json" <<'PY'
+          import json, sys
+          r=json.load(open(sys.argv[1],encoding='utf-8'))
+          if not r.get('pass'): raise SystemExit(r.get('exit') or 1)
+          PY
+          cp "$OUT/REPLAY_RESULT.json" "$EVIDENCE/REPLAY_RESULT.json"
+          cp "$OUT/REPLAY_FULL.log" "$EVIDENCE/REPLAY_FULL.log"
+          cp "$OUT/REPLAY_FORBIDDEN_AUDIT.json" "$EVIDENCE/REPLAY_FORBIDDEN_AUDIT.json"
+          cp "$OUT/REPLAY_COMMAND.txt" "$EVIDENCE/REPLAY_COMMAND.txt"
+          cp "$OUT/REPLAY_TIME.txt" "$EVIDENCE/REPLAY_TIME.txt"
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add "$EVIDENCE"
+          git commit -m "QYM: confirm independent canonical GB0 replay $GITHUB_RUN_ID [skip ci]"
+          for attempt in 1 2 3 4 5; do
+            git fetch origin "$BRANCH"
+            if git rebase "origin/$BRANCH" && git push origin "HEAD:$BRANCH"; then exit 0; fi
+            git rebase --abort || true
+            sleep $((attempt * 5))
+          done
+          exit 1

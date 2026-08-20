@@ -1,0 +1,145 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.invalid/fa-v63-body-only-repair-manifest-v1.schema.json",
+  "title": "FA v63 fail-closed multi-operation body-only repair manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "status",
+    "manifest_id",
+    "authority_source",
+    "source_package",
+    "repairs",
+    "constraints"
+  ],
+  "properties": {
+    "schema": {"const": "fa-v63-body-only-repair-manifest-v1"},
+    "status": {"enum": ["READY", "PENDING"]},
+    "manifest_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"},
+    "authority_source": {"$ref": "#/$defs/candidateLock"},
+    "source_package": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256", "bytes", "result_index_path", "result_index_sha256", "direct_lean_verified"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "sha256": {"$ref": "#/$defs/sha256"},
+        "bytes": {"type": "integer", "minimum": 1},
+        "result_index_path": {"type": "string", "minLength": 1},
+        "result_index_sha256": {"$ref": "#/$defs/sha256"},
+        "direct_lean_verified": {"const": false}
+      }
+    },
+    "blockers": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "repairs": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/repair"}
+    },
+    "constraints": {"$ref": "#/$defs/constraints"}
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "candidateLock": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sha256", "bytes", "lines", "declaration_count"],
+      "properties": {
+        "sha256": {"$ref": "#/$defs/sha256"},
+        "bytes": {"type": "integer", "minimum": 1},
+        "lines": {"type": "integer", "minimum": 1},
+        "declaration_count": {"const": 4416}
+      }
+    },
+    "owner": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["declaration_index", "declaration_name", "expected_header", "expected_header_sha256", "expected_authority_region_sha256"],
+      "properties": {
+        "declaration_index": {"type": "integer", "minimum": 0},
+        "declaration_name": {"type": "string", "minLength": 1},
+        "expected_header": {"type": "string", "minLength": 1},
+        "expected_header_sha256": {"$ref": "#/$defs/sha256"},
+        "expected_authority_region_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["old_global_before", "old_owner_before", "new_global_before", "new_owner_before", "old_global_after", "old_owner_after", "new_global_after", "new_owner_after"],
+      "properties": {
+        "old_global_before": {"type": "integer", "minimum": 1},
+        "old_owner_before": {"type": "integer", "minimum": 1},
+        "new_global_before": {"type": "integer", "minimum": 0},
+        "new_owner_before": {"type": "integer", "minimum": 0},
+        "old_global_after": {"type": "integer", "minimum": 0},
+        "old_owner_after": {"type": "integer", "minimum": 0},
+        "new_global_after": {"type": "integer", "minimum": 1},
+        "new_owner_after": {"type": "integer", "minimum": 1}
+      }
+    },
+    "operation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "old", "new", "old_sha256", "new_sha256", "old_bytes", "new_bytes", "counts"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "old": {"type": "string", "minLength": 1},
+        "new": {"type": "string", "minLength": 1},
+        "old_sha256": {"$ref": "#/$defs/sha256"},
+        "new_sha256": {"$ref": "#/$defs/sha256"},
+        "old_bytes": {"type": "integer", "minimum": 1},
+        "new_bytes": {"type": "integer", "minimum": 1},
+        "counts": {"$ref": "#/$defs/counts"}
+      }
+    },
+    "repair": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "sequence", "stage", "depends_on", "conflicts_with", "owner", "operations", "diagnostic_roots", "constraints"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "sequence": {"type": "integer", "minimum": 0},
+        "stage": {"type": "integer", "minimum": 0},
+        "depends_on": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "conflicts_with": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "owner": {"$ref": "#/$defs/owner"},
+        "operations": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/operation"}},
+        "diagnostic_roots": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "constraints": {"$ref": "#/$defs/repairConstraints"}
+      }
+    },
+    "repairConstraints": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["body_only", "header_unchanged", "statement_unchanged", "comments_unchanged", "attributes_unchanged", "source_move", "maxHeartbeats_unchanged", "trust_six_unchanged"],
+      "properties": {
+        "body_only": {"const": true},
+        "header_unchanged": {"const": true},
+        "statement_unchanged": {"const": true},
+        "comments_unchanged": {"const": true},
+        "attributes_unchanged": {"const": true},
+        "source_move": {"const": false},
+        "maxHeartbeats_unchanged": {"const": true},
+        "trust_six_unchanged": {"const": true}
+      }
+    },
+    "constraints": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["body_only", "source_moves", "maxHeartbeats_delta", "trust_six_delta", "runtime_fallback_allowed", "composition"],
+      "properties": {
+        "body_only": {"const": true},
+        "source_moves": {"const": 0},
+        "maxHeartbeats_delta": {"const": 0},
+        "trust_six_delta": {"const": 0},
+        "runtime_fallback_allowed": {"const": false},
+        "composition": {"const": "EXACT_FROM_AUTHORITY_NONCUMULATIVE"}
+      }
+    }
+  }
+}

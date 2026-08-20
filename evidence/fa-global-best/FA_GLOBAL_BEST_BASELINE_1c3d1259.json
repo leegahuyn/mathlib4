@@ -1,0 +1,21 @@
+{
+  "schema": "fa-global-best-preservation-v1",
+  "repository": "leegahuyn/mathlib4",
+  "branch": "codex/fa-global-best-4err-1c3d1259-20260816",
+  "source_path": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+  "source_sha256": "1c3d12594a3e8b14f9cf7b7294da7c29221758c72d00a596215198f7623fad8c",
+  "git_blob_sha": "f9697087ac0728667565cc1f7ad3e921119e66d4",
+  "source_bytes": 2816878,
+  "source_lines": 63028,
+  "verified_run_id": 31887363172,
+  "verified_artifact_id": 9247770461,
+  "Mock2_exit": 0,
+  "Mock2_Advanced_exit": 0,
+  "Mock2_FunctionalAnalysis_exit": 1,
+  "error_headers": 4,
+  "first_error_line": 55637,
+  "first_blocker": "discriminantHardStageOperator_eq_weightedHard",
+  "diagnostic": "deterministic timeout at whnf; maxHeartbeats=200000",
+  "canonical": false,
+  "authority": "FA_GLOBAL_BEST_BASELINE"
+}

@@ -1,0 +1,138 @@
+{
+  "schema": "fa-v42-declaration-local-repairs-v1",
+  "status": "STATIC_EXACT_REMOTE_RESIDUAL_DIRECT_LEAN_REQUIRED_V44_Q3_HC",
+  "direct_lean_verified": false,
+  "full_fa_clean_claimed": false,
+  "authority": {
+    "repository": "leegahuyn/mathlib4",
+    "run_id": 31719983304,
+    "head_sha": "dda6274627f628eca6cbfcef48f0c6e572881f0c",
+    "job_id": 94514229853,
+    "artifact_id": 9189354873,
+    "artifact_digest": "sha256:78416b511693fe68bd556674246cc0815015f8fddb46afcdc1e34673eefe87e5",
+    "variant": "middle_probe",
+    "source_path": "work/v43-run-31719983304/9189354873/Mock2_FunctionalAnalysis-candidate.lean",
+    "source_sha256": "f8d1b152e1c12639e4fc4f126e501a2a309333c5b8a6f3c8645df3e433572109",
+    "source_bytes": 2785412,
+    "source_lines": 62304,
+    "declaration_count": 4416,
+    "diagnostics_path": "work/v43-run-31719983304/9189354873/FULL_DIAGNOSTICS.json",
+    "diagnostics_sha256": "baab8be659f062f26d4b7563073c18480263747bfa45de88c642aeb13e1f4d07",
+    "fa_log_path": "work/v43-run-31719983304/9189354873/Mock2_FunctionalAnalysis.log",
+    "fa_log_sha256": "4edd03f6c327dda4fa5a49cc3fac56e85004199d3a5dfa7aca0c726ab533a73c"
+  },
+  "ancestry": {
+    "base_authority_source_sha256": "d7e99092e79b26af21cd8c960b8e9c811731e27343757b750b62c53608805937",
+    "predecessor_middle_source_sha256": "f8d1b152e1c12639e4fc4f126e501a2a309333c5b8a6f3c8645df3e433572109"
+  },
+  "scope": {
+    "q3_queue_path": "work/v44-results/run-31719983304/middle_probe/RESIDUAL_QUEUE_3.json",
+    "q3_queue_sha256": "d9aac168e73b00c41b6d326dc1437e59cbd115a160868522b9856dd3d752ef6a",
+    "q3_owner_count": 12,
+    "q3_diagnostic_count": 20,
+    "paired_cross_queue_owner": 3925,
+    "paired_cross_queue_diagnostic_ordinal": 13
+  },
+  "pair_contracts": [
+    {
+      "id": "V44-Q3-PAIR-3925-3926",
+      "declaration_indices": [3925, 3926],
+      "repair_ids": [
+        "V44-Q3-HC01-horizontal-fourier-real-to-complex-scomp",
+        "V44-Q3-HC02-vertical-fourier-real-to-complex-scomp"
+      ],
+      "selection": "ALL_OR_NONE"
+    }
+  ],
+  "overlap_exclusions": {
+    "q1_high_confidence_owners": [3669, 3899, 3932, 3946, 4297, 4298, 4395],
+    "common_owners": [3838, 3949, 4015, 4017],
+    "required_intersection": []
+  },
+  "repairs": [
+    {
+      "id": "V44-Q3-HC01-horizontal-fourier-real-to-complex-scomp",
+      "pair_id": "V44-Q3-PAIR-3925-3926",
+      "owner": "fderiv_literalStageNegativePlaneWave_one",
+      "declaration_index": 3925,
+      "diagnostic_ordinals": [13],
+      "kind": "body",
+      "classification": "HIGH_CONFIDENCE_EXACT_OFFICIAL_API",
+      "confidence": "very-high-exact-real-domain-complex-codomain-chain-rule",
+      "expected_count_in_owner": 1,
+      "old": "        ((literalStageFourierScale Y)⁻¹ * w.re)).comp 0",
+      "new": "        ((literalStageFourierScale Y)⁻¹ * w.re)).scomp 0",
+      "evidence": "The remote mismatch shows HasDerivAt.comp tries to keep the result in the real algebra. Mathlib's documented chain rule for a real scalar input and complex vector-valued output is HasDerivAt.scomp. This keeps the subsequent complex mul_const well typed.",
+      "prior_relation": "Supersedes V42-Q3-S01: changing mul_const orientation alone left the preceding comp result in the wrong codomain."
+    },
+    {
+      "id": "V44-Q3-HC02-vertical-fourier-real-to-complex-scomp",
+      "pair_id": "V44-Q3-PAIR-3925-3926",
+      "owner": "fderiv_literalStageNegativePlaneWave_I",
+      "declaration_index": 3926,
+      "diagnostic_ordinals": [14],
+      "kind": "body",
+      "classification": "HIGH_CONFIDENCE_EXACT_OFFICIAL_API",
+      "confidence": "very-high-exact-real-domain-complex-codomain-chain-rule",
+      "expected_count_in_owner": 1,
+      "old": "        ((literalStageFourierScale Y)⁻¹ * w.im)).comp 0",
+      "new": "        ((literalStageFourierScale Y)⁻¹ * w.im)).scomp 0",
+      "evidence": "The sibling residual is the same real-domain to complex-codomain chain-rule mismatch; scomp yields an R-smul on the complex Fourier derivative and makes const_mul type-correct.",
+      "prior_relation": "Paired atomically with idx3925; also replaces the malformed V42 extended hVertical syntax experiment."
+    },
+    {
+      "id": "V44-Q3-HC03-expose-both-chart-toLp-norms",
+      "owner": "orbitPeterssonCoreToReducedChartL2_norm_sq",
+      "declaration_index": 4213,
+      "diagnostic_ordinals": [50],
+      "kind": "body",
+      "classification": "HIGH_CONFIDENCE_REMOTE_PROVEN_IN_LATE_AND_ALL_PROBES",
+      "confidence": "certain-two-independent-v43-variants-resolved-owner",
+      "expected_count_in_owner": 1,
+      "old": "  let q := orbitPeterssonCoreToReducedChartL2 n z₀ u\n  have hNorm : ‖q‖ = ‖qUpper‖ := by\n    dsimp only [q, qUpper, orbitPeterssonCoreToReducedChartL2]\n    rw [MeasureTheory.Lp.norm_toLp, MeasureTheory.Lp.norm_toLp]",
+      "new": "  let q : AmbientPlaneL2 :=\n    orbitPeterssonCoreToReducedChartL2 n z₀ u\n  have hNorm : ‖q‖ = ‖qUpper‖ := by\n    change\n      ‖(ambientReducedChartGauge_memLp n z₀ u).toLp\n          (ambientReducedChartGauge n z₀ u)‖ =\n        ‖hUpper.toLp ((gammaTwoReducedChart z₀).indicator g)‖\n    rw [MeasureTheory.Lp.norm_toLp, MeasureTheory.Lp.norm_toLp]",
+      "evidence": "This exact v43 late-stage fragment eliminated idx4213 in both late_probe and all_probes, while middle_probe retained the one rewrite failure.",
+      "prior_relation": "Promotes V43-LATE-STAGE-4213 after direct remote success; supersedes the insufficient V42 q-only type pin."
+    },
+    {
+      "id": "V44-Q3-HC04-normalize-neighborhood-zero-functions-at-both-domains",
+      "owner": "periodizedFixedPhaseGauge_eventuallyEq_zero_of_not_mem_saturation",
+      "declaration_index": 4288,
+      "diagnostic_ordinals": [51],
+      "kind": "body",
+      "classification": "HIGH_CONFIDENCE_EXACT_REMOTE_TYPE_FOLLOWON",
+      "confidence": "very-high-explicit-zero-function-domain-normalization",
+      "expected_count_in_owner": 1,
+      "old": "  simpa only [upperLift_apply, Pi.zero_apply] using hU hy",
+      "new": "  have hyZero := hU hy\n  change\n    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge m\n        (gammaTwoPeriodizedPhysicalCore m v) y = (0 : ℍ → ℂ) y at hyZero\n  change\n    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge m\n        (gammaTwoPeriodizedPhysicalCore m v) y = (0 : ℂ → ℂ) (y : ℂ)\n  simpa only [Pi.zero_apply] using hyZero",
+      "evidence": "The remote residual says hU hy is membership in the upper-plane equality set while the target is the scalar equality after upperLift. The two explicit changes expose the only difference: evaluation of zero functions on H versus C.",
+      "prior_relation": "Follow-on to V43-LATE-4288; preserves its switch from self-rewrite to using hU hy but makes both zero-function domains explicit."
+    },
+    {
+      "id": "V44-Q3-HC05-use-generic-pointwise-smul-evaluation",
+      "owner": "orbitPeterssonEuclideanEmbedding_invariantScalarMultiplier",
+      "declaration_index": 4389,
+      "diagnostic_ordinals": [58],
+      "kind": "body",
+      "classification": "HIGH_CONFIDENCE_EXACT_REMOTE_API_FOLLOWON",
+      "confidence": "very-high-existing-successful-local-api-usage",
+      "expected_count_in_owner": 1,
+      "old": "hmul, Pi.smul_apply,",
+      "new": "hmul, smul_apply,",
+      "evidence": "The residual contains pointwise smul of two coerced functions. Pi.smul_apply does not match this function-smul instance, whereas the same source already uses the generic smul_apply lemma successfully in adjacent gauge proofs.",
+      "prior_relation": "Follow-on to V43-LATE-4389; retains the needed pointwise normalization and replaces only the nonmatching namespace-specific lemma."
+    }
+  ],
+  "diagnostic_conservation": {
+    "q3_covered": [14, 50, 51, 58],
+    "cross_queue_paired": [13],
+    "q3_covered_count": 4,
+    "cross_queue_paired_count": 1
+  },
+  "local_execution": {
+    "lean": false,
+    "lake": false,
+    "git": false,
+    "github_write": false
+  }
+}

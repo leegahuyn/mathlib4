@@ -1,0 +1,559 @@
+{
+  "schema": "fa-root-gated-environment-fragment-overrides-v1",
+  "status": "FULL_INVENTORY_ROOTS_CONFIRMED_UNVERIFIED",
+  "scope": "exact d0a3 idx2974-3002 only; one namespace environment bundle plus five exact declaration repairs",
+  "source": {
+    "sha256": "d0a3decee1c0a7a781d14fdf122e235d71d8f210bb65a894dc4e518821bf03ec",
+    "bytes": 2702252,
+    "splitlines": 60573,
+    "declaration_count": 4397,
+    "declaration_sequence_sha256": "a33d2a1e132e47c9c6b31924ed1b8a04a50de709ed2149a9f9abfb0b052b25eb"
+  },
+  "inventory_authority": {
+    "artifact_id": 9103368138,
+    "run_id": 31495034235,
+    "inventory_schema": "fa-full-compile-error-inventory-v1",
+    "parser_sha256": "4804d0d73a01ca1600080f892bbd391bffd092b5a2b529ac302e06fd82079a76",
+    "log": {
+      "sha256": "ff3ebeaec19a2a52276359267831bc5f8714d096926f705a6439fbfd042d468e",
+      "bytes": 848580,
+      "splitlines": 14948
+    },
+    "metric": {
+      "sha256": "9486102502bd643250570591c085ac1b97036c3c52d6607915c6fd10d3f4a828",
+      "bytes": 104804,
+      "splitlines": 2181
+    },
+    "collector": {
+      "sha256": "26da4c2641c5065689d6a5e1adb4e154492e5cc3880419ff9a22361204609a99",
+      "bytes": 1850645,
+      "splitlines": 25856,
+      "schema": "fa506r2-full-diagnostics-v1",
+      "corrected_optional_diagnostic_codes": true
+    },
+    "summary": {
+      "log_error_headers": 1157,
+      "actual_semantic_or_resource_errors": 1157,
+      "root_candidate_errors": 987,
+      "suspected_cascade_errors": 170,
+      "resource_limit_roots": 24,
+      "cap_sentinels": 0,
+      "affected_declarations": 608,
+      "root_affected_declarations": 608,
+      "unowned_actual_errors": 0
+    },
+    "complete_full_diagnostic_inventory": true,
+    "diagnostic_cap_reached": false
+  },
+  "historical_preview_only": {
+    "label": "FA471_MAX128_PREVIEW_NOT_MERGE_AUTHORITY",
+    "source_sha256": "0ea3f7551c19b4f79a8f5aa38768092b56389b9075c33d8df2450fc003452b02",
+    "source_bytes": 2697523,
+    "source_splitlines": 60538,
+    "log_sha256": "ef2455ca84c895987bb141632efdaafb1c9ef8e9a51825a3badd63bbf490f23b",
+    "log_bytes": 256147,
+    "log_splitlines": 4322,
+    "metric_sha256": "4712c0080647b33fe4fce9724c23231e617baa2621ee143766d14a0e622c62ad",
+    "maxErrors": 128,
+    "may_not_select_or_merge_a_fragment": true
+  },
+  "confirmed_root_selectors": [
+    {
+      "id": "E0026",
+      "declaration_index": 2974,
+      "declaration_name": "l2Coordinate_hasCompactCarrierSupport",
+      "line": 38225,
+      "column": 8,
+      "diagnostic_code": "lean.unknownIdentifier",
+      "classification": "root_candidate",
+      "category": "unknown_identifier",
+      "message_sha256": "9d00ce5dd06cc6b8d2ae72207ec6248e669f95167779e4e7edf0f12e1d5ae042"
+    },
+    {
+      "id": "E0031",
+      "declaration_index": 2977,
+      "declaration_name": "norm_peterssonCuspCutoffCoreMap_le",
+      "line": 38288,
+      "column": 10,
+      "diagnostic_code": null,
+      "classification": "root_candidate",
+      "category": "rewrite_pattern_miss",
+      "message_sha256": "5b97391ccc0e5492a2384b81f69467fcfa19af2c9a9e3e08cbddc8418d0d3926"
+    },
+    {
+      "id": "E0032",
+      "declaration_index": 2977,
+      "declaration_name": "norm_peterssonCuspCutoffCoreMap_le",
+      "line": 38275,
+      "column": 33,
+      "diagnostic_code": null,
+      "classification": "resource_limit_root",
+      "category": "resource_limit",
+      "message_sha256": "33486cc371ed130e057b29ab1cace68bcb4a43c2aece77c704df6e71aa206d3b"
+    },
+    {
+      "id": "E0033",
+      "declaration_index": 2978,
+      "declaration_name": "peterssonCuspCutoff",
+      "line": 38312,
+      "column": 48,
+      "diagnostic_code": null,
+      "classification": "root_candidate",
+      "category": "application_type_mismatch",
+      "message_sha256": "b0d352ffbb6112dd523b0fc55408cb5c824b087ad6e8ac8df97e98b37e817939"
+    },
+    {
+      "id": "E0037",
+      "declaration_index": 2982,
+      "declaration_name": "inner_peterssonCuspCutoffCoreMap",
+      "line": 38382,
+      "column": 19,
+      "diagnostic_code": "lean.unknownIdentifier",
+      "classification": "root_candidate",
+      "category": "unknown_identifier",
+      "message_sha256": "28f19576a81720f9b7cd35f000885e25d29e48bc8c9a9b43e2ee165bbd24748b"
+    },
+    {
+      "id": "E0041",
+      "declaration_index": 2983,
+      "declaration_name": "peterssonCuspCutoff_isSelfAdjoint",
+      "line": 38417,
+      "column": 6,
+      "diagnostic_code": null,
+      "classification": "root_candidate",
+      "category": "rewrite_pattern_miss",
+      "message_sha256": "9eeb367910964720e9731ce1fe766f4022df8c55155d8ee78f76eb4078c9255c"
+    },
+    {
+      "id": "E0042",
+      "declaration_index": 2985,
+      "declaration_name": "peterssonCuspCutoff_tendsto_id",
+      "line": 38434,
+      "column": 66,
+      "diagnostic_code": null,
+      "classification": "root_candidate",
+      "category": "type_mismatch",
+      "message_sha256": "bf91c8342815c1cb2c0bef75c454e87ff4c2387b5178ebc05e705eaa30dad6bd"
+    },
+    {
+      "id": "E0043",
+      "declaration_index": 2988,
+      "declaration_name": "raiseCuspEuclideanCommutatorCoefficient_realSmooth",
+      "line": 38494,
+      "column": 4,
+      "diagnostic_code": null,
+      "classification": "root_candidate",
+      "category": "other",
+      "message_sha256": "699708f5f6015db2c28c919d16b02940c9c61f726f8016869fc63198ba6c9217"
+    },
+    {
+      "id": "E0044",
+      "declaration_index": 2989,
+      "declaration_name": "lowerCuspEuclideanCommutatorCoefficient_realSmooth",
+      "line": 38499,
+      "column": 4,
+      "diagnostic_code": null,
+      "classification": "root_candidate",
+      "category": "other",
+      "message_sha256": "23630cb870bf598a34960bae58654d5d870ebc31c75e1203fd116e8d2934d0f3"
+    },
+    {
+      "id": "E0046",
+      "declaration_index": 2990,
+      "declaration_name": "raiseCuspEuclideanCommutatorCoefficient_quotientCompact",
+      "line": 38504,
+      "column": 4,
+      "diagnostic_code": null,
+      "classification": "root_candidate",
+      "category": "other",
+      "message_sha256": "22b92dd4e7caa73a286355aaa382b959fc8655e3aa8fab1ecd9aed786c5660f7"
+    },
+    {
+      "id": "E0048",
+      "declaration_index": 2991,
+      "declaration_name": "lowerCuspEuclideanCommutatorCoefficient_quotientCompact",
+      "line": 38510,
+      "column": 4,
+      "diagnostic_code": null,
+      "classification": "root_candidate",
+      "category": "other",
+      "message_sha256": "5a5566f294ce0c106f9b567573c2d79faa5e0c6b19ce07cb6b8390b6b9d6b549"
+    },
+    {
+      "id": "E0050",
+      "declaration_index": 2992,
+      "declaration_name": "exists_closedCarrier_norm_bound_of_quotientCompact",
+      "line": 38522,
+      "column": 16,
+      "diagnostic_code": null,
+      "classification": "root_candidate",
+      "category": "other",
+      "message_sha256": "620071cb50bf6cbe540c1dd19555494f129918fe26ddc4791edd3ef5060fb9bc"
+    },
+    {
+      "id": "E0051",
+      "declaration_index": 2992,
+      "declaration_name": "exists_closedCarrier_norm_bound_of_quotientCompact",
+      "line": 38527,
+      "column": 29,
+      "diagnostic_code": "lean.unknownIdentifier",
+      "classification": "root_candidate",
+      "category": "unknown_identifier",
+      "message_sha256": "9d00ce5dd06cc6b8d2ae72207ec6248e669f95167779e4e7edf0f12e1d5ae042"
+    },
+    {
+      "id": "E0060",
+      "declaration_index": 2999,
+      "declaration_name": "euclideanGaugeScale_pred_inv",
+      "line": 38600,
+      "column": 6,
+      "diagnostic_code": "lean.unknownIdentifier",
+      "classification": "root_candidate",
+      "category": "unknown_identifier",
+      "message_sha256": "81c27472edcd8556e9b2e295d6f1e90d6d3912f1aba7d248fb29212193e6f5a8"
+    },
+    {
+      "id": "E0062",
+      "declaration_index": 3002,
+      "declaration_name": "norm_l2Coordinate_le_of_fixedPhaseGauge_multiplier",
+      "line": 38662,
+      "column": 20,
+      "diagnostic_code": null,
+      "classification": "root_candidate",
+      "category": "rewrite_pattern_miss",
+      "message_sha256": "4dde60d11f06b7fada51f855733d2be73db35a02fbe2ef6aae5aef307a3cafd4"
+    },
+    {
+      "id": "E0063",
+      "declaration_index": 3002,
+      "declaration_name": "norm_l2Coordinate_le_of_fixedPhaseGauge_multiplier",
+      "line": 38671,
+      "column": 40,
+      "diagnostic_code": null,
+      "classification": "root_candidate",
+      "category": "rewrite_pattern_miss",
+      "message_sha256": "0300fd2d7cc25e2302bd59beceebad54bab8329bacff5681d0c80eb140413f0f"
+    }
+  ],
+  "authorized_local_instance_attribute": "attribute [local instance]\n  DefinitionOneSobolev.FixedPhaseGraphCompletion.fixedPhaseGraphCoreModule\n  DefinitionOneSobolev.FixedPhaseGraphCompletion.fixedPhaseGraphCoreAddCommGroup",
+  "environment_replacements": [
+    {
+      "id": "fixed_phase_adjoint_cutoff_namespace_environment",
+      "status": "CURRENT_ROOTS_CONFIRMED_UNVERIFIED",
+      "root_selector_ids": [
+        "E0026",
+        "E0033",
+        "E0037",
+        "E0043",
+        "E0044",
+        "E0046",
+        "E0048",
+        "E0050",
+        "E0051"
+      ],
+      "analysis_note": "Open only the two defining namespaces and re-register the already-declared canonical FixedPhaseGraphCompletion module/additive families as local instances. This adds no declaration and is selected only because the corrected full inventory contains the exact environment roots.",
+      "authorized_effects": [
+        "open SmoothCompactCoreGeometry",
+        "open HalfWeightDifferentialOperators",
+        "one local instance attribute command over two existing canonical declarations"
+      ],
+      "replacement": {
+        "old_fragment": "namespace FixedPhaseAdjointCutoffCore\n\nopen Set Function Topology Filter MeasureTheory\nopen scoped LinearPMap\nopen DefinitionOneSobolev\nopen GammaTwoQuotientGeometry\nopen DefinitionOneSobolev.FixedPhasePeterssonCoordinates\nopen FixedPhaseClosedOperators\nopen FixedPhaseEssentialCoreAudit\nopen FixedPhaseEssentialCoreRoute\nopen FixedPhaseDensity",
+        "new_fragment": "namespace FixedPhaseAdjointCutoffCore\n\nopen Set Function Topology Filter MeasureTheory\nopen scoped LinearPMap\nopen SmoothCompactCoreGeometry\nopen HalfWeightDifferentialOperators\nopen DefinitionOneSobolev\nopen GammaTwoQuotientGeometry\nopen DefinitionOneSobolev.FixedPhasePeterssonCoordinates\nopen FixedPhaseClosedOperators\nopen FixedPhaseEssentialCoreAudit\nopen FixedPhaseEssentialCoreRoute\nopen FixedPhaseDensity\n\nattribute [local instance]\n  DefinitionOneSobolev.FixedPhaseGraphCompletion.fixedPhaseGraphCoreModule\n  DefinitionOneSobolev.FixedPhaseGraphCompletion.fixedPhaseGraphCoreAddCommGroup",
+        "old_sha256": "618961fd868fc7a3760e9635989a2947d87ab7b55e2159f88cf25ed23614a529",
+        "new_sha256": "cbf9787c0605af0386e01b0749ad9d124cd3662b62e97aa18d5058575e1dfffa",
+        "old_bytes": 344,
+        "new_bytes": 596
+      },
+      "standalone_candidate": {
+        "sha256": "16849f517002668dd110b54ac3f0e8e071ee3961b41d0995b82e907a94bf4779",
+        "bytes": 2702504,
+        "splitlines": 60579,
+        "direct_lean_verified": false
+      }
+    }
+  ],
+  "environment_scope_review": {
+    "selected_namespace_local": {
+      "selected": true,
+      "scope_start_line_before_edit": 38201,
+      "scope_end_line_before_edit": 39427,
+      "semantics": "The two open commands and the local-instance attribute are placed inside FixedPhaseAdjointCutoffCore, so Lean restores the prior environment at the matching end command.",
+      "risk": "bounded to the first proven failure cluster; does not perturb later independent namespaces"
+    },
+    "staged_file_tail_global": {
+      "selected": false,
+      "status": "STATIC_STAGED_ONLY_REQUIRES_SEPARATE_DIRECT_LEAN_MATRIX",
+      "scope_start_line_before_edit": 38200,
+      "scope_end_line_before_edit": 60573,
+      "semantics": "Fully qualified open commands and the local-instance attribute are inserted at top level immediately before reopening Mock2FA.PaperCorrections.AutomorphicSobolev. They remain active for the rest of the file.",
+      "old_fragment": "namespace Mock2FA.PaperCorrections.AutomorphicSobolev\nnamespace FixedPhaseAdjointCutoffCore",
+      "new_fragment": "open ContinuousLinearMap\nopen Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry\nopen Mock2FA.PaperCorrections.AutomorphicSobolev.SmoothCompactCoreGeometry\nopen Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators\nopen Mock2FA.PaperCorrections.AutomorphicSobolev.DefinitionOneSobolev.WeightCorePetersson\nopen Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseHorocycleTrace\nopen Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseEssentialCoreRoute\n\nattribute [local instance]\n  Mock2FA.PaperCorrections.AutomorphicSobolev.DefinitionOneSobolev.FixedPhaseGraphCompletion.fixedPhaseGraphCoreModule\n  Mock2FA.PaperCorrections.AutomorphicSobolev.DefinitionOneSobolev.FixedPhaseGraphCompletion.fixedPhaseGraphCoreAddCommGroup\n\nnamespace Mock2FA.PaperCorrections.AutomorphicSobolev\nnamespace FixedPhaseAdjointCutoffCore",
+      "old_sha256": "f82d4b7ad0f1059c4ae89c57c4c7f19a7fa51b6265b6481c4606972ca304132a",
+      "new_sha256": "600ae50a1664a54ce2d01784d33603fe72eda7c32dbadc976db8a8865b3233ab",
+      "old_bytes": 91,
+      "new_bytes": 861,
+      "fragment_counts_old_global_new_global": [
+        1,
+        0
+      ],
+      "standalone_candidate": {
+        "sha256": "8f5fed249f6c9638a39c46053ce2ae3dbedc66ff10352285f2e8198c1b332cee",
+        "bytes": 2703022,
+        "splitlines": 60585,
+        "direct_lean_verified": false
+      },
+      "with_the_five_selected_declaration_repairs": {
+        "sha256": "51c9e932de31eafcccf2ab4ffe794aec1cdd9fca50e416a84c28ef0b8b28542a",
+        "bytes": 2703501,
+        "splitlines": 60596,
+        "direct_lean_verified": false
+      },
+      "definition_namespace_map": {
+        "SmoothQuotientCompactFunction": "Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators",
+        "heightC": "Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators",
+        "quotientTSupport": "Mock2FA.PaperCorrections.AutomorphicSobolev.SmoothCompactCoreGeometry",
+        "upstairsInnerDensity": "Mock2FA.PaperCorrections.AutomorphicSobolev.DefinitionOneSobolev.WeightCorePetersson",
+        "fixedPhaseEuclideanGraphDensity": "Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseHorocycleTrace",
+        "logHeightTraceBaseCoeff": "Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseHorocycleTrace",
+        "HasCompactCarrierSupport": "Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseEssentialCoreRoute",
+        "gammaTwoCuspScaling": "Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry",
+        "lsmul": "ContinuousLinearMap"
+      },
+      "full_inventory_message_mention_upper_bounds": {
+        "SmoothQuotientCompactFunction": {
+          "all_errors": 43,
+          "root_errors": 26
+        },
+        "heightC": {
+          "all_errors": 16,
+          "root_errors": 11
+        },
+        "quotientTSupport": {
+          "all_errors": 10,
+          "root_errors": 8
+        },
+        "upstairsInnerDensity": {
+          "all_errors": 4,
+          "root_errors": 2
+        },
+        "fixedPhaseEuclideanGraphDensity": {
+          "all_errors": 29,
+          "root_errors": 20
+        },
+        "logHeightTraceBaseCoeff": {
+          "all_errors": 6,
+          "root_errors": 6
+        },
+        "HasCompactCarrierSupport": {
+          "all_errors": 7,
+          "root_errors": 5
+        },
+        "gammaTwoCuspScaling": {
+          "all_errors": 7,
+          "root_errors": 6
+        },
+        "lsmul_unknown_identifier": {
+          "all_errors": 8,
+          "root_errors": 8
+        }
+      },
+      "mention_count_warning": "These counts are string mentions in exact diagnostics, not a claim that every root is caused by a missing open.",
+      "collision_and_resolution_risks": [
+        "Opening the broad FixedPhaseHorocycleTrace and WeightCorePetersson namespaces exposes many unrelated short names throughout more than twenty thousand remaining source lines.",
+        "Opening ContinuousLinearMap resolves the pinned owner of bare lsmul but can also change resolution of other continuous-linear-map short names in the file tail.",
+        "The canonical Module/AddCommGroup pair would become the preferred local family for every later InverseEtaFixedPhaseCore elaboration, including declarations not currently failing for an instance diamond.",
+        "A top-level open can change resolution of an unqualified name even when that declaration is outside the current root set; static token checks cannot prove elaboration stability.",
+        "The high-leverage candidate therefore stays excluded from the selected override until it receives an isolated direct-Lean matrix result."
+      ]
+    }
+  },
+  "repairs": [
+    {
+      "declaration_index": 2977,
+      "declaration_name": "norm_peterssonCuspCutoffCoreMap_le",
+      "header_sha256": "ad6197a02e222996a8e74905b71368e332b89fc40e76754fe9e5f9159730eea0",
+      "root_selector_ids": [
+        "E0031",
+        "E0032"
+      ],
+      "status": "CURRENT_ROOTS_CONFIRMED_UNVERIFIED",
+      "proof_body_only": true,
+      "analysis_note": "After Complex.norm_real, expose the definitional real smoothTransition target before applying Real.norm_of_nonneg.",
+      "replacements": [
+        {
+          "old_fragment": "      have hCutoffNorm : ‖upstairsCuspCutoff N z‖ ≤ 1 := by\n        rw [upstairsCuspCutoff_ofReal, Complex.norm_real,\n          Real.norm_of_nonneg (Real.smoothTransition.nonneg _)]\n        exact Real.smoothTransition.le_one _",
+          "new_fragment": "      have hCutoffNorm : ‖upstairsCuspCutoff N z‖ ≤ 1 := by\n        rw [upstairsCuspCutoff_ofReal, Complex.norm_real]\n        change ‖Real.smoothTransition _‖ ≤ 1\n        rw [Real.norm_of_nonneg (Real.smoothTransition.nonneg _)]\n        exact Real.smoothTransition.le_one _",
+          "old_sha256": "a23be8502f34cc50e67b27bab5689e6700be3383b9a68f484c4e1792ae859113",
+          "new_sha256": "51ce0c3f8a8c8cb43de8a82713ee288426d7294303c7f740fb9c7c96a625723f",
+          "old_bytes": 232,
+          "new_bytes": 285
+        }
+      ],
+      "standalone_candidate": {
+        "sha256": "78664dd0cb7150ffd7b9c3f8e8f220db682f09f745d83ba0078dec4fe54612d7",
+        "bytes": 2702305,
+        "splitlines": 60574,
+        "direct_lean_verified": false
+      }
+    },
+    {
+      "declaration_index": 2983,
+      "declaration_name": "peterssonCuspCutoff_isSelfAdjoint",
+      "header_sha256": "1817b76b4edde4adf49428399ccf9d1fff2e5b756ac39f1ba9c0a1bce3a5143a",
+      "root_selector_ids": [
+        "E0041"
+      ],
+      "status": "CURRENT_ROOTS_CONFIRMED_UNVERIFIED",
+      "proof_body_only": true,
+      "analysis_note": "Change the dense-core goal from the coerced LinearMap presentation to direct ContinuousLinearMap application before the two core rewrites.",
+      "replacements": [
+        {
+          "old_fragment": "  intro v\n  rw [peterssonCuspCutoff_l2Coordinate,\n    peterssonCuspCutoff_l2Coordinate]\n  exact inner_peterssonCuspCutoffCoreMap N n u v",
+          "new_fragment": "  intro v\n  change inner ℂ\n      (peterssonCuspCutoff N n (l2Coordinate n u))\n      (l2Coordinate n v) =\n    inner ℂ (l2Coordinate n u)\n      (peterssonCuspCutoff N n (l2Coordinate n v))\n  rw [peterssonCuspCutoff_l2Coordinate,\n    peterssonCuspCutoff_l2Coordinate]\n  exact inner_peterssonCuspCutoffCoreMap N n u v",
+          "old_sha256": "0b5addce0e62d888dae7dc4eb935a87d6b76245c8d6412973435fbf551e8a968",
+          "new_sha256": "24f2d0c06c3c2d7e63731661445e53d80eee22355c939cec76aef785fc8a2919",
+          "old_bytes": 136,
+          "new_bytes": 317
+        }
+      ],
+      "standalone_candidate": {
+        "sha256": "e97fb90d7eee89070d1bc18158ae2e733e146ad9bbaa368ce5385f6602f758ff",
+        "bytes": 2702433,
+        "splitlines": 60578,
+        "direct_lean_verified": false
+      }
+    },
+    {
+      "declaration_index": 2985,
+      "declaration_name": "peterssonCuspCutoff_tendsto_id",
+      "header_sha256": "570fe76dc256395a63022b498e18ebfd329da4fe4df7a694375e631523668576",
+      "root_selector_ids": [
+        "E0042"
+      ],
+      "status": "CURRENT_ROOTS_CONFIRMED_UNVERIFIED",
+      "proof_body_only": true,
+      "analysis_note": "DenseRange.exists_dist_lt expects positivity evidence; pass half_pos hε so the implicit radius is ε/2.",
+      "replacements": [
+        {
+          "old_fragment": "  obtain ⟨u, hu⟩ := (denseRange_l2Coordinate n).exists_dist_lt x (ε / 2)",
+          "new_fragment": "  obtain ⟨u, hu⟩ :=\n    (denseRange_l2Coordinate n).exists_dist_lt x (half_pos hε)",
+          "old_sha256": "7362a29f422fcf8d4a8a153f0e8064444377bbc78fc282f299b7038decc6d02a",
+          "new_sha256": "d7efefee6fbf377af6601449e3a4aababfe946d93358e77f22e9d8c27b618a7f",
+          "old_bytes": 77,
+          "new_bytes": 87
+        }
+      ],
+      "standalone_candidate": {
+        "sha256": "90de3da655d34aa131f5fed4e59b26b2c8c33834688689d4c09bf9a5fbd7216f",
+        "bytes": 2702262,
+        "splitlines": 60574,
+        "direct_lean_verified": false
+      }
+    },
+    {
+      "declaration_index": 2999,
+      "declaration_name": "euclideanGaugeScale_pred_inv",
+      "header_sha256": "eeae638eb68a6c075a0b39aee6554eae6a0555b82bfc95941ae99d611b8e0d99",
+      "root_selector_ids": [
+        "E0060"
+      ],
+      "status": "CURRENT_ROOTS_CONFIRMED_UNVERIFIED",
+      "proof_body_only": true,
+      "analysis_note": "euclideanGaugeExponent_pred is declared in FixedPhaseHorocycleTrace, not PhysicalLocalL2.",
+      "replacements": [
+        {
+          "old_fragment": "Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent_pred",
+          "new_fragment": "Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseHorocycleTrace.euclideanGaugeExponent_pred",
+          "old_sha256": "76acdce7f5070c61e86329f9ca717a0bbe812887db0ba5968e35fee8e0d1b57d",
+          "new_sha256": "344f8031c7275f4c2ffce9d2d7c47549fc389198ec8a5a5bd0abfd436d64cb7f",
+          "old_bytes": 113,
+          "new_bytes": 96
+        }
+      ],
+      "standalone_candidate": {
+        "sha256": "1a21d16930ff620e24339c2518bd4432a661ef45c373c1e0c0cdd3f22b601841",
+        "bytes": 2702235,
+        "splitlines": 60573,
+        "direct_lean_verified": false
+      }
+    },
+    {
+      "declaration_index": 3002,
+      "declaration_name": "norm_l2Coordinate_le_of_fixedPhaseGauge_multiplier",
+      "header_sha256": "a1ad06ce62518f2569c49fa63ef806c1f661fefcbc8a6929c9d625fdd70e267b",
+      "root_selector_ids": [
+        "E0062",
+        "E0063"
+      ],
+      "status": "CURRENT_ROOTS_CONFIRMED_UNVERIFIED",
+      "proof_body_only": true,
+      "analysis_note": "Add the a.e. Lp scalar-coercion witness before rewriting hzSource, then normalize the residual real norm through Real.norm_eq_abs.",
+      "replacements": [
+        {
+          "old_fragment": "        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.coeFn_embedding_l2Coordinate_fixedPhaseGauge n u,\n        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ae_mem_open_chosenEuclidean]\n          with z hzTarget hzSource hzOpen\n      rw [hzTarget, hzSource, hGauge]",
+          "new_fragment": "        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.coeFn_embedding_l2Coordinate_fixedPhaseGauge n u,\n        MeasureTheory.Lp.coeFn_smul (C : ℂ)\n          (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n\n            (l2Coordinate n u)),\n        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ae_mem_open_chosenEuclidean]\n          with z hzTarget hzSource hzSmul hzOpen\n      rw [hzTarget, hzSmul, hzSource, hGauge]",
+          "old_sha256": "b4510855129b9212f145f0fbf40f12383099c01816e6b8b6238c5c115b08e927",
+          "new_sha256": "65358b18d4e660e99edf52763738d9c30e6fd6adf6dd9f95c2d250678a60b02f",
+          "old_bytes": 346,
+          "new_bytes": 572
+        },
+        {
+          "old_fragment": "      rw [norm_smul, Complex.norm_real, abs_of_nonneg hC]",
+          "new_fragment": "      rw [norm_smul, Complex.norm_real, Real.norm_eq_abs,\n        abs_of_nonneg hC]",
+          "old_sha256": "d94cc9818ad92a1634eba52037f085b8fc6526168f09ba0b6135a897705faf6a",
+          "new_sha256": "b187be2fe3c666fbc7ea488396840745af145760b6c8c7b07653132d5194b788",
+          "old_bytes": 57,
+          "new_bytes": 83
+        }
+      ],
+      "standalone_candidate": {
+        "sha256": "de64d315ba6276e4c73bc2174828c2cbb290b127f3f64c0359d2e95ff6c715aa",
+        "bytes": 2702504,
+        "splitlines": 60577,
+        "direct_lean_verified": false
+      }
+    }
+  ],
+  "repair_fragments_without_environment_candidate": {
+    "sha256": "458a1881d53a973368783b95bec2a9b30d1721759151cd0850c82aff6318d917",
+    "bytes": 2702731,
+    "splitlines": 60584,
+    "direct_lean_verified": false
+  },
+  "candidate_if_all_selected": {
+    "sha256": "e8179c6e2704f1ee83cb5551b0e981cab67fec918dfd78229439bfb3884abd78",
+    "bytes": 2702983,
+    "splitlines": 60590,
+    "direct_lean_verified": false,
+    "not_a_full_all_error_candidate": true
+  },
+  "preservation_contract": {
+    "all_existing_documentation_and_comments_byte_preserved": true,
+    "all_existing_at_attributes_byte_preserved": true,
+    "authorized_local_instance_attribute_delta_exactly_one": true,
+    "new_declarations": 0,
+    "all_theorem_headers_and_claims_byte_preserved": true,
+    "declaration_sequence_preserved": true,
+    "all_unselected_source_bytes_preserved": true,
+    "executable_forbidden_six_zero_before_and_after": true,
+    "raw_forbidden_mention_ledger_unchanged": true
+  },
+  "merge_contract": {
+    "gate": "work/fa_d0a3_idx2974_3002_override_gate.py",
+    "full_inventory_root_revalidation_required": true,
+    "historical_preview_may_not_satisfy_gate": true,
+    "fragment_counts_required": "environment=(1,0); declaration fragments=(1,1,0,0)",
+    "direct_lean_status_must_remain_unverified": true,
+    "standard_fa_fragment_override_compatible": false,
+    "reason_standard_merger_is_not_used": "The authorized namespace environment fragment precedes idx2974 and is outside every proof-body declaration_region; silently attaching it to another declaration would weaken root ownership."
+  },
+  "local_execution": {
+    "lean": false,
+    "lake": false,
+    "git": false,
+    "github_read": false,
+    "github_write": false,
+    "remote_upload": false
+  }
+}

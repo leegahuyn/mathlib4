@@ -1,0 +1,20 @@
+ContMDiff.congr.{u_1, u_2, u_3, u_4, u_5, u_6, u_7} {𝕜 : Type u_1} [NontriviallyNormedField 𝕜] {E : Type u_2}
+  [NormedAddCommGroup E] [NormedSpace 𝕜 E] {H : Type u_3} [TopologicalSpace H] {I : ModelWithCorners 𝕜 E H}
+  {M : Type u_4} [TopologicalSpace M] [ChartedSpace H M] {E' : Type u_5} [NormedAddCommGroup E'] [NormedSpace 𝕜 E']
+  {H' : Type u_6} [TopologicalSpace H'] {I' : ModelWithCorners 𝕜 E' H'} {M' : Type u_7} [TopologicalSpace M']
+  [ChartedSpace H' M'] {f f₁ : M → M'} {n : WithTop ℕ∞} (h : ContMDiff I I' n f) (h₁ : ∀ (y : M), f₁ y = f y) :
+  ContMDiff I I' n f₁
+extChartAt_comp.{u_1, u_2, u_4, u_6, u_7} {𝕜 : Type u_1} {E : Type u_2} {H : Type u_4} {M' : Type u_6} {H' : Type u_7}
+  [NontriviallyNormedField 𝕜] [NormedAddCommGroup E] [NormedSpace 𝕜 E] [TopologicalSpace H] {I : ModelWithCorners 𝕜 E H}
+  [TopologicalSpace H'] [TopologicalSpace M'] [ChartedSpace H' M'] [ChartedSpace H H'] (x : M') :
+  extChartAt I x = (chartAt H' x).toPartialEquiv ≫ extChartAt I (↑(chartAt H' x) x)
+mem_extChartAt_target.{u_1, u_2, u_3, u_4} {𝕜 : Type u_1} {E : Type u_2} {M : Type u_3} {H : Type u_4}
+  [NontriviallyNormedField 𝕜] [NormedAddCommGroup E] [NormedSpace 𝕜 E] [TopologicalSpace H] [TopologicalSpace M]
+  {I : ModelWithCorners 𝕜 E H} [ChartedSpace H M] (x : M) : ↑(extChartAt I x) x ∈ (extChartAt I x).target
+/tmp/qym-r1-api/Probe.lean:14:2: error: `simp` made no progress
+/tmp/qym-r1-api/Probe.lean:18:37: error: unsolved goals
+E : Type u
+inst✝¹ : NormedAddCommGroup E
+inst✝ : InnerProductSpace ℂ E
+a b : ℝ
+⊢ (↑a ^ 2).re + 1 / 4 * (↑b ^ 2).re = a ^ 2 + 1 / 4 * b ^ 2

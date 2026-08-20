@@ -1,0 +1,59 @@
+name: Reset M2A v5 retry after variant patch
+
+on:
+  push:
+    branches: [fix/primality-sheaf-clean-build]
+    paths:
+      - '.github/workflows/focused-m2a-variant-retry-reset-v5-20260807.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: reset-m2a-v5-after-variant-patch
+  cancel-in-progress: false
+
+jobs:
+  reset:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      BRANCH: fix/primality-sheaf-clean-build
+    steps:
+      - name: Wait for variant patch and reset only the phase counter
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git clone --branch "${BRANCH}" --single-branch \
+            "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" repo
+          cd repo
+          for wait in $(seq 1 20); do
+            git fetch origin "${BRANCH}"
+            git reset --hard "origin/${BRANCH}"
+            if grep -Fq 'm2a-v61-v68-plus-316-smoke' scripts/focused_m2a_candidate_v5_20260807.sh; then
+              break
+            fi
+            sleep 15
+          done
+          grep -Fq 'm2a-v61-v68-plus-316-smoke' scripts/focused_m2a_candidate_v5_20260807.sh
+          counter=.ci/focused/m2a_candidate_v5_retry.txt
+          mkdir -p "$(dirname "${counter}")"
+          printf '0\n' > "${counter}"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "${counter}"
+          if git diff --cached --quiet; then
+            printf '1\n' > "${counter}"
+            git add "${counter}"
+          fi
+          git commit -m 'ci: restart M2A v5 after candidate-variant patch'
+          for attempt in 1 2 3 4; do
+            if git push origin "HEAD:${BRANCH}"; then exit 0; fi
+            git fetch origin "${BRANCH}"
+            git rebase "origin/${BRANCH}"
+            sleep $((attempt * 2))
+          done
+          exit 1

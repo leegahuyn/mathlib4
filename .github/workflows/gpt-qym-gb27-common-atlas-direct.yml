@@ -1,0 +1,134 @@
+name: GPT QYM GB27 common-atlas direct Lean
+
+on:
+  push:
+    branches: [gpt/qym-gb57-global-batch-round2-20260820]
+    paths:
+      - .github/qym_patch_gb27_atlas.py
+      - .github/qym_full_direct_driver.py
+      - .github/workflows/gpt-qym-gb27-common-atlas-direct.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: gpt-qym-gb27-common-atlas-direct
+  cancel-in-progress: true
+
+env:
+  BRANCH: gpt/qym-gb57-global-batch-round2-20260820
+  QYM: PrimalitySheafVerification/QYM.lean
+  OLEAN: .lake/build/lib/lean/PrimalitySheafVerification
+  OUT: /tmp/qym-gb27-common-atlas
+  CANON_SHA256: 8abc23b49c1cabed88fac0a67c3958d4dec7411d9c078ff555e137a1c19560d7
+  FINAL_SHA256: 13f61def42995ff3b1a1c3ca223e7bc8f1d6cc30728c3b64a8a5f25985dd07d4
+  QYM_RESULT_SCHEMA: qym-gb27-common-atlas-v2
+
+jobs:
+  direct:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - name: Gate parser-clean GB27 and install Lean
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT" "$OLEAN"
+          test "$GITHUB_REF_NAME" = "$BRANCH"
+          test "$(tr -d '\r\n' < lean-toolchain)" = leanprover/lean4:v4.33.0-rc1
+          test "$(sha256sum "$QYM" | awk '{print $1}')" = "$CANON_SHA256"
+          python3 -m py_compile .github/qym_patch_gb27_common.py \
+            .github/qym_patch_gb27_atlas.py .github/qym_full_direct_driver.py
+          curl --retry 8 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none >"$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          tc="$(tr -d '\r\n' < lean-toolchain)"
+          elan toolchain install "$tc" >"$OUT/toolchain.log" 2>&1
+          lean --version | tee "$OUT/lean-version.txt"
+          lake --version | tee "$OUT/lake-version.txt"
+          lake exe cache get >"$OUT/mathlib-cache.log" 2>&1
+
+      - name: Restore dependency objects
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: |
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.ilean
+          key: qym-deps-v4-${{ runner.os }}-${{ hashFiles('lean-toolchain','lake-manifest.json','lakefile.lean','PrimalitySheafVerification/Mock2.lean','PrimalitySheafVerification/Mock2_Advanced.lean','PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean','PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean') }}
+          restore-keys: |
+            qym-deps-v3-${{ runner.os }}-
+            qym-probe4-deps-v1-${{ runner.os }}-
+
+      - name: Ensure dependency objects by direct Lean
+        shell: bash
+        run: |
+          set -euo pipefail
+          for source in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated; do
+            if [[ ! -s "$OLEAN/$source.olean" || ! -s "$OLEAN/$source.ilean" ]]; then
+              max_errors=1
+              [[ "$source" = Mock2_FunctionalAnalysis* ]] && max_errors=2000
+              lake env lean "-DmaxErrors=$max_errors" -DwarningAsError=false \
+                -o "$OLEAN/$source.olean" -i "$OLEAN/$source.ilean" \
+                "PrimalitySheafVerification/$source.lean" >"$OUT/$source.log" 2>&1
+            fi
+            test -s "$OLEAN/$source.olean"
+            test -s "$OLEAN/$source.ilean"
+          done
+
+      - name: Build and compile cumulative candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp "$QYM" "$OUT/QYM.GB27.lean"
+          python3 -B .github/qym_patch_gb27_common.py \
+            "$OUT/QYM.GB27.lean" "$OUT/QYM.common.lean"
+          python3 -B .github/qym_patch_gb27_atlas.py \
+            "$OUT/QYM.common.lean" "$OUT/QYM.candidate.lean"
+          test "$(sha256sum "$OUT/QYM.candidate.lean" | awk '{print $1}')" = "$FINAL_SHA256"
+          python3 -B .github/qym_full_direct_driver.py \
+            "$OUT/QYM.candidate.lean" "$QYM" "$OUT"
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: qym-gb27-common-atlas-${{ github.run_id }}
+          path: ${{ env.OUT }}
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Persist compact direct result
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s "$OUT/RESULT.json"
+          rm -rf .github/qym-frontier/GB27_COMMON_ATLAS
+          mkdir -p .github/qym-frontier/GB27_COMMON_ATLAS
+          cp "$OUT/RESULT.json" "$OUT/FULL_RESULT.json" "$OUT/errors.txt" \
+            .github/qym-frontier/GB27_COMMON_ATLAS/
+          git checkout "$GITHUB_SHA" -- "$QYM"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .github/qym-frontier/GB27_COMMON_ATLAS "$QYM"
+          git commit -m "QYM GB27: persist common-atlas direct result ${GITHUB_RUN_ID} [skip ci]"
+          for attempt in 1 2 3 4 5; do
+            git fetch origin "$BRANCH"
+            if git rebase "origin/$BRANCH" && git push origin "HEAD:$BRANCH"; then exit 0; fi
+            git rebase --abort || true
+            sleep $((attempt * 5))
+          done
+          exit 1

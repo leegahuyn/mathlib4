@@ -58,6 +58,7 @@ import Mathlib.GroupTheory.Index
 import Mathlib.GroupTheory.SpecificGroups.Cyclic
 import Mathlib.LinearAlgebra.Matrix.Block
 import Mathlib.LinearAlgebra.Matrix.NonsingularInverse
+import Mathlib.LinearAlgebra.Matrix.Rank
 import Mathlib.NumberTheory.Padics.MahlerBasis
 import Mathlib.Analysis.SpecialFunctions.Log.Basic
 import Mathlib.Analysis.Complex.UpperHalfPlane.Exp
@@ -555,7 +556,7 @@ theorem paperClaimMapEntry_id (id : PaperClaimId) :
 theorem paperClaimMap_complete (id : PaperClaimId) :
     paperClaimMapEntry id ∈ PaperClaimMap := by
   unfold PaperClaimMap
-  exact List.mem_map_of_mem paperClaimMapEntry (PaperClaimId.mem_all id)
+  exact List.mem_map_of_mem (PaperClaimId.mem_all id)
 
 theorem paperClaimMap_complete_with_status (id : PaperClaimId) :
     ∃ e ∈ PaperClaimMap,
@@ -900,12 +901,12 @@ def PaperClaimInventory : List PaperClaimInventoryEntry :=
 theorem paperClaimInventory_complete (id : PaperClaimId) :
     paperClaimInventoryEntry id ∈ PaperClaimInventory := by
   unfold PaperClaimInventory
-  exact List.mem_map_of_mem paperClaimInventoryEntry (PaperClaimId.mem_all id)
+  exact List.mem_map_of_mem (PaperClaimId.mem_all id)
 
 theorem paperClaimInventory_ids_match_claim_universe :
     PaperClaimInventory.map (fun e => e.id) = PaperClaimId.all := by
   unfold PaperClaimInventory
-  simp
+  simp [List.map_map, Function.comp_def]
 
 theorem paperClaimInventory_status_matches_claimMap :
     ∀ e ∈ PaperClaimInventory,
@@ -913,7 +914,7 @@ theorem paperClaimInventory_status_matches_claimMap :
   intro e he
   unfold PaperClaimInventory at he
   rcases List.mem_map.mp he with ⟨id, _hid, rfl⟩
-  exact paperClaimInventoryEntry_status id
+  simpa [paperClaimInventoryEntry_id] using paperClaimInventoryEntry_status id
 
 theorem paperClaimInventory_has_lemma2_gate_equalizer :
     ∃ e ∈ PaperClaimInventory,
@@ -929,6 +930,7 @@ theorem paperClaimInventory_has_theoremI8_base_change :
     paperClaimInventory_complete PaperClaimId.theoremI8BaseChangeStability,
     paperClaimInventoryEntry_id PaperClaimId.theoremI8BaseChangeStability⟩
 
+set_option maxRecDepth 10000 in
 theorem paperClaimInventory_external_human_audit_note_nonempty :
     ∀ id : PaperClaimId,
       (paperClaimInventoryEntry id).humanAuditNote ≠ "" := by
@@ -1088,8 +1090,7 @@ theorem certificateBoundaryEntry_id (id : CertificateBoundaryId) :
 theorem certificateBoundaryMap_complete (id : CertificateBoundaryId) :
     certificateBoundaryEntry id ∈ CertificateBoundaryMap := by
   unfold CertificateBoundaryMap
-  exact List.mem_map_of_mem certificateBoundaryEntry
-    (CertificateBoundaryId.mem_all id)
+  exact List.mem_map_of_mem (CertificateBoundaryId.mem_all id)
 
 theorem certificateBoundary_tail_not_rademacher_kloosterman_tail :
     "Rademacher/Kloosterman tail theorem" ∈
@@ -1494,8 +1495,7 @@ theorem formalizationPriorityEntry_id (id : FormalizationPriorityId) :
 theorem formalizationPriorityMap_complete (id : FormalizationPriorityId) :
     formalizationPriorityEntry id ∈ FormalizationPriorityMap := by
   unfold FormalizationPriorityMap
-  exact List.mem_map_of_mem formalizationPriorityEntry
-    (FormalizationPriorityId.mem_all id)
+  exact List.mem_map_of_mem (FormalizationPriorityId.mem_all id)
 
 theorem priority_compile_and_axiom_audit_logs_external :
     (formalizationPriorityEntry
@@ -1715,7 +1715,7 @@ theorem finalPriorityEntry_id (id : FinalPriorityId) :
 theorem finalPriorityMap_complete (id : FinalPriorityId) :
     finalPriorityEntry id ∈ FinalPriorityMap := by
   unfold FinalPriorityMap
-  exact List.mem_map_of_mem finalPriorityEntry (FinalPriorityId.mem_all id)
+  exact List.mem_map_of_mem (FinalPriorityId.mem_all id)
 
 theorem finalPriority_build_log_external :
     (finalPriorityEntry FinalPriorityId.leanCompileBuildLog).state =
@@ -1968,7 +1968,7 @@ theorem mathlibGapStrategyEntry_id (id : MathlibGapId) :
 theorem mathlibGapStrategyMap_complete (id : MathlibGapId) :
     mathlibGapStrategyEntry id ∈ MathlibGapStrategyMap := by
   unfold MathlibGapStrategyMap
-  exact List.mem_map_of_mem mathlibGapStrategyEntry (MathlibGapId.mem_all id)
+  exact List.mem_map_of_mem (MathlibGapId.mem_all id)
 
 theorem strategy_trueDerivedTor_uses_TorProxy :
     (mathlibGapStrategyEntry MathlibGapId.trueDerivedTor).workaroundKind =
@@ -2231,8 +2231,7 @@ theorem elementaryCompletionGateEntry_id (id : ElementaryCompletionGateId) :
 theorem elementaryCompletionGateMap_complete (id : ElementaryCompletionGateId) :
     elementaryCompletionGateEntry id ∈ ElementaryCompletionGateMap := by
   unfold ElementaryCompletionGateMap
-  exact List.mem_map_of_mem elementaryCompletionGateEntry
-    (ElementaryCompletionGateId.mem_all id)
+  exact List.mem_map_of_mem (ElementaryCompletionGateId.mem_all id)
 
 theorem elementaryCompletionGate_build_logs_external :
     (elementaryCompletionGateEntry
@@ -2544,8 +2543,7 @@ theorem certificationCriterionEntry_id (id : CertificationCriterionId) :
 theorem certificationCriterionMap_complete (id : CertificationCriterionId) :
     certificationCriterionEntry id ∈ CertificationCriterionMap := by
   unfold CertificationCriterionMap
-  exact List.mem_map_of_mem certificationCriterionEntry
-    (CertificationCriterionId.mem_all id)
+  exact List.mem_map_of_mem (CertificationCriterionId.mem_all id)
 
 theorem criterion_compile_requires_external_build_log :
     (certificationCriterionEntry CertificationCriterionId.wholeFileCompiles).status =
@@ -2663,11 +2661,13 @@ theorem mem_ker_pairResidueMap_iff (M N : ℕ) (a : ℤ) :
       (ZMod.intCast_zmod_eq_zero_iff_dvd a M).mp (Prod.ext_iff.mp h).1
     have hN : (N : ℤ) ∣ a :=
       (ZMod.intCast_zmod_eq_zero_iff_dvd a N).mp (Prod.ext_iff.mp h).2
-    exact coe_lcm_dvd_iff.mpr ⟨hM, hN⟩
+    change (lcm (M : ℤ) (N : ℤ) : ℤ) ∣ a
+    exact (lcm_dvd_iff).2 ⟨hM, hN⟩
   · intro h
+    change (lcm (M : ℤ) (N : ℤ) : ℤ) ∣ a at h
     exact Prod.ext
-      ((ZMod.intCast_zmod_eq_zero_iff_dvd a M).mpr (coe_lcm_dvd_iff.mp h).1)
-      ((ZMod.intCast_zmod_eq_zero_iff_dvd a N).mpr (coe_lcm_dvd_iff.mp h).2)
+      ((ZMod.intCast_zmod_eq_zero_iff_dvd a M).mpr (lcm_dvd_iff.mp h).1)
+      ((ZMod.intCast_zmod_eq_zero_iff_dvd a N).mpr (lcm_dvd_iff.mp h).2)
 
 /-- The kernel of the pair residue map is generated by the lcm of the moduli. -/
 theorem ker_pairResidueMap_eq_lcm (M N : ℕ) :
@@ -2811,7 +2811,7 @@ theorem card_ker_mulLeft (N : ℕ) [NeZero N] (M : ℕ) :
 We deliberately do not invoke derived functor `Tor`; the PID resolution
 calculation is represented by this concrete finite additive subgroup.
 -/
-def TorProxy (M N : ℕ) [NeZero N] : Type :=
+abbrev TorProxy (M N : ℕ) [NeZero N] : Type :=
   (AddMonoidHom.mulLeft (M : ZMod N)).ker
 
 /-- The carrier subgroup underlying `TorProxy`. -/
@@ -2862,13 +2862,12 @@ theorem torProxy_nontrivial_iff_one_lt_gcd (M N : ℕ) [NeZero N] :
 theorem torProxy_generator_dvd (M N : ℕ) :
     N ∣ M * (N / Nat.gcd M N) := by
   let g := Nat.gcd M N
-  have hM : M = g * (M / g) := (Nat.mul_div_cancel' (Nat.gcd_dvd_left M N)).symm
-  have hN : N = g * (N / g) := (Nat.mul_div_cancel' (Nat.gcd_dvd_right M N)).symm
-  refine ⟨M / g, ?_⟩
+  obtain ⟨c, hc⟩ := Nat.gcd_dvd_left M N
+  refine ⟨c, ?_⟩
   calc
-    M * (N / g) = (g * (M / g)) * (N / g) := by rw [hM]
-    _ = (g * (N / g)) * (M / g) := by ac_rfl
-    _ = N * (M / g) := by rw [← hN]
+    M * (N / g) = (g * c) * (N / g) := by rw [hc]
+    _ = (g * (N / g)) * c := by ac_rfl
+    _ = N * c := by rw [Nat.mul_div_cancel' (Nat.gcd_dvd_right M N)]
 
 /-- The explicit carrier value `N / gcd(M,N)` lies in the Tor kernel. -/
 theorem torProxy_explicitGenerator_mem (M N : ℕ) [NeZero N] :
@@ -2898,7 +2897,7 @@ theorem torProxy_gcd_zsmul_generator_eq_zero (M N : ℕ) [NeZero N] :
   ext
   change ((Nat.gcd M N : ℤ) •
       (((N / Nat.gcd M N : ℕ) : ZMod N))) = 0
-  rw [zsmul_eq_mul]
+  rw [zsmul_eq_mul, Int.cast_natCast]
   change ((Nat.gcd M N : ZMod N) *
       ((N / Nat.gcd M N : ℕ) : ZMod N)) = 0
   rw [← Nat.cast_mul, Nat.mul_div_cancel' (Nat.gcd_dvd_right M N),
@@ -2922,7 +2921,10 @@ noncomputable def zmodGcdToTorProxyHom (M N : ℕ) [NeZero N] :
 /-- The constructive quotient map sends `1` to the explicit Tor generator. -/
 theorem zmodGcdToTorProxyHom_one (M N : ℕ) [NeZero N] :
     zmodGcdToTorProxyHom M N 1 = torProxyExplicitGenerator M N := by
-  simp [zmodGcdToTorProxyHom, torProxyGeneratorIntHom]
+  unfold zmodGcdToTorProxyHom
+  rw [← Int.cast_one, ZMod.lift_coe]
+  change (1 : ℤ) • torProxyExplicitGenerator M N = torProxyExplicitGenerator M N
+  simp
 
 /-- In carrier form, `1 : ZMod (gcd M N)` maps to `N / gcd(M,N) : ZMod N`. -/
 theorem zmodGcdToTorProxyHom_one_coe (M N : ℕ) [NeZero N] :
@@ -2989,11 +2991,18 @@ noncomputable def torProxyLevelReduction
   toFun x :=
     ⟨(ZMod.castHom h (ZMod N)) ((x : TorProxy M N') : ZMod N'), by
       have hx : (M : ZMod N') * ((x : TorProxy M N') : ZMod N') = 0 := by
-        simpa using x.property
+        change (M : ZMod N') * (x : ZMod N') = 0
+        exact x.property
       have hmap := congrArg (fun y : ZMod N' => (ZMod.castHom h (ZMod N)) y) hx
-      simpa using hmap⟩
-  map_zero' := by ext; simp
-  map_add' x y := by ext; simp
+      change (M : ZMod N) *
+        (ZMod.castHom h (ZMod N)) ((x : TorProxy M N') : ZMod N') = 0
+      simpa only [map_mul, map_natCast, map_zero] using hmap⟩
+  map_zero' := by
+    apply Subtype.ext
+    exact map_zero (ZMod.castHom h (ZMod N))
+  map_add' x y := by
+    apply Subtype.ext
+    exact map_add (ZMod.castHom h (ZMod N)) (x : ZMod N') (y : ZMod N')
 
 /-- Carrier-level statement of `torProxyLevelReduction`. -/
 @[simp] theorem torProxyLevelReduction_coe
@@ -3010,7 +3019,7 @@ theorem torProxyLevelReduction_commutes_with_mulLeft
         ((torProxyLevelReduction M h x : TorProxy M N) : ZMod N) =
       (ZMod.castHom h (ZMod N))
         ((M : ZMod N') * ((x : TorProxy M N') : ZMod N')) := by
-  simp [torProxyLevelReduction_coe]
+  simp only [torProxyLevelReduction_coe, map_mul, map_natCast]
 
 theorem obstructionFree_iff_card {g : ℕ} [NeZero g] :
     Fintype.card (ZMod g) = 1 ↔ g = 1 := by simp [ZMod.card]
@@ -3059,7 +3068,7 @@ theorem card_Tor_eq_exp_IC {M N : ℕ} (hM : M ≠ 0) (hN : N ≠ 0) :
   rw [IC, Real.exp_sum, gcd_eq_prod_primeFactors hM hN, Nat.cast_prod]
   refine Finset.prod_congr rfl (fun q hq => ?_)
   have hqpos : (0 : ℝ) < (q : ℝ) := by exact_mod_cast (Nat.mem_primeFactors.mp hq).1.pos
-  rw [thickness, Nat.cast_pow, ← Nat.cast_min, ← Real.log_pow, Real.exp_log (by positivity)]
+  rw [thickness, Nat.cast_pow, ← Real.log_pow, Real.exp_log (by positivity)]
 
 /-- Indicator complexity is exactly the logarithm of the gcd obstruction. -/
 theorem IC_eq_log_gcd {M N : ℕ} (hM : M ≠ 0) (hN : N ≠ 0) :
@@ -3339,7 +3348,7 @@ noncomputable def torProxyCRTPrimewiseEquivGcdSupport (M N : ℕ) [NeZero N] :
   exact
     (torProxy_equiv_zmod_gcd M N).trans
       ((ZMod.ringEquivCongr (Nat.gcd_comm N M)).toAddEquiv.trans
-        (ZMod.equivPi hg).toAddEquiv)
+        (ZMod.equivPi (Nat.gcd M N) hg).toAddEquiv)
 
 /-- The gcd-support CRT decomposition is available without a certificate. -/
 theorem torProxyCRTPrimewiseEquivGcdSupport_nonempty
@@ -3359,7 +3368,9 @@ structure TorProxyCRTDecompositionCertificate (M N : ℕ) [NeZero N] where
   compatible_with_gcd_equiv :
     ∀ x : TorProxy M N,
       torToPrimewise x =
-        gcdToPrimewise ((torProxy_equiv_zmod_gcd M N) x)
+        gcdToPrimewise
+          ((ZMod.ringEquivCongr (Nat.gcd_comm N M))
+            ((torProxy_equiv_zmod_gcd M N) x))
 
 namespace TorProxyCRTDecompositionCertificate
 
@@ -3368,7 +3379,9 @@ variable {M N : ℕ} [NeZero N]
 theorem compatible
     (C : TorProxyCRTDecompositionCertificate M N) (x : TorProxy M N) :
     C.torToPrimewise x =
-      C.gcdToPrimewise ((torProxy_equiv_zmod_gcd M N) x) :=
+      C.gcdToPrimewise
+          ((ZMod.ringEquivCongr (Nat.gcd_comm N M))
+            ((torProxy_equiv_zmod_gcd M N) x)) :=
   C.compatible_with_gcd_equiv x
 
 theorem tor_equiv_primewise
@@ -3379,7 +3392,9 @@ theorem tor_equiv_primewise
 theorem compatible_from_certificate
     (C : TorProxyCRTDecompositionCertificate M N) (x : TorProxy M N) :
     C.torToPrimewise x =
-      C.gcdToPrimewise ((torProxy_equiv_zmod_gcd M N) x) :=
+      C.gcdToPrimewise
+          ((ZMod.ringEquivCongr (Nat.gcd_comm N M))
+            ((torProxy_equiv_zmod_gcd M N) x)) :=
   C.compatible x
 
 theorem tor_equiv_primewise_from_certificate
@@ -3770,7 +3785,7 @@ theorem ratReduceZModPrimePow_denominator_witness_independent (p k : ℕ)
 
 /-- The canonical common denominator for a finite coefficient window. -/
 def commonDenominator {ι : Type*} (s : Finset ι) (a : ι → ℚ) : ℕ :=
-  ∏ i in s, (a i).den
+  ∏ i ∈ s, (a i).den
 
 theorem commonDenominator_ne_zero {ι : Type*} (s : Finset ι) (a : ι → ℚ) :
     commonDenominator s a ≠ 0 := by
@@ -3840,7 +3855,7 @@ structure PAdicNormalizationFinite (ι : Type*) (s : Finset ι) (a : ι → ℚ)
 
 /-- Corrected Lemma 9: finite p-adic normalization uses denominator inverses in
 `ZMod (p^k)` and keeps the denominator-cleared integer channel separate. -/
-theorem padic_normalization_finite_corrected {ι : Type*} (s : Finset ι) (a : ι → ℚ)
+noncomputable def padic_normalization_finite_corrected {ι : Type*} (s : Finset ι) (a : ι → ℚ)
     {p k : ℕ} (hpprime : Nat.Prime p) (hk : 0 < k)
     (hp : ∀ i ∈ s, IsPIntegralAt p (a i)) :
     PAdicNormalizationFinite ι s a p k := by
@@ -4089,7 +4104,7 @@ If all denominators are coprime to `p`, every coefficient has a well-defined
 finite reduction in `ZMod (p^k)`, and any common-denominator channel is recorded
 only as a scaled integer channel.
 -/
-theorem padic_finite_normalization_corrected {p k N : ℕ} (a : RatCoeff N)
+noncomputable def padic_finite_normalization_corrected {p k N : ℕ} (a : RatCoeff N)
     (hpprime : Nat.Prime p) (hk : 0 < k)
     (ha : PIntegralOn p a) : PAdicFiniteNormalization p k N a := by
   classical
@@ -4518,8 +4533,7 @@ theorem pAdicAPIAuditEntry_id (id : PAdicAPIAuditId) :
 theorem pAdicAPIAuditMap_complete (id : PAdicAPIAuditId) :
     pAdicAPIAuditEntry id ∈ PAdicAPIAuditMap := by
   unfold PAdicAPIAuditMap
-  exact List.mem_map_of_mem pAdicAPIAuditEntry
-    (PAdicAPIAuditId.mem_all id)
+  exact List.mem_map_of_mem (PAdicAPIAuditId.mem_all id)
 
 theorem pAdicAPIAudit_raw_denominator_deprecated :
     (pAdicAPIAuditEntry PAdicAPIAuditId.rawDenominatorCoprimePow).status =
@@ -4653,7 +4667,7 @@ theorem mahlerMatrix_invertible (N : ℕ) (R : Type*) [CommRing R] :
   have hunit : IsUnit ((MahlerMatrix N R).det) := by
     rw [hdet]
     exact ⟨1, rfl⟩
-  exact ⟨Matrix.invertibleOfIsUnitDet hunit⟩
+  exact ⟨Matrix.invertibleOfIsUnitDet (MahlerMatrix N R) hunit⟩
 
 /-- The inverse matrix for the finite binomial/Mahler evaluation matrix. -/
 noncomputable def MahlerInverseMatrix (N : ℕ) (R : Type*) [CommRing R] :
@@ -4742,7 +4756,7 @@ theorem finiteMahlerInterpolates_from_certificate {N : ℕ} {R : Type*} [CommRin
 theorem finiteMahlerEval_eq_mahlerMatrix_mulVec {N : ℕ} {R : Type*} [Semiring R]
     (coeffs : Fin (N + 1) → R) (n : Fin (N + 1)) :
     finiteMahlerEval coeffs n.val = (MahlerMatrix N R).mulVec coeffs n := by
-  simp [finiteMahlerEval, MahlerMatrix, Matrix.mulVec]
+  rfl
 
 /--
 The finite binomial inversion theorem, isolated as a small theorem package.
@@ -4792,7 +4806,6 @@ theorem finiteDifferenceCoeff_eq_mahlerInverseMatrix_mulVec
       (MahlerInverseMatrix N R).mulVec samples := by
   classical
   rw [finiteDifferenceCoeff_formula]
-  rfl
 
 /-- The finite-difference matrix is a right inverse to the Mahler
 evaluation matrix on the finite window.  This is the matrix form of finite
@@ -4821,7 +4834,7 @@ theorem finiteMahlerBinomialInversion_constructive
       (MahlerMatrix N R).mulVec
           ((MahlerInverseMatrix N R).mulVec samples) = samples := by
     funext n
-    rw [← Matrix.mulVec_mulVec, mahlerMatrix_mul_mahlerInverseMatrix]
+    rw [Matrix.mulVec_mulVec, mahlerMatrix_mul_mahlerInverseMatrix]
     simp [Matrix.one_mulVec]
   rw [finiteMahlerEval_eq_mahlerMatrix_mulVec, hcoeff]
   exact congrFun hmul n
@@ -4988,7 +5001,7 @@ theorem mahlerMatrix_invertible_and_unique_coefficients_of_engine
   ⟨mahlerMatrix_invertible N R, finiteMahler_unique_coefficients_of_engine E samples⟩
 
 /-- Prime-power specialization used for finite p-adic congruence windows. -/
-theorem zmod_finiteMahlerCertificate_of_engine
+noncomputable def zmod_finiteMahlerCertificate_of_engine
     {p k N : ℕ} (hp : Nat.Prime p) (hk : 0 < k)
     (E : FiniteMahlerInterpolationEngine N (ZMod (p ^ k)))
     (samples : Fin (N + 1) → ZMod (p ^ k)) :
@@ -4996,7 +5009,7 @@ theorem zmod_finiteMahlerCertificate_of_engine
   finiteMahlerInterpolationCertificate_of_engine E samples
 
 /-- Prime-power certificate generated directly from arbitrary samples. -/
-theorem zmod_finiteMahlerCertificate_of_samples
+noncomputable def zmod_finiteMahlerCertificate_of_samples
     {p k N : ℕ} (hp : Nat.Prime p) (hk : 0 < k)
     (samples : Fin (N + 1) → ZMod (p ^ k)) :
     FiniteMahlerInterpolationCertificate N (ZMod (p ^ k)) :=
@@ -5097,12 +5110,13 @@ module-valued Mahler evaluation on the window `{0, ..., N}`.
 theorem mathlib_mahlerSeries_apply_nat_eq_finiteMahlerEvalSMul
     {E : Type*} [NormedAddCommGroup E] [Module ℤ_[p] E]
     [IsBoundedSMul ℤ_[p] E] [IsUltrametricDist E] [CompleteSpace E]
-    (a : ℕ → E) (ha : Tendsto a atTop (𝓝 0))
+    (a : ℕ → E) (ha : Filter.Tendsto a Filter.atTop (𝓝 0))
     {N m : ℕ} (hmN : m ≤ N) :
     PadicInt.mahlerSeries (p := p) a (m : ℤ_[p]) =
       finiteMahlerEvalSMul (N := N) (R := ℤ_[p]) (M := E)
         (fun j : Fin (N + 1) => a j.val) m := by
-  simpa [finiteMahlerEvalSMul] using
+  simpa [finiteMahlerEvalSMul, ← Fin.sum_univ_eq_sum_range,
+    Nat.cast_smul_eq_nsmul] using
     (PadicInt.mahlerSeries_apply_nat (p := p) (a := a) ha
       (m := m) (n := N) hmN)
 
@@ -5117,7 +5131,7 @@ binomial inversion coefficients on the chosen window.
 structure MathlibFiniteToInfiniteMahlerBridge (p N : ℕ) [Fact p.Prime] where
   samples : Fin (N + 1) → ℤ_[p]
   infiniteCoeffs : ℕ → ℤ_[p]
-  tendsto_zero : Tendsto infiniteCoeffs atTop (𝓝 0)
+  tendsto_zero : Filter.Tendsto infiniteCoeffs Filter.atTop (𝓝 0)
   initial_segment :
     ∀ j : Fin (N + 1), infiniteCoeffs j.val = finiteDifferenceCoeff samples j
 
@@ -5148,6 +5162,8 @@ theorem mahlerSeries_eq_finiteMahlerEval_on_window (n : Fin (N + 1)) :
           unfold finiteMahlerEvalSMul
           refine Finset.sum_congr rfl ?_
           intro j _hj
+          change (Nat.choose n.val j.val : ℤ_[p]) • B.infiniteCoeffs j.val =
+            (Nat.choose n.val j.val : ℤ_[p]) • finiteDifferenceCoeff B.samples j
           rw [B.initial_segment j]
     _ = finiteMahlerEval (finiteDifferenceCoeff B.samples) n.val :=
           finiteMahlerEvalSMul_eq_finiteMahlerEval_self
@@ -5257,63 +5273,60 @@ def pdfMahlerEvalZMod25 (n : ℕ) : ZMod25 :=
 
 theorem pdfMahler_value_0 :
     pdfMahlerEvalZMod25 0 = pdfMahlerInputZMod25 ⟨0, by norm_num⟩ := by
-  norm_num [pdfMahlerEvalZMod25, finiteMahlerEval, pdfMahlerCoeffZMod25,
+  norm_num [Nat.choose, pdfMahlerEvalZMod25, finiteMahlerEval, pdfMahlerCoeffZMod25,
     pdfMahlerInputZMod25]
 
 theorem pdfMahler_value_1 :
     pdfMahlerEvalZMod25 1 = pdfMahlerInputZMod25 ⟨1, by norm_num⟩ := by
-  norm_num [pdfMahlerEvalZMod25, finiteMahlerEval, pdfMahlerCoeffZMod25,
+  norm_num [Nat.choose, pdfMahlerEvalZMod25, finiteMahlerEval, pdfMahlerCoeffZMod25,
     pdfMahlerInputZMod25]
 
 theorem pdfMahler_value_2 :
     pdfMahlerEvalZMod25 2 = pdfMahlerInputZMod25 ⟨2, by norm_num⟩ := by
-  norm_num [pdfMahlerEvalZMod25, finiteMahlerEval, pdfMahlerCoeffZMod25,
+  norm_num [Nat.choose, pdfMahlerEvalZMod25, finiteMahlerEval, pdfMahlerCoeffZMod25,
     pdfMahlerInputZMod25]
 
 theorem pdfMahler_value_3 :
     pdfMahlerEvalZMod25 3 = pdfMahlerInputZMod25 ⟨3, by norm_num⟩ := by
-  norm_num [pdfMahlerEvalZMod25, finiteMahlerEval, pdfMahlerCoeffZMod25,
-    pdfMahlerInputZMod25]
+  decide
 
 theorem pdfMahler_value_4 :
     pdfMahlerEvalZMod25 4 = pdfMahlerInputZMod25 ⟨4, by norm_num⟩ := by
-  norm_num [pdfMahlerEvalZMod25, finiteMahlerEval, pdfMahlerCoeffZMod25,
-    pdfMahlerInputZMod25]
+  decide
 
 theorem pdfMahler_value_5 :
     pdfMahlerEvalZMod25 5 = pdfMahlerInputZMod25 ⟨5, by norm_num⟩ := by
-  norm_num [pdfMahlerEvalZMod25, finiteMahlerEval, pdfMahlerCoeffZMod25,
-    pdfMahlerInputZMod25]
+  decide
 
 theorem pdfMahler_finiteEval_value_0 :
     finiteMahlerEval (N := 5) pdfMahlerCoeffZMod25 0 =
       pdfMahlerInputZMod25 ⟨0, by norm_num⟩ := by
-  norm_num [finiteMahlerEval, pdfMahlerCoeffZMod25, pdfMahlerInputZMod25]
+  decide
 
 theorem pdfMahler_finiteEval_value_1 :
     finiteMahlerEval (N := 5) pdfMahlerCoeffZMod25 1 =
       pdfMahlerInputZMod25 ⟨1, by norm_num⟩ := by
-  norm_num [finiteMahlerEval, pdfMahlerCoeffZMod25, pdfMahlerInputZMod25]
+  decide
 
 theorem pdfMahler_finiteEval_value_2 :
     finiteMahlerEval (N := 5) pdfMahlerCoeffZMod25 2 =
       pdfMahlerInputZMod25 ⟨2, by norm_num⟩ := by
-  norm_num [finiteMahlerEval, pdfMahlerCoeffZMod25, pdfMahlerInputZMod25]
+  decide
 
 theorem pdfMahler_finiteEval_value_3 :
     finiteMahlerEval (N := 5) pdfMahlerCoeffZMod25 3 =
       pdfMahlerInputZMod25 ⟨3, by norm_num⟩ := by
-  norm_num [finiteMahlerEval, pdfMahlerCoeffZMod25, pdfMahlerInputZMod25]
+  decide
 
 theorem pdfMahler_finiteEval_value_4 :
     finiteMahlerEval (N := 5) pdfMahlerCoeffZMod25 4 =
       pdfMahlerInputZMod25 ⟨4, by norm_num⟩ := by
-  norm_num [finiteMahlerEval, pdfMahlerCoeffZMod25, pdfMahlerInputZMod25]
+  decide
 
 theorem pdfMahler_finiteEval_value_5 :
     finiteMahlerEval (N := 5) pdfMahlerCoeffZMod25 5 =
       pdfMahlerInputZMod25 ⟨5, by norm_num⟩ := by
-  norm_num [finiteMahlerEval, pdfMahlerCoeffZMod25, pdfMahlerInputZMod25]
+  decide
 
 /-- Constructive concrete interpolation theorem for the PDF `mod 25` window.
 It consumes no interpolation certificate: each row is verified by evaluation. -/
@@ -5356,19 +5369,19 @@ theorem propI4_finite_mahler_interpolation_constructive_ZMod25 :
   pdfMahler_constructive_interpolation_window_ZMod25
 
 theorem pdfMahler_extrapolated_6 : pdfMahlerEvalZMod25 6 = (9 : ZMod25) := by
-  norm_num [pdfMahlerEvalZMod25, pdfMahlerCoeffZMod25]
+  decide
 
 theorem pdfMahler_extrapolated_7 : pdfMahlerEvalZMod25 7 = (1 : ZMod25) := by
-  norm_num [pdfMahlerEvalZMod25, pdfMahlerCoeffZMod25]
+  decide
 
 theorem pdfMahler_extrapolated_8 : pdfMahlerEvalZMod25 8 = (7 : ZMod25) := by
-  norm_num [pdfMahlerEvalZMod25, pdfMahlerCoeffZMod25]
+  decide
 
 theorem pdfMahler_extrapolated_9 : pdfMahlerEvalZMod25 9 = (14 : ZMod25) := by
-  norm_num [pdfMahlerEvalZMod25, pdfMahlerCoeffZMod25]
+  decide
 
 theorem pdfMahler_extrapolated_10 : pdfMahlerEvalZMod25 10 = (24 : ZMod25) := by
-  norm_num [pdfMahlerEvalZMod25, pdfMahlerCoeffZMod25]
+  decide
 
 /--
 Tail smallness is not a theorem of finite Mahler algebra alone.  It is recorded
@@ -5564,8 +5577,7 @@ theorem pairwiseEqualSections_iff_cechDiff_zero {I : Type*} {N : ℕ} {R : Type*
     PairwiseEqualSections s ↔ CechZeroOneCochain (CechDiff s) := by
   constructor
   · intro h i j n
-    rw [h i j]
-    simp [CechDiff]
+    simp [CechDiff, h i j]
   · intro h i j
     funext n
     exact sub_eq_zero.mp (by simpa [CechDiff] using h i j n)
@@ -5658,14 +5670,15 @@ theorem overlap_condition_iff_mod_M_and_mod_pk (M pk N : ℕ)
   · intro h
     constructor
     · intro n
-      exact (coe_lcm_dvd_iff.mp
-        ((lcmIdealCondition_iff_dvd M pk (x n - y n)).mp (h n))).1
+      exact (Int.natCast_dvd_natCast.mpr (Nat.dvd_lcm_left M pk)).trans
+        ((lcmIdealCondition_iff_dvd M pk (x n - y n)).mp (h n))
     · intro n
-      exact (coe_lcm_dvd_iff.mp
-        ((lcmIdealCondition_iff_dvd M pk (x n - y n)).mp (h n))).2
+      exact (Int.natCast_dvd_natCast.mpr (Nat.dvd_lcm_right M pk)).trans
+        ((lcmIdealCondition_iff_dvd M pk (x n - y n)).mp (h n))
   · intro h n
-    exact (lcmIdealCondition_iff_dvd M pk (x n - y n)).mpr
-      (coe_lcm_dvd_iff.mpr ⟨h.1 n, h.2 n⟩)
+    apply (lcmIdealCondition_iff_dvd M pk (x n - y n)).mpr
+    change lcm (M : ℤ) (pk : ℤ) ∣ x n - y n
+    exact lcm_dvd (h.1 n) (h.2 n)
 
 /-- Pairwise equality of local residue sections in the lcm quotient. -/
 def PairwiseEqualModLcm {I : Type*} {M pk N : ℕ}
@@ -5695,8 +5708,7 @@ theorem cechDiff_zero_iff_global_section {I : Type*} [Nonempty I]
     funext n
     exact sub_eq_zero.mp (by simpa [CechDiff] using h i i0 n)
   · rintro ⟨g, hg⟩ i j n
-    rw [hg i, hg j]
-    simp [CechDiff]
+    simp [CechDiff, hg i, hg j]
 
 theorem cechDiff_zero_iff_global_section_of_finiteCover {I : Type*}
     (C : FiniteCover I) {N : ℕ} {R : Type*} [AddCommGroup R]
@@ -5825,7 +5837,8 @@ theorem obstructionMapFromOverlapDifference_eq_zero_of_lcm
   apply Subtype.ext
   change (z : ZMod pk) = 0
   have hzDvd : (pk : ℤ) ∣ z :=
-    (coe_lcm_dvd_iff.mp ((lcmIdealCondition_iff_dvd M pk z).mp hzLcm)).2
+    (Int.natCast_dvd_natCast.mpr (Nat.dvd_lcm_right M pk)).trans
+      ((lcmIdealCondition_iff_dvd M pk z).mp hzLcm)
   exact (ZMod.intCast_zmod_eq_zero_iff_dvd z pk).mpr hzDvd
 
 /-- A Cech obstruction cocycle with values in the concrete Tor proxy. -/
@@ -5872,15 +5885,15 @@ theorem CechObstructionCocycle_eq_zero_of_lcm_overlap
 def CechObstructionOfLocalSections (M pk : ℕ) [NeZero pk]
     {I : Type*} {N : ℕ} (s : LocalSection I N ℤ)
     (hker : ∀ i j : I, ∀ n : FiniteRange N,
-      (CechDiff s i j n : ZMod pk) ∈ torProxySubgroup M pk) :
+      (CechDiff (R := ℤ) s i j n : ZMod pk) ∈ torProxySubgroup M pk) :
     CechOneCochain I N (CechObstructionGroup M pk) :=
-  CechObstructionCocycle M pk (CechDiff s) hker
+  CechObstructionCocycle M pk (CechDiff (R := ℤ) s) hker
 
 theorem CechObstructionOfLocalSections_is_one_cocycle
     (M pk : ℕ) [NeZero pk] {I : Type*} {N : ℕ}
     (s : LocalSection I N ℤ)
     (hker : ∀ i j : I, ∀ n : FiniteRange N,
-      (CechDiff s i j n : ZMod pk) ∈ torProxySubgroup M pk) :
+      (CechDiff (R := ℤ) s i j n : ZMod pk) ∈ torProxySubgroup M pk) :
     CechOneCocycle (CechObstructionOfLocalSections M pk s hker) :=
   CechObstructionCocycle_is_one_cocycle M pk (CechDiff s) hker
     (cechDiff_is_one_cocycle s)
@@ -6014,16 +6027,16 @@ def scalar {R : Type*} (a : ℕ → R) : CoefficientChannel R :=
 /-- Finite Jacobi slice/channel `n ↦ ∑ l ∈ L, c_l * a(n,l)`. -/
 def jacobiSlice {R : Type*} [Semiring R] (L : Finset ℤ) (c : ℤ → R)
     (a : ℕ → ℤ → R) : CoefficientChannel R :=
-  ⟨fun n => ∑ l in L, c l * a n l⟩
+  ⟨fun n => ∑ l ∈ L, c l * a n l⟩
 
 @[simp] theorem jacobiSlice_eval {R : Type*} [Semiring R] (L : Finset ℤ) (c : ℤ → R)
     (a : ℕ → ℤ → R) (n : ℕ) :
-    (jacobiSlice L c a).eval n = ∑ l in L, c l * a n l :=
+    (jacobiSlice L c a).eval n = ∑ l ∈ L, c l * a n l :=
   rfl
 
 @[simp] theorem jacobiSlice_apply {R : Type*} [Semiring R] (L : Finset ℤ) (c : ℤ → R)
     (a : ℕ → ℤ → R) (n : ℕ) :
-    (jacobiSlice L c a).eval n = ∑ l in L, c l * a n l :=
+    (jacobiSlice L c a).eval n = ∑ l ∈ L, c l * a n l :=
   rfl
 
 /-- The coefficient weights are supported on the finite Jacobi index set `L`. -/
@@ -6050,7 +6063,7 @@ def channel {R : Type*} [Semiring R] (D : FiniteJacobiSliceData R) :
 
 @[simp] theorem channel_apply {R : Type*} [Semiring R]
     (D : FiniteJacobiSliceData R) (n : ℕ) :
-    D.channel.eval n = ∑ l in D.support, D.weight l * D.coeff n l :=
+    D.channel.eval n = ∑ l ∈ D.support, D.weight l * D.coeff n l :=
   rfl
 
 theorem weight_eq_zero_of_not_mem {R : Type*} [Semiring R]
@@ -6121,7 +6134,7 @@ def channel {R : Type*} [Semiring R]
 
 @[simp] theorem channel_apply {R : Type*} [Semiring R]
     (C : DiscriminantSliceChannelCertificate R) (n : ℕ) :
-    C.channel.eval n = ∑ l in C.support, C.weight l * C.coeff n l :=
+    C.channel.eval n = ∑ l ∈ C.support, C.weight l * C.coeff n l :=
   rfl
 
 theorem term_mem_selected_discriminant_slice {R : Type*} [Semiring R]
@@ -6672,7 +6685,8 @@ def thetaKernelL1PassingTableRow : Fin 11 → PaperPredictionTailRow
 theorem thetaKernelL1PassingTable_passes :
     PassesPaperPredictionTailTable thetaKernelL1PassingTableRow := by
   intro row
-  exact (thetaKernelL1PassingTableRow row).residual_abs_le_tailBound_of_pass rfl
+  fin_cases row <;>
+    exact (thetaKernelL1PassingTableRow _).residual_abs_le_tailBound_of_pass rfl
 
 theorem thetaKernelL1TableRow_pass_iff_bound_all (row : Fin 12) :
     (thetaKernelL1TableRow row).pass = true ↔
@@ -6746,6 +6760,7 @@ theorem halfAlpha_scale : scale halfAlpha = 1 / 4 :=
 /-- The alternative `(alpha/2)^2` convention is the selected convention scaled by `1/4`. -/
 theorem halfAlpha_formula (base alpha : ℚ) :
     base * (alpha / 2) ^ 2 = (base * scale halfAlpha) * alpha ^ 2 := by
+  rw [halfAlpha_scale]
   ring
 
 /--
@@ -6987,7 +7002,13 @@ not claim to be the raw 90-row OLS design matrix from the external script.
 inductive PaperT5RegressionCertRow where
   | intercept
   | slopeProbe
-deriving DecidableEq, Fintype, Repr
+deriving DecidableEq, Repr
+
+instance : Fintype PaperT5RegressionCertRow where
+  elems := {PaperT5RegressionCertRow.intercept,
+    PaperT5RegressionCertRow.slopeProbe}
+  complete row := by
+    cases row <;> simp
 
 def paperT5RegressionInput : RegressionInput PaperT5RegressionCertRow where
   n := fun
@@ -7373,9 +7394,9 @@ theorem D4_modular_padic_congruence_iff_lcm {M p k : ℕ}
   rw [lcmIdealCondition_iff_dvd]
   constructor
   · intro h
-    exact coe_lcm_dvd_iff.mpr h
+    exact lcm_dvd_iff.mpr h
   · intro h
-    exact coe_lcm_dvd_iff.mp h
+    exact lcm_dvd_iff.mp h
 
 theorem D4_vector_modular_padic_congruence_iff_lcm {M p k D : ℕ}
     (hp : Nat.Prime p) (hk : 0 < k) (left right : Fin D → ℤ) :
@@ -7387,7 +7408,7 @@ theorem D4_vector_modular_padic_congruence_iff_lcm {M p k D : ℕ}
   · intro h i
     exact (D4_modular_padic_congruence_iff_lcm hp hk (left i) (right i)).mpr (h i)
 
-theorem D4GateCertificate_of_lcm_overlap (M N D : ℕ)
+noncomputable def D4GateCertificate_of_lcm_overlap (M N D : ℕ)
     (left right : Fin D → ℤ)
     (hoverlap : ∀ i : Fin D, LcmIdealCondition M N (left i - right i)) :
     D4GateCertificate (M : ℤ) (N : ℤ) D := by
@@ -7398,10 +7419,10 @@ theorem D4GateCertificate_of_lcm_overlap (M N D : ℕ)
   exact (vector_glueable_iff_forall_gcd_dvd (M : ℤ) (N : ℤ) D left right).mpr
     (fun i =>
       (Int.gcd_dvd_left (M : ℤ) (N : ℤ)).trans
-        ((coe_lcm_dvd_iff.mp
-          ((lcmIdealCondition_iff_dvd M N (left i - right i)).mp (hoverlap i))).1))
+        ((Int.natCast_dvd_natCast.mpr (Nat.dvd_lcm_left M N)).trans
+          ((lcmIdealCondition_iff_dvd M N (left i - right i)).mp (hoverlap i))))
 
-theorem D4GateCertificate_of_modular_padic_congruence {M p k D : ℕ}
+noncomputable def D4GateCertificate_of_modular_padic_congruence {M p k D : ℕ}
     (hp : Nat.Prime p) (hk : 0 < k)
     (left right : Fin D → ℤ)
     (h : ∀ i : Fin D, D4ModularPadicCongruence M p k (left i) (right i)) :
@@ -7665,7 +7686,6 @@ theorem lemma2_gate_equalizer_stability_under_CRT (M N : ℕ) [NeZero N] :
       (Subsingleton (TorProxy M N) ↔ Nat.Coprime M N) := by
   have hfree : Subsingleton (TorProxy M N) ↔ Nat.Coprime M N := by
     rw [torProxy_subsingleton_iff_gcd_eq_one M N, Nat.gcd_comm N M]
-    exact obstructionFree_iff_coprime M N
   exact ⟨ker_pairResidueMap_eq_lcm M N,
     torProxy_card M N,
     ⟨torProxy_equiv_zmod_gcd M N⟩,
@@ -7956,7 +7976,7 @@ theorem coeffSum_eq_sum (C : BlockFamilyCertificate D I Completion Shadow) :
 theorem principalPart_eq_principalPartSum
     (C : BlockFamilyCertificate D I Completion Shadow) :
     C.assembledPrincipalPart = C.principalPartSum := by
-  simpa [principalPartSum] using C.principalPart_linear
+  exact C.principalPart_linear
 
 theorem principalPart_linear_apply
     (C : BlockFamilyCertificate D I Completion Shadow) (d : Fin D) :
@@ -8299,14 +8319,12 @@ def S4ActualExtractionMatrix : Matrix (Fin S4D) S4Col ℚ :=
 @[simp] theorem S4ActualExtractionMatrix_left_apply (i j : Fin S4D) :
     S4ActualExtractionMatrix i (Sum.inl j) =
       if i = j then (1 : ℚ) else 0 := by
-  simp [S4ActualExtractionMatrix, s4ActualExtractionEntry, s4ColumnIndex,
-    s4ColumnIsHalfResidue, S4PhaseSign]
+  rfl
 
 @[simp] theorem S4ActualExtractionMatrix_right_apply (i j : Fin S4D) :
     S4ActualExtractionMatrix i (Sum.inr j) =
       if i = j then (-1 : ℚ) else 0 := by
-  simp [S4ActualExtractionMatrix, s4ActualExtractionEntry, s4ColumnIndex,
-    s4ColumnIsHalfResidue, S4PhaseSign]
+  rfl
 
 theorem A_infty_eq_block_identity_neg_identity :
     (∀ i j : Fin S4D, A_infty i (Sum.inl j) = if i = j then (1 : ℚ) else 0) ∧
@@ -8396,7 +8414,8 @@ theorem A_inftyMatrix_mulVec_eq_A_infty_mul (c : S4Col → ℚ) :
     A_inftyMatrix.mulVec c = A_infty_mul c := by
   classical
   funext i
-  simp [Matrix.mulVec, A_inftyMatrix, A_infty, A_infty_mul]
+  simp [Matrix.mulVec, dotProduct, A_inftyMatrix, A_infty, A_infty_mul,
+    sub_eq_add_neg]
 
 /-- The algorithmic extraction matrix has the same multiplication as `A∞`. -/
 theorem S4ActualExtractionMatrix_mulVec_eq_A_infty_mul (c : S4Col → ℚ) :
@@ -8426,6 +8445,7 @@ theorem A_inftyMatrix_fullRowRank :
     FullRowRankCertificate S4D (fun c => A_inftyMatrix.mulVec c) := by
   refine ⟨A_infty_solve, ?_⟩
   intro b
+  change A_inftyMatrix.mulVec (A_infty_solve b) = b
   rw [A_inftyMatrix_mulVec_eq_A_infty_mul, A_infty_exact_solve]
 
 /-- The concrete `A∞` matrix multiplication map is surjective. -/
@@ -8661,12 +8681,13 @@ theorem S4D6J12Matrix_mulVec_solution :
     S4D6J12Matrix.mulVec S4D6J12Solution = S4D6J12Target := by
   ext i
   fin_cases i <;>
-    norm_num [Matrix.mulVec, S4D6J12Matrix, S4D6J12MatrixEntry,
+    norm_num [Matrix.mulVec, dotProduct, Fin.sum_univ_succ,
+      S4D6J12Matrix, S4D6J12MatrixEntry,
       S4D6J12Solution, S4D6J12SolutionEntry, S4D6J12Target]
 
 theorem S4D6J12Solution_coeff_sum :
     (∑ j : Fin S4J12, S4D6J12Solution j) = 1 := by
-  norm_num [S4D6J12Solution, S4D6J12SolutionEntry]
+  norm_num [Fin.sum_univ_succ, S4D6J12Solution, S4D6J12SolutionEntry]
 
 def S4D6J12ResidualSquared : ℚ :=
   ∑ i : Fin S4D6,
@@ -8691,8 +8712,11 @@ theorem S4D6J12Matrix_mulVec_solve (b : Fin S4D6 → ℚ) :
     S4D6J12Matrix.mulVec (S4D6J12Solve b) = b := by
   ext i
   fin_cases i <;>
-    simp [Matrix.mulVec, S4D6J12Matrix, S4D6J12MatrixEntry, S4D6J12Solve] <;>
-      ring
+    simp [Matrix.mulVec, dotProduct, Fin.sum_univ_succ,
+      S4D6J12Matrix, S4D6J12MatrixEntry, S4D6J12Solve] <;>
+    try ring
+  all_goals
+    exact congrArg b (Fin.ext rfl)
 
 /-- Full-row-rank certificate with an arbitrary finite column type. -/
 def FullRowRankCertificateWithCols (D : ℕ) (Col : Type*)

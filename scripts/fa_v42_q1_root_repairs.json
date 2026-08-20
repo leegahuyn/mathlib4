@@ -1,0 +1,676 @@
+{
+  "schema": "fa-v42-q1-root-repair-manifest-v1",
+  "status": "STATIC_ONLY_DIRECT_LEAN_UNVERIFIED",
+  "direct_lean_verified": false,
+  "full_fa_clean_claimed": false,
+  "promotion_policy": "Only owner-local repairs with high or very-high static confidence are promoted. API-, elaboration-, and runtime-sensitive proposals remain staged until a remote direct Lean compile confirms them.",
+  "scope_policy": "Q1 declarations only; no Lean source, Lake, git, or GitHub mutation is authorized by this manifest.",
+  "authority": {
+    "run_id": 31699916923,
+    "head_sha": "6867203e032c9711b47d8c2e1bd74f30d15cbd59",
+    "artifact_id": 9181214334,
+    "artifact_digest": "sha256:bb18b117b461a4fd36746685ce4437d835382989d4b7e1cff87bb6ebbcc9c870",
+    "candidate": {
+      "path": "work/v41-run-31699916923/9181214334/Mock2_FunctionalAnalysis-candidate.lean",
+      "sha256": "d7e99092e79b26af21cd8c960b8e9c811731e27343757b750b62c53608805937",
+      "bytes": 2774362,
+      "lines": 62065
+    },
+    "diagnostics": {
+      "path": "work/v41-run-31699916923/9181214334/FULL_DIAGNOSTICS.json",
+      "sha256": "b50357457a8213b1a53ae353c67fd7639334a9db4b5f7a4e61ad9c00b9f07fcf",
+      "bytes": 66516,
+      "lines": 1542
+    },
+    "fa_log": {
+      "path": "work/v41-run-31699916923/9181214334/Mock2_FunctionalAnalysis.log",
+      "sha256": "dc4370280c35eb1b8565e9776d9e93e42f4bf299b543a4bdaea029f438445530",
+      "bytes": 361072,
+      "lines": 6177
+    },
+    "metric": {
+      "path": "work/v41-run-31699916923/9181214334/METRIC.json",
+      "sha256": "31b3dce64e9a9a26c7e2420006533385f9cd343c9f4d6d7ce344da64256b963e",
+      "bytes": 2300,
+      "lines": 53
+    },
+    "queue": {
+      "path": "work/v42/v42-comparison-31699916923-official/with_conditional_bodies/RESIDUAL_QUEUE_1.json",
+      "sha256": "0cdb29f8d0221fdce1b1895ead1f2dfa3d89a7c5f8ad96334d0645728e2cf766",
+      "bytes": 15012,
+      "lines": 516
+    },
+    "patch_audit": {
+      "path": "work/v41-run-31699916923/9181214334/PATCH_AUDIT.json",
+      "sha256": "25a4b3c34041bb9d7278aeef1569204c8b7ee2f9ef2a5dfbd2cba3d68a57bf77",
+      "bytes": 5692,
+      "lines": 198
+    },
+    "selected_manifests": {
+      "path": "work/v41-run-31699916923/9181214334/SELECTED_MANIFESTS.json",
+      "sha256": "5bcb95973890efa0024ec48ff704ab03d7d77f6fb6a72df8596e48246887a1b9",
+      "bytes": 1761,
+      "lines": 42
+    },
+    "conditional_probe_index": {
+      "path": "work/v41-run-31699916923/9181214334/CONDITIONAL_PROBE_INDEX.json",
+      "sha256": "7d7e4ebb43f1dbc3d05ba5269f659bc3717a632a48d69ef313543c333c2953aa",
+      "bytes": 684,
+      "lines": 19
+    }
+  },
+  "queue_contract": {
+    "variant": "with_conditional_bodies",
+    "queue_id": 1,
+    "declaration_count": 18,
+    "diagnostic_count": 27,
+    "declaration_indices": [3689, 3838, 3884, 3920, 3926, 3931, 3948, 4007, 4017, 4126, 4198, 4211, 4284, 4296, 4299, 4303, 4346, 4369],
+    "diagnostic_ordinals": [3, 7, 8, 10, 11, 13, 17, 27, 40, 54, 55, 66, 73, 74, 76, 77, 78, 79, 80, 84, 89, 94, 95, 96, 98, 104, 105]
+  },
+  "coverage": {
+    "root_owners": 15,
+    "cascade_owners": 3,
+    "promoted_repair_entries": 10,
+    "promoted_diagnostics": 14,
+    "staged_repair_entries": 7,
+    "staged_diagnostics": 9,
+    "deferred_cascade_entries": 3,
+    "deferred_cascade_diagnostics": 4,
+    "diagnostic_conservation": "14 + 9 + 4 = 27"
+  },
+  "overlap_catalog": {
+    "G1_P12": {
+      "path": "work/v40-workers/G1-promoted-repairs.json",
+      "sha256": "fe6045bd0f8288f98f59442a7398ab1433d06deb29a4e15779ea458bd0706cc9",
+      "bytes": 24499,
+      "lines": 303,
+      "selection_state": "APPLIED_V41_SELECTED",
+      "repair_ids": ["G1-P12-distribute-tail-sum", "G1-P12-preserve-tail-multiplier"],
+      "owners": ["finiteHilbertProjection_tail_le_of_coeff_sq"]
+    },
+    "G1_P20": {
+      "path": "work/v40-workers/G1-promoted-repairs.json",
+      "sha256": "fe6045bd0f8288f98f59442a7398ab1433d06deb29a4e15779ea458bd0706cc9",
+      "bytes": 24499,
+      "lines": 303,
+      "selection_state": "APPLIED_V41_SELECTED",
+      "repair_ids": ["G1-P20-type-vertical-differentiable-at"],
+      "owners": ["fderiv_literalStageNegativePlaneWave_I"]
+    },
+    "G2_A01": {
+      "path": "work/v40-workers/g2-high-confidence-conditional-repairs.json",
+      "sha256": "da9b31d9b928dc519c666d498c14ec30e88306b30d0f3262168191cb83712598",
+      "bytes": 22527,
+      "lines": 381,
+      "selection_state": "APPLIED_V41_SELECTED",
+      "repair_ids": ["G2-A01-phase-modulus-positive-both-normalizations"],
+      "owners": ["norm_modulusNormalizedReducedResidueHalfPhaseSum_le_one"]
+    },
+    "G3_4211": {
+      "path": "work/v40-workers/g3-high-confidence-repairs.json",
+      "sha256": "b7a67e1adfe2183dc24364463af3c68ea15972d0b502aee771eae0c52587114d",
+      "bytes": 30109,
+      "lines": 363,
+      "selection_state": "APPLIED_V41_SELECTED",
+      "repair_ids": ["G3-4211-map-add-pointwise-chart-split", "G3-4211-map-smul-ringhom-pointwise"],
+      "owners": ["orbitPeterssonCoreToReducedChartL2"]
+    },
+    "G3_4284": {
+      "path": "work/v40-workers/g3-high-confidence-repairs.json",
+      "sha256": "b7a67e1adfe2183dc24364463af3c68ea15972d0b502aee771eae0c52587114d",
+      "bytes": 30109,
+      "lines": 363,
+      "selection_state": "APPLIED_V41_SELECTED",
+      "repair_ids": ["G3-4284-pin-raw-SL-action"],
+      "owners": ["gammaTwoPeriodizationOrbitSupport_isClosed"]
+    },
+    "G3_4296": {
+      "path": "work/v40-workers/g3-high-confidence-repairs.json",
+      "sha256": "b7a67e1adfe2183dc24364463af3c68ea15972d0b502aee771eae0c52587114d",
+      "bytes": 30109,
+      "lines": 363,
+      "selection_state": "APPLIED_V41_SELECTED",
+      "repair_ids": ["G3-4296-4297-rewrite-whole-conjugate-function"],
+      "owners": ["euclideanRaiseTestAdjoint_conjugate_eq_conj_affineTranspose"]
+    },
+    "G3_4299": {
+      "path": "work/v40-workers/g3-high-confidence-repairs.json",
+      "sha256": "b7a67e1adfe2183dc24364463af3c68ea15972d0b502aee771eae0c52587114d",
+      "bytes": 30109,
+      "lines": 363,
+      "selection_state": "APPLIED_V41_SELECTED",
+      "repair_ids": ["G3-4299-signed-raise-gauge-neg-linearity", "G3-4299-signed-raise-zero-neg-linearity"],
+      "owners": ["signedRaisePeriodization_isReducedChartGaugeModel"]
+    },
+    "G3_4303": {
+      "path": "work/v40-workers/g3-high-confidence-repairs.json",
+      "sha256": "b7a67e1adfe2183dc24364463af3c68ea15972d0b502aee771eae0c52587114d",
+      "bytes": 30109,
+      "lines": 363,
+      "selection_state": "APPLIED_V41_SELECTED",
+      "repair_ids": ["G3-4303-normalize-raise-formal-adjoint", "G3-4302-4303-unfold-base-gauge-eventually", "G3-4302-4303-first-inner-symmetry-proof", "G3-4303-second-inner-symmetry-proof"],
+      "owners": ["loweringMaximalAdjoint_isPlanarAffineWeakGraphOn_reducedChart"]
+    },
+    "G4_4346": {
+      "path": "work/v40-workers/g4-high-confidence-repairs.json",
+      "sha256": "e3e2c90d5c02cda76a5b74c81995cfe8e3475597130f653b670d401b5656ff5e",
+      "bytes": 24179,
+      "lines": 336,
+      "selection_state": "APPLIED_V41_SELECTED",
+      "repair_ids": ["G4-4346-unfold-local-effective-element"],
+      "owners": ["effectiveScalarSmoothQuotient_invariant"]
+    },
+    "G4_4369": {
+      "path": "work/v40-workers/g4-high-confidence-repairs.json",
+      "sha256": "e3e2c90d5c02cda76a5b74c81995cfe8e3475597130f653b670d401b5656ff5e",
+      "bytes": 24179,
+      "lines": 336,
+      "selection_state": "APPLIED_V41_SELECTED",
+      "repair_ids": ["G4-4369-chart-lift-nonzero-premise"],
+      "owners": ["quotientChartNormalizer_realSmooth"]
+    },
+    "C_M05_4006": {
+      "path": "work/v40-staged/m05-m06-conditional-repairs.json",
+      "sha256": "66d931210349a16620e3be942fec6df1ffb687c093d8db787153837ee71839b1",
+      "bytes": 15292,
+      "lines": 426,
+      "selection_state": "APPLIED_V41_CONDITIONAL",
+      "repair_ids": ["M05-P1-weighted-inner-fields", "M05-P2-weighted-outer-fields"],
+      "owners": ["weightedGraphLinear"]
+    },
+    "C_M05_4007": {
+      "path": "work/v40-staged/m05-m06-conditional-repairs.json",
+      "sha256": "66d931210349a16620e3be942fec6df1ffb687c093d8db787153837ee71839b1",
+      "bytes": 15292,
+      "lines": 426,
+      "selection_state": "APPLIED_V41_CONDITIONAL",
+      "repair_ids": ["M05-P3-weighted-pin-complex-inner"],
+      "owners": ["weightedGraphLinear_bound"]
+    },
+    "X_M13_4198": {
+      "path": "work/v40-staged/m13-p2-conditional-source-move.json",
+      "sha256": "a68a0efc112dc1b3e424ee995795ef31236e2619830592d3d0f2d4adfb45336b",
+      "bytes": 7222,
+      "lines": 175,
+      "selection_state": "EXCLUDED_V41_SOURCE_MOVE",
+      "relation": "source_order_consumer",
+      "repair_ids": ["M13-P2-repaired-five-declaration-source-order"],
+      "owners": ["gammaTwoReducedChart_pairwise_disjoint_translates"]
+    }
+  },
+  "owner_assessments": [
+    {
+      "declaration_index": 3689,
+      "owner": "cauchySeq_lowerFromSuccCoordinate_of_base_raise_tendsto",
+      "source_span": [49509, 49562],
+      "diagnostic_ordinals": [3],
+      "classification": "ROOT",
+      "decision": "STAGE_API_NORMALIZATION",
+      "confidence": "medium-static-direct-lean-unverified",
+      "root_cause": "The pointwise congruence elaborates, but simpa leaves the model limit as 0^2 - c*0^2 instead of normalizing it to 0.",
+      "overlap_refs": [],
+      "dependency_overlap_refs": []
+    },
+    {
+      "declaration_index": 3838,
+      "owner": "ambientTestCoreToPlaneL2Linear",
+      "source_span": [52134, 52144],
+      "diagnostic_ordinals": [7, 8],
+      "classification": "ROOT",
+      "decision": "STAGE_API_COERCION",
+      "confidence": "medium-static-api-direct-lean-unverified",
+      "root_cause": "MemLp lemmas return equality in the raw Lp carrier while the record fields expect the named AmbientPlaneL2 carrier and RingHom.id scalar action.",
+      "overlap_refs": [],
+      "dependency_overlap_refs": []
+    },
+    {
+      "declaration_index": 3884,
+      "owner": "finiteHilbertProjection_tail_le_of_coeff_sq",
+      "source_span": [52631, 52675],
+      "diagnostic_ordinals": [10, 11],
+      "classification": "ROOT",
+      "decision": "PROMOTE_HIGH_CONFIDENCE",
+      "confidence": "very-high-static-direct-lean-unverified",
+      "root_cause": "The positive branch needs an explicit nonnegative product proof, and the two tail estimates still end in norms of b.repr rather than norms of g₀ and g₁.",
+      "overlap_refs": ["G1_P12"],
+      "dependency_overlap_refs": []
+    },
+    {
+      "declaration_index": 3920,
+      "owner": "literalStageTorusPoint_physicalTorusPoint",
+      "source_span": [53126, 53158],
+      "diagnostic_ordinals": [13],
+      "classification": "ROOT",
+      "decision": "PROMOTE_HIGH_CONFIDENCE",
+      "confidence": "very-high-static-shape-direct-lean-unverified",
+      "root_cause": "The preceding torus-coordinate rewrite reintroduces literalStagePhysicalTorusPoint after the earlier simp-only list already ran.",
+      "overlap_refs": [],
+      "dependency_overlap_refs": []
+    },
+    {
+      "declaration_index": 3926,
+      "owner": "fderiv_literalStageNegativePlaneWave_I",
+      "source_span": [53228, 53255],
+      "diagnostic_ordinals": [17],
+      "classification": "ROOT",
+      "decision": "STAGE_ELABORATION_API",
+      "confidence": "medium-static-api-direct-lean-unverified",
+      "root_cause": "The vertically composed HasDerivAt remains metavariable-contaminated when it is immediately consumed by const_mul.",
+      "overlap_refs": ["G1_P20"],
+      "dependency_overlap_refs": []
+    },
+    {
+      "declaration_index": 3931,
+      "owner": "mFourierCoeff_scaled_dx",
+      "source_span": [53374, 53422],
+      "diagnostic_ordinals": [27],
+      "classification": "ROOT",
+      "decision": "STAGE_LP_FOURIER_API",
+      "confidence": "medium-low-static-api-direct-lean-unverified",
+      "root_cause": "mFourierCoeff is not exposed as a bundled map at the Lp scalar-coercion site; the proof must use the a.e. coeFn_smul identity under the integral.",
+      "overlap_refs": [],
+      "dependency_overlap_refs": []
+    },
+    {
+      "declaration_index": 3948,
+      "owner": "opNorm_literalStagePlaneFiniteApproximation_sub_le",
+      "source_span": [54042, 54052],
+      "diagnostic_ordinals": [40],
+      "classification": "ROOT",
+      "decision": "STAGE_RESOURCE_PROBE",
+      "confidence": "medium-static-runtime-direct-lean-unverified",
+      "root_cause": "The declaration reaches a deterministic whnf heartbeat limit at 200000; no logical mismatch is reported.",
+      "overlap_refs": [],
+      "dependency_overlap_refs": []
+    },
+    {
+      "declaration_index": 4007,
+      "owner": "weightedGraphLinear_bound",
+      "source_span": [54645, 54666],
+      "diagnostic_ordinals": [54, 55],
+      "classification": "CASCADE",
+      "decision": "DEFER_UPSTREAM_ROOT",
+      "confidence": "very-high-diagnostic-causality",
+      "root_cause": "weightedGraphLinear at index 4006 fails first at ordinals 52 and 53, so Lean never registers the declaration consumed here.",
+      "overlap_refs": ["C_M05_4007"],
+      "dependency_overlap_refs": ["C_M05_4006"]
+    },
+    {
+      "declaration_index": 4017,
+      "owner": "discriminantHardStageOperator_eq_weightedHard",
+      "source_span": [54863, 54922],
+      "diagnostic_ordinals": [66],
+      "classification": "CASCADE",
+      "decision": "DEFER_UPSTREAM_ROOT",
+      "confidence": "very-high-diagnostic-causality",
+      "root_cause": "The unknown weightedGraphLinear identifier is a downstream consequence of the failed index-4006 declaration, not an owner-local body defect.",
+      "overlap_refs": [],
+      "dependency_overlap_refs": ["C_M05_4006"]
+    },
+    {
+      "declaration_index": 4126,
+      "owner": "norm_modulusNormalizedReducedResidueHalfPhaseSum_le_one",
+      "source_span": [55908, 55920],
+      "diagnostic_ordinals": [73],
+      "classification": "ROOT",
+      "decision": "PROMOTE_HIGH_CONFIDENCE",
+      "confidence": "very-high-static-arithmetic-direct-lean-unverified",
+      "root_cause": "After unfolding phaseModulus, the sole residual goal is exactly 0 < (q : ℝ) + 1.",
+      "overlap_refs": ["G2_A01"],
+      "dependency_overlap_refs": []
+    },
+    {
+      "declaration_index": 4198,
+      "owner": "gammaTwoReducedChart_pairwise_disjoint_translates",
+      "source_span": [56916, 56925],
+      "diagnostic_ordinals": [74],
+      "classification": "CASCADE",
+      "decision": "DEFER_SOURCE_ORDER_MOVE",
+      "confidence": "very-high-source-order-causality",
+      "root_cause": "The producer gammaTwoReducedChart_inter_translate_imp_eq_one is declaration index 4240 at line 57912, after this consumer; it has no current diagnostic but is unavailable by source order.",
+      "overlap_refs": ["X_M13_4198"],
+      "dependency_overlap_refs": []
+    },
+    {
+      "declaration_index": 4211,
+      "owner": "orbitPeterssonCoreToReducedChartL2",
+      "source_span": [57205, 57249],
+      "diagnostic_ordinals": [76, 77, 78, 79, 80],
+      "classification": "ROOT",
+      "decision": "PROMOTE_HIGH_CONFIDENCE",
+      "confidence": "high-static-shape-direct-lean-unverified",
+      "root_cause": "The selected G3 pointwise-smul bridge added four invalid nested coercions even though hlp already states the needed pointwise equality; one original scalar-linearity goal remains.",
+      "overlap_refs": ["G3_4211"],
+      "dependency_overlap_refs": []
+    },
+    {
+      "declaration_index": 4284,
+      "owner": "gammaTwoPeriodizationOrbitSupport_isClosed",
+      "source_span": [58664, 58678],
+      "diagnostic_ordinals": [84],
+      "classification": "ROOT",
+      "decision": "PROMOTE_HIGH_CONFIDENCE",
+      "confidence": "high-static-api-direct-lean-unverified",
+      "root_cause": "IsCompact.smul requests a nonexistent ContinuousConstSMul SL(2,Z) H instance; the file already exposes the fixed-action continuous map required by IsCompact.image.",
+      "overlap_refs": ["G3_4284"],
+      "dependency_overlap_refs": []
+    },
+    {
+      "declaration_index": 4296,
+      "owner": "euclideanRaiseTestAdjoint_conjugate_eq_conj_affineTranspose",
+      "source_span": [58938, 58969],
+      "diagnostic_ordinals": [89],
+      "classification": "ROOT",
+      "decision": "STAGE_BUNDLED_REWRITE",
+      "confidence": "medium-high-static-api-direct-lean-unverified",
+      "root_cause": "The function-level hfun equality does not occur syntactically under the bundled adjoint; the subsequent simp list already contains the pointwise conjugate-test lemma.",
+      "overlap_refs": ["G3_4296"],
+      "dependency_overlap_refs": []
+    },
+    {
+      "declaration_index": 4299,
+      "owner": "signedRaisePeriodization_isReducedChartGaugeModel",
+      "source_span": [59063, 59123],
+      "diagnostic_ordinals": [94, 95, 96],
+      "classification": "ROOT",
+      "decision": "PROMOTE_AND_STAGE_SPLIT",
+      "confidence": "mixed-high-and-medium-static-direct-lean-unverified",
+      "root_cause": "Ordinal 95 is a direct missing fullPlaneConjugate_apply normalization. Ordinals 94 and 96 expose scalar multiplication of a negated bundled core and retain API-sensitive coercion normalization.",
+      "overlap_refs": ["G3_4299"],
+      "dependency_overlap_refs": []
+    },
+    {
+      "declaration_index": 4303,
+      "owner": "loweringMaximalAdjoint_isPlanarAffineWeakGraphOn_reducedChart",
+      "source_span": [59238, 59381],
+      "diagnostic_ordinals": [98],
+      "classification": "ROOT",
+      "decision": "PROMOTE_HIGH_CONFIDENCE",
+      "confidence": "very-high-same-file-compiled-pattern-direct-lean-unverified",
+      "root_cause": "LinearPMap.neg_apply does not rewrite beneath the displayed coercion directly; the identical hNeg bridge already occurs earlier in the same authority source.",
+      "overlap_refs": ["G3_4303"],
+      "dependency_overlap_refs": []
+    },
+    {
+      "declaration_index": 4346,
+      "owner": "effectiveScalarSmoothQuotient_invariant",
+      "source_span": [60443, 60451],
+      "diagnostic_ordinals": [104],
+      "classification": "ROOT",
+      "decision": "PROMOTE_HIGH_CONFIDENCE",
+      "confidence": "high-same-file-pattern-direct-lean-unverified",
+      "root_cause": "The local effective-action let leaves the invariant theorem at gamma • z while the cutoff predicate expects the raw GammaTwo action; the file has an exact effective-element bridge pattern.",
+      "overlap_refs": ["G4_4346"],
+      "dependency_overlap_refs": []
+    },
+    {
+      "declaration_index": 4369,
+      "owner": "quotientChartNormalizer_realSmooth",
+      "source_span": [60813, 60824],
+      "diagnostic_ordinals": [105],
+      "classification": "ROOT",
+      "decision": "PROMOTE_HIGH_CONFIDENCE",
+      "confidence": "high-static-definitional-direct-lean-unverified",
+      "root_cause": "RealSmooth.inv already proves the unfolded lambda, but simpa does not fold it back to the named quotientChartNormalizer definition.",
+      "overlap_refs": ["G4_4369"],
+      "dependency_overlap_refs": []
+    }
+  ],
+  "promoted_repairs": [
+    {
+      "id": "Q1-P3884-normalize-repr-tail-norms",
+      "promotion": "PROMOTE_HIGH_CONFIDENCE",
+      "kind": "body",
+      "confidence": "very-high-static-direct-lean-unverified",
+      "declaration_index": 3884,
+      "owner": "finiteHilbertProjection_tail_le_of_coeff_sq",
+      "diagnostic_ordinals": [11],
+      "expected_owner_count": 1,
+      "old": "  simp only [ENNReal.toReal_ofNat, Real.rpow_two] at hsum₀ hsum₁ ⊢\n  calc\n",
+      "new": "  simp only [ENNReal.toReal_ofNat, Real.rpow_two] at hsum₀ hsum₁ ⊢\n  rw [b.repr.norm_map] at hsum₀ hsum₁\n  calc\n",
+      "evidence": "The log shows hsum₀ ends in ‖b.repr g₀‖² while add_le_add expects ‖g₀‖²; b.repr.norm_map is already used at the declaration start."
+    },
+    {
+      "id": "Q1-P3884-explicit-positive-selected-tail",
+      "promotion": "PROMOTE_HIGH_CONFIDENCE",
+      "kind": "body",
+      "confidence": "very-high-static-arithmetic-direct-lean-unverified",
+      "declaration_index": 3884,
+      "owner": "finiteHilbertProjection_tail_le_of_coeff_sq",
+      "diagnostic_ordinals": [10],
+      "expected_owner_count": 1,
+      "old": "      by_cases his : i ∈ s\n      · simp [his, hdelta]\n      · simpa only [his, if_false, norm_neg] using hcoeff i his\n",
+      "new": "      by_cases his : i ∈ s\n      · rw [if_pos his]\n        positivity\n      · simpa only [his, if_false, norm_neg] using hcoeff i his\n",
+      "evidence": "The exact residual goal is nonnegativity of delta² times a sum of two norm squares; positivity closes it without using the irrelevant hdelta hypothesis."
+    },
+    {
+      "id": "Q1-P3920-reunfold-physical-torus-point-after-coordinate-rewrite",
+      "promotion": "PROMOTE_HIGH_CONFIDENCE",
+      "kind": "body",
+      "confidence": "very-high-static-shape-direct-lean-unverified",
+      "declaration_index": 3920,
+      "owner": "literalStageTorusPoint_physicalTorusPoint",
+      "diagnostic_ordinals": [13],
+      "expected_owner_count": 1,
+      "old": "  rw [UnitAddTorus.coe_measurableEquivPiIoc_apply]\n  have hi := hw i\n",
+      "new": "  rw [UnitAddTorus.coe_measurableEquivPiIoc_apply]\n  simp only [literalStagePhysicalTorusPoint]\n  have hi := hw i\n",
+      "evidence": "The failed rewrite target visibly contains literalStagePhysicalTorusPoint even though it was simplified before the immediately preceding coordinate rewrite."
+    },
+    {
+      "id": "Q1-P4126-explicit-phase-modulus-cast-positivity",
+      "promotion": "PROMOTE_HIGH_CONFIDENCE",
+      "kind": "body",
+      "confidence": "very-high-static-arithmetic-direct-lean-unverified",
+      "declaration_index": 4126,
+      "owner": "norm_modulusNormalizedReducedResidueHalfPhaseSum_le_one",
+      "diagnostic_ordinals": [73],
+      "expected_owner_count": 1,
+      "old": "  apply (div_le_one (by\n    simp [phaseModulus] :\n    (0 : ℝ) < phaseModulus q)).2\n",
+      "new": "  apply (div_le_one (by\n    simp only [phaseModulus, Nat.cast_add, Nat.cast_one]\n    positivity)).2\n",
+      "evidence": "FULL log residual is exactly 0 < (q : ℝ) + 1."
+    },
+    {
+      "id": "Q1-P4211-use-existing-pointwise-lp-smul-equality",
+      "promotion": "PROMOTE_HIGH_CONFIDENCE",
+      "kind": "body",
+      "confidence": "high-static-shape-direct-lean-unverified",
+      "declaration_index": 4211,
+      "owner": "orbitPeterssonCoreToReducedChartL2",
+      "diagnostic_ordinals": [76, 77, 78, 79, 80],
+      "expected_owner_count": 1,
+      "old": "    rw [hsmul]\n    have hlp' :\n        ↑↑((RingHom.id ℂ) c •\n            (ambientReducedChartGauge_memLp n z₀ u).toLp\n              (ambientReducedChartGauge n z₀ u)) w =\n          (c • ↑↑((ambientReducedChartGauge_memLp n z₀ u).toLp\n            (ambientReducedChartGauge n z₀ u))) w := by\n      simpa only [RingHom.id_apply] using hlp\n    rw [hlp', hu]\n    by_cases hw : w ∈ ambientGammaTwoReducedChart z₀ <;>\n      simp [ambientReducedChartGauge, hw, upperLift, Function.comp_apply,\n        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitEuclideanGauge_smul,\n        Pi.smul_apply, smul_eq_mul]\n",
+      "new": "    rw [hsmul]\n    simp only [RingHom.id_apply]\n    rw [hlp]\n    simp only [Pi.smul_apply, hu]\n    by_cases hw : w ∈ ambientGammaTwoReducedChart z₀ <;>\n      simp [ambientReducedChartGauge, hw, upperLift, Function.comp_apply,\n        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitEuclideanGauge_smul,\n        Pi.smul_apply, smul_eq_mul]\n",
+      "evidence": "hlp in the raw log already has the precise pointwise coeFn_smul equality. Normalizing RingHom.id first makes it directly rewritable and removes every invalid ↑↑ annotation."
+    },
+    {
+      "id": "Q1-P4284-compact-image-via-fixed-sl2z-continuity",
+      "promotion": "PROMOTE_HIGH_CONFIDENCE",
+      "kind": "body",
+      "confidence": "high-static-api-direct-lean-unverified",
+      "declaration_index": 4284,
+      "owner": "gammaTwoPeriodizationOrbitSupport_isClosed",
+      "diagnostic_ordinals": [84],
+      "expected_owner_count": 1,
+      "old": "  have hCompact : IsCompact\n      (((gamma : SL(2, ℤ)) • ·) ''\n        gammaTwoPeriodizationSeedSupport m v) := by\n    simpa only [image_smul] using\n      (gammaTwoPeriodizationSeedSupport_isCompact m v).smul\n        (gamma : SL(2, ℤ))\n",
+      "new": "  have hCompact : IsCompact\n      (((gamma : SL(2, ℤ)) • ·) ''\n        gammaTwoPeriodizationSeedSupport m v) :=\n    (gammaTwoPeriodizationSeedSupport_isCompact m v).image\n      (HalfIntegralMultiplier.continuous_sl2z_smul\n        (gamma : SL(2, ℤ)))\n",
+      "evidence": "The artifact reports only missing ContinuousConstSMul. The same file proves continuous_sl2z_smul and repeatedly passes it to IsCompact.image."
+    },
+    {
+      "id": "Q1-P4299-unfold-full-plane-conjugate-value",
+      "promotion": "PROMOTE_HIGH_CONFIDENCE",
+      "kind": "body",
+      "confidence": "very-high-static-shape-direct-lean-unverified",
+      "declaration_index": 4299,
+      "owner": "signedRaisePeriodization_isReducedChartGaugeModel",
+      "diagnostic_ordinals": [95],
+      "expected_owner_count": 1,
+      "old": "        rw [euclideanLowerFromSuccTestAdjoint_conjugate_eq_conj_affineTranspose\n          n v hv]\n",
+      "new": "        rw [euclideanLowerFromSuccTestAdjoint_conjugate_eq_conj_affineTranspose\n          n v hv]\n        rw [fullPlaneConjugate_apply]\n",
+      "evidence": "The residual goal is syntactically star (f z) = fullPlaneConjugate f z, and fullPlaneConjugate_apply states the reverse side exactly."
+    },
+    {
+      "id": "Q1-P4303-explicit-negative-linear-pmap-bridge",
+      "promotion": "PROMOTE_HIGH_CONFIDENCE",
+      "kind": "body",
+      "confidence": "very-high-same-file-compiled-pattern-direct-lean-unverified",
+      "declaration_index": 4303,
+      "owner": "loweringMaximalAdjoint_isPlanarAffineWeakGraphOn_reducedChart",
+      "diagnostic_ordinals": [98],
+      "expected_owner_count": 1,
+      "old": "    rw [LinearPMap.neg_apply, physicalRaise_on_core] at hFormal\n    simpa only [l2CoreRangeEquiv_coe] using hFormal\n",
+      "new": "    have hNeg :\n        (-physicalRaise n) (l2CoreRangeEquiv n q) =\n          -(physicalRaise n (l2CoreRangeEquiv n q)) :=\n      LinearPMap.neg_apply (physicalRaise n)\n        (l2CoreRangeEquiv n q)\n    rw [hNeg, physicalRaise_on_core] at hFormal\n    simpa only [l2CoreRangeEquiv_coe] using hFormal\n",
+      "evidence": "Authority lines 37382-37388 contain this exact bridge and rewrite pattern with the same operators and types."
+    },
+    {
+      "id": "Q1-P4346-direct-effective-element-invariance-bridge",
+      "promotion": "PROMOTE_HIGH_CONFIDENCE",
+      "kind": "body",
+      "confidence": "high-same-file-pattern-direct-lean-unverified",
+      "declaration_index": 4346,
+      "owner": "effectiveScalarSmoothQuotient_invariant",
+      "diagnostic_ordinals": [104],
+      "expected_owner_count": 1,
+      "old": " := by\n  intro gamma z\n  let a : GammaTwoEffective := gammaTwoEffectiveElement gamma\n  simpa only [a, effectiveScalarSmoothQuotient_apply,\n    gammaTwoEffectiveElement_smul] using\n      effectiveScalarPoincarePeriodization_invariant v a z\n",
+      "new": " := by\n  intro gamma z\n  simpa only [effectiveScalarSmoothQuotient_apply,\n    gammaTwoEffectiveElement_smul] using\n      effectiveScalarPoincarePeriodization_invariant v\n        (gammaTwoEffectiveElement gamma) z\n",
+      "evidence": "gammaTwoQuotientMk_gamma_smul earlier in the same file uses the identical direct effective-element argument followed by gammaTwoEffectiveElement_smul."
+    },
+    {
+      "id": "Q1-P4369-change-to-unfolded-normalizer-lambda",
+      "promotion": "PROMOTE_HIGH_CONFIDENCE",
+      "kind": "body",
+      "confidence": "high-static-definitional-direct-lean-unverified",
+      "declaration_index": 4369,
+      "owner": "quotientChartNormalizer_realSmooth",
+      "diagnostic_ordinals": [105],
+      "expected_owner_count": 1,
+      "old": " := by\n  simpa only [quotientChartNormalizer] using\n    RealSmooth.inv\n      (quotientChartNormalizationDenominator_realSmooth rho hrho hfinite)\n      (quotientChartNormalizationDenominator_ne_zero rho hrho hfinite)\n",
+      "new": " := by\n  change RealSmooth (fun z : ℍ ↦\n    (quotientChartNormalizationDenominator rho hrho hfinite z)⁻¹)\n  exact RealSmooth.inv\n    (quotientChartNormalizationDenominator_realSmooth rho hrho hfinite)\n    (quotientChartNormalizationDenominator_ne_zero rho hrho hfinite)\n",
+      "evidence": "The log confirms RealSmooth.inv already has exactly the unfolded lambda type; only folding to the named definition failed."
+    }
+  ],
+  "staged_repairs": [
+    {
+      "id": "Q1-S3689-convert-model-limit-after-pointwise-congruence",
+      "stage": "REMOTE_DIRECT_LEAN_REQUIRED",
+      "kind": "body",
+      "confidence": "medium-static-normalization-direct-lean-unverified",
+      "declaration_index": 3689,
+      "owner": "cauchySeq_lowerFromSuccCoordinate_of_base_raise_tendsto",
+      "diagnostic_ordinals": [3],
+      "expected_owner_count": 1,
+      "old": "    simpa only [Pi.zero_apply, zero_pow, OfNat.ofNat, mul_zero,\n      sub_zero, sub_eq_add_neg] using hModel.congr'\n      (Filter.Eventually.of_forall fun jk ↦ by\n        have h := lowered_norm_sq_eq_raised_sub_mass n\n          (u jk.1 + (-1 : ℂ) • u jk.2)\n        simpa only [map_add, map_smul, neg_smul, one_smul, map_neg,\n          sub_eq_add_neg, c] using h.symm)\n",
+      "new": "    have hLimit := hModel.congr'\n      (Filter.Eventually.of_forall fun jk ↦ by\n        have h := lowered_norm_sq_eq_raised_sub_mass n\n          (u jk.1 + (-1 : ℂ) • u jk.2)\n        simpa only [map_add, map_smul, neg_smul, one_smul, map_neg,\n          sub_eq_add_neg, c] using h.symm)\n    convert hLimit using 1 <;> norm_num [c]\n",
+      "staging_reason": "The static mismatch is clear, but convert may expose function and filter arguments that need a narrower congruence API."
+    },
+    {
+      "id": "Q1-S3838-change-record-equalities-to-raw-lp",
+      "stage": "REMOTE_DIRECT_LEAN_REQUIRED",
+      "kind": "body",
+      "confidence": "medium-static-api-direct-lean-unverified",
+      "declaration_index": 3838,
+      "owner": "ambientTestCoreToPlaneL2Linear",
+      "diagnostic_ordinals": [7, 8],
+      "expected_owner_count": 1,
+      "old": "  map_add' v w := by\n    simpa only [add_apply] using\n      MemLp.toLp_add (ambientTestCore_memLp_volume v)\n        (ambientTestCore_memLp_volume w)\n  map_smul' c v := by\n    simpa only [smul_apply, smul_eq_mul] using\n      MemLp.toLp_const_smul c (ambientTestCore_memLp_volume v)\n",
+      "new": "  map_add' v w := by\n    change @Eq (MeasureTheory.Lp ℂ 2 (volume : Measure ℂ)) _ _\n    simpa only [add_apply] using\n      MemLp.toLp_add (ambientTestCore_memLp_volume v)\n        (ambientTestCore_memLp_volume w)\n  map_smul' c v := by\n    change @Eq (MeasureTheory.Lp ℂ 2 (volume : Measure ℂ)) _ _\n    simpa only [smul_apply, smul_eq_mul, RingHom.id_apply] using\n      MemLp.toLp_const_smul c (ambientTestCore_memLp_volume v)\n",
+      "staging_reason": "Definitional reducibility of AmbientPlaneL2 and the exact scalar action selected inside the record require direct API confirmation."
+    },
+    {
+      "id": "Q1-S3926-factor-vertical-hasDerivAt-before-const-mul",
+      "stage": "REMOTE_DIRECT_LEAN_REQUIRED",
+      "kind": "body",
+      "confidence": "medium-static-elaboration-direct-lean-unverified",
+      "declaration_index": 3926,
+      "owner": "fderiv_literalStageNegativePlaneWave_I",
+      "diagnostic_ordinals": [17],
+      "expected_owner_count": 1,
+      "old": "  convert\n    (((hasDerivAt_fourier_neg (1 : ℝ) (k 1)\n        ((literalStageFourierScale Y)⁻¹ * w.im)).comp 0\n          (((hasDerivAt_id (0 : ℝ)).const_add w.im).const_mul\n            (literalStageFourierScale Y)⁻¹)).const_mul\n        (fourier (-(k 0))\n          (((literalStageFourierScale Y)⁻¹ * w.re : ℝ) : UnitAddCircle))).const_mul\n      ((literalStageFourierScale Y)⁻¹ : ℂ) using 1 <;>\n",
+      "new": "  have hVertical :=\n    (hasDerivAt_fourier_neg (1 : ℝ) (k 1)\n      ((literalStageFourierScale Y)⁻¹ * w.im)).comp 0\n        (((hasDerivAt_id (0 : ℝ)).const_add w.im).const_mul\n          (literalStageFourierScale Y)⁻¹)\n  convert\n    ((hVertical.const_mul\n        (fourier (-(k 0))\n          (((literalStageFourierScale Y)⁻¹ * w.re : ℝ) : UnitAddCircle))).const_mul\n      ((literalStageFourierScale Y)⁻¹ : ℂ) using 1 <;>\n",
+      "staging_reason": "Separating elaboration is plausible, but the inferred real-to-complex derivative codomain must be checked by Lean."
+    },
+    {
+      "id": "Q1-S3931-pull-scalar-through-fourier-integral-via-ae-coercion",
+      "stage": "REMOTE_DIRECT_LEAN_REQUIRED",
+      "kind": "body",
+      "confidence": "medium-low-static-api-direct-lean-unverified",
+      "declaration_index": 3931,
+      "owner": "mFourierCoeff_scaled_dx",
+      "diagnostic_ordinals": [27],
+      "expected_owner_count": 1,
+      "old": "  have hbase := inner_planeWave_ambientTestCore_eq_scale_mul_mFourierCoeff\n    Y k v hv\n  have hder := inner_planeWave_ambientTestCore_eq_scale_mul_mFourierCoeff\n    Y k (HalfWeightCompactCoordinateGreen.dx v) hdx\n  rw [map_smul]\n  simp only [smul_eq_mul]\n",
+      "new": "  have hbase := inner_planeWave_ambientTestCore_eq_scale_mul_mFourierCoeff\n    Y k v hv\n  have hder := inner_planeWave_ambientTestCore_eq_scale_mul_mFourierCoeff\n    Y k (HalfWeightCompactCoordinateGreen.dx v) hdx\n  have hScaled :\n      UnitAddTorus.mFourierCoeff\n          ((literalStageFourierScale Y : ℂ) •\n            literalStageTorusTest Y\n              (HalfWeightCompactCoordinateGreen.dx v)) k =\n        (literalStageFourierScale Y : ℂ) *\n          UnitAddTorus.mFourierCoeff\n            (literalStageTorusTest Y\n              (HalfWeightCompactCoordinateGreen.dx v)) k := by\n    unfold UnitAddTorus.mFourierCoeff\n    rw [← integral_const_mul]\n    apply integral_congr_ae\n    filter_upwards [MeasureTheory.Lp.coeFn_smul\n      (literalStageFourierScale Y : ℂ)\n      (literalStageTorusTest Y\n        (HalfWeightCompactCoordinateGreen.dx v))] with t ht\n    rw [ht]\n    simp only [Pi.smul_apply, smul_eq_mul]\n    ring\n  rw [hScaled]\n",
+      "staging_reason": "The argument is mathematically exact, but the installed Lp coeFn_smul and torus-integral signatures are API-sensitive."
+    },
+    {
+      "id": "Q1-S3948-bounded-heartbeat-probe",
+      "stage": "REMOTE_DIRECT_LEAN_REQUIRED",
+      "kind": "environment",
+      "confidence": "medium-static-runtime-direct-lean-unverified",
+      "declaration_index": 3948,
+      "owner": "opNorm_literalStagePlaneFiniteApproximation_sub_le",
+      "diagnostic_ordinals": [40],
+      "expected_owner_count": 1,
+      "old": "theorem opNorm_literalStagePlaneFiniteApproximation_sub_le\n    (Y : ℝ) (n : ℤ) (N : ℕ) :\n",
+      "new": "set_option maxHeartbeats 800000 in\ntheorem opNorm_literalStagePlaneFiniteApproximation_sub_le\n    (Y : ℝ) (n : ℤ) (N : ℕ) :\n",
+      "staging_reason": "A higher bounded budget is a diagnostic probe, not evidence that the proof is performant or succeeds remotely."
+    },
+    {
+      "id": "Q1-S4296-simplify-bundled-conjugate-pointwise-without-hfun-rewrite",
+      "stage": "REMOTE_DIRECT_LEAN_REQUIRED",
+      "kind": "body",
+      "confidence": "medium-high-static-api-direct-lean-unverified",
+      "declaration_index": 4296,
+      "owner": "euclideanRaiseTestAdjoint_conjugate_eq_conj_affineTranspose",
+      "diagnostic_ordinals": [89],
+      "expected_owner_count": 1,
+      "old": " := by\n  have hfun :\n      (reducedChartConjugateAmbientTest v hv : ℂ → ℂ) =\n        fun z : ℂ ↦ star (v z) := by\n    funext z\n    exact reducedChartConjugateAmbientTest_apply v hv z\n  rw [hfun]\n  simp only [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanRaiseTestAdjoint,\n",
+      "new": " := by\n  simp only [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanRaiseTestAdjoint,\n",
+      "staging_reason": "The existing simp list contains reducedChartConjugateAmbientTest_apply, but whether the bundled derivative definitions expose it in the required order is Lean-API dependent."
+    },
+    {
+      "id": "Q1-S4299-explicit-negated-core-coercion-linearity",
+      "stage": "REMOTE_DIRECT_LEAN_REQUIRED",
+      "kind": "body",
+      "confidence": "medium-high-static-coercion-direct-lean-unverified",
+      "declaration_index": 4299,
+      "owner": "signedRaisePeriodization_isReducedChartGaugeModel",
+      "diagnostic_ordinals": [94, 96],
+      "expected_owner_count": 2,
+      "old": "        simp only [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,\n          map_neg, Pi.neg_apply]\n        ring\n",
+      "new": "        simp only [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_apply]\n        change _ * (-_) = -(_ * _)\n        ring\n",
+      "staging_reason": "Both residual goals have this exact shape, but the negated bundled-core coercion must be confirmed to reduce to the proposed change target."
+    }
+  ],
+  "deferred_cascades": [
+    {
+      "id": "Q1-D4007-wait-for-weightedGraphLinear-root",
+      "declaration_index": 4007,
+      "owner": "weightedGraphLinear_bound",
+      "diagnostic_ordinals": [54, 55],
+      "upstream_owner": "weightedGraphLinear",
+      "upstream_declaration_index": 4006,
+      "upstream_diagnostic_ordinals": [52, 53],
+      "action": "NO_OWNER_BODY_EDIT; first obtain a remote direct compile of the index-4006 root."
+    },
+    {
+      "id": "Q1-D4017-wait-for-weightedGraphLinear-root",
+      "declaration_index": 4017,
+      "owner": "discriminantHardStageOperator_eq_weightedHard",
+      "diagnostic_ordinals": [66],
+      "upstream_owner": "weightedGraphLinear",
+      "upstream_declaration_index": 4006,
+      "upstream_diagnostic_ordinals": [52, 53],
+      "action": "NO_OWNER BODY EDIT; the unknown identifier must be remeasured only after index 4006 registers."
+    },
+    {
+      "id": "Q1-D4198-use-existing-m13-source-order-stage",
+      "declaration_index": 4198,
+      "owner": "gammaTwoReducedChart_pairwise_disjoint_translates",
+      "diagnostic_ordinals": [74],
+      "producer_owner": "gammaTwoReducedChart_inter_translate_imp_eq_one",
+      "producer_declaration_index": 4240,
+      "producer_line": 57912,
+      "action": "NO OWNER BODY EDIT; retain X_M13_4198 fail-closed until its repaired producer block and target-location move compile remotely."
+    }
+  ]
+}

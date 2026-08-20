@@ -1,0 +1,61 @@
+{
+  "schema": "fa-dynamic-cluster-3273-3293-corrective-v1",
+  "status": "DIRECT_FAST1_DERIVED_WITH_IDX3286_NORMALIZATION_PENDING_RECOMPILE",
+  "source_run_id": 31563561591,
+  "source_sha256": "cce0f96167282088ea38dbfa05262830482f4577e5afce171a5f693e0a4dcc68",
+  "diagnostic_run_id": 31562829364,
+  "fderiv_const_probe_run_id": 31564233847,
+  "direct_fast1_followup_run_id": 31564594410,
+  "repairs": [
+    {
+      "declaration_index": 3273,
+      "declaration_name": "integral_fullPlaneDirectionalDerivative_eq_zero",
+      "old_fragment": "  simpa only [one_mul, zero_mul, integral_zero, neg_zero] using h",
+      "new_fragment": "  have hConstZero :\n      (∫ x : ℂ, (fderiv ℝ (fun _t : ℂ ↦ (1 : ℂ)) x) xi * v x) = 0 := by\n    simp\n  rw [hConstZero] at h\n  simpa only [one_mul, neg_zero] using h"
+    },
+    {
+      "declaration_index": 3276,
+      "declaration_name": "friedrichsUnitHeightMollifierTest",
+      "old_fragment": "    have him : ContDiff ℝ ∞ (fun t : ℂ ↦ (t.im : ℂ)) :=",
+      "new_fragment": "    have him : ContDiff ℝ (⊤ : ℕ∞) (fun t : ℂ ↦ (t.im : ℂ)) :="
+    },
+    {
+      "declaration_index": 3280,
+      "declaration_name": "integral_friedrichsUnitAffineCommutatorTest_eq_zero",
+      "old_fragment": "  rw [integral_add\n      (fullPlaneTest_integrable\n        (sigma • fullPlaneDirectionalDerivative 1\n          friedrichsUnitHeightMollifierTest))\n      (fullPlaneTest_integrable\n        (fullPlaneDirectionalDerivative Complex.I\n          friedrichsUnitHeightMollifierTest)),\n    integral_smul,\n    integral_fullPlaneDirectionalDerivative_eq_zero,\n    integral_fullPlaneDirectionalDerivative_eq_zero, smul_zero, add_zero]",
+      "new_fragment": "  rw [integral_add\n      (fullPlaneTest_integrable\n        (sigma • fullPlaneDirectionalDerivative 1\n          friedrichsUnitHeightMollifierTest))\n      (fullPlaneTest_integrable\n        (fullPlaneDirectionalDerivative Complex.I\n          friedrichsUnitHeightMollifierTest))]\n  change (∫ t : ℂ, sigma *\n      fullPlaneDirectionalDerivative 1 friedrichsUnitHeightMollifierTest t) +\n      ∫ t : ℂ, fullPlaneDirectionalDerivative Complex.I\n        friedrichsUnitHeightMollifierTest t = 0\n  rw [integral_const_mul,\n    integral_fullPlaneDirectionalDerivative_eq_zero,\n    integral_fullPlaneDirectionalDerivative_eq_zero, mul_zero, add_zero]"
+    },
+    {
+      "declaration_index": 3286,
+      "declaration_name": "integral_friedrichsAffineCommutatorKernel_eq_zero",
+      "replacements": [
+        {
+          "old_fragment": "  rw [Complex.finrank_real_complex,\n    abs_of_pos (inv_pos.mpr (pow_pos ha 2)), smul_eq_mul] at hchange",
+          "new_fragment": "  rw [Complex.finrank_real_complex,\n    abs_of_pos (inv_pos.mpr (pow_pos ha 2)), Complex.real_smul] at hchange"
+        },
+        {
+          "old_fragment": "  rw [integral_const_mul, hchange,\n    integral_friedrichsUnitAffineCommutatorTest_eq_zero, mul_zero]",
+          "new_fragment": "  rw [integral_const_mul, hchange,\n    integral_friedrichsUnitAffineCommutatorTest_eq_zero]\n  simp"
+        }
+      ]
+    },
+    {
+      "declaration_index": 3289,
+      "declaration_name": "friedrichsAffineCommutatorKernel_l1",
+      "old_fragment": "      simp only [friedrichsAffineCommutatorKernel,\n        norm_mul, Complex.norm_real, abs_of_nonneg (sq_nonneg a)]",
+      "new_fragment": "      dsimp only [a]\n      simp only [friedrichsAffineCommutatorKernel,\n        norm_mul, Complex.norm_real, Real.norm_eq_abs,\n        abs_of_nonneg (sq_nonneg (friedrichsScale j))]"
+    },
+    {
+      "declaration_index": 3292,
+      "declaration_name": "integrable_kernel_smul_translation_sub",
+      "old_fragment": "  simpa only [Pi.sub_apply, smul_sub] using hTranslate.sub hConst",
+      "new_fragment": "  have hPointwise :\n      (fun t : ℂ ↦ K t • ((DomAddAct.mk (-t) +ᵥ f) - f)) =\n        (fun t : ℂ ↦ K t • (DomAddAct.mk (-t) +ᵥ f) - K t • f) := by\n    funext t\n    exact smul_sub (K t) (DomAddAct.mk (-t) +ᵥ f) f\n  rw [hPointwise]\n  simpa only [Pi.sub_apply] using hTranslate.sub hConst"
+    },
+    {
+      "declaration_index": 3293,
+      "declaration_name": "integral_kernel_smul_translation_eq_base_add_error",
+      "old_fragment": "      K t • (DomAddAct.mk (-t) +ᵥ f) =\n          K t • ((DomAddAct.mk (-t) +ᵥ f - f) + f) := by\n        rw [sub_add_cancel]",
+      "new_fragment": "      K t • (DomAddAct.mk (-t) +ᵥ f) =\n          K t • ((DomAddAct.mk (-t) +ᵥ f - f) + f) := by\n        exact congrArg (fun x : AmbientPlaneL2 ↦ K t • x)\n          (sub_add_cancel (DomAddAct.mk (-t) +ᵥ f) f).symm"
+    }
+  ]
+}

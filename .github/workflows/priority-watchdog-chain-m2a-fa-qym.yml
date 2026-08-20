@@ -1,0 +1,168 @@
+name: Watchdog chain Mock2 Advanced FunctionalAnalysis QYM
+
+on:
+  push:
+    branches: [fix/primality-sheaf-clean-build]
+    paths:
+      - '.github/workflows/priority-watchdog-chain-m2a-fa-qym.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+  actions: read
+
+concurrency:
+  group: priority-watchdog-chain-m2a-fa-qym
+  cancel-in-progress: false
+
+jobs:
+  complete-priority-chain:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 360
+    env:
+      BRANCH: fix/primality-sheaf-clean-build
+      GITHUB_TOKEN: ${{ github.token }}
+      OUTDIR: .lake/build/lib/lean/PrimalitySheafVerification
+
+    steps:
+      - name: Clone latest branch
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git init .
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git fetch --depth=50 origin "refs/heads/${BRANCH}"
+          git checkout -B "${BRANCH}" FETCH_HEAD
+
+      - name: Install pinned Lean and Mathlib cache once
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          echo "${HOME}/.elan/bin" >> "${GITHUB_PATH}"
+          "${HOME}/.elan/bin/lean" --version
+          "${HOME}/.elan/bin/lake" exe cache get
+
+      - name: Ensure isolated Mock2 Advanced PASS
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          git fetch --depth=50 origin "refs/heads/${BRANCH}"
+          git reset --hard FETCH_HEAD
+          result='build-logs/priority-stage1-advanced-result.txt'
+          if [[ -f "${result}" ]] && \
+             grep -Fxq 'stage=Mock2_Advanced' "${result}" && \
+             grep -Fxq 'status=PASS' "${result}" && \
+             grep -Fxq 'runtime_repair_during_final_direct=0' "${result}"; then
+            echo 'Existing isolated Advanced PASS accepted.'
+          else
+            bash scripts/priority_stage1_advanced.sh
+          fi
+
+      - name: Refresh branch after Advanced materialization
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --depth=50 origin "refs/heads/${BRANCH}"
+          git reset --hard FETCH_HEAD
+          git clean -fd
+          rm -rf "${OUTDIR}"; mkdir -p "${OUTDIR}"
+
+      - name: Ensure isolated FunctionalAnalysis PASS
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          result='build-logs/priority-stage2-fa-result.txt'
+          if [[ -f "${result}" ]] && \
+             grep -Fxq 'stage=Mock2_FunctionalAnalysis' "${result}" && \
+             grep -Fxq 'status=PASS' "${result}" && \
+             grep -Fxq 'runtime_repair_during_final_direct=0' "${result}"; then
+            echo 'Existing isolated FunctionalAnalysis PASS accepted.'
+          else
+            bash scripts/priority_stage2_fa.sh
+          fi
+
+      - name: Refresh branch after FunctionalAnalysis materialization
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --depth=50 origin "refs/heads/${BRANCH}"
+          git reset --hard FETCH_HEAD
+          git clean -fd
+          rm -rf "${OUTDIR}"; mkdir -p "${OUTDIR}"
+
+      - name: Directly verify Integrated and QYM twice
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          bash scripts/priority_stage3_qym.sh
+
+      - name: Refresh and validate final PASS record
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --depth=50 origin "refs/heads/${BRANCH}"
+          git reset --hard FETCH_HEAD
+          result='build-logs/priority-stage3-qym-result.txt'
+          test -s "${result}"
+          grep -Fxq 'stage=QYM' "${result}"
+          grep -Fxq 'status=PASS' "${result}"
+          grep -Fxq 'runtime_repair_scripts=0' "${result}"
+          grep -Fxq 'Mock2_Advanced=PASS' "${result}"
+          grep -Fxq 'Mock2_FunctionalAnalysis=PASS' "${result}"
+          grep -Fxq 'Mock2_FunctionalAnalysis_Integrated=PASS' "${result}"
+          grep -Fxq 'QYM=PASS' "${result}"
+          for module in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated QYM; do
+            grep -Eq "^${module},pass1,0,0," "${result}"
+            grep -Eq "^${module},pass2,0,0," "${result}"
+          done
+
+      - name: Post final verified PASS to PR 7
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          result='build-logs/priority-stage3-qym-result.txt'
+          python3 - <<'PY' > /tmp/comment.json
+          import json
+          from pathlib import Path
+          result = Path('build-logs/priority-stage3-qym-result.txt').read_text(encoding='utf-8')
+          head = next(x.split('=',1)[1] for x in result.splitlines() if x.startswith('verified_source_head='))
+          rows = '\n'.join(x for x in result.splitlines()
+                           if x.startswith(('Mock2,pass','Mock2_Advanced,pass',
+                                            'Mock2_FunctionalAnalysis,pass',
+                                            'Mock2_FunctionalAnalysis_Integrated,pass',
+                                            'QYM,pass')))
+          body = f'''## Priority direct-source verification complete
+
+Verified source head: `{head}`
+
+- `Mock2_Advanced`: PASS twice
+- `Mock2_FunctionalAnalysis`: PASS twice
+- `Mock2_FunctionalAnalysis_Integrated`: PASS twice
+- `QYM` / Mock3: PASS twice
+- Runtime repair during final verification: `0`
+
+```text
+{rows}
+```
+'''
+          print(json.dumps({'body': body}))
+          PY
+          curl --fail --silent --show-error \
+            -X POST \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H 'Accept: application/vnd.github+json' \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/issues/7/comments" \
+            --data-binary @/tmp/comment.json

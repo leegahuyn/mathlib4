@@ -1,0 +1,17 @@
+{
+  "schema": "qym-gb76-global-batch-round1-promotion-v1",
+  "authority": "actual full-QYM direct Lean",
+  "branch": "gpt/qym-gb76-global-batch-repair-20260820",
+  "trigger_sha": "406f590c0f078508461dfd5cc10f4b30af43bfe3",
+  "run_id": 32295355222,
+  "round": 1,
+  "previous_error_headers": 76,
+  "error_headers": 57,
+  "warning_headers": 363,
+  "panic_lines": 0,
+  "qym_sha256": "883b61e474cd607b71c27e21fc6c3ebd3995bb8b604282a685e8516316edc82a",
+  "qym_blob": "af307b88af5ed96cc4479d1208cfdf598cdc21fe",
+  "forbidden_zero": true,
+  "canonical_check_in": true,
+  "status": "PROMOTED_STRICT_IMPROVEMENT"
+}

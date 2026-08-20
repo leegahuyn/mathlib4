@@ -1,0 +1,560 @@
+name: Codex FA477 close declaration 2793 only
+
+on:
+  push:
+    branches:
+      - codex/fa-qym-cleanbuild-final-20260810
+    paths:
+      - .github/workflows/codex-fa477-log-cusp.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: codex-fa477-log-cusp
+  cancel-in-progress: false
+
+jobs:
+  candidate:
+    strategy:
+      fail-fast: false
+      matrix:
+        repair_variant:
+          - upper_ext_h_simp_only
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+    env:
+      VARIANT: norms
+      FA473_WINNER: const_add_simp
+      FA474_WINNER: explicit_through2791
+      FA475_WINNER: clean_semicolon
+      FA476_R2_VARIANT: explicit_exp_nonneg
+      FA476_R3_VARIANT: minimal_simpa
+      FA476_R3_EVIDENCE_RUN_ID: "31407777360"
+      FA476_R3_EVIDENCE_ARTIFACT_ID: "9070636218"
+      FA476_R3_EVIDENCE_ARTIFACT_DIGEST: "sha256:343607e51bea29fd2878bf6ebfcc0c1c8b1daf9826733b0cd3729e63fbbea3ca"
+      FA477_VARIANT: ${{ matrix.repair_variant }}
+      HORIZONTAL_STYLE: calc_four
+      MAX_ERRORS: "32"
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Require exact completed FA476-r3 declaration-2792 evidence
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          RUN_ATTESTATION="${RUNNER_TEMP}/fa476r3-run-${FA476_R3_EVIDENCE_RUN_ID}.json"
+          ARTIFACT_ATTESTATION="${RUNNER_TEMP}/fa476r3-artifact-${FA476_R3_EVIDENCE_ARTIFACT_ID}.json"
+          gh api \
+            "repos/${GITHUB_REPOSITORY}/actions/runs/${FA476_R3_EVIDENCE_RUN_ID}" \
+            > "$RUN_ATTESTATION"
+          gh api \
+            "repos/${GITHUB_REPOSITORY}/actions/artifacts/${FA476_R3_EVIDENCE_ARTIFACT_ID}" \
+            > "$ARTIFACT_ATTESTATION"
+          python3 - \
+            "$RUN_ATTESTATION" \
+            "$ARTIFACT_ATTESTATION" \
+            "$FA476_R3_EVIDENCE_RUN_ID" \
+            "$FA476_R3_EVIDENCE_ARTIFACT_ID" \
+            "$FA476_R3_EVIDENCE_ARTIFACT_DIGEST" \
+            "$GITHUB_REPOSITORY" <<'PY'
+          import json
+          import sys
+
+          run_path, artifact_path = sys.argv[1:3]
+          expected_run_text, expected_artifact_text = sys.argv[3:5]
+          expected_digest, expected_repository = sys.argv[5:7]
+          with open(run_path, encoding="utf-8") as stream:
+              run = json.load(stream)
+          with open(artifact_path, encoding="utf-8") as stream:
+              artifact = json.load(stream)
+
+          expected_run = int(expected_run_text)
+          expected_artifact = int(expected_artifact_text)
+          expected_name = "Codex FA476-r3 close declaration 2792 only"
+          expected_path = ".github/workflows/codex-fa476r3-logheight-norm.yml"
+          expected_artifact_name = (
+              "codex-fa476r3-clean_semicolon-explicit_exp_nonneg-minimal_simpa"
+          )
+          actual_path = run.get("path")
+          path_exact = (
+              actual_path == expected_path
+              or (
+                  isinstance(actual_path, str)
+                  and actual_path.startswith(expected_path + "@")
+              )
+          )
+          run_checks = {
+              "run_id_exact": run.get("id") == expected_run,
+              "completed": run.get("status") == "completed",
+              "successful": run.get("conclusion") == "success",
+              "workflow_name_exact": run.get("name") == expected_name,
+              "workflow_path_exact": path_exact,
+              "head_branch_exact": run.get("head_branch")
+                  == "codex/fa-qym-cleanbuild-final-20260810",
+              "repository_exact": run.get("repository", {}).get("full_name")
+                  == expected_repository,
+          }
+          artifact_run = artifact.get("workflow_run", {})
+          artifact_checks = {
+              "artifact_id_exact": artifact.get("id") == expected_artifact,
+              "artifact_name_exact": artifact.get("name")
+                  == expected_artifact_name,
+              "artifact_digest_exact": artifact.get("digest")
+                  == expected_digest,
+              "artifact_not_expired": artifact.get("expired") is False,
+              "artifact_run_id_exact": artifact_run.get("id") == expected_run,
+              "artifact_head_branch_exact": artifact_run.get("head_branch")
+                  == "codex/fa-qym-cleanbuild-final-20260810",
+              "artifact_head_sha_matches_run": artifact_run.get("head_sha")
+                  == run.get("head_sha"),
+          }
+          accepted = all(run_checks.values()) and all(artifact_checks.values())
+          print(json.dumps({
+              "required_prior_run": expected_run,
+              "required_artifact": expected_artifact,
+              "required_artifact_digest": expected_digest,
+              "run_html_url": run.get("html_url"),
+              "run_checks": run_checks,
+              "artifact_checks": artifact_checks,
+              "idx2792_closure_accepted": accepted,
+          }, indent=2, ensure_ascii=False))
+          if not accepted:
+              raise SystemExit(
+                  "FA477 requires authoritative run 31407777360 and artifact "
+                  "9070636218 to prove the FA476-r3 declaration-2792 gate"
+              )
+          PY
+      - name: Generate declaration-2793-only candidate and directly compile
+        run: bash scripts/fa477_log_cusp_candidate_ci.sh
+      - name: Print strict frontier evidence
+        if: always()
+        run: |
+          OUT="build-logs/codex-fa477-log-cusp/candidates/norms"
+          if test -f "$OUT/Mock2_FunctionalAnalysis.log"; then
+            grep -nE '^PrimalitySheafVerification/Mock2_FunctionalAnalysis\.lean:[0-9]+:[0-9]+: error' "$OUT/Mock2_FunctionalAnalysis.log" || true
+          fi
+          if test -f "$OUT/METRIC.json"; then
+            python3 -m json.tool "$OUT/METRIC.json"
+          fi
+      - name: Upload exact candidate, direct evidence, and upstream attestation
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa477-${{ env.FA476_R3_VARIANT }}-run${{ env.FA476_R3_EVIDENCE_RUN_ID }}-artifact${{ env.FA476_R3_EVIDENCE_ARTIFACT_ID }}-${{ matrix.repair_variant }}
+          path: |
+            build-logs/codex-fa477-log-cusp/candidates/norms
+            ${{ runner.temp }}/fa476r3-run-31407777360.json
+            ${{ runner.temp }}/fa476r3-artifact-9070636218.json
+          if-no-files-found: error
+          retention-days: 90
+      - name: Require exact declaration-2793 frontier advancement evidence
+        if: always()
+        run: |
+          python3 - \
+            "build-logs/codex-fa477-log-cusp/candidates/norms/METRIC.json" \
+            "build-logs/codex-fa477-log-cusp/candidates/norms/CANDIDATE.json" \
+            "${FA477_VARIANT}" \
+            "${RUNNER_TEMP}/fa476r3-run-${FA476_R3_EVIDENCE_RUN_ID}.json" \
+            "${RUNNER_TEMP}/fa476r3-artifact-${FA476_R3_EVIDENCE_ARTIFACT_ID}.json" \
+            "${FA476_R3_EVIDENCE_RUN_ID}" \
+            "${FA476_R3_EVIDENCE_ARTIFACT_ID}" \
+            "${FA476_R3_EVIDENCE_ARTIFACT_DIGEST}" \
+            "${GITHUB_REPOSITORY}" <<'PY'
+          import hashlib
+          import json
+          import sys
+
+          metric_path, candidate_path, variant = sys.argv[1:4]
+          run_path, artifact_path = sys.argv[4:6]
+          expected_run_text, expected_artifact_text = sys.argv[6:8]
+          expected_digest, expected_repository = sys.argv[8:10]
+          with open(metric_path, encoding="utf-8") as stream:
+              metric = json.load(stream)
+          with open(candidate_path, encoding="utf-8") as stream:
+              candidate = json.load(stream)
+          with open(run_path, encoding="utf-8") as stream:
+              upstream = json.load(stream)
+          with open(artifact_path, encoding="utf-8") as stream:
+              upstream_artifact = json.load(stream)
+          print(json.dumps(metric, indent=2, ensure_ascii=False))
+          print(json.dumps(candidate, indent=2, ensure_ascii=False))
+
+          expected_run = int(expected_run_text)
+          expected_artifact = int(expected_artifact_text)
+          expected_r2 = (
+              "a389e62137cf93e33fd432282f4b3e66762e8a4750e26fccf229a256b88fb469"
+          )
+          expected_r3 = (
+              "5d96377b3b4895f7f48a847105ae1f077677c794df6bc6b9fa1cd81a1f6e3ad0"
+          )
+          expected_candidate = (
+              "1436e87661def2f8a70bd5c864bbe1a037474ba7df9e6d6222294c507394bcab"
+          )
+          expected_decl_sequence = (
+              "a9f15910d7e589feb18eac7d42370c5bfa07233a188d32554f5711a8e3446a5b"
+          )
+          expected_lexical_sequence = (
+              "c997317cd459891eea590671da4aa9941e5c083cbd5dffe91ee96601b12cc4f2"
+          )
+          expected_workflow_path = (
+              ".github/workflows/codex-fa476r3-logheight-norm.yml"
+          )
+          upstream_path = upstream.get("path")
+          upstream_checks = {
+              "run_id_exact": upstream.get("id") == expected_run,
+              "completed": upstream.get("status") == "completed",
+              "successful": upstream.get("conclusion") == "success",
+              "workflow_name_exact": upstream.get("name")
+                  == "Codex FA476-r3 close declaration 2792 only",
+              "workflow_path_exact": (
+                  upstream_path == expected_workflow_path
+                  or (
+                      isinstance(upstream_path, str)
+                      and upstream_path.startswith(expected_workflow_path + "@")
+                  )
+              ),
+              "head_branch_exact": upstream.get("head_branch")
+                  == "codex/fa-qym-cleanbuild-final-20260810",
+              "repository_exact": upstream.get("repository", {}).get("full_name")
+                  == expected_repository,
+          }
+          artifact_run = upstream_artifact.get("workflow_run", {})
+          upstream_artifact_checks = {
+              "artifact_id_exact": upstream_artifact.get("id")
+                  == expected_artifact,
+              "artifact_name_exact": upstream_artifact.get("name")
+                  == (
+                      "codex-fa476r3-clean_semicolon-"
+                      "explicit_exp_nonneg-minimal_simpa"
+                  ),
+              "artifact_digest_exact": upstream_artifact.get("digest")
+                  == expected_digest,
+              "artifact_not_expired": upstream_artifact.get("expired") is False,
+              "artifact_run_id_exact": artifact_run.get("id") == expected_run,
+              "artifact_head_branch_exact": artifact_run.get("head_branch")
+                  == "codex/fa-qym-cleanbuild-final-20260810",
+              "artifact_head_sha_matches_run": artifact_run.get("head_sha")
+                  == upstream.get("head_sha"),
+          }
+          upstream_ok = (
+              all(upstream_checks.values())
+              and all(upstream_artifact_checks.values())
+          )
+
+          forbidden = metric.get("candidate_forbidden_counts", {})
+          expected_forbidden = {
+              "sorry": 0,
+              "admit": 0,
+              "new_global_axiom": 0,
+              "unsafe": 0,
+              "native_decide": 0,
+              "Lean.ofReduceBool": 0,
+          }
+          expected_commands = {
+              "Mock2": (
+                  "lake env lean -DmaxErrors=3 -DwarningAsError=false "
+                  "-o .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean "
+                  "-i .lake/build/lib/lean/PrimalitySheafVerification/Mock2.ilean "
+                  "PrimalitySheafVerification/Mock2.lean"
+              ),
+              "Mock2_Advanced": (
+                  "lake env lean -DmaxErrors=3 -DwarningAsError=false "
+                  "-o .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean "
+                  "-i .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.ilean "
+                  "PrimalitySheafVerification/Mock2_Advanced.lean"
+              ),
+              "Mock2_FunctionalAnalysis": (
+                  "lake env lean -DmaxErrors=32 -DwarningAsError=false "
+                  "-o .lake/build/lib/lean/PrimalitySheafVerification/"
+                  "Mock2_FunctionalAnalysis.olean "
+                  "-i .lake/build/lib/lean/PrimalitySheafVerification/"
+                  "Mock2_FunctionalAnalysis.ilean "
+                  "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean"
+              ),
+          }
+          identity_exact = (
+              candidate.get("candidate_sha256") == expected_candidate
+              and candidate.get("candidate_sha256") == metric.get("source_sha256")
+              and candidate.get("candidate_sha256")
+                  == metric.get("candidate_metadata_sha256")
+              and candidate.get("declaration_sequence_sha256")
+                  == expected_decl_sequence
+              and candidate.get("declaration_sequence_sha256")
+                  == metric.get("declaration_sequence_sha256")
+              and candidate.get("declaration_count") == 4397
+              and candidate.get("declaration_count")
+                  == metric.get("declaration_count")
+              and candidate.get("target_header_sha256")
+                  == metric.get("target_header_sha256")
+              and candidate.get("line_count") == 60535
+              and metric.get("line_count") == 60535
+              and metric.get("required_line_count") == 60535
+          )
+          manifest_exact = (
+              metric.get("lake_manifest_sha256")
+                  == "672474eb93bc14c66cd1ff45203c451987fe525f7b5d13ecd83140be46434b26"
+              and metric.get("lean_toolchain") == "leanprover/lean4:v4.33.0-rc1"
+              and metric.get("source_path")
+                  == "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean"
+              and metric.get("authority") == "direct Lean CLI on repository source path"
+              and metric.get("header_authority")
+                  == "declaration proposition/type through := only"
+              and metric.get("exact_compile_commands") == expected_commands
+          )
+
+          repairs = candidate.get("repairs", [])
+          r2_repairs = [
+              row for row in repairs
+              if row.get("declaration")
+                  == "norm_deriv_selectedLogHeightNaturalGauge_le_graph"
+              and row.get("declaration_index") == 2792
+              and row.get("matrix_variant") == "explicit_exp_nonneg"
+          ]
+          r2_audit = len(r2_repairs) == 1 and (
+              r2_repairs[0].get("fa475_winner") == "clean_semicolon"
+              and r2_repairs[0].get("candidate_source_sha256") == expected_r2
+              and r2_repairs[0].get("replacement_count") == 1
+              and r2_repairs[0].get("target_header_preserved") is True
+              and r2_repairs[0].get("source_prefix_preserved") is True
+              and r2_repairs[0].get("source_suffix_preserved") is True
+              and r2_repairs[0].get("declaration_sequence_preserved") is True
+              and r2_repairs[0].get("later_repair_count") == 0
+          )
+
+          r3_repairs = [
+              row for row in repairs
+              if row.get("declaration")
+                  == "norm_deriv_selectedLogHeightNaturalGauge_le_graph"
+              and row.get("declaration_index") == 2792
+              and row.get("matrix_variant") == "minimal_simpa"
+          ]
+          r3_audit = len(r3_repairs) == 1 and (
+              r3_repairs[0].get("fa475_winner") == "clean_semicolon"
+              and r3_repairs[0].get("fa476_r2_variant")
+                  == "explicit_exp_nonneg"
+              and r3_repairs[0].get("candidate_source_sha256") == expected_r3
+              and r3_repairs[0].get("candidate_source_bytes") == 2697512
+              and r3_repairs[0].get("candidate_line_count") == 60535
+              and r3_repairs[0].get("replacement_count") == 1
+              and r3_repairs[0].get("target_header_sha256")
+                  == "1df5f5385c167d772dd6c874de939e71983d80a58e301c7425887bfa6d02a656"
+              and r3_repairs[0].get("target_region_before_sha256")
+                  == "ba2723bc065f721dc4e00bb319df3a887710522c544dd031d1f9b0d32034fd9e"
+              and r3_repairs[0].get("target_region_after_sha256")
+                  == "bf09ebf555b9ae95fe3ed67a0df711b896cafcdefd98d23abc7d7336badfa232"
+              and r3_repairs[0].get("declaration_sequence_sha256")
+                  == expected_lexical_sequence
+              and r3_repairs[0].get("target_header_preserved") is True
+              and r3_repairs[0].get("source_prefix_preserved") is True
+              and r3_repairs[0].get("source_suffix_preserved") is True
+              and r3_repairs[0].get("declaration_sequence_preserved") is True
+              and r3_repairs[0].get("later_repair_count") == 0
+          )
+          r3_matrix_rows = [
+              row for row in repairs
+              if row.get("declaration") == "FA476-r3 strict-frontier matrix"
+          ]
+          r3_matrix_audit = len(r3_matrix_rows) == 1 and (
+              r3_matrix_rows[0].get("strategy") == "minimal_simpa"
+              and r3_matrix_rows[0].get("variant_role") == "A-minimal"
+              and r3_matrix_rows[0].get("target_declaration")
+                  == "norm_deriv_selectedLogHeightNaturalGauge_le_graph"
+              and r3_matrix_rows[0].get("target_declaration_index") == 2792
+              and r3_matrix_rows[0].get("fa476_r2_variant")
+                  == "explicit_exp_nonneg"
+              and r3_matrix_rows[0].get("later_repair_count") == 0
+          )
+
+          target_repairs = [
+              row for row in repairs
+              if row.get("declaration")
+                  == "selectedCosetUnitaryPullback_log_cuspLevel"
+              and row.get("declaration_index") == 2793
+          ]
+          expected_fragments = [
+              (
+                  "    apply Subtype.ext\n"
+                  "    simp only [logHeightBasePoint, H, Real.exp_log hH]",
+                  "    apply UpperHalfPlane.ext\n"
+                  "    simp only [logHeightBasePoint, H, Real.exp_log hH]",
+              ),
+              (
+                  "  simp only [heightC, logHeightBasePoint_im, Real.exp_log hH,\n"
+                  "    Complex.ofReal_div]",
+                  "  simp only [heightC, logHeightBasePoint_im, Real.exp_log hH,\n"
+                  "    Complex.ofReal_div, H]",
+              ),
+          ]
+          expected_replacement_hashes = [
+              {
+                  "old_count_before": 1,
+                  "new_count_before": 0,
+                  "old_sha256": hashlib.sha256(old.encode()).hexdigest(),
+                  "new_sha256": hashlib.sha256(new.encode()).hexdigest(),
+                  "old_bytes": len(old.encode()),
+                  "new_bytes": len(new.encode()),
+              }
+              for old, new in expected_fragments
+          ]
+          target_audit = len(target_repairs) == 1 and (
+              target_repairs[0].get("matrix_variant") == variant
+              and target_repairs[0].get("fa475_winner") == "clean_semicolon"
+              and target_repairs[0].get("fa476_r2_variant")
+                  == "explicit_exp_nonneg"
+              and target_repairs[0].get("fa476_r3_variant")
+                  == "minimal_simpa"
+              and target_repairs[0].get("required_upstream_evidence_run_id")
+                  == expected_run
+              and target_repairs[0].get(
+                  "required_upstream_evidence_artifact_id"
+              ) == expected_artifact
+              and target_repairs[0].get(
+                  "required_upstream_evidence_artifact_digest"
+              ) == expected_digest
+              and target_repairs[0].get("upstream_idx2792_closure_must_precede")
+                  is True
+              and target_repairs[0].get("fa476_r3_intermediate_source_sha256")
+                  == expected_r3
+              and target_repairs[0].get("fa476_r3_intermediate_source_bytes")
+                  == 2697512
+              and target_repairs[0].get("candidate_source_sha256")
+                  == expected_candidate
+              and target_repairs[0].get("candidate_source_bytes") == 2697522
+              and target_repairs[0].get("required_line_count") == 60535
+              and target_repairs[0].get("replacement_count") == 2
+              and target_repairs[0].get("replacement_audit")
+                  == expected_replacement_hashes
+              and target_repairs[0].get("target_header_sha256")
+                  == "445719549ce79918a2f6cf953321db8ca2bf485cda0689dde2ff3dee3d5c3240"
+              and target_repairs[0].get("target_region_before_sha256")
+                  == "7bc3b85b5048cb2c42df1f026a1261abcf4010bdcc5a38623ec74946f22aebfa"
+              and target_repairs[0].get("target_region_after_sha256")
+                  == "d839e9345714136fecf1a5c47fe07b0c44808c9392d55db0d4759be54a919cb9"
+              and target_repairs[0].get("source_prefix_sha256")
+                  == "4182e0526409b787b3763f40ac3cc599911459be2fd389d89ad25484e3c3d8d3"
+              and target_repairs[0].get("source_prefix_bytes") == 1501556
+              and target_repairs[0].get("source_suffix_sha256")
+                  == "1def5e74ae100ea11b97431b4e723dd020ec97bc4972f66caab17372a05f275c"
+              and target_repairs[0].get("source_suffix_bytes") == 1194946
+              and target_repairs[0].get("declaration_sequence_sha256")
+                  == expected_lexical_sequence
+              and target_repairs[0].get("target_header_preserved") is True
+              and target_repairs[0].get("source_prefix_preserved") is True
+              and target_repairs[0].get("source_suffix_preserved") is True
+              and target_repairs[0].get("declaration_sequence_preserved") is True
+              and target_repairs[0].get("later_repair_count") == 0
+          )
+          matrix_rows = [
+              row for row in repairs
+              if row.get("declaration") == "FA477 strict-frontier matrix"
+          ]
+          matrix_audit = len(matrix_rows) == 1 and (
+              matrix_rows[0].get("strategy") == variant
+              and matrix_rows[0].get("target_declaration")
+                  == "selectedCosetUnitaryPullback_log_cuspLevel"
+              and matrix_rows[0].get("target_declaration_index") == 2793
+              and matrix_rows[0].get("fa476_r2_variant")
+                  == "explicit_exp_nonneg"
+              and matrix_rows[0].get("fa476_r3_variant") == "minimal_simpa"
+              and matrix_rows[0].get("required_upstream_evidence_run_id")
+                  == expected_run
+              and matrix_rows[0].get("required_upstream_evidence_artifact_id")
+                  == expected_artifact
+              and matrix_rows[0].get(
+                  "required_upstream_evidence_artifact_digest"
+              ) == expected_digest
+              and matrix_rows[0].get("upstream_idx2792_closure_must_precede")
+                  is True
+              and matrix_rows[0].get("later_repair_count") == 0
+          )
+          no_later_repairs = not any(
+              isinstance(row.get("declaration_index"), int)
+              and row["declaration_index"] > 2793
+              for row in repairs
+          )
+
+          fa_exit = metric.get("FA_exit")
+          first_index = metric.get("FA_error_declaration_index")
+          frontier_advanced = (
+              (fa_exit == 0 and metric.get("FA_error_headers_captured") == 0)
+              or (
+                  fa_exit != 0
+                  and isinstance(first_index, int)
+                  and first_index >= 2794
+              )
+          )
+          direct_compile_exact = (
+              metric.get("all_required_lean_executed") is True
+              and metric.get("lean_executed") is True
+              and metric.get("Mock2_executed") is True
+              and metric.get("Mock2_exit") == 0
+              and metric.get("Mock2_errors_under_cap") == 0
+              and metric.get("Mock2_Advanced_executed") is True
+              and metric.get("Mock2_Advanced_exit") == 0
+              and metric.get("Mock2_Advanced_errors_under_cap") == 0
+              and metric.get("FA_executed") is True
+              and metric.get("maxErrors_cap") == 32
+              and metric.get("diagnostic_parser")
+                  == "strict_error_and_error_category_v1"
+          )
+          trust_exact = (
+              metric.get("forbidden_not_increased") is True
+              and metric.get("forbidden_clean") is True
+              and forbidden == expected_forbidden
+          )
+          ok = (
+              upstream_ok
+              and metric.get("classification") != "INFRA_FAILURE"
+              and metric.get("infra_reasons") == []
+              and metric.get("source_metadata_identity") is True
+              and direct_compile_exact
+              and identity_exact
+              and manifest_exact
+              and trust_exact
+              and r2_audit
+              and r3_audit
+              and r3_matrix_audit
+              and target_audit
+              and matrix_audit
+              and no_later_repairs
+              and frontier_advanced
+          )
+          print(json.dumps({
+              "required_prior_run": expected_run,
+              "required_prior_artifact": expected_artifact,
+              "required_prior_artifact_digest": expected_digest,
+              "upstream_run_checks": upstream_checks,
+              "upstream_artifact_checks": upstream_artifact_checks,
+              "upstream_idx2792_closure_accepted": upstream_ok,
+              "expected_fa476_r2_intermediate": expected_r2,
+              "expected_fa476_r3_intermediate": expected_r3,
+              "expected_fa477_candidate": expected_candidate,
+              "direct_compile_exact": direct_compile_exact,
+              "identity_exact": identity_exact,
+              "manifest_exact": manifest_exact,
+              "trust_forbidden_absolute_zero": trust_exact,
+              "r2_audit": r2_audit,
+              "r3_audit": r3_audit,
+              "r3_matrix_audit": r3_matrix_audit,
+              "target_declaration_index": 2793,
+              "target_audit": target_audit,
+              "matrix_audit": matrix_audit,
+              "no_later_repairs": no_later_repairs,
+              "frontier_advanced_to": first_index,
+              "fa_exit": fa_exit,
+              "full_FA_clean_claimed": False,
+              "frontier_evidence_accepted": ok,
+          }, indent=2, ensure_ascii=False))
+          if not ok:
+              raise SystemExit(
+                  "FA477 did not establish exact FA476-r3-chained "
+                  "declaration-2793-only frontier advancement"
+              )
+          PY

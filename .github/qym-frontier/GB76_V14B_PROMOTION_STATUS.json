@@ -1,0 +1,15 @@
+{
+  "schema": "qym-v14b-promotion-v1",
+  "authority": "actual full-QYM direct Lean",
+  "branch": "gpt/qym-gb77-v14-right-normal-im-20260820",
+  "run_id": 32281700927,
+  "trigger_sha": "abc8e5d1dee3658afa5591637ab45e3861da8057",
+  "variant": "normsq_simp_then_rw",
+  "error_headers": 76,
+  "warning_headers": 358,
+  "panic_lines": 0,
+  "qym_sha256": "fada22264b6618467f89d436ddacff27453db1242769717d5e7a386682d4efb3",
+  "qym_blob": "29d446743036dccd5d9ad8757c351b39d526cfa9",
+  "canonical_check_in": true,
+  "status": "PROMOTED_FROM_GB77"
+}

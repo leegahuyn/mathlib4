@@ -1,0 +1,13 @@
+{
+  "schema": "fa-dynamic-environment-intrinsic-scopes-v2",
+  "status": "STATIC_STAGED_PENDING_DIRECT_LEAN",
+  "environment_replacement": {
+    "id": "intrinsic-cutoff-nhds-nnreal-scopes",
+    "old_fragment": "open Set Function Topology Filter MeasureTheory Metric\nopen scoped LinearPMap ContDiff",
+    "new_fragment": "open Set Function Topology Filter MeasureTheory Metric\nopen scoped LinearPMap ContDiff NNReal\nlocal syntax:max \"nhds[\" term \"]\" term:max : term\nlocal macro_rules\n  | `(nhds[$s] $x) => `(nhdsWithin $x $s)"
+  },
+  "evidence": {
+    "nhds_macro_probe_run_id": 31524685417,
+    "reason": "The intrinsic namespace uses ℝ≥0 and nhds[...] notation while only LinearPMap/ContDiff were opened. Restore NNReal scope and the validated local nhds macro without changing declaration headers."
+  }
+}

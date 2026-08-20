@@ -1,0 +1,64 @@
+name: Codex FA exact v38 Fourier safe-cluster probe
+on:
+  push:
+    branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
+    paths:
+      - .github/workflows/codex-fa-p9-refined-v3-probe.yml
+      - scripts/fa_v38_fourier_safe_probe.py
+  workflow_dispatch:
+permissions: {actions: read, contents: read}
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with: {ref: "${{ github.sha }}", fetch-depth: 1, persist-credentials: false}
+      - name: Materialize exact v37 and generate exact Fourier prefix
+        env:
+          GH_TOKEN: "${{ github.token }}"
+        shell: bash
+        run: |
+          set -euo pipefail
+          ART=9172306868
+          DIGEST=sha256:f8d9e30cc4c9a972f14bf9cf1d85b1a2c4c7cebb7b39fb0a039af3a6cf7bbc2e
+          BASE=e17ff90193c6959b15f743ef930446b4cfd45bc6df4d762057c13b4b06602d05
+          rm -rf /tmp/v37 /tmp/ProbeFourier.lean /tmp/ProbeFourier.lean.json
+          mkdir -p /tmp/v37
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${ART}/zip" >/tmp/v37.zip
+          test "sha256:$(sha256sum /tmp/v37.zip | awk '{print $1}')" = "$DIGEST"
+          unzip -q /tmp/v37.zip -d /tmp/v37
+          SRC="$(find /tmp/v37 -path '*/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean' -type f -print -quit)"
+          test -n "$SRC"
+          test "$(sha256sum "$SRC" | awk '{print $1}')" = "$BASE"
+          python3 scripts/fa_v38_fourier_safe_probe.py "$SRC" /tmp/ProbeFourier.lean
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none >/tmp/elan.log 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1
+          lake exe cache get >/tmp/cache.log 2>&1
+      - name: Compile exact Fourier cumulative prefix
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          set +e
+          lake env lean -DmaxErrors=1000 -DwarningAsError=false /tmp/ProbeFourier.lean >/tmp/ProbeFourier.log 2>&1
+          rc=$?
+          set -e
+          echo "$rc" >/tmp/ProbeFourier.exit
+          grep -E 'literalStageFourierScale_pos|literalStageFourierBox_measurableSet|tsupport_literalStageCutoff_subset_fourierBox|literalStageFourierBox_eq_smul_unitPiBox|literalStageTorusPoint_physicalTorusPoint' /tmp/ProbeFourier.log || true
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-v38-fourier-safe-${{ github.sha }}
+          path: |
+            /tmp/ProbeFourier.log
+            /tmp/ProbeFourier.exit
+            /tmp/ProbeFourier.lean.json
+          retention-days: 30

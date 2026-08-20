@@ -1,0 +1,66 @@
+name: Codex FA API probe FullPlane infinity scope v1
+on:
+  push:
+    branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
+    paths: [.github/workflows/codex-fa-api-probe-fullplane-infinity-scope-v1.yml]
+  workflow_dispatch:
+permissions: {contents: read}
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with: {ref: "${{ github.sha }}", fetch-depth: 1, persist-credentials: false}
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none >/tmp/elan.log 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1
+          lake exe cache get >/tmp/cache.log 2>&1
+      - name: Probe header-preserving infinity scopes
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          run(){ n=$1; shift; cat >"/tmp/$n.lean"; set +e; lake env lean -DwarningAsError=false "/tmp/$n.lean" >"/tmp/$n.log" 2>&1; x=$?; set -e; echo "$n exit=$x" | tee -a /tmp/RESULTS.txt; cat "/tmp/$n.log" >>/tmp/RESULTS.txt; echo >>/tmp/RESULTS.txt; }
+          run baseline <<'LEAN'
+          import Mathlib
+          open Set Function Topology Filter MeasureTheory Metric
+          open scoped Convolution ContDiff Distributions
+          open TopologicalSpace
+          noncomputable section
+          abbrev FullPlaneTest := TestFunction (⊤ : Opens ℂ) ℂ ∞
+          #check FullPlaneTest
+          LEAN
+          run enat <<'LEAN'
+          import Mathlib
+          open Set Function Topology Filter MeasureTheory Metric
+          open scoped Convolution ContDiff Distributions ENat
+          open TopologicalSpace
+          noncomputable section
+          abbrev FullPlaneTest := TestFunction (⊤ : Opens ℂ) ℂ ∞
+          #check FullPlaneTest
+          LEAN
+          run nat_top <<'LEAN'
+          import Mathlib
+          open Set Function Topology Filter MeasureTheory Metric
+          open scoped Convolution ContDiff Distributions
+          open TopologicalSpace
+          local notation "∞" => (⊤ : ℕ∞)
+          noncomputable section
+          abbrev FullPlaneTest := TestFunction (⊤ : Opens ℂ) ℂ ∞
+          #check FullPlaneTest
+          LEAN
+          cat /tmp/RESULTS.txt
+          grep -q 'enat exit=0' /tmp/RESULTS.txt || grep -q 'nat_top exit=0' /tmp/RESULTS.txt
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-api-probe-fullplane-infinity-scope-v1-${{ github.sha }}
+          path: /tmp/RESULTS.txt
+          retention-days: 7

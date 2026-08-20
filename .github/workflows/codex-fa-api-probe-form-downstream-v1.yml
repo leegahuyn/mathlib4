@@ -1,0 +1,66 @@
+name: Codex FA API probe form downstream v1
+on:
+  push:
+    branches:
+      - codex/fa-qym-cleanbuild-final-20260811-fast
+    paths:
+      - .github/workflows/codex-fa-api-probe-form-downstream-v1.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none >/dev/null
+          export PATH="$HOME/.elan/bin:$PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/dev/null
+          lake exe cache get >/dev/null
+      - name: Compile downstream normalization probes
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          cat >/tmp/FormDownstreamProbe.lean <<'LEAN'
+          import Mathlib
+          noncomputable section
+          open scoped ComplexConjugate
+          variable {H V : Type*}
+          variable [NormedAddCommGroup H] [InnerProductSpace ℂ H]
+          variable [NormedAddCommGroup V] [InnerProductSpace ℂ V]
+
+          example (a : ℂ) (p : H × H) :
+              (a • p).1 = a • p.1 ∧ (a • p).2 = a • p.2 := by
+            simp
+
+          example (a : ℂ) (Jv p2 : H) :
+              a • inner ℂ Jv p2 = inner ℂ Jv (a • p2) := by
+            simp
+
+          example (bvu buv : ℂ) (c : ℝ) (Ju Jv : H)
+              (hB : star bvu = buv) :
+              star (bvu + (c : ℂ) * inner ℂ Ju Jv) =
+                buv + (c : ℂ) * inner ℂ Jv Ju := by
+            change conj (bvu + (c : ℂ) * inner ℂ Ju Jv) =
+              buv + (c : ℂ) * inner ℂ Jv Ju
+            rw [map_add, map_mul, Complex.conj_ofReal, inner_conj_symm]
+            exact hB
+
+          example (c : ℂ) (x y : H) : c • x + (y - c • x) = y := by
+            abel
+
+          example (c : ℂ) (x y : H) : c • x + (-1 : ℂ) • c • x + y = y := by
+            module
+          LEAN
+          lake env lean /tmp/FormDownstreamProbe.lean

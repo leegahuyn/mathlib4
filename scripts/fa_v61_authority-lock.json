@@ -1,0 +1,131 @@
+{
+  "schema": "fa-v61-v60-winner-authority-lock-v1",
+  "status": "EXACT_LOCAL_EVIDENCE_LOCKED",
+  "repository": "leegahuyn/mathlib4",
+  "workflow": {
+    "run_id": 31857051709,
+    "run_attempt": 1,
+    "event": "push",
+    "workflow_name": "Codex FA v59 bounded six-way matrix",
+    "workflow_path": ".github/workflows/codex-fa-v59-independent-matrix.yml",
+    "head_branch": "codex/fa-exclusive-focus-20260814",
+    "head_sha": "21f3bd08703a2d3e73375d69cd2474a7366a4497",
+    "job_id": 94943712491,
+    "job_name": "direct-A_no_idx3933",
+    "job_conclusion": "failure"
+  },
+  "artifact": {
+    "id": 9239620079,
+    "name": "codex-fa-v59-A_no_idx3933-highcap2000-21f3bd08703a2d3e73375d69cd2474a7366a4497",
+    "size_in_bytes": 1674379,
+    "digest": "sha256:6c2e6f9a1515ddd032c8edf860de30b3c98e82f399e150e06a56d351c2a9b5cf",
+    "expired": false,
+    "variant": "A_no_idx3933",
+    "member_count": 42
+  },
+  "source": {
+    "member": "Mock2_FunctionalAnalysis-candidate.lean",
+    "sha256": "84e0a7843de9bcf99a25e51db95d48e9d5feceffe4e1b94f315b11d166792e5a",
+    "bytes": 2812433,
+    "lines": 62933,
+    "declaration_count": 4416
+  },
+  "member_locks": {
+    "PATCH_AUDIT.json": {
+      "sha256": "94f10d6ca9316b7406dd96e8bab887cabb0423005c8931233010f52210c6bc08",
+      "bytes": 12670
+    },
+    "Mock2_FunctionalAnalysis.log": {
+      "sha256": "5ea7f5733056f2691b460f714db846c3478a47dc709a0d41e6c31ce90f0f93bf",
+      "bytes": 291452
+    },
+    "FULL_DIAGNOSTICS.json": {
+      "sha256": "0365e539e8e52b13bcbc9ca5d9f67e2e198274c83ff7a3a7db4b4620830d790b",
+      "bytes": 6332
+    },
+    "TOOLCHAIN_PIN.json": {
+      "sha256": "3fcdaf1fb2568e48b557e44d215abffcd742c4154309c13bb8b9e735564ceee7",
+      "bytes": 393
+    },
+    "VARIANT_INDEX.json": {
+      "sha256": "3bccb507dc1971c6a053b8e7dfe5c079b02f15dd85455aed136b8bab2facf45c",
+      "bytes": 16072
+    },
+    "MATERIALIZATION.json": {
+      "sha256": "87e9414bb0a53e5827311bc5e01a3eca79058cf8d2157b809900aa28b1aaaece",
+      "bytes": 8459
+    },
+    "FINAL_GATE.json": {
+      "sha256": "81b42277b6f0063cb717a13d0d3734990a61469165fc1e7ea609f57f58a8711b",
+      "bytes": 2642
+    }
+  },
+  "selection_lock": {
+    "schema": "fa-v59-independent-matrix-selection-v1",
+    "status": "READY",
+    "sha256": "3bccb507dc1971c6a053b8e7dfe5c079b02f15dd85455aed136b8bab2facf45c",
+    "bytes": 16072,
+    "selected_group_keys": [
+      "F3930",
+      "F3939",
+      "W4017",
+      "W4018P1",
+      "W4019",
+      "R4198"
+    ],
+    "selected_repair_count": 6
+  },
+  "toolchain": {
+    "content": "leanprover/lean4:v4.33.0-rc1",
+    "file_bytes": 29,
+    "file_sha256": "62c2d9c0fc1ec4c67e151c11eff41ca004ef38e179cf9476c230406e6defedef",
+    "observed_version_prefix": "Lean (version 4.33.0-rc1,"
+  },
+  "direct_chain": {
+    "order": ["Mock2", "Mock2_Advanced", "Mock2_FunctionalAnalysis"],
+    "Mock2_required_exit": 0,
+    "Mock2_Advanced_required_exit": 0,
+    "FA_max_errors": 2000,
+    "FA_exit_contract": "INTEGER_MIRRORED_BY_FINAL_GATE",
+    "cap_sentinel_present": false,
+    "full_inventory_complete": true,
+    "synthetic_declaration_uses_sorry_warning_count": 0,
+    "trust_counts": {
+      "Lean.ofReduceBool": 0,
+      "admit": 0,
+      "axiom": 0,
+      "native_decide": 0,
+      "sorry": 0,
+      "unsafe": 0
+    }
+  },
+  "local_evidence": {
+    "independent_audit": {
+      "path": "work/v60-independent-artifact-audit/audit.json",
+      "sha256": "900aa2b0bdb8fc7215001ccb086829d8ba60fc5ccc1d655cee91cd991f2b3a48",
+      "bytes": 100825,
+      "status": "PASS_EXACT_LOCAL_EVIDENCE_AUDIT_AND_POST_HYDRATION_CONSERVATION"
+    },
+    "ready_index": {
+      "path": "work/v60-prep/v60-artifact-inputs.json",
+      "sha256": "1df849c9834c7593dc61f6482896616e889867493db4170f75ae0f86ffa17c81",
+      "bytes": 104360,
+      "status": "READY_V59_SIX_ARTIFACTS_EXACT_LOCKED"
+    },
+    "run_api": {
+      "sha256": "dcbd8efca6c82f54503761c6ca06f70f090c51b7e00511add64c67ab8c6dc6e9",
+      "bytes": 12089
+    },
+    "jobs_api": {
+      "sha256": "586c7964ec399e721d28fdacbea01de798394d4e67af7c1b3d2bb494552b8ab3",
+      "bytes": 19096
+    },
+    "artifact_api": {
+      "sha256": "efefdfffa9a310700ff36a6f6cc88a52bdc5f7967b501e5876e96918d62c2c0e",
+      "bytes": 766
+    }
+  },
+  "runtime_evidence_fallback_allowed": false,
+  "source_moves_allowed": false,
+  "heartbeat_increases_allowed": false
+}

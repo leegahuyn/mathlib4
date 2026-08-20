@@ -1,0 +1,1 @@
+Select the highest direct-reproducible checked-in champion, preserve every theorem statement/header, mine only same-name historical proof bodies, and promote only after direct Lean CLI strictly improves. Final success requires FA/Integrated/Mock3/QYM x2.

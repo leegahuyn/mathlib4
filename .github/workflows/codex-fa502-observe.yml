@@ -1,0 +1,91 @@
+name: Codex FA502 exp density Pi.zero_apply direct Lean
+
+on:
+  push:
+    branches:
+      - fix/fa502-exp-density-pi-zero-apply-20260811
+    paths:
+      - .github/workflows/codex-fa502-observe.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: codex-fa502-observe
+  cancel-in-progress: true
+
+env:
+  FA_COMPILE_MAX_ERRORS: "32"
+
+jobs:
+  observe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Publish FA502 start identity
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          body="## FA502 direct Lean started\n\n- run_id: \`${GITHUB_RUN_ID}\`\n- head_sha: \`${GITHUB_SHA}\`\n- sequence: \`FA475 -> ... -> FA501 -> FA502\`\n- upstream_FA501_run: \`31471647828\`\n- upstream_FA501_job: \`93716072700\`\n- upstream_FA501_source: \`926ee8186e0a41fda6135a83268c27db9605236674d023b07ab63ae1366a8e7c\`\n- frontier: \`35814:32 exp_mul_selectedHeightGraphDensity_integrableOn_Ici_log / index 2828\`\n- patch: \`add Pi.zero_apply to terminal simp-only closure\`\n- maxErrors: \`32\`\n- claims: \`preserved\`"
+          gh api "repos/${GITHUB_REPOSITORY}/issues/14/comments" -f body="$body"
+      - name: Run exact FA502 candidate direct Lean
+        id: run
+        shell: bash
+        run: |
+          set +e
+          bash scripts/fa502_exp_density_pi_zero_apply_candidate_ci.sh 2>&1 | tee /tmp/fa502.log
+          code=${PIPESTATUS[0]}
+          set -e
+          echo "exit_code=$code" >> "$GITHUB_OUTPUT"
+          exit 0
+      - name: Report FA502 evidence and lookahead
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SCRIPT_EXIT: ${{ steps.run.outputs.exit_code }}
+        shell: bash
+        run: |
+          python3 - <<'PY' >/tmp/fa502.md
+          from pathlib import Path
+          import json, os, re
+          p=Path('build-logs/codex-fa502-exp-density-pi-zero-apply/candidates/norms/METRIC.json')
+          src=Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean')
+          log=Path('/tmp/fa502.log')
+          xs=['## FA502 actual direct Lean','',f"- run_id: `{os.environ.get('GITHUB_RUN_ID','')}`",f"- head_sha: `{os.environ.get('GITHUB_SHA','')}`",f"- script_exit: `{os.environ.get('SCRIPT_EXIT','')}`"]
+          m=None
+          if p.exists():
+              m=json.loads(p.read_text())
+              for k in ['classification','source_sha256','line_count','maxErrors_cap','Mock2_exit','Mock2_Advanced_exit','FA_exit','FA_error_headers_captured','FA_first_actual_error_line','FA_first_actual_error_col','FA_first_error_declaration','FA_error_declaration_index','infra_reasons']:
+                  xs.append(f'- {k}: `{m.get(k)}`')
+              xs += ['', '### first error','```text',str(m.get('FA_first_error_message',''))[:6000],'```']
+          else:
+              xs.append('- METRIC.json: `MISSING`')
+          text=log.read_text(encoding='utf-8',errors='replace') if log.exists() else ''
+          headers=[]
+          for line in text.splitlines():
+              if re.search(r'Mock2_FunctionalAnalysis\.lean:\d+:\d+: error:', line):
+                  headers.append(line)
+          if headers:
+              xs += ['', '### captured FA error headers','```text','\n'.join(headers[:40]),'```']
+          if src.exists() and isinstance(m,dict) and m.get('FA_first_actual_error_line',0):
+              a=src.read_text(encoding='utf-8',errors='replace').splitlines(); c=int(m['FA_first_actual_error_line']); lo=max(1,c-14); hi=min(len(a),c+45)
+              xs += ['',f'### candidate source around line {c}','```lean','\n'.join(f'{i}: {a[i-1]}' for i in range(lo,hi+1)),'```']
+          print('\n'.join(xs)[:32000])
+          PY
+          gh api "repos/${GITHUB_REPOSITORY}/issues/14/comments" -f body="$(cat /tmp/fa502.md)"
+      - name: Preserve actual runner exit
+        if: always()
+        env:
+          SCRIPT_EXIT: ${{ steps.run.outputs.exit_code }}
+        shell: bash
+        run: |
+          test -n "$SCRIPT_EXIT"
+          exit "$SCRIPT_EXIT"

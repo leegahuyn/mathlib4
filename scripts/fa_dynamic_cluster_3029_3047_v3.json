@@ -1,0 +1,42 @@
+{
+  "schema": "fa-dynamic-cluster-3029-3047-v3",
+  "status": "STATIC_STAGED_PENDING_DIRECT_LEAN",
+  "repairs": [
+    {
+      "declaration_index": 3029,
+      "declaration_name": "negativePhysicalRaise_peterssonCuspCutoff_commutator",
+      "old_fragment": "      change peterssonCuspCutoff N (n + 1) (-(physicalRaise n x)) =\n        peterssonCuspCutoff N (n + 1) (-raisedCoordinate n u)\n      simpa only [physicalRaise_apply]",
+      "new_fragment": "      change peterssonCuspCutoff N (n + 1) (-(physicalRaise n x)) =\n        peterssonCuspCutoff N (n + 1) (-raisedCoordinate n u)\n      rw [physicalRaise_apply]\n      rfl"
+    },
+    {
+      "declaration_index": 3031,
+      "declaration_name": "negativePhysicalLowerFromSucc_peterssonCuspCutoff_commutator",
+      "old_fragment": "      change peterssonCuspCutoff N n (-(physicalLowerFromSucc n x)) =\n        peterssonCuspCutoff N n (-lowerFromSuccCoordinate n u)\n      simpa only [physicalLowerFromSucc_apply]",
+      "new_fragment": "      change peterssonCuspCutoff N n (-(physicalLowerFromSucc n x)) =\n        peterssonCuspCutoff N n (-lowerFromSuccCoordinate n u)\n      rw [physicalLowerFromSucc_apply]\n      rfl"
+    },
+    {
+      "declaration_index": 3033,
+      "declaration_name": "physicalRaise_graph_hasCompactCarrierSupport",
+      "old_fragment": "theorem physicalRaise_graph_hasCompactCarrierSupport\n    (n : ℤ)\n    {p : OrbitPeterssonHilbert n × OrbitPeterssonHilbert (n + 1)}\n    (hp : p ∈ (physicalRaise n).graph) :\n    HasCompactCarrierSupport n p.1 ∧\n      HasCompactCarrierSupport (n + 1) p.2 := by\n  rcases (LinearPMap.mem_graph_iff (physicalRaise n)).mp hp with\n    ⟨x, hxBase, hxValue⟩\n  constructor\n  · rw [← hxBase]\n    have h := l2Coordinate_hasCompactCarrierSupport n\n      ((l2CoreRangeEquiv n).symm x)\n    rw [l2Coordinate_l2CoreRangeEquiv_symm] at h\n    exact h\n  · rw [← hxValue]\n    change HasCompactCarrierSupport (n + 1) (physicalRaise n x)\n    rw [physicalRaise_apply, raisedCoordinate_apply]\n    exact l2Coordinate_hasCompactCarrierSupport (n + 1)\n      (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n\n        ((l2CoreRangeEquiv n).symm x))",
+      "new_fragment": "theorem physicalRaise_graph_hasCompactCarrierSupport\n    (n : ℤ)\n    {p : OrbitPeterssonHilbert n × OrbitPeterssonHilbert (n + 1)}\n    (hp : p ∈ (physicalRaise n).graph) :\n    HasCompactCarrierSupport n p.1 ∧\n      HasCompactCarrierSupport (n + 1) p.2 := by\n  rcases (LinearPMap.mem_graph_iff (physicalRaise n)).mp hp with\n    ⟨x, hxBase, hxValue⟩\n  have hxRange :\n      (x : OrbitPeterssonHilbert n) ∈ LinearMap.range (l2Coordinate n) := by\n    exact x.property\n  rcases hxRange with ⟨u, hu⟩\n  have hxCore : x = l2CoreRangeEquiv n u := by\n    apply Subtype.ext\n    simpa only [l2CoreRangeEquiv_coe] using hu.symm\n  constructor\n  · rw [← hxBase, ← hu]\n    exact l2Coordinate_hasCompactCarrierSupport n u\n  · rw [← hxValue]\n    change HasCompactCarrierSupport (n + 1) (physicalRaise n x)\n    rw [hxCore, physicalRaise_on_core, raisedCoordinate_apply]\n    exact l2Coordinate_hasCompactCarrierSupport (n + 1)\n      (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n u)"
+    },
+    {
+      "declaration_index": 3034,
+      "declaration_name": "physicalLowerFromSucc_graph_hasCompactCarrierSupport",
+      "old_fragment": "theorem physicalLowerFromSucc_graph_hasCompactCarrierSupport\n    (n : ℤ)\n    {p : OrbitPeterssonHilbert (n + 1) × OrbitPeterssonHilbert n}\n    (hp : p ∈ (physicalLowerFromSucc n).graph) :\n    HasCompactCarrierSupport (n + 1) p.1 ∧\n      HasCompactCarrierSupport n p.2 := by\n  rcases (LinearPMap.mem_graph_iff (physicalLowerFromSucc n)).mp hp with\n    ⟨x, hxBase, hxValue⟩\n  constructor\n  · rw [← hxBase]\n    have h := l2Coordinate_hasCompactCarrierSupport (n + 1)\n      ((l2CoreRangeEquiv (n + 1)).symm x)\n    rw [l2Coordinate_l2CoreRangeEquiv_symm] at h\n    exact h\n  · rw [← hxValue]\n    change HasCompactCarrierSupport n (physicalLowerFromSucc n x)\n    rw [physicalLowerFromSucc_apply, lowerFromSuccCoordinate_apply]\n    exact l2Coordinate_hasCompactCarrierSupport n\n      (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n\n        ((l2CoreRangeEquiv (n + 1)).symm x))",
+      "new_fragment": "theorem physicalLowerFromSucc_graph_hasCompactCarrierSupport\n    (n : ℤ)\n    {p : OrbitPeterssonHilbert (n + 1) × OrbitPeterssonHilbert n}\n    (hp : p ∈ (physicalLowerFromSucc n).graph) :\n    HasCompactCarrierSupport (n + 1) p.1 ∧\n      HasCompactCarrierSupport n p.2 := by\n  rcases (LinearPMap.mem_graph_iff (physicalLowerFromSucc n)).mp hp with\n    ⟨x, hxBase, hxValue⟩\n  have hxRange :\n      (x : OrbitPeterssonHilbert (n + 1)) ∈\n        LinearMap.range (l2Coordinate (n + 1)) := by\n    exact x.property\n  rcases hxRange with ⟨u, hu⟩\n  have hxCore : x = l2CoreRangeEquiv (n + 1) u := by\n    apply Subtype.ext\n    simpa only [l2CoreRangeEquiv_coe] using hu.symm\n  constructor\n  · rw [← hxBase, ← hu]\n    exact l2Coordinate_hasCompactCarrierSupport (n + 1) u\n  · rw [← hxValue]\n    change HasCompactCarrierSupport n (physicalLowerFromSucc n x)\n    rw [hxCore, physicalLowerFromSucc_on_core, lowerFromSuccCoordinate_apply]\n    exact l2Coordinate_hasCompactCarrierSupport n\n      (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n u)"
+    },
+    {
+      "declaration_index": 3046,
+      "declaration_name": "raising_cutoff_and_Friedrichs_of_sequentialApproximation",
+      "old_fragment": "    refine ⟨raisingCompactWeakMaximalGraphAt_subset_graph n, ?_⟩\n    intro p hp",
+      "new_fragment": "    refine ⟨?_, ?_⟩\n    · intro p hp\n      exact hp.1\n    · intro p hp"
+    },
+    {
+      "declaration_index": 3047,
+      "declaration_name": "lowering_cutoff_and_Friedrichs_of_sequentialApproximation",
+      "old_fragment": "    refine ⟨loweringCompactWeakMaximalGraphAt_subset_graph n, ?_⟩\n    intro p hp",
+      "new_fragment": "    refine ⟨?_, ?_⟩\n    · intro p hp\n      exact hp.1\n    · intro p hp"
+    }
+  ]
+}

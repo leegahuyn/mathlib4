@@ -1,0 +1,452 @@
+name: Codex FA v42 residual two-variant highcap2000
+
+on:
+  push:
+    branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
+    paths:
+      - .github/workflows/codex-fa-v42-two-variant-highcap2000.yml
+      - scripts/fa_v42_materialize_candidate.py
+      - scripts/fa_v42_validate_local_repairs.py
+      - scripts/fa_v42_direct_compile_ci.sh
+      - scripts/fa_v42_collect_full_diagnostics.py
+      - scripts/fa_v42_variants.json
+      - scripts/fa_v42_q1_root_repairs.json
+      - scripts/fa_v42_q1_early_repairs.json
+      - scripts/fa_v42_weighted_regression_repairs.json
+      - scripts/fa_v42_q2_high_confidence_repairs.json
+      - scripts/fa_v42_q3_high_confidence_repairs.json
+      - scripts/fa_v42_q3_staged_probes.json
+      - scripts/fa_v42_q4_repairs.json
+  workflow_dispatch: {}
+
+permissions: {actions: read, contents: read}
+
+env:
+  FA_V42_AUTHORITY_RUN_ID: "31699916923"
+  FA_V42_AUTHORITY_JOB_ID: "94446323369"
+  FA_V42_AUTHORITY_HEAD_SHA: "6867203e032c9711b47d8c2e1bd74f30d15cbd59"
+  FA_V42_AUTHORITY_ARTIFACT_ID: "9181214334"
+  FA_V42_AUTHORITY_ARTIFACT_DIGEST: sha256:bb18b117b461a4fd36746685ce4437d835382989d4b7e1cff87bb6ebbcc9c870
+  FA_V42_AUTHORITY_SOURCE_SHA256: d7e99092e79b26af21cd8c960b8e9c811731e27343757b750b62c53608805937
+  FA_V42_AUTHORITY_DIAGNOSTICS_SHA256: b50357457a8213b1a53ae353c67fd7639334a9db4b5f7a4e61ad9c00b9f07fcf
+  FA_V42_AUTHORITY_FA_LOG_SHA256: dc4370280c35eb1b8565e9776d9e93e42f4bf299b543a4bdaea029f438445530
+  FA_V42_INDEX_SHA256: f4ed1d1872ab548ea4d93b3af3831bb901713bfd515e6f0587f52b77642d988b
+  FA_V42_MATERIALIZER_SHA256: 20e1cf25732040a992be52450af78829b328ec42c1cff5590ca1730464b533c6
+  FA_V42_COMPOSER_SHA256: 3f4dc4a83a994cd3d014ef7d458fce515bbb59ca0ec80965cdb176a27f266ef7
+  FA_V42_RUNNER_SHA256: 2459f0a2cd44f6a3716de1ed2934c7588ba1a1e27ef443947d9e6089af196514
+  FA_V42_COLLECTOR_SHA256: 7de7bc92e4e2735c0d25706d70777ea67340d8afcf67434e43b051d5cb8c90c6
+
+jobs:
+  direct:
+    if: github.ref == 'refs/heads/codex/fa-qym-cleanbuild-final-20260811-fast'
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - variant: conservative
+            expected_candidate_sha256: 442dc2841f80b6814a16396a9b08ec27e90d3bd3d1913c4edd417137d8d1bbe7
+            expected_audit_sha256: 1ba66a100ec5f20ee1f8f6f046a40135f6274b9a9fe779f2d3dea48973c55215
+          - variant: extended
+            expected_candidate_sha256: e6bf64170092aa740988a3b26fb2127d5dfece181cb9c0b7eaf6238324aad837
+            expected_audit_sha256: 3384a1b472b3a3d15d3301f744ebba60c102eac040e2e9a7eb2627014f5c508b
+    name: direct-${{ matrix.variant }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    env:
+      FA_V42_VARIANT: "${{ matrix.variant }}"
+      FA_V42_EXPECTED_CANDIDATE_SHA256: "${{ matrix.expected_candidate_sha256 }}"
+      FA_V42_EXPECTED_AUDIT_SHA256: "${{ matrix.expected_audit_sha256 }}"
+      FA_V42_OUT: build-logs/codex-fa-v42-two-variant-highcap2000/${{ matrix.variant }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with: {ref: "${{ github.sha }}", fetch-depth: 1, persist-credentials: false}
+
+      - name: Fail-closed package, manifest, and variant-index preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$FA_V42_OUT"
+          if rg -n '\+[ ]{12}' \
+              .github/workflows/codex-fa-v42-two-variant-highcap2000.yml; then
+            echo 'invalid patch-marker continuation found in workflow run block' >&2
+            exit 86
+          fi
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib
+          import json
+          import os
+          import re
+
+          out = Path(os.environ["FA_V42_OUT"])
+          locked_files = {
+              "materializer": (
+                  Path("scripts/fa_v42_materialize_candidate.py"),
+                  os.environ["FA_V42_MATERIALIZER_SHA256"],
+              ),
+              "composer": (
+                  Path("scripts/fa_v42_validate_local_repairs.py"),
+                  os.environ["FA_V42_COMPOSER_SHA256"],
+              ),
+              "runner": (
+                  Path("scripts/fa_v42_direct_compile_ci.sh"),
+                  os.environ["FA_V42_RUNNER_SHA256"],
+              ),
+              "collector": (
+                  Path("scripts/fa_v42_collect_full_diagnostics.py"),
+                  os.environ["FA_V42_COLLECTOR_SHA256"],
+              ),
+              "index": (
+                  Path("scripts/fa_v42_variants.json"),
+                  os.environ["FA_V42_INDEX_SHA256"],
+              ),
+          }
+          evidence = {
+              "schema": "fa-v42-ci-package-preflight-v1",
+              "variant": os.environ["FA_V42_VARIANT"],
+              "files": {},
+          }
+          for label, (path, expected) in locked_files.items():
+              payload = path.read_bytes()
+              actual = hashlib.sha256(payload).hexdigest()
+              assert re.fullmatch(r"[0-9a-f]{64}", expected)
+              assert expected != "0" * 64
+              assert actual == expected, (label, actual, expected)
+              evidence["files"][label] = {
+                  "path": path.as_posix(),
+                  "sha256": actual,
+                  "bytes": len(payload),
+              }
+
+          index_path = locked_files["index"][0]
+          index = json.loads(index_path.read_text(encoding="utf-8"))
+          assert index["schema"] == "fa-v42-two-variant-index-v1"
+          assert index["status"] == "STATIC_INPUTS_LOCKED_DIRECT_LEAN_UNVERIFIED"
+          assert index["target_branch"] == (
+              "codex/fa-qym-cleanbuild-final-20260811-fast"
+          )
+          assert index["q4_lock_state"] == "FINAL_ACCEPT_ROOT_DRAFT_UNCHANGED"
+          assert index["direct_lean_verified"] is False
+          assert index["clean_build_claimed"] is False
+          assert [row["source"] for row in index["direct_compile_chain"]] == [
+              "Mock2", "Mock2_Advanced", "Mock2_FunctionalAnalysis"
+          ]
+          assert [row["max_errors"] for row in index["direct_compile_chain"]] == [
+              1, 1, 2000
+          ]
+
+          authority = index["authority"]
+          expected_authority = {
+              "run_id": int(os.environ["FA_V42_AUTHORITY_RUN_ID"]),
+              "job_id": int(os.environ["FA_V42_AUTHORITY_JOB_ID"]),
+              "head_sha": os.environ["FA_V42_AUTHORITY_HEAD_SHA"],
+              "artifact_id": int(os.environ["FA_V42_AUTHORITY_ARTIFACT_ID"]),
+              "artifact_digest": os.environ["FA_V42_AUTHORITY_ARTIFACT_DIGEST"],
+              "source_sha256": os.environ["FA_V42_AUTHORITY_SOURCE_SHA256"],
+              "diagnostics_sha256": os.environ[
+                  "FA_V42_AUTHORITY_DIAGNOSTICS_SHA256"
+              ],
+              "fa_log_sha256": os.environ["FA_V42_AUTHORITY_FA_LOG_SHA256"],
+          }
+          for key, expected in expected_authority.items():
+              assert authority[key] == expected, (key, authority[key], expected)
+
+          composer = index["composer"]
+          assert composer["promoted_path"] == (
+              "scripts/fa_v42_validate_local_repairs.py"
+          )
+          assert composer["sha256"] == os.environ["FA_V42_COMPOSER_SHA256"]
+          manifest_evidence = {}
+          for key, record in index["manifests"].items():
+              path = Path(record["promoted_path"])
+              payload = path.read_bytes()
+              actual = hashlib.sha256(payload).hexdigest()
+              assert actual == record["sha256"], (key, actual, record["sha256"])
+              assert len(payload) == record["bytes"], key
+              manifest_evidence[key] = {
+                  "path": path.as_posix(),
+                  "sha256": actual,
+                  "bytes": len(payload),
+              }
+
+          variant_name = os.environ["FA_V42_VARIANT"]
+          assert variant_name in {"conservative", "extended"}
+          variant = index["variants"][variant_name]
+          assert variant["candidate_sha256"] == os.environ[
+              "FA_V42_EXPECTED_CANDIDATE_SHA256"
+          ]
+          assert variant["audit_sha256"] == os.environ[
+              "FA_V42_EXPECTED_AUDIT_SHA256"
+          ]
+          ids = variant["selected_repair_ids"]
+          assert len(ids) == len(set(ids)) == variant["repair_count"]
+          if variant_name == "conservative":
+              assert variant["repair_count"] == 52
+              assert variant["owner_count"] == 44
+          else:
+              assert variant["repair_count"] == 65
+              assert variant["owner_count"] == 54
+              assert (
+                  "Q1-S3689-convert-model-limit-after-pointwise-congruence"
+                  in ids
+              )
+              assert "V42-Q1-03-normalize-zero-square-with-pow-two" not in ids
+
+          evidence.update({
+              "status": "READY",
+              "authority": expected_authority,
+              "manifests": manifest_evidence,
+              "variant_candidate_sha256": variant["candidate_sha256"],
+              "variant_audit_sha256": variant["audit_sha256"],
+              "repair_count": variant["repair_count"],
+              "owner_count": variant["owner_count"],
+              "q4_lock_state": index["q4_lock_state"],
+              "direct_lean_verified": False,
+          })
+          (out / "PACKAGE_PREFLIGHT.json").write_text(
+              json.dumps(evidence, indent=2, sort_keys=True) + "\n",
+              encoding="utf-8",
+          )
+          with Path(os.environ["GITHUB_ENV"]).open("a", encoding="utf-8") as handle:
+              handle.write(
+                  "FA_V42_INDEX_ACTUAL_SHA256="
+                  + evidence["files"]["index"]["sha256"]
+                  + "\n"
+              )
+          PY
+
+      - name: Re-prove exact v41 artifact and materialize locked v42 variant
+        env:
+          GH_TOKEN: "${{ github.token }}"
+        shell: bash
+        run: |
+          set -euo pipefail
+          authority_root="/tmp/fa-v42-authority-${GITHUB_RUN_ID}-${FA_V42_VARIANT}"
+          authority_zip="/tmp/fa-v42-authority-${GITHUB_RUN_ID}-${FA_V42_VARIANT}.zip"
+          mkdir -p "$FA_V42_OUT" "$authority_root"
+
+          gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${FA_V42_AUTHORITY_RUN_ID}" >"$FA_V42_OUT/V41_RUN.json"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/jobs/${FA_V42_AUTHORITY_JOB_ID}" >"$FA_V42_OUT/V41_JOB.json"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${FA_V42_AUTHORITY_ARTIFACT_ID}" >"$FA_V42_OUT/V41_ARTIFACT.json"
+
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          import os
+
+          out = Path(os.environ["FA_V42_OUT"])
+          run = json.loads((out / "V41_RUN.json").read_text())
+          job = json.loads((out / "V41_JOB.json").read_text())
+          artifact = json.loads((out / "V41_ARTIFACT.json").read_text())
+          run_id = int(os.environ["FA_V42_AUTHORITY_RUN_ID"])
+          job_id = int(os.environ["FA_V42_AUTHORITY_JOB_ID"])
+          artifact_id = int(os.environ["FA_V42_AUTHORITY_ARTIFACT_ID"])
+          head = os.environ["FA_V42_AUTHORITY_HEAD_SHA"]
+          branch = "codex/fa-qym-cleanbuild-final-20260811-fast"
+          workflow_name = "Codex FA v41 cumulative two-variant highcap2000"
+          workflow_path = ".github/workflows/codex-fa-v41-cumulative-highcap2000.yml"
+          artifact_name = (
+              "codex-fa-v41-with_conditional_bodies-highcap2000-" + head
+          )
+
+          assert run["id"] == run_id
+          assert run["name"] == workflow_name and run["path"] == workflow_path
+          assert run["head_sha"] == head and run["head_branch"] == branch
+          assert run["status"] == "completed" and run["conclusion"] == "failure"
+          assert job["id"] == job_id and job["run_id"] == run_id
+          assert job["name"] == "direct-with_conditional_bodies"
+          assert job["head_sha"] == head
+          assert job["status"] == "completed" and job["conclusion"] == "failure"
+          assert artifact["id"] == artifact_id
+          assert artifact["name"] == artifact_name
+          assert artifact["size_in_bytes"] == 1_179_107
+          assert artifact["expired"] is False
+          assert artifact["digest"] == os.environ[
+              "FA_V42_AUTHORITY_ARTIFACT_DIGEST"
+          ]
+          assert artifact["workflow_run"]["id"] == run_id
+          assert artifact["workflow_run"]["head_sha"] == head
+          PY
+
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${FA_V42_AUTHORITY_ARTIFACT_ID}/zip" >"$authority_zip"
+          test "sha256:$(sha256sum "$authority_zip" | awk '{print $1}')" = "$FA_V42_AUTHORITY_ARTIFACT_DIGEST"
+          unzip -q "$authority_zip" -d "$authority_root"
+
+          AUTHORITY_ROOT="$authority_root" python3 - <<'PY'
+          from pathlib import Path
+          import hashlib
+          import json
+          import os
+          import shutil
+
+          root = Path(os.environ["AUTHORITY_ROOT"])
+          out = Path(os.environ["FA_V42_OUT"])
+
+          def one(name, expected_sha, expected_bytes, expected_lines):
+              hits = [
+                  path for path in root.rglob(name)
+                  if hashlib.sha256(path.read_bytes()).hexdigest() == expected_sha
+              ]
+              assert len(hits) == 1, (name, hits)
+              payload = hits[0].read_bytes()
+              assert len(payload) == expected_bytes, (name, len(payload))
+              assert len(payload.decode("utf-8").splitlines()) == expected_lines
+              return hits[0]
+
+          source = one(
+              "Mock2_FunctionalAnalysis-candidate.lean",
+              os.environ["FA_V42_AUTHORITY_SOURCE_SHA256"],
+              2_774_362,
+              62_065,
+          )
+          diagnostics = one(
+              "FULL_DIAGNOSTICS.json",
+              os.environ["FA_V42_AUTHORITY_DIAGNOSTICS_SHA256"],
+              66_516,
+              1_542,
+          )
+          fa_log = one(
+              "Mock2_FunctionalAnalysis.log",
+              os.environ["FA_V42_AUTHORITY_FA_LOG_SHA256"],
+              361_072,
+              6_177,
+          )
+          metric_hits = [
+              path for path in root.rglob("METRIC.json")
+              if hashlib.sha256(path.read_bytes()).hexdigest()
+              == "31b3dce64e9a9a26c7e2420006533385f9cd343c9f4d6d7ce344da64256b963e"
+          ]
+          assert len(metric_hits) == 1, metric_hits
+          assert len(metric_hits[0].read_bytes()) == 2_300
+          assert len(metric_hits[0].read_text().splitlines()) == 53
+          parsed = json.loads(diagnostics.read_text())
+          assert isinstance(parsed, list) and len(parsed) == 110
+
+          runtime_source = Path(
+              "work/v41-run-31699916923/9181214334/"
+              "Mock2_FunctionalAnalysis-candidate.lean"
+          )
+          runtime_source.parent.mkdir(parents=True, exist_ok=True)
+          shutil.copyfile(source, runtime_source)
+          shutil.copyfile(source, out / "V41_AUTHORITY_SOURCE.lean")
+          shutil.copyfile(diagnostics, out / "V41_FULL_DIAGNOSTICS.json")
+          shutil.copyfile(fa_log, out / "V41_Mock2_FunctionalAnalysis.log")
+          shutil.copyfile(metric_hits[0], out / "V41_METRIC.json")
+          PY
+
+          python3 scripts/fa_v42_materialize_candidate.py --index scripts/fa_v42_variants.json --variant "$FA_V42_VARIANT" --composer scripts/fa_v42_validate_local_repairs.py --output /tmp/fa-v42-final.lean --audit "$FA_V42_OUT/PATCH_AUDIT.json" --evidence "$FA_V42_OUT/MATERIALIZATION.json" >"$FA_V42_OUT/MATERIALIZATION.stdout.json"
+
+          test "$(sha256sum /tmp/fa-v42-final.lean | awk '{print $1}')" = "$FA_V42_EXPECTED_CANDIDATE_SHA256"
+          test "$(sha256sum "$FA_V42_OUT/PATCH_AUDIT.json" | awk '{print $1}')" = "$FA_V42_EXPECTED_AUDIT_SHA256"
+          cp /tmp/fa-v42-final.lean PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          cp /tmp/fa-v42-final.lean "$FA_V42_OUT/Mock2_FunctionalAnalysis-candidate.lean"
+          cp scripts/fa_v42_variants.json "$FA_V42_OUT/VARIANT_INDEX.json"
+          sha256sum /tmp/fa-v42-final.lean | awk '{print $1}' >"$FA_V42_OUT/candidate.sha256"
+          sha256sum "$FA_V42_OUT/PATCH_AUDIT.json" | awk '{print $1}' >"$FA_V42_OUT/audit.sha256"
+
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          import os
+          import shutil
+
+          out = Path(os.environ["FA_V42_OUT"])
+          index = json.loads(Path("scripts/fa_v42_variants.json").read_text())
+          variant = index["variants"][os.environ["FA_V42_VARIANT"]]
+          selected = out / "selected-repairs"
+          selected.mkdir(parents=True, exist_ok=True)
+          for key in variant["manifest_order"]:
+              source = Path(index["manifests"][key]["promoted_path"])
+              shutil.copyfile(source, selected / f"{key}.json")
+          assert (out / "candidate.sha256").read_text().strip() == variant[
+              "candidate_sha256"
+          ]
+          assert (out / "audit.sha256").read_text().strip() == variant[
+              "audit_sha256"
+          ]
+          PY
+
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$FA_V42_OUT"
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none >"$FA_V42_OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >"$FA_V42_OUT/toolchain.log" 2>&1
+          lake exe cache get >"$FA_V42_OUT/cache.log" 2>&1
+          lean --version >"$FA_V42_OUT/lean-version.txt" 2>&1
+          lake --version >"$FA_V42_OUT/lake-version.txt" 2>&1
+
+      - name: Direct Mock2 then Mock2 Advanced then full FA highcap2000
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          bash scripts/fa_v42_direct_compile_ci.sh
+
+      - name: Build exact metrics, full diagnostics, and synthetic-sorry inventory
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$FA_V42_OUT"
+          if [[ -f PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean ]]; then
+            cp PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean "$FA_V42_OUT/Mock2_FunctionalAnalysis-observed.lean"
+          fi
+          python3 scripts/fa_v42_collect_full_diagnostics.py --source PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean --out "$FA_V42_OUT" --max-errors 2000 >"$FA_V42_OUT/metric-console.log"
+
+      - name: Upload exact variant source and all evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-v42-${{ matrix.variant }}-highcap2000-${{ github.sha }}
+          path: build-logs/codex-fa-v42-two-variant-highcap2000/${{ matrix.variant }}
+          retention-days: 30
+
+      - name: Preserve strict direct-chain exits and mirror FA
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          for stem in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis; do
+            test -f "$FA_V42_OUT/${stem}.exit" || exit 86
+            status="$(tr -d '\r\n' < "$FA_V42_OUT/${stem}.exit")"
+            [[ "$status" =~ ^[0-9]+$ ]] || exit 86
+            (( status >= 0 && status <= 255 )) || exit 86
+          done
+          for lock in candidate.before.sha256 candidate.before-fa.sha256 candidate.after.sha256 candidate.sha256; do
+            test -f "$FA_V42_OUT/$lock" || exit 86
+            test "$(tr -d '\r\n' < "$FA_V42_OUT/$lock")" = "$FA_V42_EXPECTED_CANDIDATE_SHA256" || exit 86
+          done
+          test -f "$FA_V42_OUT/METRIC.json" || exit 86
+          mirrored_fa_exit="$(python3 - <<'PY'
+          from pathlib import Path
+          import json
+          import os
+
+          out = Path(os.environ["FA_V42_OUT"])
+          metric = json.loads((out / "METRIC.json").read_text())
+          fa_exit = int((out / "Mock2_FunctionalAnalysis.exit").read_text().strip())
+          assert metric["source_identity_locked"] is True
+          assert metric["source_executable_trust_six_zero"] is True
+          assert metric["all_required_lean_executed"] is True
+          assert metric["direct_lean_verified"] is True
+          assert metric["FA_exit"] == fa_exit
+          assert isinstance(
+              metric["synthetic_declaration_uses_sorry_warning_count"], int
+          )
+          if fa_exit == 0:
+              assert metric[
+                  "synthetic_declaration_uses_sorry_warning_count"
+              ] == 0
+              assert metric["synthetic_trust_clean"] is True
+              assert metric["semantic_clean"] is True
+          print(fa_exit)
+          PY
+          )" || exit 86
+          [[ "$mirrored_fa_exit" =~ ^[0-9]+$ ]] || exit 86
+          test "$(cat "$FA_V42_OUT/Mock2.exit")" = 0 || exit 1
+          test "$(cat "$FA_V42_OUT/Mock2_Advanced.exit")" = 0 || exit 1
+          exit "$mirrored_fa_exit"

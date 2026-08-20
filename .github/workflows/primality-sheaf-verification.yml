@@ -1,0 +1,80 @@
+name: Primality Sheaf Verification
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: primality-sheaf-verification-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-modules:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+
+    steps:
+      - name: Checkout triggering commit
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+
+      - name: Set up Lean
+        uses: leanprover/lean-action@38fbc41a8c28c4cbaec22d7f7de508ec2e7c0dd9
+        with:
+          build: false
+          test: false
+          lint: false
+
+      - name: Restore Mathlib compiled cache
+        run: lake exe cache get
+
+      - name: Compile checked-in sources and collect logs
+        id: module-build
+        shell: bash
+        run: |
+          set +e
+          mkdir -p build-logs/checked-in-sources
+          artifact_dir='.lake/build/lib/lean/PrimalitySheafVerification'
+          rm -rf "$artifact_dir"
+          mkdir -p "$artifact_dir"
+          cp PrimalitySheafVerification/*.lean build-logs/checked-in-sources/
+          modules=(Spt1 Spt2 Spt3 Spt4 Spt5 Spt6 Spt7 Mock1 Mock1_Advanced Mock2 Mock2_Advanced Mock2_FunctionalAnalysis QYM)
+          printf 'module,exit_code,status\n' > build-logs/module-summary.csv
+          overall=0
+          for module in "${modules[@]}"; do
+            lake env lean "PrimalitySheafVerification/${module}.lean" \
+              -o "${artifact_dir}/${module}.olean" -i "${artifact_dir}/${module}.ilean" 2>&1 \
+              | tee "build-logs/${module}.log"
+            code=${PIPESTATUS[0]}; echo "$code" > "build-logs/${module}.exit-code.txt"
+            if [ "$code" -eq 0 ]; then status=PASS; else status=FAIL; overall=1; fi
+            printf '%s,%s,%s\n' "$module" "$code" "$status" >> build-logs/module-summary.csv
+          done
+          if [ "$overall" -eq 0 ]; then
+            lake env lean PrimalitySheafVerification/BuildAll.lean \
+              -o "${artifact_dir}/BuildAll.olean" -i "${artifact_dir}/BuildAll.ilean" 2>&1 \
+              | tee build-logs/BuildAll.log
+            aggregate_code=${PIPESTATUS[0]}; [ "$aggregate_code" -eq 0 ] || overall=1
+          else
+            aggregate_code=1; echo 'Skipped because at least one module failed.' > build-logs/BuildAll.log
+          fi
+          echo "$aggregate_code" > build-logs/BuildAll.exit-code.txt
+          find "$artifact_dir" -maxdepth 1 -type f \( -name '*.olean' -o -name '*.ilean' -o -name '*.olean.private' \) \
+            -printf '%f,%s,%TY-%Tm-%TdT%TH:%TM:%TSZ\n' 2>/dev/null | sort > build-logs/artifact-report.csv || true
+          grep -R -nE '\bsorry\b|\badmit\b|^[[:space:]]*axiom\b|\bunsafe\b' \
+            PrimalitySheafVerification/*.lean > build-logs/trust-audit.txt || true
+          exit "$overall"
+
+      - name: Upload build logs and artifacts report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: primality-sheaf-build-logs
+          path: |
+            build-logs
+            .lake/build/lib/lean/PrimalitySheafVerification
+          if-no-files-found: error
+          retention-days: 30

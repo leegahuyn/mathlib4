@@ -1,0 +1,14 @@
+{
+  "schema": "fa-dynamic-cluster-3314-remove-no-goals-v1",
+  "status": "DIRECT_FRONTIER_DERIVED_PENDING_RECOMPILE",
+  "source_run_id": 31566508395,
+  "source_sha256": "5fb9891b41800cad300e0a8e243b5bc908acc2b5e4b3818dc65273a348a9298a",
+  "repairs": [
+    {
+      "declaration_index": 3314,
+      "declaration_name": "fderiv_height_mul_friedrichsMollifier",
+      "old_fragment": "  dsimp only [a]\n  ring_nf",
+      "new_fragment": "  dsimp only [a]"
+    }
+  ]
+}

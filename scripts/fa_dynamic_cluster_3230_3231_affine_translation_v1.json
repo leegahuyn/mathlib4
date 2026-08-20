@@ -1,0 +1,19 @@
+{
+  "schema": "fa-dynamic-cluster-3230-3231-affine-translation-v1",
+  "status": "API_PROBE_VALIDATED_PENDING_MODULE_DIRECT_LEAN",
+  "api_probe_run_id": 31553791757,
+  "repairs": [
+    {
+      "declaration_index": 3230,
+      "declaration_name": "ambientConstantMaassDerivative_translate",
+      "old_fragment": "  simp only [ambientConstantMaassDerivative, ambientTranslate,\n    fderiv_comp_sub]",
+      "new_fragment": "  simp only [ambientConstantMaassDerivative]\n  change sigma * (fderiv ℝ (fun q : ℂ => f (q - t)) w) 1 +\n      (fderiv ℝ (fun q : ℂ => f (q - t)) w) Complex.I = _\n  rw [fderiv_comp_sub]"
+    },
+    {
+      "declaration_index": 3231,
+      "declaration_name": "ambientAffineMaass_translate_commutator",
+      "old_fragment": "  rw [ambientAffineMaass, ambientTranslate,\n    ambientConstantMaassDerivative_translate]\n  simp only [ambientAffineMaass, Complex.sub_im]\n  push_cast\n  ring",
+      "new_fragment": "  simp only [ambientAffineMaass, ambientTranslate]\n  rw [ambientConstantMaassDerivative_translate]\n  simp only [Complex.sub_im]\n  push_cast\n  ring"
+    }
+  ]
+}

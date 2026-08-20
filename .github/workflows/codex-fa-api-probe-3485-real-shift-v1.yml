@@ -1,0 +1,60 @@
+name: Codex FA API probe 3485 real shift v1
+on:
+  push:
+    branches:
+      - codex/fa-qym-cleanbuild-final-20260811-fast
+    paths:
+      - .github/workflows/codex-fa-api-probe-3485-real-shift-v1.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none >/dev/null
+          export PATH="$HOME/.elan/bin:$PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/dev/null
+          lake exe cache get >/dev/null
+      - name: Compile real-shift normalization probes
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          cat >/tmp/RealShiftProbe.lean <<'LEAN'
+          import Mathlib
+          noncomputable section
+          variable {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
+          example (c : ℝ) (z y Az Ay : H)
+              (hAdj : inner ℂ Az y = inner ℂ z Ay) :
+              inner ℂ ((c : ℂ) • z + Az) y =
+                inner ℂ z (Ay + (c : ℂ) • y) := by
+            rw [inner_add_left, inner_smul_left, hAdj,
+              inner_add_right, inner_smul_right, Complex.conj_ofReal]
+            ring
+          example (c : ℝ) (z x y Az : H) :
+              let d : H := y - x
+              inner ℂ ((c : ℂ) • z + Az) d =
+                inner ℂ ((c : ℂ) • z + Az) y -
+                  inner ℂ ((c : ℂ) • z + Az) x := by
+            dsimp only
+            rw [inner_sub_right]
+          example (c : ℝ) (z x y Az : H) :
+              let d : H := y - x
+              inner ℂ ((c : ℂ) • z + Az) d =
+                inner ℂ ((c : ℂ) • z + Az) y -
+                  inner ℂ ((c : ℂ) • z + Az) x := by
+            simp only [inner_sub_right]
+          LEAN
+          lake env lean /tmp/RealShiftProbe.lean

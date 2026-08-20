@@ -1,0 +1,14 @@
+{
+  "schema": "fa-dynamic-cluster-3322-fullplane-test-support-v1",
+  "status": "DIAGNOSTIC_DERIVED_PENDING_DIRECT_FULL_SOURCE",
+  "source_run_id": 31561568521,
+  "source_sha256": "8709441789c6b021a9ef6b6495be722723a9cac66747432ece58d60461041e7e",
+  "repairs": [
+    {
+      "declaration_index": 3322,
+      "declaration_name": "friedrichsTranslatedMollifierTest",
+      "old_fragment": "  tsupport_subset' := subset_univ",
+      "new_fragment": "  tsupport_subset' := by\n    intro x hx\n    simp"
+    }
+  ]
+}

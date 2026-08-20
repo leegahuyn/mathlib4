@@ -1,0 +1,25 @@
+{
+  "schema": "fa-dynamic-cluster-3074-3097-followup-v1",
+  "status": "DIRECT_DIAGNOSTIC_ROOTS_PENDING_RECOMPILE",
+  "base_direct_tested_source_sha256": "65ee4282a45fd34f64f65efa8366f607051616ec6fef0d61a33f340d2ab69ec7",
+  "repairs": [
+    {
+      "declaration_index": 3074,
+      "declaration_name": "modularMaxHeight_eventuallyEq_maximizer_im_of_one_lt",
+      "old_fragment": "      exact continuous_im.comp (continuous_const_smul gReal)",
+      "new_fragment": "      exact UpperHalfPlane.continuous_im.comp (continuous_const_smul gReal)"
+    },
+    {
+      "declaration_index": 3095,
+      "declaration_name": "intrinsicQuotientCuspCutoffReal_support_subset_truncation",
+      "old_fragment": "  simp only [Function.mem_support] at hq\n  obtain ⟨a, haCarrier⟩ := gammaTwoClosedTileCarrier_orbit_covers z",
+      "new_fragment": "  simp only [Function.mem_support] at hq\n  change intrinsicQuotientCuspCutoffReal N (gammaTwoQuotientMk z) ≠ 0 at hq\n  obtain ⟨a, haCarrier⟩ := gammaTwoClosedTileCarrier_orbit_covers z"
+    },
+    {
+      "declaration_index": 3097,
+      "declaration_name": "intrinsicCuspCutoff_projected_support",
+      "old_fragment": "  · intro hz\n    refine ⟨z, ?_, rfl⟩\n    have hz' : intrinsicQuotientCuspCutoffReal N\n        (gammaTwoQuotientMk z) ≠ 0 := by\n      simpa only [Function.mem_support] using hz",
+      "new_fragment": "  · intro hz\n    refine ⟨z, ?_, rfl⟩\n    simp only [Function.mem_support] at hz\n    change intrinsicQuotientCuspCutoffReal N (gammaTwoQuotientMk z) ≠ 0 at hz\n    have hz' : intrinsicQuotientCuspCutoffReal N\n        (gammaTwoQuotientMk z) ≠ 0 := hz"
+    }
+  ]
+}

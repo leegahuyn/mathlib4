@@ -1,0 +1,169 @@
+name: Codex final retry bootstrap from latest settled continuation head
+run-name: "Codex: retry self-check until latest head is fixed, then start v48 and orchestrator"
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - codex/fa-qym-cleanbuild-final-20260811-fast
+    paths:
+      - .github/workflows/codex-final-bootstrap-latest-head-v2.yml
+
+permissions:
+  actions: write
+  contents: read
+
+concurrency:
+  group: codex-final-bootstrap-latest-head-v2-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  bootstrap:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TARGET_BRANCH: codex/fa-qym-cleanbuild-final-20260811-fast
+      SELF_CHECK: codex-new-pipeline-selfcheck-and-fix.yml
+      FA_V48: codex-fa-v48-auto-repair-highcap2000.yml
+      ORCHESTRATOR: codex-fa-qym-final-orchestrator.yml
+      OUT: build-logs/final-bootstrap-v2
+    steps:
+      - name: Retry the latest-head self-check until one exact run succeeds
+        id: selfcheck
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT"
+          success_run=""
+          : >"$OUT/selfcheck-attempts.tsv"
+          for bootstrap_attempt in $(seq 1 5); do
+            before="$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/${SELF_CHECK}/runs?branch=${TARGET_BRANCH}&per_page=50" \
+              --jq '[.workflow_runs[].id] | join(" ")')"
+            gh workflow run "$SELF_CHECK" --repo "$GITHUB_REPOSITORY" --ref "$TARGET_BRANCH"
+            run_id=""
+            for discover_attempt in $(seq 1 60); do
+              sleep 3
+              while read -r candidate event; do
+                [[ -z "$candidate" ]] && continue
+                if [[ "$event" == workflow_dispatch && " $before " != *" $candidate "* ]]; then
+                  run_id="$candidate"
+                  break
+                fi
+              done < <(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/${SELF_CHECK}/runs?branch=${TARGET_BRANCH}&per_page=50" \
+                --jq '.workflow_runs[] | "\(.id) \(.event)"')
+              [[ -n "$run_id" ]] && break
+            done
+            if [[ -z "$run_id" ]]; then
+              printf '%s\t%s\t%s\t%s\n' "$bootstrap_attempt" NONE DISCOVERY_FAILED '' | tee -a "$OUT/selfcheck-attempts.tsv"
+              continue
+            fi
+            conclusion=""
+            for poll_attempt in $(seq 1 240); do
+              status="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}" --jq '.status')"
+              conclusion="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}" --jq '.conclusion // ""')"
+              if [[ "$status" == completed ]]; then break; fi
+              sleep 10
+            done
+            head_sha="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}" --jq '.head_sha')"
+            printf '%s\t%s\t%s\t%s\n' "$bootstrap_attempt" "$run_id" "${conclusion:-NO_CONCLUSION}" "$head_sha" \
+              | tee -a "$OUT/selfcheck-attempts.tsv"
+            gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}" >"$OUT/selfcheck-run-${run_id}.json"
+            if [[ "$conclusion" == success ]]; then
+              success_run="$run_id"
+              break
+            fi
+            sleep 5
+          done
+          test -n "$success_run"
+          printf '%s\n' "$success_run" | tee "$OUT/successful-selfcheck-run-id.txt"
+          printf 'run_id=%s\n' "$success_run" >>"$GITHUB_OUTPUT"
+
+      - name: Lock the branch head produced by the successful self-check
+        id: settled
+        shell: bash
+        run: |
+          set -euo pipefail
+          encoded_branch="${TARGET_BRANCH//\//%2F}"
+          gh api "repos/${GITHUB_REPOSITORY}/branches/${encoded_branch}" >"$OUT/settled-branch.json"
+          sha="$(python3 -c 'import json,os; print(json.load(open(os.environ["OUT"]+"/settled-branch.json"))["commit"]["sha"])')"
+          printf '%s\n' "$sha" | tee "$OUT/settled-head-sha.txt"
+          printf 'sha=%s\n' "$sha" >>"$GITHUB_OUTPUT"
+
+      - name: Dispatch fresh FA v48 and the evidence-driven orchestrator from settled head
+        id: dispatch
+        shell: bash
+        run: |
+          set -euo pipefail
+          before_v48="$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/${FA_V48}/runs?branch=${TARGET_BRANCH}&per_page=50" --jq '[.workflow_runs[].id] | join(" ")')"
+          before_orch="$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/${ORCHESTRATOR}/runs?branch=${TARGET_BRANCH}&per_page=50" --jq '[.workflow_runs[].id] | join(" ")')"
+          gh workflow run "$FA_V48" --repo "$GITHUB_REPOSITORY" --ref "$TARGET_BRANCH"
+          gh workflow run "$ORCHESTRATOR" --repo "$GITHUB_REPOSITORY" --ref "$TARGET_BRANCH"
+          v48_id=""; orch_id=""
+          for attempt in $(seq 1 80); do
+            sleep 3
+            if [[ -z "$v48_id" ]]; then
+              while read -r candidate event head_sha; do
+                [[ -z "$candidate" ]] && continue
+                if [[ "$event" == workflow_dispatch && " $before_v48 " != *" $candidate "* ]]; then
+                  v48_id="$candidate"
+                  printf '%s\n' "$head_sha" >"$OUT/v48-head-sha.txt"
+                  break
+                fi
+              done < <(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/${FA_V48}/runs?branch=${TARGET_BRANCH}&per_page=50" \
+                --jq '.workflow_runs[] | "\(.id) \(.event) \(.head_sha)"')
+            fi
+            if [[ -z "$orch_id" ]]; then
+              while read -r candidate event head_sha; do
+                [[ -z "$candidate" ]] && continue
+                if [[ "$event" == workflow_dispatch && " $before_orch " != *" $candidate "* ]]; then
+                  orch_id="$candidate"
+                  printf '%s\n' "$head_sha" >"$OUT/orchestrator-head-sha.txt"
+                  break
+                fi
+              done < <(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/${ORCHESTRATOR}/runs?branch=${TARGET_BRANCH}&per_page=50" \
+                --jq '.workflow_runs[] | "\(.id) \(.event) \(.head_sha)"')
+            fi
+            [[ -n "$v48_id" && -n "$orch_id" ]] && break
+          done
+          test -n "$v48_id"
+          test -n "$orch_id"
+          settled="${{ steps.settled.outputs.sha }}"
+          test "$(tr -d '\r\n' < "$OUT/v48-head-sha.txt")" = "$settled"
+          test "$(tr -d '\r\n' < "$OUT/orchestrator-head-sha.txt")" = "$settled"
+          printf '%s\n' "$v48_id" | tee "$OUT/v48-run-id.txt"
+          printf '%s\n' "$orch_id" | tee "$OUT/orchestrator-run-id.txt"
+          printf 'v48_run_id=%s\n' "$v48_id" >>"$GITHUB_OUTPUT"
+          printf 'orchestrator_run_id=%s\n' "$orch_id" >>"$GITHUB_OUTPUT"
+
+      - name: Emit authoritative bootstrap gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          root = Path(os.environ['OUT'])
+          report = {
+              'schema': 'final-retry-bootstrap-latest-head-v2',
+              'status': 'PASS',
+              'settled_head_sha': root.joinpath('settled-head-sha.txt').read_text().strip(),
+              'successful_selfcheck_run_id': int(root.joinpath('successful-selfcheck-run-id.txt').read_text()),
+              'fresh_v48_run_id': int(root.joinpath('v48-run-id.txt').read_text()),
+              'fresh_v48_head_sha': root.joinpath('v48-head-sha.txt').read_text().strip(),
+              'fresh_orchestrator_run_id': int(root.joinpath('orchestrator-run-id.txt').read_text()),
+              'fresh_orchestrator_head_sha': root.joinpath('orchestrator-head-sha.txt').read_text().strip(),
+          }
+          if len({report['settled_head_sha'], report['fresh_v48_head_sha'], report['fresh_orchestrator_head_sha']}) != 1:
+              raise SystemExit('bootstrap head identity mismatch')
+          root.joinpath('BOOTSTRAP_GATE.json').write_text(json.dumps(report, indent=2, sort_keys=True) + '\n')
+          print(json.dumps(report, indent=2, sort_keys=True))
+          PY
+
+      - name: Upload retry-bootstrap evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-final-bootstrap-v2-${{ github.run_id }}
+          path: build-logs/final-bootstrap-v2
+          retention-days: 90

@@ -1,0 +1,96 @@
+name: Codex FA v54 exact first-frontier probe
+run-name: "Codex: probe exact v54 3930 frontier"
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [codex/fa-exclusive-focus-20260814]
+    paths:
+      - .github/workflows/codex-fa-v54-frontier-probe.yml
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  frontier:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    env:
+      OUT: build-logs/codex-fa-v54-frontier
+      BASE_ARTIFACT: "9209647939"
+      BASE_ARTIFACT_DIGEST: sha256:1b846f63ee8a8309ab1d72b062c7dc846a880be4db7be898a4ba609f13cdc8e0
+      BASE_SOURCE_SHA: 6093e976dd6c4d5217850ab39318eeef50531aef3acd8c6d66dcd0a4426c294d
+      MATERIALIZER_B64_SHA: 3c245b19f83a4ef363ea61c868f8a334c54ae7f50c74a52369b817e7289ac9ba
+      MATERIALIZER_SHA: 8830e5c5a0e6b54c9526df3b8cd5ed159d23e5eb82efdcccef2ecbe3690f3128
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Materialize exact v54 simp_inline_hb0
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT" /tmp/v54-frontier
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${BASE_ARTIFACT}/zip" >/tmp/v54-frontier/base.zip
+          test "sha256:$(sha256sum /tmp/v54-frontier/base.zip | awk '{print $1}')" = "$BASE_ARTIFACT_DIGEST"
+          unzip -q /tmp/v54-frontier/base.zip -d /tmp/v54-frontier/base
+          base="$(find /tmp/v54-frontier/base -type f -name 'Mock2_FunctionalAnalysis-candidate.lean' -print -quit)"
+          test "$(sha256sum "$base" | awk '{print $1}')" = "$BASE_SOURCE_SHA"
+          cat scripts/fa_v54_materialize.py.gz.b64.* > /tmp/fa_v54.py.gz.b64
+          test "$(sha256sum /tmp/fa_v54.py.gz.b64 | awk '{print $1}')" = "$MATERIALIZER_B64_SHA"
+          base64 -d /tmp/fa_v54.py.gz.b64 | gzip -d > /tmp/fa_v54.py
+          test "$(sha256sum /tmp/fa_v54.py | awk '{print $1}')" = "$MATERIALIZER_SHA"
+          python3 -m py_compile /tmp/fa_v54.py
+          python3 /tmp/fa_v54.py --base "$base" --variant simp_inline_hb0 \
+            --out "$OUT/Mock2_FunctionalAnalysis-candidate.lean" --audit "$OUT/PATCH_AUDIT.json"
+          cp "$OUT/Mock2_FunctionalAnalysis-candidate.lean" PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          sha256sum PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | tee "$OUT/source.sha256"
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none >/tmp/elan.log 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          printf '%s\n' "$HOME/.elan/bin" >>"$GITHUB_PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)"
+          lake exe cache get
+      - name: Direct prerequisites and first FA frontier only
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          root=.lake/build/lib/lean/PrimalitySheafVerification
+          mkdir -p "$root"
+          for stem in Mock2 Mock2_Advanced; do
+            rm -f "$root/$stem.olean" "$root/$stem.ilean"
+            lake env lean -DmaxErrors=1 -DwarningAsError=false \
+              -o "$root/$stem.olean" -i "$root/$stem.ilean" \
+              "PrimalitySheafVerification/$stem.lean" >"$OUT/$stem.log" 2>&1
+            printf '0\n' >"$OUT/$stem.exit"
+          done
+          rm -f "$root/Mock2_FunctionalAnalysis.olean" "$root/Mock2_FunctionalAnalysis.ilean"
+          set +e
+          lake env lean -DmaxErrors=1 -DwarningAsError=false \
+            -o "$root/Mock2_FunctionalAnalysis.olean" \
+            -i "$root/Mock2_FunctionalAnalysis.ilean" \
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+            >"$OUT/Mock2_FunctionalAnalysis.log" 2>&1
+          status=$?
+          set -e
+          printf '%s\n' "$status" >"$OUT/Mock2_FunctionalAnalysis.exit"
+          grep -m1 -E 'Mock2_FunctionalAnalysis\.lean:[0-9]+:[0-9]+: error:' \
+            "$OUT/Mock2_FunctionalAnalysis.log" >"$OUT/FIRST_ERROR.txt" || true
+          exit "$status"
+      - name: Upload exact frontier evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-v54-frontier-${{ github.sha }}
+          path: build-logs/codex-fa-v54-frontier
+          retention-days: 30

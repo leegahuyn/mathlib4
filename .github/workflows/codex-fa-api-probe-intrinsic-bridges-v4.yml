@@ -1,0 +1,105 @@
+name: Codex FA API probe intrinsic bridges v4
+
+on:
+  push:
+    branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
+    paths: [.github/workflows/codex-fa-api-probe-intrinsic-bridges-v4.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none >/tmp/elan.log 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1
+          lake exe cache get >/tmp/cache.log 2>&1
+      - name: Probe corrected bridges
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          cat >/tmp/ProbeIntrinsicBridgesV4.lean <<'LEAN'
+          import Mathlib
+          open Set Filter Topology UpperHalfPlane
+          open scoped NNReal UpperHalfPlane
+
+          theorem ofComplex_source_eq_upperHalfPlaneSet :
+              UpperHalfPlane.ofComplex.source = UpperHalfPlane.upperHalfPlaneSet := by
+            ext w
+            simp [UpperHalfPlane.ofComplex, UpperHalfPlane.upperHalfPlaneSet]
+
+          example (z : ℍ) :
+              Filter.Tendsto UpperHalfPlane.ofComplex
+                (nhdsWithin (z : ℂ) UpperHalfPlane.upperHalfPlaneSet) (nhds z) := by
+            have hzSource : (z : ℂ) ∈ UpperHalfPlane.ofComplex.source := by
+              rw [ofComplex_source_eq_upperHalfPlaneSet]
+              exact z.im_pos
+            have hc := UpperHalfPlane.ofComplex.continuousOn (x := (z : ℂ)) hzSource
+            change Filter.Tendsto UpperHalfPlane.ofComplex
+              (nhdsWithin (z : ℂ) UpperHalfPlane.ofComplex.source)
+              (nhds (UpperHalfPlane.ofComplex (z : ℂ))) at hc
+            rw [ofComplex_source_eq_upperHalfPlaneSet] at hc
+            simpa only [UpperHalfPlane.ofComplex_apply_of_im_pos z.im_pos] using hc
+
+          example : ∃ K : ℝ≥0,
+              LipschitzOnWith K Real.smoothTransition (Set.Icc (0 : ℝ) 1) := by
+            exact Real.smoothTransition.contDiff.contDiffOn.exists_lipschitzOnWith
+              (s := Set.Icc (0 : ℝ) 1) (by simp) (convex_Icc (0 : ℝ) 1) isCompact_Icc
+
+          example {K : ℝ≥0}
+              (hK : LipschitzOnWith K Real.smoothTransition (Set.Icc (0 : ℝ) 1))
+              (x y : ℝ) (hx : x ∈ Set.Icc (0 : ℝ) 1) (hy : y ∈ Set.Icc (0 : ℝ) 1) :
+              dist (Real.smoothTransition x) (Real.smoothTransition y) ≤
+                (K : ℝ) * dist x y := by
+            exact hK.dist_le_mul x hx y hy
+
+          example (x y : ℝ) :
+              dist (projIcc (0 : ℝ) 1 zero_le_one x)
+                  (projIcc (0 : ℝ) 1 zero_le_one y) ≤
+                (1 : ℝ) * dist x y := by
+            simpa only [NNReal.coe_one] using
+              (LipschitzWith.projIcc zero_le_one).dist_le_mul x y
+
+          example (f : ℂ → ℝ) (z : ℂ) (s : Set ℂ)
+              (hf : ContDiffWithinAt ℝ ∞ f s z) :
+              ContDiffWithinAt ℝ ∞ (fun v => (f v : ℂ)) s z := by
+            simpa only [Function.comp_apply, Complex.ofRealCLM_apply] using
+              Complex.ofRealCLM.contDiff.contDiffAt.comp_contDiffWithinAt z hf
+
+          example (z : ℍ) {w : ℂ} (hwpos : 0 < w.im) :
+              dist ((UpperHalfPlane.ofComplex w : ℍ) : ℂ) (z : ℂ) /
+                  Real.sqrt ((UpperHalfPlane.ofComplex w).im * z.im) =
+                dist w (z : ℂ) / Real.sqrt (w.im * z.im) := by
+            rw [UpperHalfPlane.ofComplex_apply_of_im_pos hwpos]
+            change dist w (z : ℂ) / Real.sqrt (w.im * z.im) = _
+            rfl
+
+          example (y A : ℝ) (hy : 0 < y) : y * (A / y) = A := by
+            field_simp [ne_of_gt hy]
+
+          example : ‖Complex.I‖ = 1 := Complex.norm_I
+          LEAN
+          lake env lean -DwarningAsError=false /tmp/ProbeIntrinsicBridgesV4.lean | tee /tmp/intrinsic-bridges-v4.log
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-api-probe-intrinsic-bridges-v4-${{ github.sha }}
+          path: /tmp/intrinsic-bridges-v4.log
+          if-no-files-found: warn
+          retention-days: 7

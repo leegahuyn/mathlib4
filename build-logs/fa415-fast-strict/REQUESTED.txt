@@ -1,0 +1,1 @@
+Independent execution from the checked-in strict champion. Promotion requires Lean exit 0 or a strictly later first error with fixed downstream line positions. Ordered FA/Integrated/Mock3/QYM x2 gate follows only after FA passes.

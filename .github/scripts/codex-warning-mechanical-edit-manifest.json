@@ -1,0 +1,1453 @@
+{
+  "schema": "codex-warning-mechanical-matrix-v1",
+  "repository": "leegahuyn/mathlib4",
+  "branch": "codex/fa-qym-cleanbuild-final-20260810",
+  "branch_head_observed_read_only": "4c9cabc84c86d46ebb91b6b2e911338695ff16e9",
+  "branch_head_observed_at": "2026-08-10T23:28:18+09:00",
+  "source_evidence": {
+    "run_id": 31098316534,
+    "artifact_id": 8966752488,
+    "artifact_head_sha": "2e8f81b436f47ddee1b3bb464ee21664077193ad",
+    "remote_blob_match": "9/9 exact"
+  },
+  "policy": {
+    "warning_zero_required": false,
+    "exact_expected_warning_multiset_reduction_required": true,
+    "new_warning_signatures_allowed": 0,
+    "new_warning_categories_allowed": 0,
+    "absolute_forbidden_counts_required": 0,
+    "source_sha_guard_required": true,
+    "declaration_sequence_and_headers_identical_required": true,
+    "candidate_is_not_pass_without_direct_compile": true
+  },
+  "summary": {
+    "module_count": 9,
+    "edit_count": 58,
+    "known_absolute_forbidden_blockers": {
+      "Spt1": {
+        "sorry": 0,
+        "admit": 0,
+        "new_global_axiom": 0,
+        "unsafe": 0,
+        "native_decide": 1,
+        "Lean.ofReduceBool": 0
+      },
+      "Mock1_Advanced": {
+        "sorry": 0,
+        "admit": 0,
+        "new_global_axiom": 0,
+        "unsafe": 0,
+        "native_decide": 60,
+        "Lean.ofReduceBool": 0
+      }
+    }
+  },
+  "modules": {
+    "Spt1": {
+      "repository_path": "PrimalitySheafVerification/Spt1.lean",
+      "source_sha256": "0ef9289806dcb5b57d1d801526e45fe71bd2c85768b5b6f375fa9de005037e74",
+      "source_git_blob_sha1": "ed554b8268e9504281572d0cea27e40d5ba06a19",
+      "source_bytes": 365798,
+      "source_lines": 8084,
+      "candidate_sha256": "0ef9289806dcb5b57d1d801526e45fe71bd2c85768b5b6f375fa9de005037e74",
+      "candidate_git_blob_sha1": "ed554b8268e9504281572d0cea27e40d5ba06a19",
+      "candidate_bytes": 365798,
+      "candidate_lines": 8084,
+      "baseline_warning_total": 20,
+      "baseline_warning_by_category": {
+        "defProp": 1,
+        "haveILetI": 13,
+        "unusedSectionVars": 6
+      },
+      "expected_removed_warning_total": 0,
+      "expected_removed_warning_by_category": {},
+      "expected_candidate_warning_total": 20,
+      "expected_candidate_warning_by_category": {
+        "defProp": 1,
+        "haveILetI": 13,
+        "unusedSectionVars": 6
+      },
+      "source_declaration_header_manifest": {
+        "declaration_count": 862,
+        "declaration_sequence_sha256": "7209855a71dfc2017176edec20a8d65c4c46c9658da6804ff3e531a9fd95a5e0",
+        "all_declaration_headers_sha256": "d0f9866e947b25bebf10fec0687a20585d6426e1478230a3df8cafd04fc7a51c",
+        "theorem_lemma_count": 537,
+        "theorem_lemma_headers_sha256": "ff53694b038438e4424e08299b5e1e2fbbb7c8f861784d629795ec39c37d03f4"
+      },
+      "candidate_declaration_header_manifest": {
+        "declaration_count": 862,
+        "declaration_sequence_sha256": "7209855a71dfc2017176edec20a8d65c4c46c9658da6804ff3e531a9fd95a5e0",
+        "all_declaration_headers_sha256": "d0f9866e947b25bebf10fec0687a20585d6426e1478230a3df8cafd04fc7a51c",
+        "theorem_lemma_count": 537,
+        "theorem_lemma_headers_sha256": "ff53694b038438e4424e08299b5e1e2fbbb7c8f861784d629795ec39c37d03f4"
+      },
+      "baseline_forbidden_counts": {
+        "sorry": 0,
+        "admit": 0,
+        "new_global_axiom": 0,
+        "unsafe": 0,
+        "native_decide": 1,
+        "Lean.ofReduceBool": 0
+      },
+      "candidate_forbidden_counts": {
+        "sorry": 0,
+        "admit": 0,
+        "new_global_axiom": 0,
+        "unsafe": 0,
+        "native_decide": 1,
+        "Lean.ofReduceBool": 0
+      },
+      "edits": []
+    },
+    "Spt2": {
+      "repository_path": "PrimalitySheafVerification/Spt2.lean",
+      "source_sha256": "292f8f64858888aa73b24e895b6b0b9af2a0f53a51a9f5d1aded452024d77cb7",
+      "source_git_blob_sha1": "ee1df370ee56549aebd9db0a0aaa0582ae227a5f",
+      "source_bytes": 403732,
+      "source_lines": 8878,
+      "candidate_sha256": "2cc1969cb0d768618069a877da42ede34f6bf4eb1db927c3c7e9f441ccdae27d",
+      "candidate_git_blob_sha1": "129dd6f2191e2a7952d081b4b2c561f0d3355ce4",
+      "candidate_bytes": 403755,
+      "candidate_lines": 8878,
+      "baseline_warning_total": 39,
+      "baseline_warning_by_category": {
+        "checkUnivs": 3,
+        "deprecation": 6,
+        "haveILetI": 29,
+        "unnecessarySimpa": 1
+      },
+      "expected_removed_warning_total": 7,
+      "expected_removed_warning_by_category": {
+        "deprecation": 6,
+        "unnecessarySimpa": 1
+      },
+      "expected_candidate_warning_total": 32,
+      "expected_candidate_warning_by_category": {
+        "checkUnivs": 3,
+        "haveILetI": 29
+      },
+      "source_declaration_header_manifest": {
+        "declaration_count": 853,
+        "declaration_sequence_sha256": "5ef93b79dceb4d8f245a53c4855e20d0d2be2502961b2812cf587b691b81fffc",
+        "all_declaration_headers_sha256": "6f76e4e12818f8a3753ca7fa5ea2325a971e2f534f127b37c533faad15192d6e",
+        "theorem_lemma_count": 557,
+        "theorem_lemma_headers_sha256": "046a594a39f4891ca44d908f27a9929648d5a9c14d34ef21bd83a5c0e11992f2"
+      },
+      "candidate_declaration_header_manifest": {
+        "declaration_count": 853,
+        "declaration_sequence_sha256": "5ef93b79dceb4d8f245a53c4855e20d0d2be2502961b2812cf587b691b81fffc",
+        "all_declaration_headers_sha256": "6f76e4e12818f8a3753ca7fa5ea2325a971e2f534f127b37c533faad15192d6e",
+        "theorem_lemma_count": 557,
+        "theorem_lemma_headers_sha256": "046a594a39f4891ca44d908f27a9929648d5a9c14d34ef21bd83a5c0e11992f2"
+      },
+      "baseline_forbidden_counts": {
+        "sorry": 0,
+        "admit": 0,
+        "new_global_axiom": 0,
+        "unsafe": 0,
+        "native_decide": 0,
+        "Lean.ofReduceBool": 0
+      },
+      "candidate_forbidden_counts": {
+        "sorry": 0,
+        "admit": 0,
+        "new_global_axiom": 0,
+        "unsafe": 0,
+        "native_decide": 0,
+        "Lean.ofReduceBool": 0
+      },
+      "edits": [
+        {
+          "line": 170,
+          "start": 10,
+          "end": 25,
+          "expected": "ENat.coe_ne_top",
+          "replacement": "ENat.natCast_ne_top",
+          "remove_line": false,
+          "category": "deprecation",
+          "subject": "ENat.coe_ne_top",
+          "warning_signature": [
+            "deprecation",
+            "ENat.coe_ne_top"
+          ],
+          "reason": "deprecated symbol"
+        },
+        {
+          "line": 192,
+          "start": 10,
+          "end": 25,
+          "expected": "ENat.coe_ne_top",
+          "replacement": "ENat.natCast_ne_top",
+          "remove_line": false,
+          "category": "deprecation",
+          "subject": "ENat.coe_ne_top",
+          "warning_signature": [
+            "deprecation",
+            "ENat.coe_ne_top"
+          ],
+          "reason": "deprecated symbol"
+        },
+        {
+          "line": 630,
+          "start": 39,
+          "end": 54,
+          "expected": "ENat.coe_ne_top",
+          "replacement": "ENat.natCast_ne_top",
+          "remove_line": false,
+          "category": "deprecation",
+          "subject": "ENat.coe_ne_top",
+          "warning_signature": [
+            "deprecation",
+            "ENat.coe_ne_top"
+          ],
+          "reason": "deprecated symbol"
+        },
+        {
+          "line": 632,
+          "start": 40,
+          "end": 55,
+          "expected": "ENat.coe_ne_top",
+          "replacement": "ENat.natCast_ne_top",
+          "remove_line": false,
+          "category": "deprecation",
+          "subject": "ENat.coe_ne_top",
+          "warning_signature": [
+            "deprecation",
+            "ENat.coe_ne_top"
+          ],
+          "reason": "deprecated symbol"
+        },
+        {
+          "line": 633,
+          "start": 42,
+          "end": 57,
+          "expected": "ENat.coe_ne_top",
+          "replacement": "ENat.natCast_ne_top",
+          "remove_line": false,
+          "category": "deprecation",
+          "subject": "ENat.coe_ne_top",
+          "warning_signature": [
+            "deprecation",
+            "ENat.coe_ne_top"
+          ],
+          "reason": "deprecated symbol"
+        },
+        {
+          "line": 1949,
+          "start": 14,
+          "end": 19,
+          "expected": "simpa",
+          "replacement": "simp",
+          "remove_line": false,
+          "category": "unnecessarySimpa",
+          "subject": "simpa",
+          "warning_signature": [
+            "unnecessarySimpa",
+            "simpa"
+          ],
+          "reason": "linter exact replacement"
+        },
+        {
+          "line": 3155,
+          "start": 10,
+          "end": 25,
+          "expected": "ENat.coe_ne_top",
+          "replacement": "ENat.natCast_ne_top",
+          "remove_line": false,
+          "category": "deprecation",
+          "subject": "ENat.coe_ne_top",
+          "warning_signature": [
+            "deprecation",
+            "ENat.coe_ne_top"
+          ],
+          "reason": "deprecated symbol"
+        }
+      ]
+    },
+    "Spt3": {
+      "repository_path": "PrimalitySheafVerification/Spt3.lean",
+      "source_sha256": "6c074e3234ba182094ebef44094c7775561f7110b1d5c6e474c9af727c8c4653",
+      "source_git_blob_sha1": "41d410f78641096781194d07ee287e8be697899a",
+      "source_bytes": 429904,
+      "source_lines": 7503,
+      "candidate_sha256": "f0881f3e324f9ccd776b4c403c53d592a4abd134dc4c0312dd5482831a8cd551",
+      "candidate_git_blob_sha1": "6644b777dd72cbd84894b3dc5199102c6d03cd54",
+      "candidate_bytes": 429905,
+      "candidate_lines": 7503,
+      "baseline_warning_total": 28,
+      "baseline_warning_by_category": {
+        "deprecation": 2,
+        "haveILetI": 26
+      },
+      "expected_removed_warning_total": 1,
+      "expected_removed_warning_by_category": {
+        "deprecation": 1
+      },
+      "expected_candidate_warning_total": 27,
+      "expected_candidate_warning_by_category": {
+        "deprecation": 1,
+        "haveILetI": 26
+      },
+      "source_declaration_header_manifest": {
+        "declaration_count": 585,
+        "declaration_sequence_sha256": "e482a72fca67ecd436921aa26a5e9bfd7ae2e3d99c56a9cadde72fe4a1f41752",
+        "all_declaration_headers_sha256": "03253ae7ad5b17b77ba98905c87ca012261e356c5d84fc76a49eca705a2d35e4",
+        "theorem_lemma_count": 367,
+        "theorem_lemma_headers_sha256": "51e727a296f4a03b4ff0e7b90c68dc186120fb4e8e5d7161737e20b05851a9ea"
+      },
+      "candidate_declaration_header_manifest": {
+        "declaration_count": 585,
+        "declaration_sequence_sha256": "e482a72fca67ecd436921aa26a5e9bfd7ae2e3d99c56a9cadde72fe4a1f41752",
+        "all_declaration_headers_sha256": "03253ae7ad5b17b77ba98905c87ca012261e356c5d84fc76a49eca705a2d35e4",
+        "theorem_lemma_count": 367,
+        "theorem_lemma_headers_sha256": "51e727a296f4a03b4ff0e7b90c68dc186120fb4e8e5d7161737e20b05851a9ea"
+      },
+      "baseline_forbidden_counts": {
+        "sorry": 0,
+        "admit": 0,
+        "new_global_axiom": 0,
+        "unsafe": 0,
+        "native_decide": 0,
+        "Lean.ofReduceBool": 0
+      },
+      "candidate_forbidden_counts": {
+        "sorry": 0,
+        "admit": 0,
+        "new_global_axiom": 0,
+        "unsafe": 0,
+        "native_decide": 0,
+        "Lean.ofReduceBool": 0
+      },
+      "edits": [
+        {
+          "line": 1150,
+          "start": 6,
+          "end": 22,
+          "expected": "Set.mem_setOf_eq",
+          "replacement": "Set.mem_ofPred_eq",
+          "remove_line": false,
+          "category": "deprecation",
+          "subject": "Set.mem_setOf_eq",
+          "warning_signature": [
+            "deprecation",
+            "Set.mem_setOf_eq"
+          ],
+          "reason": "deprecated symbol"
+        }
+      ]
+    },
+    "Spt4": {
+      "repository_path": "PrimalitySheafVerification/Spt4.lean",
+      "source_sha256": "be2a7647d95ab6bb32ee2801269d45c9b57a8e2a7e08ad764618651ad09d6dc5",
+      "source_git_blob_sha1": "dfdbece780686cd0a490ea5ef27a2396728efea2",
+      "source_bytes": 465620,
+      "source_lines": 8714,
+      "candidate_sha256": "fa2f4571893b3b4f55ecd75f4ca7680bd9a19ed271bf712ae72d33ba806ac7e9",
+      "candidate_git_blob_sha1": "67e8b93c4cc4dfccd082cc2e7b63669afc9738c9",
+      "candidate_bytes": 465631,
+      "candidate_lines": 8714,
+      "baseline_warning_total": 27,
+      "baseline_warning_by_category": {
+        "deprecation": 8,
+        "haveILetI": 19
+      },
+      "expected_removed_warning_total": 8,
+      "expected_removed_warning_by_category": {
+        "deprecation": 8
+      },
+      "expected_candidate_warning_total": 19,
+      "expected_candidate_warning_by_category": {
+        "haveILetI": 19
+      },
+      "source_declaration_header_manifest": {
+        "declaration_count": 983,
+        "declaration_sequence_sha256": "29e57e31d1cc9b45fa10c5ecc7ead15d0b730bd988e25be882a8259fb161d390",
+        "all_declaration_headers_sha256": "b29412ef9c7bf34ddf8c8d87fb8a8f74770df7d4d3b9e4b57ca4b66bfea0db54",
+        "theorem_lemma_count": 609,
+        "theorem_lemma_headers_sha256": "b0aa0963eca2b115f12801623566444838540cf7e13e356ef3ded38cf315107c"
+      },
+      "candidate_declaration_header_manifest": {
+        "declaration_count": 983,
+        "declaration_sequence_sha256": "29e57e31d1cc9b45fa10c5ecc7ead15d0b730bd988e25be882a8259fb161d390",
+        "all_declaration_headers_sha256": "b29412ef9c7bf34ddf8c8d87fb8a8f74770df7d4d3b9e4b57ca4b66bfea0db54",
+        "theorem_lemma_count": 609,
+        "theorem_lemma_headers_sha256": "b0aa0963eca2b115f12801623566444838540cf7e13e356ef3ded38cf315107c"
+      },
+      "baseline_forbidden_counts": {
+        "sorry": 0,
+        "admit": 0,
+        "new_global_axiom": 0,
+        "unsafe": 0,
+        "native_decide": 0,
+        "Lean.ofReduceBool": 0
+      },
+      "candidate_forbidden_counts": {
+        "sorry": 0,
+        "admit": 0,
+        "new_global_axiom": 0,
+        "unsafe": 0,
+        "native_decide": 0,
+        "Lean.ofReduceBool": 0
+      },
+      "edits": [
+        {
+          "line": 1093,
+          "start": 13,
+          "end": 29,
+          "expected": "Set.mem_setOf_eq",
+          "replacement": "Set.mem_ofPred_eq",
+          "remove_line": false,
+          "category": "deprecation",
+          "subject": "Set.mem_setOf_eq",
+          "warning_signature": [
+            "deprecation",
+            "Set.mem_setOf_eq"
+          ],
+          "reason": "deprecated symbol"
+        },
+        {
+          "line": 3066,
+          "start": 69,
+          "end": 85,
+          "expected": "Set.mem_setOf_eq",
+          "replacement": "Set.mem_ofPred_eq",
+          "remove_line": false,
+          "category": "deprecation",
+          "subject": "Set.mem_setOf_eq",
+          "warning_signature": [
+            "deprecation",
+            "Set.mem_setOf_eq"
+          ],
+          "reason": "deprecated symbol"
+        },
+        {
+          "line": 3251,
+          "start": 45,
+          "end": 61,
+          "expected": "Set.mem_setOf_eq",
+          "replacement": "Set.mem_ofPred_eq",
+          "remove_line": false,
+          "category": "deprecation",
+          "subject": "Set.mem_setOf_eq",
+          "warning_signature": [
+            "deprecation",
+            "Set.mem_setOf_eq"
+          ],
+          "reason": "deprecated symbol"
+        },
+        {
+          "line": 3255,
+          "start": 23,
+          "end": 39,
+          "expected": "Set.mem_setOf_eq",
+          "replacement": "Set.mem_ofPred_eq",
+          "remove_line": false,
+          "category": "deprecation",
+          "subject": "Set.mem_setOf_eq",
+          "warning_signature": [
+            "deprecation",
+            "Set.mem_setOf_eq"
+          ],
+          "reason": "deprecated symbol"
+        },
+        {
+          "line": 5619,
+          "start": 33,
+          "end": 49,
+          "expected": "Set.mem_setOf_eq",
+          "replacement": "Set.mem_ofPred_eq",
+          "remove_line": false,
+          "category": "deprecation",
+          "subject": "Set.mem_setOf_eq",
+          "warning_signature": [
+            "deprecation",
+            "Set.mem_setOf_eq"
+          ],
+          "reason": "deprecated symbol"
+        },
+        {
+          "line": 5831,
+          "start": 33,
+          "end": 49,
+          "expected": "Set.mem_setOf_eq",
+          "replacement": "Set.mem_ofPred_eq",
+          "remove_line": false,
+          "category": "deprecation",
+          "subject": "Set.mem_setOf_eq",
+          "warning_signature": [
+            "deprecation",
+            "Set.mem_setOf_eq"
+          ],
+          "reason": "deprecated symbol"
+        },
+        {
+          "line": 5834,
+          "start": 6,
+          "end": 22,
+          "expected": "Set.mem_setOf_eq",
+          "replacement": "Set.mem_ofPred_eq",
+          "remove_line": false,
+          "category": "deprecation",
+          "subject": "Set.mem_setOf_eq",
+          "warning_signature": [
+            "deprecation",
+            "Set.mem_setOf_eq"
+          ],
+          "reason": "deprecated symbol"
+        },
+        {
+          "line": 6984,
+          "start": 2,
+          "end": 36,
+          "expected": "Nat.infinite_setOf_prime_and_modEq",
+          "replacement": "Nat.infinite_setOfPred_prime_and_modEq",
+          "remove_line": false,
+          "category": "deprecation",
+          "subject": "Nat.infinite_setOf_prime_and_modEq",
+          "warning_signature": [
+            "deprecation",
+            "Nat.infinite_setOf_prime_and_modEq"
+          ],
+          "reason": "deprecated symbol"
+        }
+      ]
+    },
+    "Spt5": {
+      "repository_path": "PrimalitySheafVerification/Spt5.lean",
+      "source_sha256": "6279d935410d4dab3b5af8a95ef503ccb5a66da1ecfc668aa03e773a837b9203",
+      "source_git_blob_sha1": "14ef77d87aaca5db11ca329731e052d000b4bdf5",
+      "source_bytes": 473184,
+      "source_lines": 8071,
+      "candidate_sha256": "07b81dff086cddc7cac74619bfc963d78591144b778e003fab803bfd3d84ba28",
+      "candidate_git_blob_sha1": "aa3ca0f821986b3485a534bd057cac0de39aac11",
+      "candidate_bytes": 473196,
+      "candidate_lines": 8071,
+      "baseline_warning_total": 26,
+      "baseline_warning_by_category": {
+        "deprecation": 3,
+        "haveILetI": 23
+      },
+      "expected_removed_warning_total": 3,
+      "expected_removed_warning_by_category": {
+        "deprecation": 3
+      },
+      "expected_candidate_warning_total": 23,
+      "expected_candidate_warning_by_category": {
+        "haveILetI": 23
+      },
+      "source_declaration_header_manifest": {
+        "declaration_count": 741,
+        "declaration_sequence_sha256": "2f9c599f495a183b77969a5975509cd6e36d52c946377f4bfb4e8d65d76d9441",
+        "all_declaration_headers_sha256": "66c91dc3542a101a5c7ca907ece0c4a00509caa15d855f804ca7b2e080555094",
+        "theorem_lemma_count": 501,
+        "theorem_lemma_headers_sha256": "1f339b7ea041e5b56975863c3808a45e03591d0878f16ad2b373a2c92266148a"
+      },
+      "candidate_declaration_header_manifest": {
+        "declaration_count": 741,
+        "declaration_sequence_sha256": "2f9c599f495a183b77969a5975509cd6e36d52c946377f4bfb4e8d65d76d9441",
+        "all_declaration_headers_sha256": "66c91dc3542a101a5c7ca907ece0c4a00509caa15d855f804ca7b2e080555094",
+        "theorem_lemma_count": 501,
+        "theorem_lemma_headers_sha256": "1f339b7ea041e5b56975863c3808a45e03591d0878f16ad2b373a2c92266148a"
+      },
+      "baseline_forbidden_counts": {
+        "sorry": 0,
+        "admit": 0,
+        "new_global_axiom": 0,
+        "unsafe": 0,
+        "native_decide": 0,
+        "Lean.ofReduceBool": 0
+      },
+      "candidate_forbidden_counts": {
+        "sorry": 0,
+        "admit": 0,
+        "new_global_axiom": 0,
+        "unsafe": 0,
+        "native_decide": 0,
+        "Lean.ofReduceBool": 0
+      },
+      "edits": [
+        {
+          "line": 1901,
+          "start": 39,
+          "end": 54,
+          "expected": "ENat.coe_ne_top",
+          "replacement": "ENat.natCast_ne_top",
+          "remove_line": false,
+          "category": "deprecation",
+          "subject": "ENat.coe_ne_top",
+          "warning_signature": [
+            "deprecation",
+            "ENat.coe_ne_top"
+          ],
+          "reason": "deprecated symbol"
+        },
+        {
+          "line": 1903,
+          "start": 40,
+          "end": 55,
+          "expected": "ENat.coe_ne_top",
+          "replacement": "ENat.natCast_ne_top",
+          "remove_line": false,
+          "category": "deprecation",
+          "subject": "ENat.coe_ne_top",
+          "warning_signature": [
+            "deprecation",
+            "ENat.coe_ne_top"
+          ],
+          "reason": "deprecated symbol"
+        },
+        {
+          "line": 1904,
+          "start": 42,
+          "end": 57,
+          "expected": "ENat.coe_ne_top",
+          "replacement": "ENat.natCast_ne_top",
+          "remove_line": false,
+          "category": "deprecation",
+          "subject": "ENat.coe_ne_top",
+          "warning_signature": [
+            "deprecation",
+            "ENat.coe_ne_top"
+          ],
+          "reason": "deprecated symbol"
+        }
+      ]
+    },
+    "Spt6": {
+      "repository_path": "PrimalitySheafVerification/Spt6.lean",
+      "source_sha256": "e8c038b4e1e932914ac4394a036a602c19e1bcb6ac3acedbe518eebf9b95a4fe",
+      "source_git_blob_sha1": "e4832c95c1dddfc7febec5c6b2891b0149a6c7f9",
+      "source_bytes": 435585,
+      "source_lines": 8651,
+      "candidate_sha256": "f563464d073d84439f3307c0c2f36d54504df05c4b6d89b366478807eec84b09",
+      "candidate_git_blob_sha1": "36eaebc0ce61f40ceaf1f4992e6699d1a37c63ae",
+      "candidate_bytes": 435542,
+      "candidate_lines": 8651,
+      "baseline_warning_total": 23,
+      "baseline_warning_by_category": {
+        "deprecation": 3,
+        "haveILetI": 18,
+        "unusedSimpArgs": 2
+      },
+      "expected_removed_warning_total": 5,
+      "expected_removed_warning_by_category": {
+        "deprecation": 3,
+        "unusedSimpArgs": 2
+      },
+      "expected_candidate_warning_total": 18,
+      "expected_candidate_warning_by_category": {
+        "haveILetI": 18
+      },
+      "source_declaration_header_manifest": {
+        "declaration_count": 958,
+        "declaration_sequence_sha256": "e3d156ff35ee19c26c498fc87b2eec06bd2ee508beb97422b6d417b87f9c8190",
+        "all_declaration_headers_sha256": "68e589acbdc889411262782e9fdf62158c0c436011bc6952eb331b5efec30836",
+        "theorem_lemma_count": 488,
+        "theorem_lemma_headers_sha256": "951568d42f9b1779c0fe921c2c7e9d464994aa5f67f835b23e5fdfeb2b091472"
+      },
+      "candidate_declaration_header_manifest": {
+        "declaration_count": 958,
+        "declaration_sequence_sha256": "e3d156ff35ee19c26c498fc87b2eec06bd2ee508beb97422b6d417b87f9c8190",
+        "all_declaration_headers_sha256": "68e589acbdc889411262782e9fdf62158c0c436011bc6952eb331b5efec30836",
+        "theorem_lemma_count": 488,
+        "theorem_lemma_headers_sha256": "951568d42f9b1779c0fe921c2c7e9d464994aa5f67f835b23e5fdfeb2b091472"
+      },
+      "baseline_forbidden_counts": {
+        "sorry": 0,
+        "admit": 0,
+        "new_global_axiom": 0,
+        "unsafe": 0,
+        "native_decide": 0,
+        "Lean.ofReduceBool": 0
+      },
+      "candidate_forbidden_counts": {
+        "sorry": 0,
+        "admit": 0,
+        "new_global_axiom": 0,
+        "unsafe": 0,
+        "native_decide": 0,
+        "Lean.ofReduceBool": 0
+      },
+      "edits": [
+        {
+          "line": 2231,
+          "start": 47,
+          "end": 61,
+          "expected": "ENat.toNat_coe",
+          "replacement": "ENat.toNat_natCast",
+          "remove_line": false,
+          "category": "deprecation",
+          "subject": "ENat.toNat_coe",
+          "warning_signature": [
+            "deprecation",
+            "ENat.toNat_coe"
+          ],
+          "reason": "deprecated symbol"
+        },
+        {
+          "line": 2257,
+          "start": 6,
+          "end": 20,
+          "expected": "ENat.toNat_coe",
+          "replacement": "ENat.toNat_natCast",
+          "remove_line": false,
+          "category": "deprecation",
+          "subject": "ENat.toNat_coe",
+          "warning_signature": [
+            "deprecation",
+            "ENat.toNat_coe"
+          ],
+          "reason": "deprecated symbol"
+        },
+        {
+          "line": 2364,
+          "start": 48,
+          "end": 64,
+          "expected": "Set.mem_setOf_eq",
+          "replacement": "Set.mem_ofPred_eq",
+          "remove_line": false,
+          "category": "deprecation",
+          "subject": "Set.mem_setOf_eq",
+          "warning_signature": [
+            "deprecation",
+            "Set.mem_setOf_eq"
+          ],
+          "reason": "deprecated symbol"
+        },
+        {
+          "line": 3163,
+          "start": 18,
+          "end": 54,
+          "expected": ", HomologicalComplex.mkHomToSingle_f",
+          "replacement": "",
+          "remove_line": false,
+          "category": "unusedSimpArgs",
+          "subject": "HomologicalComplex.mkHomToSingle_f",
+          "warning_signature": [
+            "unusedSimpArgs",
+            "HomologicalComplex.mkHomToSingle_f"
+          ],
+          "reason": "remove one unused simp argument"
+        },
+        {
+          "line": 3164,
+          "start": 53,
+          "end": 69,
+          "expected": ", Category.assoc",
+          "replacement": "",
+          "remove_line": false,
+          "category": "unusedSimpArgs",
+          "subject": "Category.assoc",
+          "warning_signature": [
+            "unusedSimpArgs",
+            "Category.assoc"
+          ],
+          "reason": "remove one unused simp argument"
+        }
+      ]
+    },
+    "Spt7": {
+      "repository_path": "PrimalitySheafVerification/Spt7.lean",
+      "source_sha256": "a05f56f4fbda508f919e9fe8259a91af464afca35758346d2326f75211a366bd",
+      "source_git_blob_sha1": "1de97d018a37190df3a22824d2ad1d6cf3916955",
+      "source_bytes": 865526,
+      "source_lines": 18114,
+      "candidate_sha256": "8fcbd103756510ae343c3adaebb364d0a2082cdba36db6488db213c0060ed7f2",
+      "candidate_git_blob_sha1": "cbc7d4ecb03a79141b315766a4ca1dd9f5e2aff3",
+      "candidate_bytes": 865574,
+      "candidate_lines": 18114,
+      "baseline_warning_total": 18,
+      "baseline_warning_by_category": {
+        "deprecation": 10,
+        "haveILetI": 8
+      },
+      "expected_removed_warning_total": 10,
+      "expected_removed_warning_by_category": {
+        "deprecation": 10
+      },
+      "expected_candidate_warning_total": 8,
+      "expected_candidate_warning_by_category": {
+        "haveILetI": 8
+      },
+      "source_declaration_header_manifest": {
+        "declaration_count": 1571,
+        "declaration_sequence_sha256": "50188f44132899615399ffabb37647d39c12004c7706c82fbcb8db33ca7bca41",
+        "all_declaration_headers_sha256": "bfdfd8f4c72c70abce5a68dbadef504251c565af862bf05ced5ebdaa1f3a6d0b",
+        "theorem_lemma_count": 947,
+        "theorem_lemma_headers_sha256": "fad9bab42d5109954b509d6ed79a07d2928319ec85c056b4102cb5babf30809b"
+      },
+      "candidate_declaration_header_manifest": {
+        "declaration_count": 1571,
+        "declaration_sequence_sha256": "50188f44132899615399ffabb37647d39c12004c7706c82fbcb8db33ca7bca41",
+        "all_declaration_headers_sha256": "bfdfd8f4c72c70abce5a68dbadef504251c565af862bf05ced5ebdaa1f3a6d0b",
+        "theorem_lemma_count": 947,
+        "theorem_lemma_headers_sha256": "fad9bab42d5109954b509d6ed79a07d2928319ec85c056b4102cb5babf30809b"
+      },
+      "baseline_forbidden_counts": {
+        "sorry": 0,
+        "admit": 0,
+        "new_global_axiom": 0,
+        "unsafe": 0,
+        "native_decide": 0,
+        "Lean.ofReduceBool": 0
+      },
+      "candidate_forbidden_counts": {
+        "sorry": 0,
+        "admit": 0,
+        "new_global_axiom": 0,
+        "unsafe": 0,
+        "native_decide": 0,
+        "Lean.ofReduceBool": 0
+      },
+      "edits": [
+        {
+          "line": 4293,
+          "start": 3,
+          "end": 42,
+          "expected": "Nat.prod_pow_primeFactors_factorization",
+          "replacement": "Nat.prod_primeFactors_coe_pow_factorization",
+          "remove_line": false,
+          "category": "deprecation",
+          "subject": "Nat.prod_pow_primeFactors_factorization",
+          "warning_signature": [
+            "deprecation",
+            "Nat.prod_pow_primeFactors_factorization"
+          ],
+          "reason": "deprecated symbol"
+        },
+        {
+          "line": 6727,
+          "start": 9,
+          "end": 23,
+          "expected": "ENat.toNat_coe",
+          "replacement": "ENat.toNat_natCast",
+          "remove_line": false,
+          "category": "deprecation",
+          "subject": "ENat.toNat_coe",
+          "warning_signature": [
+            "deprecation",
+            "ENat.toNat_coe"
+          ],
+          "reason": "deprecated symbol"
+        },
+        {
+          "line": 6742,
+          "start": 11,
+          "end": 26,
+          "expected": "ENat.coe_le_coe",
+          "replacement": "ENat.natCast_le_natCast",
+          "remove_line": false,
+          "category": "deprecation",
+          "subject": "ENat.coe_le_coe",
+          "warning_signature": [
+            "deprecation",
+            "ENat.coe_le_coe"
+          ],
+          "reason": "deprecated symbol"
+        },
+        {
+          "line": 6742,
+          "start": 41,
+          "end": 63,
+          "expected": "ENat.coe_toNat_le_self",
+          "replacement": "ENat.natCast_toNat_le_self",
+          "remove_line": false,
+          "category": "deprecation",
+          "subject": "ENat.coe_toNat_le_self",
+          "warning_signature": [
+            "deprecation",
+            "ENat.coe_toNat_le_self"
+          ],
+          "reason": "deprecated symbol"
+        },
+        {
+          "line": 6749,
+          "start": 10,
+          "end": 33,
+          "expected": "ENat.toNat_le_of_le_coe",
+          "replacement": "ENat.toNat_le_of_le_natCast",
+          "remove_line": false,
+          "category": "deprecation",
+          "subject": "ENat.toNat_le_of_le_coe",
+          "warning_signature": [
+            "deprecation",
+            "ENat.toNat_le_of_le_coe"
+          ],
+          "reason": "deprecated symbol"
+        },
+        {
+          "line": 6751,
+          "start": 10,
+          "end": 24,
+          "expected": "ENat.coe_toNat",
+          "replacement": "ENat.natCast_toNat",
+          "remove_line": false,
+          "category": "deprecation",
+          "subject": "ENat.coe_toNat",
+          "warning_signature": [
+            "deprecation",
+            "ENat.coe_toNat"
+          ],
+          "reason": "deprecated symbol"
+        },
+        {
+          "line": 6752,
+          "start": 10,
+          "end": 25,
+          "expected": "ENat.coe_le_coe",
+          "replacement": "ENat.natCast_le_natCast",
+          "remove_line": false,
+          "category": "deprecation",
+          "subject": "ENat.coe_le_coe",
+          "warning_signature": [
+            "deprecation",
+            "ENat.coe_le_coe"
+          ],
+          "reason": "deprecated symbol"
+        },
+        {
+          "line": 6758,
+          "start": 8,
+          "end": 22,
+          "expected": "ENat.coe_toNat",
+          "replacement": "ENat.natCast_toNat",
+          "remove_line": false,
+          "category": "deprecation",
+          "subject": "ENat.coe_toNat",
+          "warning_signature": [
+            "deprecation",
+            "ENat.coe_toNat"
+          ],
+          "reason": "deprecated symbol"
+        },
+        {
+          "line": 6887,
+          "start": 8,
+          "end": 22,
+          "expected": "ENat.coe_toNat",
+          "replacement": "ENat.natCast_toNat",
+          "remove_line": false,
+          "category": "deprecation",
+          "subject": "ENat.coe_toNat",
+          "warning_signature": [
+            "deprecation",
+            "ENat.coe_toNat"
+          ],
+          "reason": "deprecated symbol"
+        },
+        {
+          "line": 6888,
+          "start": 6,
+          "end": 20,
+          "expected": "ENat.coe_toNat",
+          "replacement": "ENat.natCast_toNat",
+          "remove_line": false,
+          "category": "deprecation",
+          "subject": "ENat.coe_toNat",
+          "warning_signature": [
+            "deprecation",
+            "ENat.coe_toNat"
+          ],
+          "reason": "deprecated symbol"
+        }
+      ]
+    },
+    "Mock1": {
+      "repository_path": "PrimalitySheafVerification/Mock1.lean",
+      "source_sha256": "1bcb9a5c18e0dd5ba115541ba806090daf7800ff0324a3db9e1da4d4eb32c1bd",
+      "source_git_blob_sha1": "424fa454ee5f73b75a15e49e2eac931f3b4cd269",
+      "source_bytes": 425518,
+      "source_lines": 9831,
+      "candidate_sha256": "9cfea40a077d67c29ef99c031a1ef4ae004e73210aa1e02656a50224634f4315",
+      "candidate_git_blob_sha1": "5f0694f2ef135450b6b05d07009a610d23612e5c",
+      "candidate_bytes": 425433,
+      "candidate_lines": 9830,
+      "baseline_warning_total": 66,
+      "baseline_warning_by_category": {
+        "checkUnivs": 1,
+        "classReducibility": 1,
+        "defProp": 5,
+        "deprecation": 2,
+        "haveILetI": 7,
+        "unnecessarySimpa": 4,
+        "unusedSimpArgs": 3,
+        "unusedTactic": 1,
+        "unusedVariables": 42
+      },
+      "expected_removed_warning_total": 12,
+      "expected_removed_warning_by_category": {
+        "deprecation": 1,
+        "unnecessarySimpa": 4,
+        "unusedSimpArgs": 3,
+        "unusedTactic": 1,
+        "unusedVariables": 3
+      },
+      "expected_candidate_warning_total": 54,
+      "expected_candidate_warning_by_category": {
+        "checkUnivs": 1,
+        "classReducibility": 1,
+        "defProp": 5,
+        "deprecation": 1,
+        "haveILetI": 7,
+        "unusedVariables": 39
+      },
+      "source_declaration_header_manifest": {
+        "declaration_count": 940,
+        "declaration_sequence_sha256": "f48b34ebbde140042b9367b4387a759b23ce8e80cfd8de9ab8bef04a11330e6b",
+        "all_declaration_headers_sha256": "c4554d46233788c57b16edcd64f5a9672cc37b97c944a17bc6a5e4e51d1a5251",
+        "theorem_lemma_count": 601,
+        "theorem_lemma_headers_sha256": "f853d45f4dbd45f6e00e177daab701c91762f3c81ad5133514ca9fe989f347e8"
+      },
+      "candidate_declaration_header_manifest": {
+        "declaration_count": 940,
+        "declaration_sequence_sha256": "f48b34ebbde140042b9367b4387a759b23ce8e80cfd8de9ab8bef04a11330e6b",
+        "all_declaration_headers_sha256": "c4554d46233788c57b16edcd64f5a9672cc37b97c944a17bc6a5e4e51d1a5251",
+        "theorem_lemma_count": 601,
+        "theorem_lemma_headers_sha256": "f853d45f4dbd45f6e00e177daab701c91762f3c81ad5133514ca9fe989f347e8"
+      },
+      "baseline_forbidden_counts": {
+        "sorry": 0,
+        "admit": 0,
+        "new_global_axiom": 0,
+        "unsafe": 0,
+        "native_decide": 0,
+        "Lean.ofReduceBool": 0
+      },
+      "candidate_forbidden_counts": {
+        "sorry": 0,
+        "admit": 0,
+        "new_global_axiom": 0,
+        "unsafe": 0,
+        "native_decide": 0,
+        "Lean.ofReduceBool": 0
+      },
+      "edits": [
+        {
+          "line": 917,
+          "start": 2,
+          "end": 7,
+          "expected": "simpa",
+          "replacement": "simp",
+          "remove_line": false,
+          "category": "unnecessarySimpa",
+          "subject": "simpa",
+          "warning_signature": [
+            "unnecessarySimpa",
+            "simpa"
+          ],
+          "reason": "linter exact replacement"
+        },
+        {
+          "line": 2994,
+          "start": 0,
+          "end": 48,
+          "expected": "        change (M : ZMod N') * (x : ZMod N') = 0",
+          "replacement": "",
+          "remove_line": true,
+          "category": "unusedTactic",
+          "subject": "change (M : ZMod N') * (x : ZMod N') = 0",
+          "warning_signature": [
+            "unusedTactic",
+            "change (M : ZMod N') * (x : ZMod N') = 0"
+          ],
+          "reason": "remove isolated no-op tactic"
+        },
+        {
+          "line": 3972,
+          "start": 2,
+          "end": 7,
+          "expected": "simpa",
+          "replacement": "simp",
+          "remove_line": false,
+          "category": "unnecessarySimpa",
+          "subject": "simpa",
+          "warning_signature": [
+            "unnecessarySimpa",
+            "simpa"
+          ],
+          "reason": "linter exact replacement"
+        },
+        {
+          "line": 4215,
+          "start": 40,
+          "end": 51,
+          "expected": ", mul_assoc",
+          "replacement": "",
+          "remove_line": false,
+          "category": "unusedSimpArgs",
+          "subject": "mul_assoc",
+          "warning_signature": [
+            "unusedSimpArgs",
+            "mul_assoc"
+          ],
+          "reason": "remove one unused simp argument"
+        },
+        {
+          "line": 4659,
+          "start": 6,
+          "end": 35,
+          "expected": "Matrix.det_of_lowerTriangular",
+          "replacement": "Matrix.det_of_isLowerTriangular",
+          "remove_line": false,
+          "category": "deprecation",
+          "subject": "Matrix.det_of_lowerTriangular",
+          "warning_signature": [
+            "deprecation",
+            "Matrix.det_of_lowerTriangular"
+          ],
+          "reason": "deprecated symbol"
+        },
+        {
+          "line": 4818,
+          "start": 2,
+          "end": 7,
+          "expected": "simpa",
+          "replacement": "simp",
+          "remove_line": false,
+          "category": "unnecessarySimpa",
+          "subject": "simpa",
+          "warning_signature": [
+            "unnecessarySimpa",
+            "simpa"
+          ],
+          "reason": "linter exact replacement"
+        },
+        {
+          "line": 5437,
+          "start": 30,
+          "end": 31,
+          "expected": "j",
+          "replacement": "_j",
+          "remove_line": false,
+          "category": "unusedVariables",
+          "subject": "j",
+          "warning_signature": [
+            "unusedVariables",
+            "j"
+          ],
+          "reason": "prefix body-local binder"
+        },
+        {
+          "line": 5568,
+          "start": 8,
+          "end": 24,
+          "expected": "CechOneCocycle, ",
+          "replacement": "",
+          "remove_line": false,
+          "category": "unusedSimpArgs",
+          "subject": "CechOneCocycle",
+          "warning_signature": [
+            "unusedSimpArgs",
+            "CechOneCocycle"
+          ],
+          "reason": "remove one unused simp argument"
+        },
+        {
+          "line": 5568,
+          "start": 74,
+          "end": 84,
+          "expected": ", add_comm",
+          "replacement": "",
+          "remove_line": false,
+          "category": "unusedSimpArgs",
+          "subject": "add_comm",
+          "warning_signature": [
+            "unusedSimpArgs",
+            "add_comm"
+          ],
+          "reason": "remove one unused simp argument"
+        },
+        {
+          "line": 5960,
+          "start": 2,
+          "end": 7,
+          "expected": "simpa",
+          "replacement": "simp",
+          "remove_line": false,
+          "category": "unnecessarySimpa",
+          "subject": "simpa",
+          "warning_signature": [
+            "unnecessarySimpa",
+            "simpa"
+          ],
+          "reason": "linter exact replacement"
+        },
+        {
+          "line": 6495,
+          "start": 5,
+          "end": 6,
+          "expected": "h",
+          "replacement": "_h",
+          "remove_line": false,
+          "category": "unusedVariables",
+          "subject": "h",
+          "warning_signature": [
+            "unusedVariables",
+            "h"
+          ],
+          "reason": "prefix body-local binder"
+        },
+        {
+          "line": 7743,
+          "start": 6,
+          "end": 7,
+          "expected": "j",
+          "replacement": "_j",
+          "remove_line": false,
+          "category": "unusedVariables",
+          "subject": "j",
+          "warning_signature": [
+            "unusedVariables",
+            "j"
+          ],
+          "reason": "prefix body-local binder"
+        }
+      ]
+    },
+    "Mock1_Advanced": {
+      "repository_path": "PrimalitySheafVerification/Mock1_Advanced.lean",
+      "source_sha256": "69f0703cc03fd0efde38b9d7018424cc62b724e0afaab7b66e3ccafb4d9f0311",
+      "source_git_blob_sha1": "2dc68bb04df549064b41fc318d18ea02d4d40679",
+      "source_bytes": 4426039,
+      "source_lines": 90566,
+      "candidate_sha256": "2f4da101d9c8db7b73d75c21ffc3053c1720ca8f17cda87822cf96bf0e1b472e",
+      "candidate_git_blob_sha1": "b6249cdad917b740d2b077e93f3df26a5cc732f8",
+      "candidate_bytes": 4425979,
+      "candidate_lines": 90566,
+      "baseline_warning_total": 112,
+      "baseline_warning_by_category": {
+        "defProp": 57,
+        "overlap": 3,
+        "unnecessarySeqFocus": 1,
+        "unnecessarySimpa": 6,
+        "unusedSimpArgs": 4,
+        "unusedVariables": 41
+      },
+      "expected_removed_warning_total": 12,
+      "expected_removed_warning_by_category": {
+        "unnecessarySeqFocus": 1,
+        "unnecessarySimpa": 6,
+        "unusedSimpArgs": 4,
+        "unusedVariables": 1
+      },
+      "expected_candidate_warning_total": 100,
+      "expected_candidate_warning_by_category": {
+        "defProp": 57,
+        "overlap": 3,
+        "unusedVariables": 40
+      },
+      "source_declaration_header_manifest": {
+        "declaration_count": 7749,
+        "declaration_sequence_sha256": "ba98041f6d20eafda5121fac91b9cc8d9a3df5da897258592a33cce731ae08fa",
+        "all_declaration_headers_sha256": "332be572a92dcffc364e28891dd35d6e71b36a1e44849666691ba4fac38470e8",
+        "theorem_lemma_count": 6361,
+        "theorem_lemma_headers_sha256": "da0b3ead62535e2a9c7a7d919c74774e0dbaf1afbdc7616c072c65474e7191d5"
+      },
+      "candidate_declaration_header_manifest": {
+        "declaration_count": 7749,
+        "declaration_sequence_sha256": "ba98041f6d20eafda5121fac91b9cc8d9a3df5da897258592a33cce731ae08fa",
+        "all_declaration_headers_sha256": "332be572a92dcffc364e28891dd35d6e71b36a1e44849666691ba4fac38470e8",
+        "theorem_lemma_count": 6361,
+        "theorem_lemma_headers_sha256": "da0b3ead62535e2a9c7a7d919c74774e0dbaf1afbdc7616c072c65474e7191d5"
+      },
+      "baseline_forbidden_counts": {
+        "sorry": 0,
+        "admit": 0,
+        "new_global_axiom": 0,
+        "unsafe": 0,
+        "native_decide": 60,
+        "Lean.ofReduceBool": 0
+      },
+      "candidate_forbidden_counts": {
+        "sorry": 0,
+        "admit": 0,
+        "new_global_axiom": 0,
+        "unsafe": 0,
+        "native_decide": 60,
+        "Lean.ofReduceBool": 0
+      },
+      "edits": [
+        {
+          "line": 35,
+          "start": 4,
+          "end": 9,
+          "expected": "simpa",
+          "replacement": "simp",
+          "remove_line": false,
+          "category": "unnecessarySimpa",
+          "subject": "simpa",
+          "warning_signature": [
+            "unnecessarySimpa",
+            "simpa"
+          ],
+          "reason": "linter exact replacement"
+        },
+        {
+          "line": 1915,
+          "start": 10,
+          "end": 25,
+          "expected": "EntropyGrowth, ",
+          "replacement": "",
+          "remove_line": false,
+          "category": "unusedSimpArgs",
+          "subject": "EntropyGrowth",
+          "warning_signature": [
+            "unusedSimpArgs",
+            "EntropyGrowth"
+          ],
+          "reason": "remove one unused simp argument"
+        },
+        {
+          "line": 1923,
+          "start": 12,
+          "end": 27,
+          "expected": "EntropyGrowth, ",
+          "replacement": "",
+          "remove_line": false,
+          "category": "unusedSimpArgs",
+          "subject": "EntropyGrowth",
+          "warning_signature": [
+            "unusedSimpArgs",
+            "EntropyGrowth"
+          ],
+          "reason": "remove one unused simp argument"
+        },
+        {
+          "line": 2084,
+          "start": 2,
+          "end": 7,
+          "expected": "simpa",
+          "replacement": "simp",
+          "remove_line": false,
+          "category": "unnecessarySimpa",
+          "subject": "simpa",
+          "warning_signature": [
+            "unnecessarySimpa",
+            "simpa"
+          ],
+          "reason": "linter exact replacement"
+        },
+        {
+          "line": 3476,
+          "start": 58,
+          "end": 71,
+          "expected": ", log_abs_exp",
+          "replacement": "",
+          "remove_line": false,
+          "category": "unusedSimpArgs",
+          "subject": "log_abs_exp",
+          "warning_signature": [
+            "unusedSimpArgs",
+            "log_abs_exp"
+          ],
+          "reason": "remove one unused simp argument"
+        },
+        {
+          "line": 10904,
+          "start": 24,
+          "end": 25,
+          "expected": "h",
+          "replacement": "_h",
+          "remove_line": false,
+          "category": "unusedVariables",
+          "subject": "h",
+          "warning_signature": [
+            "unusedVariables",
+            "h"
+          ],
+          "reason": "prefix body-local binder"
+        },
+        {
+          "line": 21584,
+          "start": 30,
+          "end": 40,
+          "expected": ", fileName",
+          "replacement": "",
+          "remove_line": false,
+          "category": "unusedSimpArgs",
+          "subject": "fileName",
+          "warning_signature": [
+            "unusedSimpArgs",
+            "fileName"
+          ],
+          "reason": "remove one unused simp argument"
+        },
+        {
+          "line": 71037,
+          "start": 2,
+          "end": 7,
+          "expected": "simpa",
+          "replacement": "simp",
+          "remove_line": false,
+          "category": "unnecessarySimpa",
+          "subject": "simpa",
+          "warning_signature": [
+            "unnecessarySimpa",
+            "simpa"
+          ],
+          "reason": "linter exact replacement"
+        },
+        {
+          "line": 71044,
+          "start": 2,
+          "end": 7,
+          "expected": "simpa",
+          "replacement": "simp",
+          "remove_line": false,
+          "category": "unnecessarySimpa",
+          "subject": "simpa",
+          "warning_signature": [
+            "unnecessarySimpa",
+            "simpa"
+          ],
+          "reason": "linter exact replacement"
+        },
+        {
+          "line": 71051,
+          "start": 2,
+          "end": 7,
+          "expected": "simpa",
+          "replacement": "simp",
+          "remove_line": false,
+          "category": "unnecessarySimpa",
+          "subject": "simpa",
+          "warning_signature": [
+            "unnecessarySimpa",
+            "simpa"
+          ],
+          "reason": "linter exact replacement"
+        },
+        {
+          "line": 71058,
+          "start": 2,
+          "end": 7,
+          "expected": "simpa",
+          "replacement": "simp",
+          "remove_line": false,
+          "category": "unnecessarySimpa",
+          "subject": "simpa",
+          "warning_signature": [
+            "unnecessarySimpa",
+            "simpa"
+          ],
+          "reason": "linter exact replacement"
+        },
+        {
+          "line": 71470,
+          "start": 65,
+          "end": 68,
+          "expected": "<;>",
+          "replacement": ";",
+          "remove_line": false,
+          "category": "unnecessarySeqFocus",
+          "subject": "<;>",
+          "warning_signature": [
+            "unnecessarySeqFocus",
+            "<;>"
+          ],
+          "reason": "linter exact replacement"
+        }
+      ]
+    }
+  }
+}

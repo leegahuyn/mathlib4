@@ -1,0 +1,1 @@
+Restore artifact 9024606745 from run 31267332510, verify SHA256 07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4, check in the exact FA champion source, compile Mock2 and Mock2_Advanced to exit 0, then reproduce Mock2_FunctionalAnalysis first error 31725 or better. No repair is permitted in this gate.

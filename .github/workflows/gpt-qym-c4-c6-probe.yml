@@ -1,0 +1,118 @@
+name: GPT QYM c4-c6 probe
+
+on:
+  push:
+    branches:
+      - gpt/qym-fastlane-verified88-20260819
+    paths:
+      - .github/workflows/gpt-qym-c4-c6-probe.yml
+      - .github/qym_patch_c4_c6.py
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: leegahuyn/mathlib4
+      QYM: PrimalitySheafVerification/QYM.lean
+      OLEAN: .lake/build/lib/lean/PrimalitySheafVerification
+      OUT: /tmp/qym-c4-c6
+      BASE: /tmp/qym-c4-c6-baseline
+      BASELINE_ARTIFACT: '9326706450'
+      BASELINE_SHA256: 313c076645a51976237738bd10c7f22b54f2a483499e60b57fa0d69be007cc1e
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Recover exact baseline
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT" "$BASE" "$OLEAN"
+          cp "$QYM" "$OUT/QYM.canonical.lean"
+          gh api -H 'Accept: application/vnd.github+json' "repos/$REPO/actions/artifacts/$BASELINE_ARTIFACT/zip" > "$RUNNER_TEMP/base.zip"
+          unzip -q -o "$RUNNER_TEMP/base.zip" -d "$BASE"
+          src="$(find "$BASE" -type f -name 'QYM.baseline.lean' -print -quit)"
+          test "$(sha256sum "$src" | awk '{print $1}')" = "$BASELINE_SHA256"
+          cp "$src" "$OUT/QYM.baseline.lean"
+      - name: Install pinned environment
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 8 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none > "$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"; echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          tc="$(tr -d '\r\n' < lean-toolchain)"
+          for a in 1 2 3 4 5; do elan toolchain install "$tc" >> "$OUT/toolchain.log" 2>&1 && break || sleep $((a*5)); done
+          lean --version > "$OUT/lean-version.txt"
+          for a in 1 2 3 4 5; do lake exe cache get >> "$OUT/cache.log" 2>&1 && break || sleep $((a*5)); done
+      - name: Restore dependency cache
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: |
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.ilean
+          key: qym-deps-v3-${{ runner.os }}-${{ hashFiles('lean-toolchain','lake-manifest.json','lakefile.lean','PrimalitySheafVerification/Mock2.lean','PrimalitySheafVerification/Mock2_Advanced.lean','PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean','PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean') }}
+          restore-keys: |
+            qym-probe4-deps-v1-${{ runner.os }}-
+      - name: Ensure dependency objects
+        shell: bash
+        run: |
+          set -euo pipefail
+          for s in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated; do
+            if [[ ! -s "$OLEAN/$s.olean" || ! -s "$OLEAN/$s.ilean" ]]; then
+              cap=1; [[ "$s" = Mock2_FunctionalAnalysis || "$s" = Mock2_FunctionalAnalysis_Integrated ]] && cap=2000
+              lake env lean "-DmaxErrors=$cap" -DwarningAsError=false -o "$OLEAN/$s.olean" -i "$OLEAN/$s.ilean" "PrimalitySheafVerification/$s.lean" > "$OUT/$s.log" 2>&1
+            fi
+          done
+      - name: Materialize c4-c6
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp "$OUT/QYM.baseline.lean" "$QYM"
+          python3 -B .github/qym_patch_c4_c6.py "$QYM" | tee "$OUT/PATCH_RESULT.json"
+          cp "$QYM" "$OUT/QYM.candidate.lean"
+      - name: Full direct Lean
+        shell: bash
+        run: |
+          set +e
+          /usr/bin/time -v -o "$OUT/full.time" lake env lean -DmaxErrors=10000 -DwarningAsError=false -o "$RUNNER_TEMP/c4c6.olean" -i "$RUNNER_TEMP/c4c6.ilean" "$QYM" > "$OUT/full.log" 2>&1
+          rc=$?; set -e; echo "$rc" > "$OUT/full.exit"
+      - name: Summarize region
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - "$OUT" <<'PY'
+          from pathlib import Path
+          import json,re,hashlib,sys
+          out=Path(sys.argv[1]); raw=(out/'full.log').read_bytes() if (out/'full.log').exists() else b''; text=raw.decode(errors='replace')
+          p=re.compile(r'^(?P<file>.*?\.lean):(?P<line>\d+):(?P<column>\d+): (?P<severity>error|warning)(?:\((?P<code>[^)]*)\))?:\s*(?P<message>.*)$',re.M)
+          rows=[]
+          for m in p.finditer(text): r=m.groupdict();r['line']=int(r['line']);r['column']=int(r['column']);rows.append(r)
+          errs=[r for r in rows if r['severity']=='error']; target=[r for r in errs if 43830<=r['line']<=44180]
+          result={'exit':int((out/'full.exit').read_text()) if (out/'full.exit').exists() else None,'error_headers':len(errs),'target_region_error_headers':len(target),'target_region_errors':target,'first_error':errs[0] if errs else None,'panic_lines':len(re.findall(r'(?im)internal error|uncaught exception|panic(?:!|:|\s)',text)),'log_sha256':hashlib.sha256(raw).hexdigest()}
+          (out/'RESULT.json').write_text(json.dumps(result,indent=2,sort_keys=True)+'\n'); print(json.dumps(result,indent=2,sort_keys=True))
+          PY
+          cp "$OUT/QYM.canonical.lean" "$QYM" || true
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-c4-c6-${{ github.sha }}-attempt${{ github.run_attempt }}
+          path: /tmp/qym-c4-c6
+          if-no-files-found: error
+          retention-days: 30

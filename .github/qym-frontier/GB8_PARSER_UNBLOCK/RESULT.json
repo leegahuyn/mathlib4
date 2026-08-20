@@ -1,0 +1,28 @@
+{
+  "schema": "qym-gb8-parser-unblock-v1",
+  "authority": "actual full-QYM direct Lean",
+  "run_id": 32303841069,
+  "trigger_sha": "fcd88e152edc922b9cb0475675c588fdcad9a6de",
+  "base_error_headers": 8,
+  "exit": 1,
+  "error_headers": 27,
+  "warning_headers": 343,
+  "panic_lines": 0,
+  "elapsed_seconds": 557,
+  "first_error": {
+    "file": "PrimalitySheafVerification/QYM.lean",
+    "line": 48450,
+    "column": 4,
+    "code": null,
+    "message": "Type mismatch: After simplification, term",
+    "enclosing_declaration": "inverseEtaFibreOfCoordinate_continuous"
+  },
+  "source_sha256": "8abc23b49c1cabed88fac0a67c3958d4dec7411d9c078ff555e137a1c19560d7",
+  "source_blob": "8b2c97644198fd18c31422795e07db3f7c32be0b",
+  "log_sha256": "f8b040c0a71771b5589359b3904507b10f0fc6acff5a9964bca19e1bdda39be2",
+  "forbidden_zero": true,
+  "olean_exists": false,
+  "ilean_exists": false,
+  "strict_improvement": false,
+  "pass": false
+}

@@ -1,4 +1,4 @@
-﻿name: PrimalitySheafVerification CI
+name: PrimalitySheafVerification CI
 
 on:
   push:
@@ -8,6 +8,8 @@ on:
       - 'lakefile.lean'
       - 'lake-manifest.json'
       - 'lean-toolchain'
+      - 'scripts/apply_*_pass_repairs.py'
+      - 'scripts/ci_mock2_advanced_pass316_v2.sh'
       - '.github/workflows/primality-sheaf-ci.yml'
   pull_request:
     branches: [master]
@@ -16,6 +18,8 @@ on:
       - 'lakefile.lean'
       - 'lake-manifest.json'
       - 'lean-toolchain'
+      - 'scripts/apply_*_pass_repairs.py'
+      - 'scripts/ci_mock2_advanced_pass316_v2.sh'
       - '.github/workflows/primality-sheaf-ci.yml'
   workflow_dispatch:
 
@@ -33,10 +37,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
 
       - name: Install Lean and fetch Mathlib cache
-        uses: leanprover/lean-action@v1
+        uses: leanprover/lean-action@38fbc41a8c28c4cbaec22d7f7de508ec2e7c0dd9
         with:
           auto-config: false
           use-github-cache: false
@@ -46,7 +50,6 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-
           strict_files=(
             "PrimalitySheafVerification/Spt1.lean"
             "PrimalitySheafVerification/Spt2.lean"
@@ -54,13 +57,11 @@ jobs:
             "PrimalitySheafVerification/Spt4.lean"
             "PrimalitySheafVerification/Spt5.lean"
           )
-
           for file in "${strict_files[@]}"; do
             if [[ ! -f "$file" ]]; then
               echo "::error file=$file::Required stable file is missing"
               exit 1
             fi
-
             echo "::group::lake env lean $file"
             lake env lean "$file"
             echo "::endgroup::"
@@ -71,7 +72,6 @@ jobs:
         continue-on-error: true
         run: |
           set -uo pipefail
-
           advisory_files=(
             "PrimalitySheafVerification/Spt6.lean"
             "PrimalitySheafVerification/Spt7.lean"
@@ -82,9 +82,7 @@ jobs:
             "PrimalitySheafVerification/Spt2_GeometricWorkarounds.lean"
             "PrimalitySheafVerification/Spt2_Master_Integrated.lean"
           )
-
           failures=0
-
           for file in "${advisory_files[@]}"; do
             if [[ -f "$file" ]]; then
               echo "::group::lake env lean $file"
@@ -99,7 +97,47 @@ jobs:
               echo "::notice file=$file::Advisory file is not present; skipping"
             fi
           done
-
           if [[ "$failures" -gt 0 ]]; then
             echo "::warning::$failures advisory file(s) failed. Stable CI still passed."
           fi
+
+  focused-advanced-pass316:
+    name: Focused Mock2 Advanced pass 316
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 300
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    env:
+      SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      SOURCE_BRANCH: ${{ github.event.pull_request.head.ref || github.ref_name }}
+      PR_NUMBER: ${{ github.event.pull_request.number || 7 }}
+      GITHUB_TOKEN: ${{ github.token }}
+
+    steps:
+      - name: Checkout exact PR head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ env.SOURCE_SHA }}
+          fetch-depth: 1
+
+      - name: Install exact Lean and Mathlib cache
+        uses: leanprover/lean-action@38fbc41a8c28c4cbaec22d7f7de508ec2e7c0dd9
+        with:
+          auto-config: false
+          use-github-cache: false
+          use-mathlib-cache: true
+
+      - name: Verify, materialize, or certify checked-in Advanced source
+        shell: bash
+        run: bash scripts/ci_mock2_advanced_pass316_v2.sh
+
+      - name: Upload focused Advanced verification evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: focused-advanced-pass316-v2-${{ env.SOURCE_SHA }}
+          path: /tmp/focused-advanced-pass316-v2
+          if-no-files-found: warn
+          retention-days: 30

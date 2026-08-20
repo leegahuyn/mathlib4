@@ -1,0 +1,70 @@
+name: GPT QYM GB8 parser-unblock run locator
+
+on:
+  push:
+    branches:
+      - gpt/qym-gb57-global-batch-round2-20260820
+    paths:
+      - .github/workflows/gpt-qym-gb8-run-locator.yml
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: write
+
+jobs:
+  locate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - name: Locate latest GB8 parser-unblock run and persist immutable locator
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: gpt/qym-gb57-global-batch-round2-20260820
+          TARGET_WORKFLOW: gpt-qym-gb8-parser-unblock.yml
+        run: |
+          set -euo pipefail
+          mkdir -p .github/qym-frontier/GB8_PARSER_UNBLOCK
+          api="https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/workflows/${TARGET_WORKFLOW}/runs?branch=${BRANCH}&per_page=20"
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "$api" > /tmp/gb8-runs.json
+          jq '{
+            schema: "qym-gb8-parser-unblock-run-locator-v1",
+            located_at: (now | todate),
+            branch: env.BRANCH,
+            target_workflow: env.TARGET_WORKFLOW,
+            latest: (.workflow_runs[0] | {
+              id, run_number, run_attempt, event, status, conclusion,
+              head_branch, head_sha, created_at, updated_at, html_url,
+              jobs_url, artifacts_url
+            }),
+            recent: [.workflow_runs[:10][] | {
+              id, run_number, run_attempt, status, conclusion,
+              head_sha, created_at, updated_at, html_url
+            }]
+          }' /tmp/gb8-runs.json > .github/qym-frontier/GB8_PARSER_UNBLOCK/RUN_LOCATOR.json
+          test "$(jq -r '.latest.id // empty' .github/qym-frontier/GB8_PARSER_UNBLOCK/RUN_LOCATOR.json)" != ""
+          cat .github/qym-frontier/GB8_PARSER_UNBLOCK/RUN_LOCATOR.json
+
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .github/qym-frontier/GB8_PARSER_UNBLOCK/RUN_LOCATOR.json
+          git commit -m "QYM GB8: persist parser-unblock run locator ${GITHUB_RUN_ID} [skip ci]"
+          for attempt in 1 2 3 4 5; do
+            git fetch origin "$BRANCH"
+            if git rebase "origin/$BRANCH" && git push origin "HEAD:$BRANCH"; then
+              exit 0
+            fi
+            git rebase --abort || true
+            sleep $((attempt * 3))
+          done
+          exit 1

@@ -1,0 +1,9 @@
+d88461a21d (origin/gpt/qym-gb79-v13-inverseeta-fibre-20260819) QYM GB79 V13: launch inverse-eta cumulative repair
+a4b5913bea QYM GB79 V13: add cumulative inverse-eta tournament driver
+3a85bbf107 QYM GB79 V13: add inverse-eta fibre/section root repairs
+0ea07df588 (origin/gpt/qym-gb79-v12-edge-normal-groupoid-20260819) QYM GB79 V12: launch cumulative edge-normal-groupoid repair
+6bf09fc844 QYM GB79 V12: add cumulative direct Lean driver
+26a373c1ce QYM GB79 V12: add conditional atlas/groupoid repair
+b797fc9b10 QYM GB79 V11: launch edge-normal direct Lean tournament
+e01f1737a9 QYM GB79 V11: add direct Lean tournament driver
+88cb8dd67d QYM GB79 V11: add edge/normal repair matrix

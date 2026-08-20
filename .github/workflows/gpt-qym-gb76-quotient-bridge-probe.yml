@@ -1,0 +1,158 @@
+name: GPT QYM GB76 original-effective quotient bridge probe
+
+on:
+  push:
+    branches:
+      - gpt/qym-gb76-global-batch-repair-20260820
+    paths:
+      - .github/workflows/gpt-qym-gb76-quotient-bridge-probe.yml
+      - .github/qym-probes/GammaTwoQuotientBridge.lean
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: gpt-qym-gb76-original-effective-quotient-bridge-probe
+  cancel-in-progress: true
+
+env:
+  BRANCH: gpt/qym-gb76-global-batch-repair-20260820
+  PROBE: .github/qym-probes/GammaTwoQuotientBridge.lean
+  OLEAN: .lake/build/lib/lean/PrimalitySheafVerification
+  OUT: /tmp/qym-gb76-quotient-bridge-probe
+
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - name: Gate source and install pinned Lean
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf "$OUT"
+          mkdir -p "$OUT" "$OLEAN"
+          test "$GITHUB_REF_NAME" = "$BRANCH"
+          test -s "$PROBE"
+          test "$(tr -d '\r\n' < lean-toolchain)" = leanprover/lean4:v4.33.0-rc1
+          curl --retry 8 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none > "$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          tc="$(tr -d '\r\n' < lean-toolchain)"
+          elan toolchain install "$tc" > "$OUT/toolchain.log" 2>&1
+          lean --version | tee "$OUT/lean-version.txt"
+          lake --version | tee "$OUT/lake-version.txt"
+          lake exe cache get > "$OUT/mathlib-cache.log" 2>&1
+
+      - name: Restore exact Mock2/Advanced/FA dependency objects
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: |
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean
+          key: qym-deps-v4-${{ runner.os }}-${{ hashFiles('lean-toolchain','lake-manifest.json','lakefile.lean','PrimalitySheafVerification/Mock2.lean','PrimalitySheafVerification/Mock2_Advanced.lean','PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean','PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean') }}
+          restore-keys: |
+            qym-deps-v3-${{ runner.os }}-
+            qym-probe4-deps-v1-${{ runner.os }}-
+
+      - name: Ensure imported project objects by actual Lean
+        shell: bash
+        run: |
+          set -euo pipefail
+          for source in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis; do
+            if [[ ! -s "$OLEAN/$source.olean" || ! -s "$OLEAN/$source.ilean" ]]; then
+              max_errors=1
+              if [[ "$source" = Mock2_FunctionalAnalysis ]]; then max_errors=2000; fi
+              rm -f "$OLEAN/$source.olean" "$OLEAN/$source.ilean"
+              lake env lean "-DmaxErrors=$max_errors" -DwarningAsError=false \
+                -o "$OLEAN/$source.olean" -i "$OLEAN/$source.ilean" \
+                "PrimalitySheafVerification/$source.lean" \
+                > "$OUT/$source.log" 2>&1
+            fi
+            test -s "$OLEAN/$source.olean"
+            test -s "$OLEAN/$source.ilean"
+          done
+
+      - name: Directly compile the quotient bridge probe
+        id: lean
+        shell: bash
+        run: |
+          set +e
+          started="$(date +%s)"
+          lake env lean -DmaxErrors=100 -DwarningAsError=false \
+            -o "$OUT/GammaTwoQuotientBridge.olean" \
+            -i "$OUT/GammaTwoQuotientBridge.ilean" \
+            "$PROBE" > "$OUT/probe.log" 2>&1
+          rc=$?
+          ended="$(date +%s)"
+          set -e
+          errors="$(grep -cE '^.*\.lean:[0-9]+:[0-9]+: error' "$OUT/probe.log" || true)"
+          warnings="$(grep -cE '^.*\.lean:[0-9]+:[0-9]+: warning' "$OUT/probe.log" || true)"
+          panic="$(grep -ciE 'internal error|uncaught exception|panic(!|:| )' "$OUT/probe.log" || true)"
+          first_error="$(grep -m1 -E '^.*\.lean:[0-9]+:[0-9]+: error' "$OUT/probe.log" || true)"
+          jq -n \
+            --arg branch "$BRANCH" \
+            --arg trigger_sha "$GITHUB_SHA" \
+            --argjson run_id "$GITHUB_RUN_ID" \
+            --argjson exit "$rc" \
+            --argjson errors "$errors" \
+            --argjson warnings "$warnings" \
+            --argjson panic "$panic" \
+            --argjson elapsed "$((ended-started))" \
+            --arg first_error "$first_error" \
+            --arg source_sha256 "$(sha256sum "$PROBE" | awk '{print $1}')" \
+            --arg source_blob "$(git hash-object "$PROBE")" \
+            --arg log_sha256 "$(sha256sum "$OUT/probe.log" | awk '{print $1}')" \
+            --argjson olean_exists "$(test -s "$OUT/GammaTwoQuotientBridge.olean" && echo true || echo false)" \
+            --argjson ilean_exists "$(test -s "$OUT/GammaTwoQuotientBridge.ilean" && echo true || echo false)" \
+            '{schema:"qym-original-effective-quotient-bridge-probe-v1",authority:"actual direct Lean",branch:$branch,trigger_sha:$trigger_sha,run_id:$run_id,exit:$exit,error_headers:$errors,warning_headers:$warnings,panic_lines:$panic,elapsed_seconds:$elapsed,first_error:(if $first_error == "" then null else $first_error end),source_sha256:$source_sha256,source_blob:$source_blob,log_sha256:$log_sha256,olean_exists:$olean_exists,ilean_exists:$ilean_exists,pass:($exit == 0 and $errors == 0 and $panic == 0 and $olean_exists and $ilean_exists)}' \
+            > "$OUT/RESULT.json"
+          cat "$OUT/RESULT.json"
+          echo "exit=$rc" >> "$GITHUB_OUTPUT"
+
+      - name: Persist probe evidence without overwriting any QYM frontier
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          dest=.github/qym-frontier/ORIGINAL_EFFECTIVE_QUOTIENT_BRIDGE_PROBE
+          rm -rf "$dest"
+          mkdir -p "$dest"
+          cp "$OUT/RESULT.json" "$dest/RESULT.json"
+          cp "$OUT/probe.log" "$dest/probe.log"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "$dest"
+          git commit -m "QYM global batch: persist quotient bridge probe ${GITHUB_RUN_ID} [skip ci]"
+          git fetch origin "$BRANCH"
+          git rebase "origin/$BRANCH"
+          git push origin "HEAD:$BRANCH"
+
+      - name: Upload probe evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-original-effective-quotient-bridge-probe-${{ github.run_id }}
+          path: /tmp/qym-gb76-quotient-bridge-probe
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Enforce direct-Lean result
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(jq -r '.pass' "$OUT/RESULT.json")" = true

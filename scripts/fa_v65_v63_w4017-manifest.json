@@ -1,0 +1,251 @@
+{
+  "schema": "fa-v63-body-only-repair-manifest-v1",
+  "status": "READY",
+  "manifest_id": "w4017",
+  "authority_source": {
+    "sha256": "1badac1451e11708114eb5438616063379558bcf0579dc82a01c2200b501d365",
+    "bytes": 2812442,
+    "lines": 62933,
+    "declaration_count": 4416
+  },
+  "source_package": {
+    "path": "work/v62-workers/w4017/repair-manifest.json",
+    "sha256": "e5ac0e094f8c61d23d3e34d1b5210db4b918bfd2fb874b91f3c3eedb6707544a",
+    "bytes": 17659,
+    "result_index_path": "work/v62-workers/w4017/result-index.json",
+    "result_index_sha256": "66076693a80a2a8df96804fb7857121bb5d81c4d0e0acc814936be173630e269",
+    "direct_lean_verified": false
+  },
+  "repairs": [
+    {
+      "id": "V63-W4017-R17-BASE",
+      "sequence": 20,
+      "stage": 0,
+      "depends_on": [],
+      "conflicts_with": [],
+      "owner": {
+        "declaration_index": 4017,
+        "declaration_name": "discriminantHardStageOperator_eq_weightedHard",
+        "expected_header": "theorem discriminantHardStageOperator_eq_weightedHard\n    (N : ℕ) (n : ℤ) :\n    discriminantHardStageOperator N n =\n      weightedGraphOperator n (discriminantHardCarrierWeightLp N) ",
+        "expected_header_sha256": "3034bc9bb0773d78681bd92d2295b06de1ff46d7658d21d904e18fc87553121e",
+        "expected_authority_region_sha256": "cec5e99e9ca1e3b9ad8f2374ac985284f80dfcccac09bbae48106a7b40606f6d"
+      },
+      "operations": [
+        {
+          "id": "w4017-r17-boundary-unblock",
+          "old": "  simp only [discriminantHardStageOperator,\n    ContinuousLinearMap.comp_apply,\n    discriminantHardStagePotentialPairing,\n    LinearMap.mkContinuous₂_apply,\n    discriminantHardStagePairingLinear,\n    weightedGraphOperator, weightedGraphLinear,\n    lpInfinityMultiplier_apply]\n  rw [MeasureTheory.L2.inner_def, MeasureTheory.L2.inner_def]",
+          "new": "  simp only [discriminantHardStageOperator,\n    ContinuousLinearMap.comp_apply,\n    discriminantHardStagePotentialPairing,\n    LinearMap.mkContinuous₂_apply,\n    weightedGraphOperator]\n  change inner ℂ\n      (graphLiteralStageRestriction (discriminantHardLiteralStage N) n v)\n      (lpInfinityMultiplier\n        (P5PhysicalHardStageRestriction.literalStageMeasure\n          (discriminantHardLiteralStage N))\n        (discriminantHardStageWeightLp N)\n        (graphLiteralStageRestriction\n          (discriminantHardLiteralStage N) n u)) =\n    inner ℂ (graphEuclideanBase n v)\n      (lpInfinityMultiplier chosenEuclideanCarrierMeasure\n        (discriminantHardCarrierWeightLp N)\n        (graphEuclideanBase n u))\n  rw [MeasureTheory.L2.inner_def, MeasureTheory.L2.inner_def]",
+          "old_sha256": "a6cb438373a967c65de82016f32d919e20c7b17e6ce79f86c6b78d442ca7fcd7",
+          "new_sha256": "0bac3b416c945c5b3914b89f69b39a1c398f2b6993f857e4beaa8fb6984ddfad",
+          "old_bytes": 341,
+          "new_bytes": 779,
+          "counts": {
+            "old_global_before": 1,
+            "old_owner_before": 1,
+            "new_global_before": 0,
+            "new_owner_before": 0,
+            "old_global_after": 0,
+            "old_owner_after": 0,
+            "new_global_after": 1,
+            "new_owner_after": 1
+          }
+        }
+      ],
+      "diagnostic_roots": ["W4017-BOUNDARY"],
+      "constraints": {
+        "body_only": true,
+        "header_unchanged": true,
+        "statement_unchanged": true,
+        "comments_unchanged": true,
+        "attributes_unchanged": true,
+        "source_move": false,
+        "maxHeartbeats_unchanged": true,
+        "trust_six_unchanged": true
+      }
+    },
+    {
+      "id": "V63-W4017-P",
+      "sequence": 21,
+      "stage": 1,
+      "depends_on": ["V63-W4017-R17-BASE"],
+      "conflicts_with": [],
+      "owner": {
+        "declaration_index": 4017,
+        "declaration_name": "discriminantHardStageOperator_eq_weightedHard",
+        "expected_header": "theorem discriminantHardStageOperator_eq_weightedHard\n    (N : ℕ) (n : ℤ) :\n    discriminantHardStageOperator N n =\n      weightedGraphOperator n (discriminantHardCarrierWeightLp N) ",
+        "expected_header_sha256": "3034bc9bb0773d78681bd92d2295b06de1ff46d7658d21d904e18fc87553121e",
+        "expected_authority_region_sha256": "cec5e99e9ca1e3b9ad8f2374ac985284f80dfcccac09bbae48106a7b40606f6d"
+      },
+      "operations": [
+        {
+          "id": "w4017-p-literal",
+          "old": "        MeasureTheory.Lp.coeFn_lpSMul\n          (discriminantHardStageWeightLp N)\n          (graphLiteralStageRestriction Z n u)",
+          "new": "        MeasureTheory.Lp.coeFn_lpSMul (p := ∞) (q := 2) (r := 2)\n          (discriminantHardStageWeightLp N)\n          (graphLiteralStageRestriction Z n u)",
+          "old_sha256": "fc62a5f6f1df6e9bc8a2384d26f2b0cec8e1e890530f4a03fdcde071fe212b04",
+          "new_sha256": "0ee25cd9d825ad7cbc680c6d27963df9967351dba9d37856d7950c03203c53ac",
+          "old_bytes": 128,
+          "new_bytes": 157,
+          "counts": {
+            "old_global_before": 1,
+            "old_owner_before": 1,
+            "new_global_before": 0,
+            "new_owner_before": 0,
+            "old_global_after": 0,
+            "old_owner_after": 0,
+            "new_global_after": 1,
+            "new_owner_after": 1
+          }
+        },
+        {
+          "id": "w4017-p-carrier",
+          "old": "        MeasureTheory.Lp.coeFn_lpSMul\n          (discriminantHardCarrierWeightLp N)\n          (graphEuclideanBase n u)",
+          "new": "        MeasureTheory.Lp.coeFn_lpSMul (p := ∞) (q := 2) (r := 2)\n          (discriminantHardCarrierWeightLp N)\n          (graphEuclideanBase n u)",
+          "old_sha256": "7bf3c5318860b7a0a7ecabe2dc44cbd75fa3bda4d60983cb0583581811440a77",
+          "new_sha256": "d50acbd3169ef8597daf5936190486d4e13e48635bf5a0e8f9f60f83b14e5e9c",
+          "old_bytes": 118,
+          "new_bytes": 147,
+          "counts": {
+            "old_global_before": 1,
+            "old_owner_before": 1,
+            "new_global_before": 0,
+            "new_owner_before": 0,
+            "old_global_after": 0,
+            "old_owner_after": 0,
+            "new_global_after": 1,
+            "new_owner_after": 1
+          }
+        }
+      ],
+      "diagnostic_roots": ["W4017-TYPECLASS"],
+      "constraints": {
+        "body_only": true,
+        "header_unchanged": true,
+        "statement_unchanged": true,
+        "comments_unchanged": true,
+        "attributes_unchanged": true,
+        "source_move": false,
+        "maxHeartbeats_unchanged": true,
+        "trust_six_unchanged": true
+      }
+    },
+    {
+      "id": "V63-W4017-Z",
+      "sequence": 22,
+      "stage": 2,
+      "depends_on": ["V63-W4017-P"],
+      "conflicts_with": [],
+      "owner": {
+        "declaration_index": 4017,
+        "declaration_name": "discriminantHardStageOperator_eq_weightedHard",
+        "expected_header": "theorem discriminantHardStageOperator_eq_weightedHard\n    (N : ℕ) (n : ℤ) :\n    discriminantHardStageOperator N n =\n      weightedGraphOperator n (discriminantHardCarrierWeightLp N) ",
+        "expected_header_sha256": "3034bc9bb0773d78681bd92d2295b06de1ff46d7658d21d904e18fc87553121e",
+        "expected_authority_region_sha256": "cec5e99e9ca1e3b9ad8f2374ac985284f80dfcccac09bbae48106a7b40606f6d"
+      },
+      "operations": [
+        {
+          "id": "w4017-z-unfold-phi",
+          "old": "        rw [discriminantHardStageWeight_eq_zero_outside_literalStage\n          N hzClosed hz]\n        simp [Φ])",
+          "new": "        unfold Φ\n        rw [discriminantHardStageWeight_eq_zero_outside_literalStage\n          N hzClosed hz]\n        simp)",
+          "old_sha256": "fce947c6c7f985785f2329f6a39332405caab7be38a7baf534b38a867d95d382",
+          "new_sha256": "ced7262ebbcafd2fd54c09d5aa3545a78bc3f960564ea1b8182bcf6a6e5ede9f",
+          "old_bytes": 112,
+          "new_bytes": 125,
+          "counts": {
+            "old_global_before": 1,
+            "old_owner_before": 1,
+            "new_global_before": 0,
+            "new_owner_before": 0,
+            "old_global_after": 0,
+            "old_owner_after": 0,
+            "new_global_after": 1,
+            "new_owner_after": 1
+          }
+        }
+      ],
+      "diagnostic_roots": ["W4017-ZERO-WEIGHT"],
+      "constraints": {
+        "body_only": true,
+        "header_unchanged": true,
+        "statement_unchanged": true,
+        "comments_unchanged": true,
+        "attributes_unchanged": true,
+        "source_move": false,
+        "maxHeartbeats_unchanged": true,
+        "trust_six_unchanged": true
+      }
+    },
+    {
+      "id": "V63-W4017-W",
+      "sequence": 23,
+      "stage": 2,
+      "depends_on": ["V63-W4017-P"],
+      "conflicts_with": [],
+      "owner": {
+        "declaration_index": 4017,
+        "declaration_name": "discriminantHardStageOperator_eq_weightedHard",
+        "expected_header": "theorem discriminantHardStageOperator_eq_weightedHard\n    (N : ℕ) (n : ℤ) :\n    discriminantHardStageOperator N n =\n      weightedGraphOperator n (discriminantHardCarrierWeightLp N) ",
+        "expected_header_sha256": "3034bc9bb0773d78681bd92d2295b06de1ff46d7658d21d904e18fc87553121e",
+        "expected_authority_region_sha256": "cec5e99e9ca1e3b9ad8f2374ac985284f80dfcccac09bbae48106a7b40606f6d"
+      },
+      "operations": [
+        {
+          "id": "w4017-w-literal",
+          "old": "      rw [hv, hmul, hw, hu]\n      rfl",
+          "new": "      unfold Φ\n      rw [hv, hmul, Pi.smul_apply', smul_eq_mul, hw, hu]",
+          "old_sha256": "a5d8bfb67bb768c92cda2d9ca542d959c718a4fac478aae0540119ee6adf363b",
+          "new_sha256": "e9049c4d1a76fb2e88492de6460076d41f9160256bfd06ce88941d2e64f07913",
+          "old_bytes": 37,
+          "new_bytes": 72,
+          "counts": {
+            "old_global_before": 1,
+            "old_owner_before": 1,
+            "new_global_before": 0,
+            "new_owner_before": 0,
+            "old_global_after": 0,
+            "old_owner_after": 0,
+            "new_global_after": 1,
+            "new_owner_after": 1
+          }
+        },
+        {
+          "id": "w4017-w-carrier",
+          "old": "      rw [hmul, hw]\n      rfl",
+          "new": "      unfold Φ\n      rw [hmul, Pi.smul_apply', smul_eq_mul, hw]",
+          "old_sha256": "7eaccf39887669958d373460b282c3981a07d514d186e6a9e125ed35d77e5abc",
+          "new_sha256": "952b92a9ec85913acaf6b72acda7da0bb5b02138f29e053e81e16025a43d2306",
+          "old_bytes": 29,
+          "new_bytes": 64,
+          "counts": {
+            "old_global_before": 1,
+            "old_owner_before": 1,
+            "new_global_before": 0,
+            "new_owner_before": 0,
+            "old_global_after": 0,
+            "old_owner_after": 0,
+            "new_global_after": 1,
+            "new_owner_after": 1
+          }
+        }
+      ],
+      "diagnostic_roots": ["W4017-POINTWISE-SMUL"],
+      "constraints": {
+        "body_only": true,
+        "header_unchanged": true,
+        "statement_unchanged": true,
+        "comments_unchanged": true,
+        "attributes_unchanged": true,
+        "source_move": false,
+        "maxHeartbeats_unchanged": true,
+        "trust_six_unchanged": true
+      }
+    }
+  ],
+  "constraints": {
+    "body_only": true,
+    "source_moves": 0,
+    "maxHeartbeats_delta": 0,
+    "trust_six_delta": 0,
+    "runtime_fallback_allowed": false,
+    "composition": "EXACT_FROM_AUTHORITY_NONCUMULATIVE"
+  }
+}

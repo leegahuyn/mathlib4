@@ -1,0 +1,73 @@
+{
+  "schema": "fa-v42-declaration-local-repairs-v1",
+  "status": "PATCH_READY_STATIC_DIRECT_LEAN_REQUIRED_V46_W01",
+  "direct_lean_verified": false,
+  "full_fa_clean_claimed": false,
+  "authority": {
+    "repository": "leegahuyn/mathlib4",
+    "run_id": 31728453514,
+    "head_sha": "5ec44f3d343955f3124e7efecc048b648dccc5ab",
+    "job_id": 94542617528,
+    "artifact_id": 9192669673,
+    "artifact_digest": "sha256:8f07a678145b62342aaa9cb94ebbce6c9f7cc1a45c400560918d42499e67f2f3",
+    "variant": "all_probes",
+    "source_path": "work/v45-results/run-31728453514/all_probes/Mock2_FunctionalAnalysis-candidate.lean",
+    "source_sha256": "726f40d1dd03d32f03592adf4f6b02e3f7f52e7e1f71087ee53bdb83c4bb0caf",
+    "source_bytes": 2788764,
+    "source_lines": 62383,
+    "declaration_count": 4416,
+    "diagnostics_path": "work/v45-results/run-31728453514/all_probes/FULL_DIAGNOSTICS.json",
+    "fa_log_path": "work/v45-results/run-31728453514/all_probes/Mock2_FunctionalAnalysis.log",
+    "max_errors": 2000,
+    "inventory_complete": true
+  },
+  "slice": {
+    "worker": "W01",
+    "selected_owner_count": 1,
+    "selected_diagnostic_count": 1,
+    "selected_declaration_indices": [3653],
+    "selected_diagnostic_ordinals": [1],
+    "earliest_frontier": true
+  },
+  "header_policy": "NO_HEADER_CHANGES_BODY_ONLY",
+  "trust_policy": {
+    "tokens": ["sorry", "admit", "axiom", "unsafe", "native_decide", "Lean.ofReduceBool"],
+    "required_before": 0,
+    "required_after": 0
+  },
+  "repairs": [
+    {
+      "id": "V46-W01-3653-untransport-energy-before-predecessor-index-substitution",
+      "owner": "energyForm_eq_inner_strongPrincipalCore",
+      "declaration_index": 3653,
+      "diagnostics": [1],
+      "kind": "body",
+      "classification": "PATCH_READY_STATIC_DEPENDENT_TRANSPORT_ROOT",
+      "confidence": "high-static-direct-lean-required",
+      "semantic_risk": "LOW",
+      "expected_count_in_owner": 1,
+      "old": "  have hs :=\n    successorEnergyForm_eq_inner_strongPrincipalCore (n - 1)\n  simpa only [successorGraphCoordinates, transportSuccessorCoordinates,\n    successorIndexEq, sub_add_cancel] using hs",
+      "new": "  have hEnergyFormTransport :\n      ∀ (p m : ℤ) (h : m = p) (Q : successorCoordinateType p m)\n          (v' u' : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore (p + 1)),\n        (transportSuccessorCoordinates p m h Q).energyForm v' u' =\n          Q.energyForm v' u' := by\n    intro p m h Q v' u'\n    cases h\n    rfl\n  have hPred :\n      ∀ (v' u' : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore (n - 1 + 1)),\n        (coordinates (n - 1 + 1)).energyForm v' u' =\n          inner ℂ (l2Coordinate (n - 1 + 1) v')\n            (l2Coordinate (n - 1 + 1)\n              (strongPrincipalCore (n - 1 + 1) u')) := by\n    intro v' u'\n    have hs :=\n      successorEnergyForm_eq_inner_strongPrincipalCore (n - 1) v' u'\n    rw [successorGraphCoordinates_eq_coordinates] at hs\n    rw [hEnergyFormTransport] at hs\n    exact hs\n  have hIndex : n - 1 + 1 = n := sub_add_cancel n 1\n  exact (hIndex ▸ hPred) v u",
+      "root_cause": "Unfolding successorGraphCoordinates leaves Eq.mp over the lower-coordinate target. Arithmetic simp cannot erase that dependent transport, and the unspecialized predecessor theorem remains a forall over Core (n - 1 + 1).",
+      "why_this_shape": "First eliminate transport only under an equality h : m = p between two distinct local variables, where cases h is structurally valid. Then obtain the entire predecessor-index forall and transport that proposition with hIndex, matching the already-elaborating coordinates_jointlyClosable pattern in the same source.",
+      "rejected_predecessors": [
+        {
+          "candidate": "specialize predecessor theorem directly with v u",
+          "remote_result": "application type mismatch: Core n versus Core (n - 1 + 1)"
+        },
+        {
+          "candidate": "Eq.mpr v/u followed by cases hn",
+          "remote_run": 31719983304,
+          "remote_artifact": 9189365035,
+          "remote_result": "Dependent elimination failed: Failed to solve equation n = n - 1 + 1"
+        }
+      ],
+      "theorem_proposition_changed": false,
+      "required_imports": [],
+      "merge_dependencies": [],
+      "expected_effect": "Remove the sole idx3653 error and the synthetic sorryAx dependency originating from this failed theorem; does not claim to repair later independent diagnostics."
+    }
+  ],
+  "promotion_rule": "Compose only against the exact v45 all_probes source SHA. Require a remote direct Mock2=0, Mock2_Advanced=0, whole-FA maxErrors=2000 compile and complete residual comparison before promotion.",
+  "disposition": "PATCH_READY"
+}

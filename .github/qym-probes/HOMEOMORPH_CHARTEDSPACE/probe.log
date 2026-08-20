@@ -1,0 +1,20 @@
+/tmp/qym-homeomorph-probe/Probe.lean:16:2: warning: Try this: 
+  letI̵
+
+The goal is a proposition, so `let` is preferred over `letI`.
+The difference between `let` and `letI` is that `letI` inlines the value.
+But this is not relevant for proofs because of proof irrelevance.
+
+Note: This linter can be disabled with `set_option linter.style.haveILetI false`
+/tmp/qym-homeomorph-probe/Probe.lean:17:2: error(lean.synthInstanceFailed): failed to synthesize instance of type class
+  HasGroupoid M' G
+
+Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
+/tmp/qym-homeomorph-probe/Probe.lean:23:23: error: expected token
+/tmp/qym-homeomorph-probe/Probe.lean:27:17: error: expected token
+/tmp/qym-homeomorph-probe/Probe.lean:27:4: error: Type mismatch
+  IsManifold I
+has type
+  WithTop ℕ∞ → (M : Type ?u.41) → [inst : TopologicalSpace M] → [ChartedSpace H M] → Prop
+but is expected to have type
+  Sort (max u (?u.41 + 1))

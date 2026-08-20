@@ -1,0 +1,96 @@
+name: GPT discover Integrated and QYM dependency graph
+
+on:
+  push:
+    branches:
+      - gpt/fa-qym-clean-final-20260816
+    paths:
+      - .github/workflows/gpt-downstream-import-discovery.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  discover:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out exact branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: gpt/fa-qym-clean-final-20260816
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Extract project-local imports and transitive order
+        run: |
+          set -euo pipefail
+          out=build-logs/gpt-downstream-import-discovery
+          mkdir -p "$out"
+          python3 - "$out" <<'PY'
+          import json, re, sys
+          from pathlib import Path
+          out=Path(sys.argv[1])
+          root=Path('PrimalitySheafVerification')
+          files={p.stem:p for p in root.glob('*.lean')}
+          graph={}
+          import_rows=[]
+          for name,p in sorted(files.items()):
+              text=p.read_text(encoding='utf-8',errors='replace')
+              imports=[]
+              for lineno,line in enumerate(text.splitlines(),1):
+                  m=re.match(r'^\s*import\s+(.+?)\s*$',line)
+                  if not m: continue
+                  mod=m.group(1).strip()
+                  import_rows.append({'source':name,'line':lineno,'import':mod})
+                  prefix='PrimalitySheafVerification.'
+                  if mod.startswith(prefix):
+                      local=mod[len(prefix):].split('.')[0]
+                      if local in files: imports.append(local)
+              graph[name]=sorted(set(imports))
+          def closure(start):
+              seen=set(); order=[]; visiting=set()
+              def dfs(x):
+                  if x in seen:return
+                  if x in visiting: raise RuntimeError(f'cycle through {x}')
+                  visiting.add(x)
+                  for y in graph.get(x,[]):dfs(y)
+                  visiting.remove(x);seen.add(x);order.append(x)
+              dfs(start);return order
+          targets=[x for x in ['Mock2_FunctionalAnalysis_Integrated','QYM','BuildAll'] if x in files]
+          report={
+            'schema':'gpt-downstream-import-discovery-v1',
+            'head_sha':__import__('os').environ.get('GITHUB_SHA'),
+            'available_root_modules':sorted(files),
+            'targets':{},
+            'graph':graph,
+            'all_import_rows':import_rows
+          }
+          for t in targets:
+              report['targets'][t]={'direct_local_imports':graph[t],'transitive_compile_order':closure(t)}
+          (out/'dependency-report.json').write_text(json.dumps(report,indent=2,sort_keys=True)+'\n')
+          with (out/'dependency-order.txt').open('w') as f:
+              for t in targets:
+                  f.write(f'[{t}]\n')
+                  for x in report['targets'][t]['transitive_compile_order']:f.write(x+'\n')
+                  f.write('\n')
+          with (out/'import-graph.dot').open('w') as f:
+              f.write('digraph local_imports {\n')
+              for x,ys in sorted(graph.items()):
+                  if not ys:f.write(f'  "{x}";\n')
+                  for y in ys:f.write(f'  "{x}" -> "{y}";\n')
+              f.write('}\n')
+          print(json.dumps(report['targets'],indent=2,sort_keys=True))
+          PY
+          test -s "$out/dependency-report.json"
+          test -s "$out/dependency-order.txt"
+          test -s "$out/import-graph.dot"
+
+      - name: Upload discovery evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: gpt-downstream-import-discovery-${{ github.sha }}
+          path: build-logs/gpt-downstream-import-discovery/**
+          if-no-files-found: error
+          retention-days: 30

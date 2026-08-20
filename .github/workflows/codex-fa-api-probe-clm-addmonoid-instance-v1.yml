@@ -1,0 +1,48 @@
+name: Codex FA API probe CLM addmonoid instance v1
+on:
+  push:
+    branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
+    paths: [.github/workflows/codex-fa-api-probe-clm-addmonoid-instance-v1.yml]
+  workflow_dispatch:
+permissions: {contents: read}
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with: {ref: "${{ github.sha }}", fetch-depth: 1, persist-credentials: false}
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none >/tmp/elan.log 2>&1
+          export PATH="$HOME/.elan/bin:$PATH";elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1;lake exe cache get >/tmp/cache.log 2>&1
+      - name: Probe direct AddCommMonoid instance values
+        shell: bash
+        run: |
+          set -euo pipefail;export PATH="$HOME/.elan/bin:$PATH"
+          cat >/tmp/ProbeClmAddMonoid.lean <<'LEAN'
+          import Mathlib
+          #check ContinuousLinearMap.addCommMonoid
+          #check NormedAddCommGroup.toAddCommMonoid
+          #check NormedAddCommGroup.toAddCommGroup
+          variable {E F : Type*} [NormedAddCommGroup E] [NormedAddCommGroup F]
+          variable [NormedSpace ℂ E] [NormedSpace ℂ F]
+          noncomputable local instance directE : AddCommMonoid E :=
+            NormedAddCommGroup.toAddCommMonoid
+          noncomputable local instance directCLM : AddCommMonoid (E →L[ℂ] F) :=
+            ContinuousLinearMap.addCommMonoid
+          #synth AddCommMonoid E
+          #synth AddCommMonoid (E →L[ℂ] F)
+          example : AddCommMonoid (E →L[ℂ] F) := ContinuousLinearMap.addCommMonoid
+          LEAN
+          lake env lean -DwarningAsError=false /tmp/ProbeClmAddMonoid.lean | tee /tmp/probe.log
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-api-probe-clm-addmonoid-instance-v1-${{ github.sha }}
+          path: /tmp/probe.log
+          retention-days: 7

@@ -1,0 +1,96 @@
+name: Codex FA484 energy real norm abs strict direct Lean
+
+on:
+  push:
+    branches:
+      - fix/fa484-energy-real-norm-abs-20260811
+    paths:
+      - .github/workflows/codex-fa484-observe.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+  issues: write
+
+concurrency:
+  group: codex-fa484-observe
+  cancel-in-progress: true
+
+jobs:
+  observe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Publish FA484 start identity
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          body="## FA484 observer started\n\n- run_id: \`${GITHUB_RUN_ID}\`\n- head_sha: \`${GITHUB_SHA}\`\n- sequence: \`FA475 -> ... -> FA483 -> FA484\`\n- upstream_FA483_run: \`31451101943\`\n- upstream_FA483_source: \`34756fc6e6c20dab3d2ff5a125934dde7a065fdee57a9c5b6f2381240ee8481d\`\n- frontier: \`35255:37 selectedLogHeightEnergyDensity_le_exp_mul_heightGraphDensity / index 2805\`\n- patch: \`Complex.norm_real -> Real.norm_eq_abs -> abs_of_pos\`"
+          gh api "repos/${GITHUB_REPOSITORY}/issues/14/comments" -f body="$body"
+
+      - name: Run exact FA484 candidate/direct Lean loop and retain exit
+        id: run
+        shell: bash
+        run: |
+          set +e
+          bash scripts/fa484_energy_real_norm_abs_candidate_ci.sh 2>&1 | tee /tmp/fa484-observe.log
+          code=${PIPESTATUS[0]}
+          set -e
+          echo "exit_code=$code" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Report exact FA484 evidence to issue 14
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SCRIPT_EXIT: ${{ steps.run.outputs.exit_code }}
+        shell: bash
+        run: |
+          python3 - <<'PY' > /tmp/fa484-comment.md
+          from pathlib import Path
+          import json, os
+          out = Path("build-logs/codex-fa484-energy-real-norm-abs/candidates/norms")
+          metric, candidate = out / "METRIC.json", out / "CANDIDATE.json"
+          source = Path("PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean")
+          log = Path("/tmp/fa484-observe.log")
+          parts = ["## FA484 observer — actual remote execution", "",
+                   f"- run_id: `{os.environ.get('GITHUB_RUN_ID','')}`",
+                   f"- head_sha: `{os.environ.get('GITHUB_SHA','')}`",
+                   f"- script_exit: `{os.environ.get('SCRIPT_EXIT','')}`", ""]
+          md = None
+          if metric.exists():
+              raw = metric.read_text(encoding="utf-8")
+              parts += ["### METRIC.json", "```json", raw[:32000], "```", ""]
+              try: md = json.loads(raw)
+              except Exception: pass
+          else: parts += ["### METRIC.json", "`MISSING`", ""]
+          if candidate.exists(): parts += ["### CANDIDATE.json", "```json", candidate.read_text(encoding="utf-8")[:16000], "```", ""]
+          if source.exists():
+              lines = source.read_text(encoding="utf-8", errors="replace").splitlines()
+              center = md.get("FA_first_actual_error_line", 35255) if isinstance(md, dict) else 35255
+              lo, hi = max(1, center - 16), min(len(lines), center + 28)
+              parts += [f"### Exact FA484 candidate source around line {center}", "```lean",
+                        "\n".join(f"{i}: {lines[i-1]}" for i in range(lo, hi+1)), "```", ""]
+          if log.exists():
+              tail = "\n".join(log.read_text(encoding="utf-8", errors="replace").splitlines()[-140:])
+              parts += ["### Tail", "```text", tail[-18000:], "```"]
+          print("\n".join(parts)[:62000])
+          PY
+          gh api "repos/${GITHUB_REPOSITORY}/issues/14/comments" -f body="$(cat /tmp/fa484-comment.md)"
+
+      - name: Preserve FA484 script result as workflow conclusion
+        if: always()
+        env:
+          SCRIPT_EXIT: ${{ steps.run.outputs.exit_code }}
+        shell: bash
+        run: |
+          test -n "$SCRIPT_EXIT"
+          exit "$SCRIPT_EXIT"

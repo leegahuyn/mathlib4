@@ -1,0 +1,10 @@
+{
+  "schema": "qym-gb76-global-batch-source-probe-v2",
+  "branch": "gpt/qym-gb76-global-batch-repair-20260820",
+  "trigger_sha": "92f4008e76a5d453b5a63fcde820d81a241981cc",
+  "run_id": 32292324935,
+  "qym_sha256": "fada22264b6618467f89d436ddacff27453db1242769717d5e7a386682d4efb3",
+  "qym_blob": "29d446743036dccd5d9ad8757c351b39d526cfa9",
+  "status": "COMPLETE",
+  "artifact_name": "qym-gb76-global-batch-source-bundle-32292324935"
+}

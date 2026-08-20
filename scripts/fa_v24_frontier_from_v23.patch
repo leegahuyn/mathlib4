@@ -1,0 +1,90 @@
+--- a/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
++++ b/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+@@ -48654,27 +48654,41 @@
+           (u : SmoothQuotientCompactFunction) z +
+         2 * laplaceRaw (paperOrbitExponent n)
+           (u : SmoothQuotientCompactFunction) z := by
++  let a :=
++    Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n
++      (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n u)
++  let b :=
++    Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raiseFromPred n
++      (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lower n u)
++  have hSub (x y : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
++      Sub.sub x y = x + (-1 : ℂ) • y := by
++    apply Subtype.ext
++    change
++      (x : SmoothQuotientCompactFunction) - (y : SmoothQuotientCompactFunction) =
++        (x : SmoothQuotientCompactFunction) + (-1 : ℂ) • (y : SmoothQuotientCompactFunction)
++    simp [sub_eq_add_neg]
+   rw [strongPrincipalCore_apply]
+-  change
+-    (((Sub.sub
+-        (Sub.sub u
+-          (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n
+-            (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n u)))
+-        (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raiseFromPred n
+-          (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lower n u)) : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
+-      SmoothQuotientCompactFunction) z) = _
+-  change
+-    (u : SmoothQuotientCompactFunction) z -
+-        (((Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n
+-            (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n u) : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
+-          SmoothQuotientCompactFunction) z) -
+-        (((Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raiseFromPred n
+-            (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lower n u) : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
+-          SmoothQuotientCompactFunction) z) = _
++  change (((Sub.sub (Sub.sub u a) b :
++    Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
++      SmoothQuotientCompactFunction) z) = _
++  rw [hSub (Sub.sub u a) b, hSub u a]
++  change (((((u.1 : SmoothQuotientCompactFunction) + (-1 : ℂ) • (a.1 : SmoothQuotientCompactFunction)) :
++      SmoothQuotientCompactFunction) + (-1 : ℂ) • (b.1 : SmoothQuotientCompactFunction) :
++        SmoothQuotientCompactFunction) z) = _
++  simp only [Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.toSmoothQuotientCompactFunction]
++  simp [sub_eq_add_neg]
+   have hLR := Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lower_raise_factorization n u z
+   have hRL := Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise_lower_factorization n u z
+   linear_combination hLR + hRL
+@@ -48706,19 +48720,25 @@
+     ((strongSchrodingerCore n t u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
+         SmoothQuotientCompactFunction) z =
+       strongSchrodingerDifferentialExpression n t u z := by
++  have hSub (x y : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
++      Sub.sub x y = x + (-1 : ℂ) • y := by
++    apply Subtype.ext
++    change
++      (x : SmoothQuotientCompactFunction) - (y : SmoothQuotientCompactFunction) =
++        (x : SmoothQuotientCompactFunction) + (-1 : ℂ) • (y : SmoothQuotientCompactFunction)
++    simp [sub_eq_add_neg]
+   rw [strongSchrodingerCore_apply]
+   change
+     (((Sub.sub (strongPrincipalCore n u)
+         ((t : ℂ) • potentialMultiplicationCore n u) : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
+       SmoothQuotientCompactFunction) z) = _
++  rw [hSub]
+   change
+-    ((strongPrincipalCore n u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
+-        SmoothQuotientCompactFunction) z -
+-      (t : ℂ) *
+-          (((potentialMultiplicationCore n u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
+-            SmoothQuotientCompactFunction) z) = _
+-  rw [strongPrincipalCore_apply_pointwise,
+-    potentialMultiplicationCore_apply]
++    ((((strongPrincipalCore n u).1 : SmoothQuotientCompactFunction) +
++        (-1 : ℂ) • (((t : ℂ) • potentialMultiplicationCore n u).1 : SmoothQuotientCompactFunction) :
++      SmoothQuotientCompactFunction) z) = _
++  simp only [Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.toSmoothQuotientCompactFunction]
++  simp [sub_eq_add_neg, smul_smul]
++  rw [strongPrincipalCore_apply_pointwise, potentialMultiplicationCore_apply]
+   ring
+ 
+ /-- Reindexing the lower-then-raise composition across `(n+1)-1=n` changes
+@@ -48850,6 +48870,7 @@
+   ext v
+   rw [corePeterssonForcing_apply]
+   rw [map_zero, inner_zero_right]
++  rfl
+ 
+ /-- Petersson pairings against the actual smooth fixed-phase core separate
+ smooth sections.  The proof tests with the difference itself and then uses

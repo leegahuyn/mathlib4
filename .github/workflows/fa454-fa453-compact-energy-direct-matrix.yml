@@ -1,0 +1,192 @@
+name: FA454 FA453 compact-energy direct Lean matrix
+
+on:
+  push:
+    branches:
+      - fix/fa454-fa453-compact-energy-direct-matrix-20260810
+    paths:
+      - .github/workflows/fa454-fa453-compact-energy-direct-matrix.yml
+      - scripts/fa453_candidate_ci.sh
+      - scripts/fa453_prepare_compact_energy.py
+      - scripts/fa453_select_compact_energy.py
+      - scripts/fa453_selector_ci.sh
+      - scripts/fa442_record_direct_metric.py
+      - scripts/fa442_prepare_same_height_candidate.py
+      - PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+  pull_request:
+    branches:
+      - fix/fa454-fa453-compact-energy-direct-matrix-20260810
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: fa454-fa453-compact-energy-direct-matrix-${{ github.run_id }}
+  cancel-in-progress: false
+
+env:
+  ACTIVE_BRANCH: fix/fa454-fa453-compact-energy-direct-matrix-20260810
+  SOURCE_REF: ${{ github.event.pull_request.base.sha || github.sha }}
+
+jobs:
+  candidate:
+    name: candidate (${{ matrix.variant }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        variant:
+          - baseline
+          - direct_union
+          - direct_union_explicit
+          - direct_union_abs
+    env:
+      VARIANT: ${{ matrix.variant }}
+      MAX_ERRORS: '160'
+    steps:
+      - name: Checkout immutable FA454 source commit
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ env.SOURCE_REF }}
+          fetch-depth: 2500
+          persist-credentials: false
+
+      - name: Generate candidate, install pinned Lean/cache, and execute all direct Lean commands
+        shell: bash
+        run: bash scripts/fa453_candidate_ci.sh
+
+      - name: Upload candidate source and complete direct metric
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fa453-candidate-${{ matrix.variant }}
+          path: build-logs/fa453-compact-energy/candidates/${{ matrix.variant }}
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Reject generated-only or otherwise non-direct candidates as INFRA FAILURE
+        if: always()
+        shell: bash
+        run: |
+          python3 - "build-logs/fa453-compact-energy/candidates/${VARIANT}/METRIC.json" <<'PY'
+          import json, sys
+          try:
+              metric=json.load(open(sys.argv[1],encoding='utf-8'))
+          except Exception as exc:
+              raise SystemExit(f'INFRA_FAILURE: metric missing or invalid: {exc}')
+          ok=(
+              metric.get('classification') != 'INFRA_FAILURE'
+              and metric.get('all_required_lean_executed') is True
+              and metric.get('source_metadata_identity') is True
+              and metric.get('Mock2_executed') is True
+              and metric.get('Mock2_exit') == 0
+              and metric.get('Mock2_errors_under_cap') == 0
+              and metric.get('Mock2_Advanced_executed') is True
+              and metric.get('Mock2_Advanced_exit') == 0
+              and metric.get('Mock2_Advanced_errors_under_cap') == 0
+              and metric.get('FA_executed') is True
+              and bool(metric.get('exact_compile_commands',{}).get('Mock2'))
+              and bool(metric.get('exact_compile_commands',{}).get('Mock2_Advanced'))
+              and bool(metric.get('exact_compile_commands',{}).get('Mock2_FunctionalAnalysis'))
+              and metric.get('forbidden_clean') is True
+          )
+          print(json.dumps(metric,indent=2,ensure_ascii=False))
+          if not ok:
+              raise SystemExit('INFRA_FAILURE: actual direct Lean execution/prerequisite/identity/trust requirement not met')
+          PY
+
+  select-confirm-persist:
+    name: independent baseline, strict selector, materialize, checked-in x2
+    needs: candidate
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 480
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GITHUB_TOKEN: ${{ github.token }}
+      MAX_ERRORS: '260'
+    steps:
+      - name: Checkout immutable FA454 source commit with push credentials
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ env.SOURCE_REF }}
+          fetch-depth: 2500
+          persist-credentials: true
+
+      - name: Configure Git identity before every possible evidence/source commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          test "$(git config user.name)" = 'github-actions[bot]'
+          test "$(git config user.email)" = '41898282+github-actions[bot]@users.noreply.github.com'
+
+      - name: Run independent baseline, strict selector, materialization, checked-in verification and gated downstream
+        id: selector
+        shell: bash
+        run: bash scripts/fa453_selector_ci.sh
+
+      - name: Upload complete direct Lean evidence
+        id: evidence_upload
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fa454-fa453-complete-evidence-${{ github.run_id }}-${{ github.sha }}
+          path: |
+            build-logs/fa453-compact-energy
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          if-no-files-found: warn
+          retention-days: 90
+
+      - name: Patch report with artifact ID and persist final evidence
+        if: steps.selector.outcome == 'success'
+        env:
+          ARTIFACT_ID: ${{ steps.evidence_upload.outputs.artifact-id }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          base=Path('build-logs/fa453-compact-energy/final')
+          artifact_id=os.environ.get('ARTIFACT_ID','')
+          final_path=base/'FINAL.json'
+          report_path=base/'FA_MATRIX_PIPELINE_REPAIR_REPORT.txt'
+          result=json.loads(final_path.read_text(encoding='utf-8'))
+          result['artifact_id']=int(artifact_id) if artifact_id.isdigit() else artifact_id
+          final_path.write_text(json.dumps(result,indent=2,ensure_ascii=False)+'\n',encoding='utf-8')
+          report=report_path.read_text(encoding='utf-8')
+          report=report.replace('Artifact ID: PENDING_UPLOAD',f"Artifact ID: {artifact_id or 'UNAVAILABLE'}")
+          report_path.write_text(report,encoding='utf-8')
+          PY
+          git add -f \
+            build-logs/fa453-compact-energy/final/FINAL.json \
+            build-logs/fa453-compact-energy/final/FA_MATRIX_PIPELINE_REPAIR_REPORT.txt
+          if ! git diff --cached --quiet; then
+            git commit -m 'ci: attach FA454 direct evidence artifact identity [skip ci]'
+            git push origin "HEAD:${ACTIVE_BRANCH}"
+          fi
+
+      - name: Enforce infrastructure integrity separately from Lean proof status
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "${{ steps.selector.outcome }}" = success
+          test -s build-logs/fa453-compact-energy/selector-baseline/METRIC.json
+          test -s build-logs/fa453-compact-energy/selected/SELECTION.json
+          test -s build-logs/fa453-compact-energy/selected/CANDIDATE_RESULTS.json
+          test -s build-logs/fa453-compact-energy/selected-confirm/CONFIRMATION.json
+          test -s build-logs/fa453-compact-energy/final/CHECKED_IN_IDENTITY.json
+          test -s build-logs/fa453-compact-energy/final/FA_FINAL.json
+          test -s build-logs/fa453-compact-energy/final/downstream/DOWNSTREAM.json
+          test -s build-logs/fa453-compact-energy/final/FINAL.json
+          test -s build-logs/fa453-compact-energy/final/FA_MATRIX_PIPELINE_REPAIR_REPORT.txt

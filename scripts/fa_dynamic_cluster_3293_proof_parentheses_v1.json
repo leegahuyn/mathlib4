@@ -1,0 +1,22 @@
+{
+  "schema": "fa-dynamic-cluster-3293-proof-parentheses-v1",
+  "status": "DIRECT_HIGHCAP_DERIVED_PENDING_RECOMPILE",
+  "source_run_id": 31565378550,
+  "source_sha256": "1d8adc83fd2063e1d7177461088211643f592cdd273a8d86f4c16735d41e0188",
+  "repairs": [
+    {
+      "declaration_index": 3293,
+      "declaration_name": "integral_kernel_smul_translation_eq_base_add_error",
+      "replacements": [
+        {
+          "old_fragment": "      K t • (DomAddAct.mk (-t) +ᵥ f) =\n          K t • ((DomAddAct.mk (-t) +ᵥ f - f) + f) := by",
+          "new_fragment": "      K t • (DomAddAct.mk (-t) +ᵥ f) =\n          K t • (((DomAddAct.mk (-t) +ᵥ f) - f) + f) := by"
+        },
+        {
+          "old_fragment": "      _ = K t • (DomAddAct.mk (-t) +ᵥ f - f) + K t • f :=\n        smul_add _ _ _",
+          "new_fragment": "      _ = K t • ((DomAddAct.mk (-t) +ᵥ f) - f) + K t • f :=\n        smul_add _ _ _"
+        }
+      ]
+    }
+  ]
+}

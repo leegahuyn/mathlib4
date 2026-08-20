@@ -1,0 +1,59 @@
+name: Codex FA probe real shift inner v1
+on:
+  push:
+    branches:
+      - codex/fa-qym-cleanbuild-final-20260811-fast
+    paths:
+      - .github/workflows/codex-fa-probe-real-shift-inner-v1.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none >/tmp/elan.log 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1
+          lake exe cache get >/tmp/cache.log 2>&1
+      - name: Compile real-shift identity probe
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          cat >/tmp/RealShiftInnerProbe.lean <<'LEAN'
+          import Mathlib
+          variable {H : Type*}
+          variable [NormedAddCommGroup H] [InnerProductSpace ℂ H]
+          example (c : ℝ) (z y : H) :
+              inner ℂ ((c : ℂ) • z) y = inner ℂ z ((c : ℂ) • y) := by
+            rw [inner_smul_left, inner_smul_right]
+            simp
+          example (c : ℝ) (z y a b : H)
+              (h : inner ℂ a y = inner ℂ z b) :
+              inner ℂ ((c : ℂ) • z + a) y =
+                inner ℂ z (b + (c : ℂ) • y) := by
+            rw [inner_add_left, inner_smul_left, h,
+              inner_add_right, inner_smul_right]
+            simp
+            ring
+          LEAN
+          lake env lean /tmp/RealShiftInnerProbe.lean | tee /tmp/real-shift-inner-probe.log
+      - name: Upload probe
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-probe-real-shift-inner-v1-${{ github.sha }}
+          path: /tmp/real-shift-inner-probe.log
+          retention-days: 14

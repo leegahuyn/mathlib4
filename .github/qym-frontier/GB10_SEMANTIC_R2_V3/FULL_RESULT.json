@@ -1,0 +1,81 @@
+{
+  "schema": "qym-gb10-semantic-round2-v2",
+  "authority": "actual full-QYM direct Lean",
+  "run_id": 32317550731,
+  "trigger_sha": "6dab4b6b0e37d23c0fa0b6f4fb5f60f88d90ca06",
+  "base_error_headers": 10,
+  "exit": 1,
+  "error_headers": 5,
+  "warning_headers": 347,
+  "panic_lines": 0,
+  "elapsed_seconds": 508,
+  "first_error": {
+    "file": "PrimalitySheafVerification/QYM.lean",
+    "line": 50833,
+    "column": 6,
+    "code": null,
+    "message": "Tactic `rewrite` failed: Did not find an occurrence of the pattern",
+    "enclosing_declaration": "actualStagePeterssonInner_self_re_eq_zero_iff"
+  },
+  "source_sha256": "231efe9a0b8f9d05aae5e65ff3904b3636182ef6f1c93c11eac0c05313730998",
+  "source_blob": "8d01818c98a3f40f3665cb9fdad252ff514be7c4",
+  "log_sha256": "e72c996da831340839844f4390bbed71ea80ecc491450e759ea688dfb9a7e940",
+  "forbidden_zero": true,
+  "olean_exists": false,
+  "ilean_exists": false,
+  "error_codes": {
+    "uncoded": 5
+  },
+  "error_declarations": {
+    "actualStagePeterssonInner_self_re_eq_zero_iff": 1,
+    "inverseEtaTotalTransported_extChartAt_target": 1,
+    "globalStageProjection_add": 1,
+    "globalStageProjection_smul": 1,
+    "coordinateHamiltonianForm_re_self": 1
+  },
+  "errors": [
+    {
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 50833,
+      "column": 6,
+      "code": null,
+      "message": "Tactic `rewrite` failed: Did not find an occurrence of the pattern",
+      "enclosing_declaration": "actualStagePeterssonInner_self_re_eq_zero_iff"
+    },
+    {
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 51912,
+      "column": 121,
+      "code": null,
+      "message": "unsolved goals",
+      "enclosing_declaration": "inverseEtaTotalTransported_extChartAt_target"
+    },
+    {
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 57732,
+      "column": 4,
+      "code": null,
+      "message": "Type mismatch: After simplification, term",
+      "enclosing_declaration": "globalStageProjection_add"
+    },
+    {
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 57754,
+      "column": 4,
+      "code": null,
+      "message": "Type mismatch: After simplification, term",
+      "enclosing_declaration": "globalStageProjection_smul"
+    },
+    {
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 59511,
+      "column": 6,
+      "code": null,
+      "message": "Tactic `rewrite` failed: Did not find an occurrence of the pattern",
+      "enclosing_declaration": "coordinateHamiltonianForm_re_self"
+    }
+  ],
+  "semantic_improvement": true,
+  "numeric_global_improvement": true,
+  "pass": false
+}

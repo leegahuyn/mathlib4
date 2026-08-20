@@ -1,0 +1,363 @@
+{
+  "schema": "fa-v41-section-repairs-v1",
+  "section": "v40-residual-g3-high-confidence",
+  "authority_source": "work/v40-artifact-9178173556/extracted/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+  "authority_source_sha256": "c88cd9832ea095ab22b0f1dd9307c8f43587d85b10688d47c4a534529cebca5c",
+  "authority_error_inventory": {
+    "path": "work/v40-artifact-9178173556/extracted/build-logs/codex-fa-v40-saturation-highcap2000/FULL_DIAGNOSTICS.json",
+    "sha256": "fe09d7ad50bfebb6fbc13e03e2bb58cfde0f7116e4ed624f97a7204c2de38efc",
+    "range": [4202, 4308],
+    "failed_declarations": 28,
+    "error_headers": 54
+  },
+  "status": "STATIC_ONLY_DIRECT_LEAN_UNVERIFIED",
+  "header_policy": "NO_NEW_HEADER_CHANGES",
+  "allowed_header_change_names": [],
+  "excluded_conditional_owners": [
+    "gammaTwo_mem_stabilizer_fd_eq_one_or_neg_one",
+    "gammaTwoEffective_eq_one_of_smul_eq",
+    "gammaTwoReducedChart_pairwise_disjoint_translates"
+  ],
+  "notes": [
+    "L-R25/L-R26 and the M13 source move are owned by work/v40-staged and remain fail-closed until direct probes pass.",
+    "Every operation below is declaration-local and preserves exported theorem statements.",
+    "A later direct high-cap compile is the only authority for closure."
+  ],
+  "repairs": [
+    {
+      "id": "G3-4202-expose-onFun",
+      "owner": "gammaTwoReducedChartCompletedCarrier_isFundamental",
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "      simpa only [one_smul] using hPair ha",
+      "new": "      simpa only [Function.onFun, one_smul] using hPair ha"
+    },
+    {
+      "id": "G3-4204-integrable-real-density-congr",
+      "owner": "upstairsNormSqDensity_integrableOn_reducedChart",
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "    simpa only [f, upstairsInnerDensity_self, upstairsNormSqDensity,\n      Complex.ofReal_re] using\n      hSelf.re",
+      "new": "    refine hSelf.re.congr (Filter.Eventually.of_forall fun z => ?_)\n    simp only [f, upstairsInnerDensity_self, upstairsNormSqDensity,\n      Complex.ofReal_re]"
+    },
+    {
+      "id": "G3-4210-explicit-composed-gauge-function",
+      "owner": "ambientReducedChartGauge_memLp",
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "    apply UpperHalfPlane.measurableEmbedding_coe.memLp_map_measure_iff.2\n    simpa only [Function.comp_apply,\n      ambientReducedChartGauge_comp_coe] using hUpper",
+      "new": "    apply UpperHalfPlane.measurableEmbedding_coe.memLp_map_measure_iff.2\n    have hfun :\n        ambientReducedChartGauge n z₀ u ∘ UpperHalfPlane.coe =\n          (gammaTwoReducedChart z₀).indicator\n            (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitEuclideanGauge n u) := by\n      funext z\n      exact ambientReducedChartGauge_comp_coe n z₀ u z\n    rw [hfun]\n    exact hUpper"
+    },
+    {
+      "id": "G3-4210-indicator-notMem-api",
+      "owner": "ambientReducedChartGauge_memLp",
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "        simp only [Set.indicator_of_not_mem hw, hzero]",
+      "new": "        simp only [Set.indicator_of_notMem hw, hzero]"
+    },
+    {
+      "id": "G3-4211-map-add-pointwise-chart-split",
+      "owner": "orbitPeterssonCoreToReducedChartL2",
+      "kind": "body",
+      "confidence": "medium-high",
+      "expected_count": 1,
+      "old": "    rw [hsum, hadd, Pi.add_apply, hu, hv]\n    simp only [ambientReducedChartGauge,\n      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitEuclideanGauge_add, Pi.add_apply,\n      Set.indicator_add]",
+      "new": "    rw [hsum, hadd, Pi.add_apply, hu, hv]\n    by_cases hw : w ∈ ambientGammaTwoReducedChart z₀ <;>\n      simp [ambientReducedChartGauge, hw, upperLift, Function.comp_apply,\n        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitEuclideanGauge_add,\n        Pi.add_apply]"
+    },
+    {
+      "id": "G3-4211-map-smul-ringhom-pointwise",
+      "owner": "orbitPeterssonCoreToReducedChartL2",
+      "kind": "body",
+      "confidence": "medium-high",
+      "expected_count": 1,
+      "old": "    rw [hsmul, hlp, hu]\n    by_cases hw : w ∈ ambientGammaTwoReducedChart z₀ <;>\n      simp [ambientReducedChartGauge, hw,\n        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitEuclideanGauge_smul]",
+      "new": "    rw [hsmul]\n    have hlp' :\n        ↑↑((RingHom.id ℂ) c •\n            (ambientReducedChartGauge_memLp n z₀ u).toLp\n              (ambientReducedChartGauge n z₀ u)) w =\n          (c • ↑↑((ambientReducedChartGauge_memLp n z₀ u).toLp\n            (ambientReducedChartGauge n z₀ u))) w := by\n      simpa only [RingHom.id_apply] using hlp\n    rw [hlp', hu]\n    by_cases hw : w ∈ ambientGammaTwoReducedChart z₀ <;>\n      simp [ambientReducedChartGauge, hw, upperLift, Function.comp_apply,\n        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitEuclideanGauge_smul,\n        Pi.smul_apply, smul_eq_mul]"
+    },
+    {
+      "id": "G3-4213-unfold-local-norm-lets",
+      "owner": "orbitPeterssonCoreToReducedChartL2_norm_sq",
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "  have hNorm : ‖q‖ = ‖qUpper‖ := by\n    rw [MeasureTheory.Lp.norm_toLp, MeasureTheory.Lp.norm_toLp]",
+      "new": "  have hNorm : ‖q‖ = ‖qUpper‖ := by\n    dsimp only [q, qUpper, orbitPeterssonCoreToReducedChartL2]\n    rw [MeasureTheory.Lp.norm_toLp, MeasureTheory.Lp.norm_toLp]"
+    },
+    {
+      "id": "G3-4215-integrable-real-density-congr",
+      "owner": "orbitPeterssonCoreToReducedChartL2_norm_le",
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "    simpa only [upstairsInnerDensity_self, upstairsNormSqDensity,\n      Complex.ofReal_re] using hSelf.re",
+      "new": "    refine hSelf.re.congr (Filter.Eventually.of_forall fun z => ?_)\n    simp only [upstairsInnerDensity_self, upstairsNormSqDensity,\n      Complex.ofReal_re]"
+    },
+    {
+      "id": "G3-4226-expose-Pi-product-fderiv",
+      "owner": "fullPlaneAffineTranspose_product_add_principal",
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 2,
+      "owners": [
+        "fullPlaneAffineTranspose_product_add_principal",
+        "fullPlaneAffineTranspose_product_add_principal"
+      ],
+      "old": "fderiv ℝ (fun y : ℂ => phi y * v y) x",
+      "new": "fderiv ℝ ((phi : ℂ → ℂ) * (v : ℂ → ℂ)) x"
+    },
+    {
+      "id": "G3-4233-explicit-localized-left-integral-calc",
+      "owner": "IsPlanarAffineWeakGraphOn.localizeOn",
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "  have hLocalizedLeft :\n      (∫ x : ℂ, v x * localizedAffineTarget sigma phi u Pu x) =\n        (∫ x : ℂ, (fullPlaneTestProduct phi v) x * Pu x) +\n          ∫ x : ℂ,\n            v x * (fullPlaneAffinePrincipalCutoff sigma phi x * u x) := by\n    rw [integral_congr_ae <|\n      (coeFn_localizedAffineTarget sigma phi u Pu).mono\n        (fun x hx => by rw [hx]; ring), integral_add]\n    · congr 1\n      · apply integral_congr_ae\n        exact Filter.Eventually.of_forall fun x => by\n          simp only [fullPlaneTestProduct_apply]\n          ring\n      · apply integral_congr_ae\n        filter_upwards [coeFn_fullPlaneTestMulL2\n          (fullPlaneAffinePrincipalCutoff sigma phi) u]\n            with x hx\n        rw [hx]\n        ring\n    · simpa only [fullPlaneTestProduct_apply, mul_assoc, mul_left_comm,\n        mul_comm] using hBaseInt\n    · simpa only [fullPlaneTestProduct_apply, mul_assoc, mul_left_comm,\n        mul_comm] using hCommInt",
+      "new": "  have hLocalizedLeft :\n      (∫ x : ℂ, v x * localizedAffineTarget sigma phi u Pu x) =\n        (∫ x : ℂ, (fullPlaneTestProduct phi v) x * Pu x) +\n          ∫ x : ℂ,\n            v x * (fullPlaneAffinePrincipalCutoff sigma phi x * u x) := by\n    calc\n      _ = ∫ x : ℂ, v x *\n            (phi x * Pu x +\n              fullPlaneAffinePrincipalCutoff sigma phi x * u x) := by\n        apply integral_congr_ae\n        filter_upwards [coeFn_localizedAffineTarget sigma phi u Pu]\n          with x hx\n        rw [hx]\n      _ = ∫ x : ℂ,\n            (fullPlaneTestProduct phi v) x * Pu x +\n              v x *\n                (fullPlaneAffinePrincipalCutoff sigma phi x * u x) := by\n        apply integral_congr_ae\n        exact Filter.Eventually.of_forall fun x => by\n          simp only [fullPlaneTestProduct_apply]\n          ring\n      _ = _ := by\n        exact integral_add hBaseInt\n          (by\n            simpa only [fullPlaneTestProduct_apply, mul_assoc,\n              mul_left_comm, mul_comm] using hCommInt)"
+    },
+    {
+      "id": "G3-4233-explicit-final-integral-calc",
+      "owner": "IsPlanarAffineWeakGraphOn.localizeOn",
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "  rw [hLocalizedLeft,\n    hWeak (fullPlaneTestProduct phi v) hProductSupport, hLocalizedRight]\n  rw [← integral_add]\n  · apply integral_congr_ae\n    exact Filter.Eventually.of_forall fun x => by\n      rw [← fullPlaneAffineTranspose_product_add_principal\n        sigma c phi v x]\n      ring\n  · exact fullPlaneTest_mul_l2_integrable\n      (fullPlaneAffineTranspose sigma c (fullPlaneTestProduct phi v)) u\n  · simpa only [fullPlaneTestProduct_apply, mul_assoc, mul_left_comm,\n      mul_comm] using hCommInt",
+      "new": "  calc\n    _ = (∫ x : ℂ, (fullPlaneTestProduct phi v) x * Pu x) +\n          ∫ x : ℂ,\n            v x * (fullPlaneAffinePrincipalCutoff sigma phi x * u x) :=\n      hLocalizedLeft\n    _ = (∫ x : ℂ,\n          fullPlaneAffineTranspose sigma c (fullPlaneTestProduct phi v) x *\n            u x) +\n          ∫ x : ℂ,\n            v x * (fullPlaneAffinePrincipalCutoff sigma phi x * u x) := by\n      rw [hWeak (fullPlaneTestProduct phi v) hProductSupport]\n    _ = ∫ x : ℂ,\n          fullPlaneAffineTranspose sigma c (fullPlaneTestProduct phi v) x *\n              u x +\n            v x * (fullPlaneAffinePrincipalCutoff sigma phi x * u x) := by\n      exact (integral_add\n        (fullPlaneTest_mul_l2_integrable\n          (fullPlaneAffineTranspose sigma c (fullPlaneTestProduct phi v)) u)\n        (by\n          simpa only [fullPlaneTestProduct_apply, mul_assoc,\n            mul_left_comm, mul_comm] using hCommInt)).symm\n    _ = ∫ x : ℂ,\n          (phi x * fullPlaneAffineTranspose sigma c v x) * u x := by\n      apply integral_congr_ae\n      exact Filter.Eventually.of_forall fun x => by\n        have h := congrArg (fun y : ℂ => y * u x)\n          (fullPlaneAffineTranspose_product_add_principal\n            sigma c phi v x)\n        simpa only [add_mul, mul_assoc] using h\n    _ = _ := hLocalizedRight.symm"
+    },
+    {
+      "id": "G3-4243-translate-via-set-smul",
+      "owner": "support_periodizationIndex_at_reducedChart",
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "  have hxTranslate : x ∈ (a • ·) '' gammaTwoReducedChart z₀ := by\n    refine ⟨((gamma⁻¹ : GammaTwo) : SL(2, ℤ)) • x,\n      hpreChart, ?_⟩\n    simp [a, gammaTwoEffectiveElement_smul]",
+      "new": "  have hxTranslate : x ∈ a • gammaTwoReducedChart z₀ := by\n    rw [Set.mem_smul_set]\n    refine ⟨(gamma⁻¹ : GammaTwo) • x, hpreChart, ?_⟩\n    simp only [a, gammaTwoEffectiveElement_smul, mul_smul]\n    exact smul_inv_smul gamma x"
+    },
+    {
+      "id": "G3-4243-expose-finset-membership",
+      "owner": "support_periodizationIndex_at_reducedChart",
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "  have hkernel :=\n    gammaTwo_eq_one_or_centralNegOne_of_effective_eq_one gamma ha\n  simpa only [Finset.mem_insert, Finset.mem_singleton] using hkernel",
+      "new": "  have hkernel :=\n    gammaTwo_eq_one_or_centralNegOne_of_effective_eq_one gamma ha\n  change gamma ∈ ({1, gammaTwoCentralNegOne} : Finset GammaTwo)\n  simpa only [Finset.mem_insert, Finset.mem_singleton] using hkernel"
+    },
+    {
+      "id": "G3-4277-expose-raw-transpose-function",
+      "owner": "tsupport_fullPlaneAffineTranspose_subset",
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "  simpa only [fullPlaneAffineTranspose, add_apply,\n    sub_apply, smul_apply, smul_eq_mul] using\n      (tsupport_add",
+      "new": "  change tsupport\n      (fun z : ℂ ↦\n        -sigma * fullPlaneHeightMul\n            (fullPlaneDirectionalDerivative 1 v) z -\n          fullPlaneHeightMul\n            (fullPlaneDirectionalDerivative Complex.I v) z +\n          (c - 1) * v z) ⊆ tsupport (v : ℂ → ℂ)\n  exact (tsupport_add"
+    },
+    {
+      "id": "G3-4284-pin-raw-SL-action",
+      "owner": "gammaTwoPeriodizationOrbitSupport_isClosed",
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "    simpa only [image_smul] using\n      (gammaTwoPeriodizationSeedSupport_isCompact m v).smul gamma",
+      "new": "    simpa only [image_smul] using\n      (gammaTwoPeriodizationSeedSupport_isCompact m v).smul\n        (gamma : SL(2, ℤ))"
+    },
+    {
+      "id": "G3-4287-bridge-raw-and-subgroup-actions",
+      "owner": "gammaTwoPeriodizationOrbitSupport_subset_saturation",
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "  simp only [gammaTwoEffectiveElement_smul]",
+      "new": "  simp only [gammaTwoEffectiveElement_smul]\n  exact (show gamma • y = ((gamma : SL(2, ℤ)) • y) from rfl)"
+    },
+    {
+      "id": "G3-4288-normalize-zero-function-value",
+      "owner": "periodizedFixedPhaseGauge_eventuallyEq_zero_of_not_mem_saturation",
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "    rw [hy, mul_zero]\n  rcases mem_nhds_iff.mp hGauge",
+      "new": "    rw [hy, Pi.zero_apply, mul_zero]\n  rcases _root_.mem_nhds_iff.mp hGauge"
+    },
+    {
+      "id": "G3-4289-4290-derive-eventual-base-value",
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 2,
+      "owners": [
+        "euclideanRaiseGauge_eq_zero_of_eventuallyEq_zero",
+        "euclideanLowerFromSuccGauge_eq_zero_of_eventuallyEq_zero"
+      ],
+      "old": "    HalfWeightDifferentialOperators.dy\n    HalfWeightDifferentialOperators.d1\n  rw [hzero.fderiv_eq]\n  simp",
+      "new": "    HalfWeightDifferentialOperators.dy\n    HalfWeightDifferentialOperators.d1\n  have hvalue : f x = 0 := by\n    have hx := hzero.self_of_nhds\n    simpa only [upperLift_apply, Pi.zero_apply] using hx\n  rw [hzero.fderiv_eq]\n  simp [hvalue]"
+    },
+    {
+      "id": "G3-4291-expose-ambient-chart-image",
+      "owner": "inner_orbitPeterssonCoreToReducedChartL2_fullPlaneTest",
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "  rw [MeasureTheory.L2.inner_def,\n    GammaTwoCurvilinearTileStokes.setIntegral_comap_eq_complexImage]\n  rw [← integral_indicator",
+      "new": "  rw [MeasureTheory.L2.inner_def,\n    GammaTwoCurvilinearTileStokes.setIntegral_comap_eq_complexImage]\n  rw [show UpperHalfPlane.coe '' gammaTwoReducedChart z₀ =\n    ambientGammaTwoReducedChart z₀ from rfl]\n  rw [← integral_indicator"
+    },
+    {
+      "id": "G3-4294-expose-l2Coordinate-before-rewrite",
+      "owner": "inner_l2Coordinate_eq_reducedChart_pair",
+      "kind": "body",
+      "confidence": "medium-high",
+      "expected_count": 1,
+      "old": "  intro u\n  rw [l2Coordinate_apply, UniformSpace.Completion.inner_coe,",
+      "new": "  intro u\n  change inner ℂ (u : OrbitPeterssonHilbert m) (l2Coordinate m q) = _\n  rw [l2Coordinate_apply, UniformSpace.Completion.inner_coe,"
+    },
+    {
+      "id": "G3-4295-reuse-raw-support-equality",
+      "owner": "periodizedPhysicalCore_isReducedChartGaugeModel",
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "    IsReducedChartGaugeModel m z₀\n      (gammaTwoPeriodizedPhysicalCore m (reducedChartAmbientTest v hv)) v := by\n  refine ⟨?_, ?_, hv⟩",
+      "new": "    IsReducedChartGaugeModel m z₀\n      (gammaTwoPeriodizedPhysicalCore m (reducedChartAmbientTest v hv)) v := by\n  have hraw : (reducedChartAmbientTest v hv : ℂ → ℂ) = (v : ℂ → ℂ) := by\n    funext w\n    exact reducedChartAmbientTest_apply v hv w\n  have ha : tsupport (reducedChartAmbientTest v hv : ℂ → ℂ) ⊆\n      ambientGammaTwoReducedChart z₀ := by\n    rw [hraw]\n    exact hv\n  refine ⟨?_, ?_, hv⟩"
+    },
+    {
+      "id": "G3-4295-use-raw-support-proof",
+      "owner": "periodizedPhysicalCore_isReducedChartGaugeModel",
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 2,
+      "owners": [
+        "periodizedPhysicalCore_isReducedChartGaugeModel",
+        "periodizedPhysicalCore_isReducedChartGaugeModel"
+      ],
+      "old": "(by simpa only [reducedChartAmbientTest] using hv)",
+      "new": "ha"
+    },
+    {
+      "id": "G3-4296-4297-rewrite-whole-conjugate-function",
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 2,
+      "owners": [
+        "euclideanRaiseTestAdjoint_conjugate_eq_conj_affineTranspose",
+        "euclideanLowerFromSuccTestAdjoint_conjugate_eq_conj_affineTranspose"
+      ],
+      "old": "          v w) := by\n  simp only [",
+      "new": "          v w) := by\n  have hfun :\n      (reducedChartConjugateAmbientTest v hv : ℂ → ℂ) =\n        fun z : ℂ ↦ star (v z) := by\n    funext z\n    exact reducedChartConjugateAmbientTest_apply v hv z\n  rw [hfun]\n  simp only ["
+    },
+    {
+      "id": "G3-4298-signed-lower-gauge-neg-linearity",
+      "owner": "signedLowerPeriodization_isReducedChartGaugeModel",
+      "kind": "body",
+      "confidence": "medium-high",
+      "expected_count": 1,
+      "old": "  refine ⟨?_, ?_, ?_⟩\n  · intro z hz\n    change -Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge n\n        (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n\n          (gammaTwoPeriodizedPhysicalCore (n + 1) a)) z = _\n    rw [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_lowerFromSucc]\n    rw [neg_euclideanLowerFromSuccGauge_periodized_eq_raiseTestAdjoint_on_reducedChart\n      ha hz]\n    rw [euclideanRaiseTestAdjoint_conjugate_eq_conj_affineTranspose\n      n v hv]\n    rfl",
+      "new": "  refine ⟨?_, ?_, ?_⟩\n  · intro z hz\n    calc\n      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge n\n          (-Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n\n            (gammaTwoPeriodizedPhysicalCore (n + 1) a)) z =\n          -Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge n\n            (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n\n              (gammaTwoPeriodizedPhysicalCore (n + 1) a)) z := by\n        simp only [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,\n          map_neg, Pi.neg_apply]\n        ring\n      _ = _ := by\n        rw [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_lowerFromSucc]\n        rw [neg_euclideanLowerFromSuccGauge_periodized_eq_raiseTestAdjoint_on_reducedChart\n          ha hz]\n        rw [euclideanRaiseTestAdjoint_conjugate_eq_conj_affineTranspose\n          n v hv]"
+    },
+    {
+      "id": "G3-4298-signed-lower-zero-neg-linearity",
+      "owner": "signedLowerPeriodization_isReducedChartGaugeModel",
+      "kind": "body",
+      "confidence": "medium-high",
+      "expected_count": 1,
+      "old": "    change -Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge n\n        (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n\n          (gammaTwoPeriodizedPhysicalCore (n + 1) a)) z = 0\n    rw [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_lowerFromSucc, hLower,\n      neg_zero]",
+      "new": "    calc\n      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge n\n          (-Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n\n            (gammaTwoPeriodizedPhysicalCore (n + 1) a)) z =\n          -Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge n\n            (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n\n              (gammaTwoPeriodizedPhysicalCore (n + 1) a)) z := by\n        simp only [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,\n          map_neg, Pi.neg_apply]\n        ring\n      _ = 0 := by\n        rw [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_lowerFromSucc,\n          hLower, neg_zero]"
+    },
+    {
+      "id": "G3-4299-signed-raise-gauge-neg-linearity",
+      "owner": "signedRaisePeriodization_isReducedChartGaugeModel",
+      "kind": "body",
+      "confidence": "medium-high",
+      "expected_count": 1,
+      "old": "  refine ⟨?_, ?_, ?_⟩\n  · intro z hz\n    change -Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge (n + 1)\n        (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n\n          (gammaTwoPeriodizedPhysicalCore n a)) z = _\n    rw [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_raise]\n    rw [neg_euclideanRaiseGauge_periodized_eq_lowerFromSuccTestAdjoint_on_reducedChart\n      ha hz]\n    rw [euclideanLowerFromSuccTestAdjoint_conjugate_eq_conj_affineTranspose\n      n v hv]\n    rfl",
+      "new": "  refine ⟨?_, ?_, ?_⟩\n  · intro z hz\n    calc\n      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge (n + 1)\n          (-Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n\n            (gammaTwoPeriodizedPhysicalCore n a)) z =\n          -Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge (n + 1)\n            (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n\n              (gammaTwoPeriodizedPhysicalCore n a)) z := by\n        simp only [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,\n          map_neg, Pi.neg_apply]\n        ring\n      _ = _ := by\n        rw [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_raise]\n        rw [neg_euclideanRaiseGauge_periodized_eq_lowerFromSuccTestAdjoint_on_reducedChart\n          ha hz]\n        rw [euclideanLowerFromSuccTestAdjoint_conjugate_eq_conj_affineTranspose\n          n v hv]"
+    },
+    {
+      "id": "G3-4299-signed-raise-zero-neg-linearity",
+      "owner": "signedRaisePeriodization_isReducedChartGaugeModel",
+      "kind": "body",
+      "confidence": "medium-high",
+      "expected_count": 1,
+      "old": "    change -Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge (n + 1)\n        (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n\n          (gammaTwoPeriodizedPhysicalCore n a)) z = 0\n    rw [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_raise, hRaise, neg_zero]",
+      "new": "    calc\n      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge (n + 1)\n          (-Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n\n            (gammaTwoPeriodizedPhysicalCore n a)) z =\n          -Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge (n + 1)\n            (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n\n              (gammaTwoPeriodizedPhysicalCore n a)) z := by\n        simp only [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,\n          map_neg, Pi.neg_apply]\n        ring\n      _ = 0 := by\n        rw [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_raise,\n          hRaise, neg_zero]"
+    },
+    {
+      "id": "G3-4300-close-commutative-integrand",
+      "owner": "inner_fullPlaneTestToL2_eq_integral_conj_mul",
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "  rw [hx]\n  simp only [RCLike.inner_apply, starRingEnd_apply]\n        ",
+      "new": "  rw [hx]\n  simp only [RCLike.inner_apply, starRingEnd_apply]\n  ring"
+    },
+    {
+      "id": "G3-4302-normalize-lower-formal-adjoint",
+      "owner": "raisingMaximalAdjoint_isPlanarAffineWeakGraphOn_reducedChart",
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "    simpa only [l2CoreRangeEquiv_coe, LinearPMap.neg_apply,\n      physicalLowerFromSucc_on_core] using hFormal",
+      "new": "    rw [LinearPMap.neg_apply, physicalLowerFromSucc_on_core] at hFormal\n    simpa only [l2CoreRangeEquiv_coe] using hFormal"
+    },
+    {
+      "id": "G3-4303-normalize-raise-formal-adjoint",
+      "owner": "loweringMaximalAdjoint_isPlanarAffineWeakGraphOn_reducedChart",
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "    simpa only [l2CoreRangeEquiv_coe, LinearPMap.neg_apply,\n      physicalRaise_on_core] using hFormal",
+      "new": "    rw [LinearPMap.neg_apply, physicalRaise_on_core] at hFormal\n    simpa only [l2CoreRangeEquiv_coe] using hFormal"
+    },
+    {
+      "id": "G3-4302-4303-unfold-base-gauge-eventually",
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 2,
+      "owners": [
+        "raisingMaximalAdjoint_isPlanarAffineWeakGraphOn_reducedChart",
+        "loweringMaximalAdjoint_isPlanarAffineWeakGraphOn_reducedChart"
+      ],
+      "old": "      exact (periodizedFixedPhaseGauge_eventuallyEq_zero_of_not_mem_saturation\n",
+      "new": "      simpa only [q, a, upperLift_apply, Pi.zero_apply] using\n        (periodizedFixedPhaseGauge_eventuallyEq_zero_of_not_mem_saturation\n"
+    },
+    {
+      "id": "G3-4302-4303-first-inner-symmetry-proof",
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 2,
+      "owners": [
+        "raisingMaximalAdjoint_isPlanarAffineWeakGraphOn_reducedChart",
+        "loweringMaximalAdjoint_isPlanarAffineWeakGraphOn_reducedChart"
+      ],
+      "old": "          (fullPlaneTestToL2 (fullPlaneConjugate v))) := by\n      rw [inner_conj_symm]",
+      "new": "          (fullPlaneTestToL2 (fullPlaneConjugate v))) := by\n      exact (inner_conj_symm _ _).symm"
+    },
+    {
+      "id": "G3-4302-second-inner-symmetry-proof",
+      "owner": "raisingMaximalAdjoint_isPlanarAffineWeakGraphOn_reducedChart",
+      "confidence": "high",
+      "kind": "body",
+      "expected_count": 1,
+      "old": "              v)))\n        (orbitPeterssonReducedChartEmbedding n z₀ p.1) := by\n      rw [inner_conj_symm]",
+      "new": "              v)))\n        (orbitPeterssonReducedChartEmbedding n z₀ p.1) := by\n      exact inner_conj_symm _ _"
+    },
+    {
+      "id": "G3-4303-second-inner-symmetry-proof",
+      "owner": "loweringMaximalAdjoint_isPlanarAffineWeakGraphOn_reducedChart",
+      "confidence": "high",
+      "kind": "body",
+      "expected_count": 1,
+      "old": "              v)))\n        (orbitPeterssonReducedChartEmbedding (n + 1) z₀ p.1) := by\n      rw [inner_conj_symm]",
+      "new": "              v)))\n        (orbitPeterssonReducedChartEmbedding (n + 1) z₀ p.1) := by\n      exact inner_conj_symm _ _"
+    },
+    {
+      "id": "G3-4308-rewrite-whole-buffered-representative",
+      "owner": "fullPlaneTestToL2_raiseForward_bufferedEssentialFriedrichs",
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "  rw [htest]\n  change euclideanRaiseForwardTest n a w = _\n  rw [euclideanRaiseForwardTest_eq_ambientAffineMaass,\n    show a w = friedrichsMollifiedRepresentative j u w by\n      simpa only [a, b, reducedChartAmbientTest_apply] using\n        bufferedEssentialFriedrichsFullPlaneTest_apply hK j u hu w,\n    hWeak.friedrichs_raising_identity]",
+      "new": "  rw [htest]\n  change euclideanRaiseForwardTest n a w = _\n  have haFun : (a : ℂ → ℂ) =\n      friedrichsMollifiedRepresentative j u := by\n    funext x\n    simpa only [a, b, reducedChartAmbientTest_apply] using\n      bufferedEssentialFriedrichsFullPlaneTest_apply hK j u hu x\n  rw [euclideanRaiseForwardTest_eq_ambientAffineMaass, haFun,\n    hWeak.friedrichs_raising_identity]"
+    }
+  ]
+}

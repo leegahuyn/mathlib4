@@ -1,0 +1,418 @@
+{
+  "schema": "fa-full-cumulative-late-root-library-v1",
+  "status": "STATIC_CANDIDATE_DIRECT_LEAN_UNVERIFIED",
+  "source": {
+    "sha256": "d0a3decee1c0a7a781d14fdf122e235d71d8f210bb65a894dc4e518821bf03ec",
+    "bytes": 2702252,
+    "lines": 60573,
+    "declaration_count": 4397,
+    "declaration_sequence_sha256": "a33d2a1e132e47c9c6b31924ed1b8a04a50de709ed2149a9f9abfb0b052b25eb",
+    "artifact_id": 9103368138,
+    "run_id": 31495034235
+  },
+  "batch_authority": {
+    "path": "work/fa_full_compile_independent_root_batches.json",
+    "sha256": "dcfd721e0b3653d48d430a448f52aec2766c5fbe97cf7b8f00860830b29f7b1c",
+    "owned_batches": [
+      "R012"
+    ],
+    "owned_index_ranges": [
+      "4192-4262"
+    ],
+    "excluded_as_external_or_cross_root": [
+      {
+        "declaration_index": 4199,
+        "diagnostic_ids": [
+          "E0805",
+          "E0806"
+        ],
+        "owner_library": "work/fa_full_compile_completion_uniform_inducing_override.json"
+      },
+      {
+        "declaration_index_range": "4202-4216",
+        "diagnostic_ids": [
+          "E0807-E0855"
+        ],
+        "owner_root": "idx3268 FullPlaneTest canonical override"
+      },
+      {
+        "declaration_index_range": "4237-4262",
+        "owner_root": "FullPlaneTest and ContinuousLinearMap namespace cascades"
+      }
+    ]
+  },
+  "candidate_expected": {
+    "sha256": "04836ab87ca4c6039faf395bcde82e8664e67fadf9b4f8bcdb70909e7a252153",
+    "bytes": 2702899,
+    "lines": 60587,
+    "direct_lean_verified": false
+  },
+  "edit_count": 13,
+  "edits": [
+    {
+      "id": "idx4192_map_add_pointwise",
+      "mode": "literal_exact",
+      "scope": "declaration",
+      "old_fragment": "    rw [hsum, hadd, hu, hv]",
+      "new_fragment": "    rw [hsum, hadd]\n    simp only [Pi.add_apply, hu, hv]",
+      "old_sha256": "82e9eb7edfe07d9f053a55658e8c72b1398778881f4e58ce947a7a2045da8b69",
+      "new_sha256": "129867bc8e16f723996abc6528e8acaf66feac19437759ae8116359206f866af",
+      "old_bytes": 27,
+      "new_bytes": 56,
+      "expected_global_old_occurrences": 1,
+      "expected_global_new_occurrences_before": 0,
+      "declaration_index": 4192,
+      "declaration_name": "orbitPeterssonCoreToReducedChartL2",
+      "header_sha256": "f2a1f8894b2781d5f6cdd4fbd0aa1a0f3034d9243da608ab2ab2525dcf803e52",
+      "diagnostic_ids": [
+        "E0798"
+      ],
+      "anchor": "line 55989",
+      "reason": "Expose the pointwise Pi addition before rewriting the two individual a.e. representatives.",
+      "staged_unverified": true,
+      "direct_lean_verified": false
+    },
+    {
+      "id": "idx4192_map_smul_pointwise",
+      "mode": "literal_exact",
+      "scope": "declaration",
+      "old_fragment": "    rw [hsmul, hlp, hu]",
+      "new_fragment": "    rw [hsmul]\n    simp only [RingHom.id_apply]\n    rw [hlp]\n    simp only [Pi.smul_apply, hu]",
+      "old_sha256": "975c3f9f317981af921e6cbbe68eb1ea5ddf0fc1da9e2f885995996828b5a0b1",
+      "new_sha256": "7624dd429440794939208222d562d1f59b2962441aa5c3101e698d97782c79cd",
+      "old_bytes": 23,
+      "new_bytes": 94,
+      "expected_global_old_occurrences": 1,
+      "expected_global_new_occurrences_before": 0,
+      "declaration_index": 4192,
+      "declaration_name": "orbitPeterssonCoreToReducedChartL2",
+      "header_sha256": "f2a1f8894b2781d5f6cdd4fbd0aa1a0f3034d9243da608ab2ab2525dcf803e52",
+      "diagnostic_ids": [
+        "E0799"
+      ],
+      "anchor": "line 56002",
+      "reason": "Normalize the linear-map scalar through RingHom.id and expose Pi.smul_apply before using the representative equality.",
+      "staged_unverified": true,
+      "direct_lean_verified": false
+    },
+    {
+      "id": "idx4194_expose_toLp_norms",
+      "mode": "literal_exact",
+      "scope": "declaration",
+      "old_fragment": "  have hNorm : ‖q‖ = ‖qUpper‖ := by\n    rw [MeasureTheory.Lp.norm_toLp, MeasureTheory.Lp.norm_toLp]",
+      "new_fragment": "  have hNorm : ‖q‖ = ‖qUpper‖ := by\n    change\n      ‖(ambientReducedChartGauge_memLp n z₀ u).toLp\n          (ambientReducedChartGauge n z₀ u)‖ =\n        ‖hUpper.toLp ((gammaTwoReducedChart z₀).indicator g)‖\n    rw [MeasureTheory.Lp.norm_toLp, MeasureTheory.Lp.norm_toLp]",
+      "old_sha256": "611d93b695a8135299255732a63ad7a818ec2236fa2e5389cd4ce183f2915d1a",
+      "new_sha256": "00c0c59a024c16f22dc70389ceccfd167107b393edb24f9a09a22cdbc2b0f9ab",
+      "old_bytes": 107,
+      "new_bytes": 293,
+      "expected_global_old_occurrences": 1,
+      "expected_global_new_occurrences_before": 0,
+      "declaration_index": 4194,
+      "declaration_name": "orbitPeterssonCoreToReducedChartL2_norm_sq",
+      "header_sha256": "8b2a526c8f7e2ae969891b03b6f9f67ff481a0a53ccfdafd5793a2357aea6475",
+      "diagnostic_ids": [
+        "E0800"
+      ],
+      "anchor": "lines 56032-56033",
+      "reason": "Unfold both let-bound Lp values to the exact MemLp.toLp forms expected by Lp.norm_toLp.",
+      "staged_unverified": true,
+      "direct_lean_verified": false
+    },
+    {
+      "id": "idx4194_pin_complex_inner",
+      "mode": "literal_exact",
+      "scope": "declaration",
+      "old_fragment": "      rw [← inner_self_eq_norm_sq, MeasureTheory.L2.inner_def,",
+      "new_fragment": "      rw [← inner_self_eq_norm_sq (𝕜 := ℂ), MeasureTheory.L2.inner_def,",
+      "old_sha256": "108cc4c3f79fd863c7d356b714b0f8ae516dfb938e9c8ed5e39aeaaf7dfe7e8f",
+      "new_sha256": "7a55a9855818da4a42d5ccd97fbceab7abb7b487d208f78480bd0b628205c29e",
+      "old_bytes": 64,
+      "new_bytes": 78,
+      "expected_global_old_occurrences": 1,
+      "expected_global_new_occurrences_before": 0,
+      "declaration_index": 4194,
+      "declaration_name": "orbitPeterssonCoreToReducedChartL2_norm_sq",
+      "header_sha256": "8b2a526c8f7e2ae969891b03b6f9f67ff481a0a53ccfdafd5793a2357aea6475",
+      "diagnostic_ids": [
+        "E0801"
+      ],
+      "anchor": "line 56062",
+      "reason": "Pin the scalar field exactly as in the two earlier compiling L2 norm-square proofs in this source.",
+      "staged_unverified": true,
+      "direct_lean_verified": false
+    },
+    {
+      "id": "idx4196_unfold_norm_density",
+      "mode": "literal_exact",
+      "scope": "declaration",
+      "old_fragment": "    simpa only [upstairsInnerDensity_self, Complex.ofReal_re] using hSelf.re",
+      "new_fragment": "    simpa only [upstairsInnerDensity_self, upstairsNormSqDensity,\n      Complex.ofReal_re] using hSelf.re",
+      "old_sha256": "0f839eedaf51df3fd5599cda9753636b187d3c31b23a698f1324b6f302d05104",
+      "new_sha256": "ba89433ee02bc145028af1405f233f32c5b1f0bda8612d2900f2b08f6b73f5d7",
+      "old_bytes": 76,
+      "new_bytes": 105,
+      "expected_global_old_occurrences": 1,
+      "expected_global_new_occurrences_before": 0,
+      "declaration_index": 4196,
+      "declaration_name": "orbitPeterssonCoreToReducedChartL2_norm_le",
+      "header_sha256": "5d3089304bdceb2b752871625e1e14debc49563d0576f4e0f7e13125e3ece144",
+      "diagnostic_ids": [
+        "E0802"
+      ],
+      "anchor": "line 56106",
+      "reason": "The remaining expected function is definitionally upstairsNormSqDensity; expose that definition after taking real parts.",
+      "staged_unverified": true,
+      "direct_lean_verified": false
+    },
+    {
+      "id": "idx4196_pin_ennreal_top",
+      "mode": "literal_exact",
+      "scope": "declaration",
+      "old_fragment": "                u.toSmoothCore z) ∂hyperbolicMeasure) < ∞ := by",
+      "new_fragment": "                u.toSmoothCore z) ∂hyperbolicMeasure) < (∞ : ℝ≥0∞) := by",
+      "old_sha256": "afdf6dfa9d882eaae98c95946ebfbc26ac88006f8df2ce0815508afeb5ecdc4b",
+      "new_sha256": "9014bc2deb453974a28ab2f0ec730fb783519769859a94a62a9e9bf7dc172455",
+      "old_bytes": 67,
+      "new_bytes": 82,
+      "expected_global_old_occurrences": 1,
+      "expected_global_new_occurrences_before": 0,
+      "declaration_index": 4196,
+      "declaration_name": "orbitPeterssonCoreToReducedChartL2_norm_le",
+      "header_sha256": "5d3089304bdceb2b752871625e1e14debc49563d0576f4e0f7e13125e3ece144",
+      "diagnostic_ids": [
+        "E0803"
+      ],
+      "anchor": "line 56123",
+      "reason": "The lintegral comparison is ENNReal-valued; this removes the collision with PartENat infinity.",
+      "staged_unverified": true,
+      "direct_lean_verified": false
+    },
+    {
+      "id": "idx4196_discharge_chart_measurable",
+      "mode": "literal_exact",
+      "scope": "declaration",
+      "old_fragment": "    rw [orbitPeterssonCoreToReducedChartL2_norm_sq,\n      setIntegral_orbitEuclideanGauge_norm_sq_eq_density,\n      orbitPeterssonCore_norm_sq_eq_density_integral]\n    exact hIntegral",
+      "new_fragment": "    rw [orbitPeterssonCoreToReducedChartL2_norm_sq,\n      setIntegral_orbitEuclideanGauge_norm_sq_eq_density,\n      orbitPeterssonCore_norm_sq_eq_density_integral]\n    · exact hIntegral\n    · exact (gammaTwoReducedChart_isOpen z₀).measurableSet",
+      "old_sha256": "89225068f7cfaf193d6f9a6d93ae82aa1061671f98f594a1846b442f70cd8f7c",
+      "new_sha256": "8f0e8e1bb7c089748c9884574d66027d72b34558614150d78900365fa4d3afa5",
+      "old_bytes": 183,
+      "new_bytes": 248,
+      "expected_global_old_occurrences": 1,
+      "expected_global_new_occurrences_before": 0,
+      "declaration_index": 4196,
+      "declaration_name": "orbitPeterssonCoreToReducedChartL2_norm_le",
+      "header_sha256": "5d3089304bdceb2b752871625e1e14debc49563d0576f4e0f7e13125e3ece144",
+      "diagnostic_ids": [
+        "E0804"
+      ],
+      "anchor": "lines 56140-56143",
+      "reason": "The rewrite theorem emits its MeasurableSet side goal after the main inequality; discharge it from chart openness.",
+      "staged_unverified": true,
+      "direct_lean_verified": false
+    },
+    {
+      "id": "idx4219_raw_action_change",
+      "mode": "literal_exact",
+      "scope": "declaration",
+      "old_fragment": "  have hfix : ((gamma : SL(2, ℤ)) • z) = z := by\n    rw [← hgamma z, ha]",
+      "new_fragment": "  have hfix : ((gamma : SL(2, ℤ)) • z) = z := by\n    change gamma • z = z\n    exact (hgamma z).symm.trans ha",
+      "old_sha256": "0e600e12d825e969162dd220a601bf658d31e6ff21c8e3036a40e932e3ffa263",
+      "new_sha256": "60618268a8c726544ecd9999465257e0eeba78d27fee92b69083acb716dcdd88",
+      "old_bytes": 78,
+      "new_bytes": 114,
+      "expected_global_old_occurrences": 1,
+      "expected_global_new_occurrences_before": 0,
+      "declaration_index": 4219,
+      "declaration_name": "gammaTwoEffective_eq_one_of_smul_eq",
+      "header_sha256": "5c950ca1c78fcda5f08d1c7305d5a56d9ad6d3d605e7b7978deb5ce4f159cf29",
+      "diagnostic_ids": [
+        "E0865"
+      ],
+      "anchor": "lines 56583-56584",
+      "reason": "Change the explicit SL action to the definitionally equal raw GammaTwo action and compose the pointwise representation with ha.",
+      "staged_unverified": true,
+      "direct_lean_verified": false
+    },
+    {
+      "id": "idx4219_central_action_change",
+      "mode": "literal_exact",
+      "scope": "declaration",
+      "old_fragment": "  · simpa only [one_smul] using gammaTwoCentralNegOne_smul w",
+      "new_fragment": "  · change ((gammaTwoCentralNegOne : GammaTwo) : SL(2, ℤ)) • w = w\n    exact gammaTwoCentralNegOne_smul w",
+      "old_sha256": "a92e634a7089751b47df99bef96004168758b7be1eb7cb98c11e7b5032e11010",
+      "new_sha256": "8164678b25297636476b03e09aec553574bd1b58c48fe5fa2d3b3bc61c759881",
+      "old_bytes": 61,
+      "new_bytes": 110,
+      "expected_global_old_occurrences": 1,
+      "expected_global_new_occurrences_before": 0,
+      "declaration_index": 4219,
+      "declaration_name": "gammaTwoEffective_eq_one_of_smul_eq",
+      "header_sha256": "5c950ca1c78fcda5f08d1c7305d5a56d9ad6d3d605e7b7978deb5ce4f159cf29",
+      "diagnostic_ids": [
+        "E0866"
+      ],
+      "anchor": "line 56593",
+      "reason": "State the central branch in the explicit SL action form proved by gammaTwoCentralNegOne_smul.",
+      "staged_unverified": true,
+      "direct_lean_verified": false
+    },
+    {
+      "id": "idx4224_subset_tsupport_function_first",
+      "mode": "literal_exact",
+      "scope": "declaration",
+      "old_fragment": "  have hpre : (((gamma⁻¹ : GammaTwo) : SL(2, ℤ)) • x) ∈\n      gammaTwoPeriodizationSeedSupport m v := by\n    change\n      (((((gamma⁻¹ : GammaTwo) : SL(2, ℤ)) • x : ℍ) : ℂ) ∈\n        tsupport\n          (gammaTwoPeriodizationSeedCore m v : ℂ → ℂ))\n    exact subset_tsupport hseed",
+      "new_fragment": "  have hpre : (((gamma⁻¹ : GammaTwo) : SL(2, ℤ)) • x) ∈\n      gammaTwoPeriodizationSeedSupport m v := by\n    change\n      (((((gamma⁻¹ : GammaTwo) : SL(2, ℤ)) • x : ℍ) : ℂ) ∈\n        tsupport\n          (gammaTwoPeriodizationSeedCore m v : ℂ → ℂ))\n    exact subset_tsupport\n      (gammaTwoPeriodizationSeedCore m v : ℂ → ℂ) hseed",
+      "old_sha256": "8e05522b1847bc0144153009531cb86b5e1b6160fcdfcbcc3888faf4dbd87556",
+      "new_sha256": "3d8c09d5ba6be5e73785e070235f22a2c314d23f9c8edd8ef4f3e1402535d389",
+      "old_bytes": 306,
+      "new_bytes": 362,
+      "expected_global_old_occurrences": 1,
+      "expected_global_new_occurrences_before": 0,
+      "declaration_index": 4224,
+      "declaration_name": "support_periodizationIndex_at_reducedChart",
+      "header_sha256": "aefb9249b5740c307dd869de42415b68c38de80a26cd37e3bd95301780116a30",
+      "diagnostic_ids": [
+        "E0867"
+      ],
+      "anchor": "lines 56655-56661",
+      "reason": "Use the current function-first subset_tsupport API while retaining the exact reduced-chart occurrence only.",
+      "staged_unverified": true,
+      "direct_lean_verified": false
+    },
+    {
+      "id": "idx4224_raw_inverse_witness",
+      "mode": "literal_exact",
+      "scope": "declaration",
+      "old_fragment": "    refine ⟨((gamma⁻¹ : GammaTwo) : SL(2, ℤ)) • x,\n      hpreChart, ?_⟩\n    simp [a, gammaTwoEffectiveElement_smul]",
+      "new_fragment": "    refine ⟨(gamma⁻¹ : GammaTwo) • x, hpreChart, ?_⟩\n    simp only [a, gammaTwoEffectiveElement_smul, mul_smul,\n      mul_inv, one_smul]",
+      "old_sha256": "394a26526f65930f3c1bb214520b67da0f763536f845e1494672192c0b3ec5a8",
+      "new_sha256": "36fdd9ff3ccb20e680b68f199a9f3e31628088d3a66dd02a2b93d60fdc80cab5",
+      "old_bytes": 126,
+      "new_bytes": 145,
+      "expected_global_old_occurrences": 1,
+      "expected_global_new_occurrences_before": 0,
+      "declaration_index": 4224,
+      "declaration_name": "support_periodizationIndex_at_reducedChart",
+      "header_sha256": "aefb9249b5740c307dd869de42415b68c38de80a26cd37e3bd95301780116a30",
+      "diagnostic_ids": [
+        "E0868"
+      ],
+      "anchor": "lines 56668-56670",
+      "reason": "Keep the witness in GammaTwo so the action law sees gamma * gamma inverse before any SL-to-GL map coercion.",
+      "staged_unverified": true,
+      "direct_lean_verified": false
+    },
+    {
+      "id": "idx4224_change_finset_membership",
+      "mode": "literal_exact",
+      "scope": "declaration",
+      "old_fragment": "  have ha : a = 1 :=\n    gammaTwoReducedChart_inter_translate_imp_eq_one z₀ a\n      ⟨x, hxTranslate, hx⟩\n  have hkernel :=\n    gammaTwo_eq_one_or_centralNegOne_of_effective_eq_one gamma ha\n  simpa only [Finset.mem_insert, Finset.mem_singleton] using hkernel",
+      "new_fragment": "  have ha : a = 1 :=\n    gammaTwoReducedChart_inter_translate_imp_eq_one z₀ a\n      ⟨x, hxTranslate, hx⟩\n  have hkernel :=\n    gammaTwo_eq_one_or_centralNegOne_of_effective_eq_one gamma ha\n  change gamma ∈ ({1, gammaTwoCentralNegOne} : Finset GammaTwo)\n  simpa only [Finset.mem_insert, Finset.mem_singleton] using hkernel",
+      "old_sha256": "d131b91d9b619b3be8a727dcf3ef1d33da8321b490a8b0fab9cd04473eb1a650",
+      "new_sha256": "179e7c74344b67670d6e3c716824933bdc47c62a01ba6a24726c4e7ff96ff58d",
+      "old_bytes": 263,
+      "new_bytes": 329,
+      "expected_global_old_occurrences": 1,
+      "expected_global_new_occurrences_before": 0,
+      "declaration_index": 4224,
+      "declaration_name": "support_periodizationIndex_at_reducedChart",
+      "header_sha256": "aefb9249b5740c307dd869de42415b68c38de80a26cd37e3bd95301780116a30",
+      "diagnostic_ids": [
+        "E0869"
+      ],
+      "anchor": "lines 56671-56676",
+      "reason": "Expose the definitionally equal Finset membership before simplifying the two disjuncts.",
+      "staged_unverified": true,
+      "direct_lean_verified": false
+    },
+    {
+      "id": "idx4231_4234_ring_nf",
+      "mode": "literal_all",
+      "scope": "declaration_cluster",
+      "old_fragment": "  rw [hdx, hdy, hval]\n  ring",
+      "new_fragment": "  rw [hdx, hdy, hval]\n  ring_nf",
+      "old_sha256": "6f62892970601b2e0c2bb472f3bc43099ea913f83db1171d1cc583e113ff112a",
+      "new_sha256": "63f20c89b4a4710f3f5ac039a9ec833a1ccebac5e4185ab9393c213243743861",
+      "old_bytes": 28,
+      "new_bytes": 31,
+      "expected_global_old_occurrences": 4,
+      "expected_global_new_occurrences_before": 0,
+      "declaration_indices": [
+        4231,
+        4232,
+        4233,
+        4234
+      ],
+      "declaration_names": [
+        "euclideanRaiseGauge_periodized_eq_forwardTest_on_reducedChart",
+        "euclideanLowerFromSuccGauge_periodized_eq_forwardTest_on_reducedChart",
+        "neg_euclideanLowerFromSuccGauge_periodized_eq_raiseTestAdjoint_on_reducedChart",
+        "neg_euclideanRaiseGauge_periodized_eq_lowerFromSuccTestAdjoint_on_reducedChart"
+      ],
+      "header_sha256": [
+        "1099911f40fcc634e51daee464d151c48361157ef5ac9cbd50464e3ad026f3c2",
+        "57b859a7f0720ac722a69232be67d239fecfc7756380eb1e80ae5c282bf6d2c1",
+        "7ba0f202127776d7c1b2f93a1ee6492e7d0486478c23bc9e4fe9b9e275541b3f",
+        "bc2c24e677081c16a1ec4643f2574e937859f555ff7ad88f46c191e2a5c5faad"
+      ],
+      "diagnostic_ids": [
+        "E0870",
+        "E0871",
+        "E0872",
+        "E0873"
+      ],
+      "anchor": "lines 56817-56904, exactly four occurrences",
+      "reason": "Each diagnostic explicitly recommends ring_nf; the four goals differ only by sign and scalar coefficient.",
+      "staged_unverified": true,
+      "direct_lean_verified": false
+    }
+  ],
+  "staged_unresolved": [
+    {
+      "declaration_index": 4217,
+      "declaration_name": "gammaTwo_mem_stabilizer_fd_eq_one_or_neg_one",
+      "diagnostic_ids": [
+        "E0856-E0864"
+      ],
+      "reason": "Nine Serre-list branches need exact matrix inverse/product normalization; the current norm_num calls leave concrete Gamma-membership conjunctions. No speculative executable edit is included."
+    }
+  ],
+  "guards": {
+    "apply_only_to_exact_source_sha256": "d0a3decee1c0a7a781d14fdf122e235d71d8f210bb65a894dc4e518821bf03ec",
+    "require_exact_global_old_occurrences": true,
+    "require_exact_global_new_occurrences_before": true,
+    "preserve_declaration_count": 4397,
+    "preserve_declaration_sequence_sha256": "a33d2a1e132e47c9c6b31924ed1b8a04a50de709ed2149a9f9abfb0b052b25eb",
+    "preserve_comment_lexeme_count": 3129,
+    "preserve_comment_lexeme_sequence_sha256": "288b6b48424171e317dc36b350fdff740ccc704ddff8779d13ec466f64c48a32",
+    "preserve_attribute_lexeme_count": 498,
+    "preserve_attribute_lexeme_sequence_sha256": "acf6b8604a2f7a7ee9e63882c7b9045a77a46bfb0a436987861606e3dd8708e5",
+    "preserve_all_documentation_comments_byte_exact": true,
+    "preserve_all_attributes_byte_exact": true,
+    "preserve_declaration_headers_and_sequence": true,
+    "preserve_raw_forbidden_ledger": {
+      "sorry": 1,
+      "admit": 4,
+      "new_global_axiom": 0,
+      "unsafe": 1,
+      "native_decide": 0,
+      "Lean.ofReduceBool": 0
+    },
+    "require_executable_forbidden_six_zero": {
+      "sorry": 0,
+      "admit": 0,
+      "new_global_axiom": 0,
+      "unsafe": 0,
+      "native_decide": 0,
+      "Lean.ofReduceBool": 0
+    },
+    "direct_lean_required_before_authoritative_merge": true
+  },
+  "provenance": {
+    "method": "static exact-fragment analysis against the complete d0a3 full diagnostic artifact",
+    "local_lean_executed": false,
+    "local_lake_executed": false,
+    "local_git_executed": false,
+    "github_written": false
+  }
+}

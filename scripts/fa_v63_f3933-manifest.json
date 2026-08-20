@@ -1,0 +1,167 @@
+{
+  "schema": "fa-v63-body-only-repair-manifest-v1",
+  "status": "READY",
+  "manifest_id": "f3933",
+  "authority_source": {
+    "sha256": "1badac1451e11708114eb5438616063379558bcf0579dc82a01c2200b501d365",
+    "bytes": 2812442,
+    "lines": 62933,
+    "declaration_count": 4416
+  },
+  "source_package": {
+    "path": "work/v62-workers/f3933/f3933-repair-manifest.json",
+    "sha256": "1924b3182cba24e4d3badd5623e245ca840bbeca56b9690e6b97dd86e140ee0a",
+    "bytes": 24578,
+    "result_index_path": "work/v62-workers/f3933/f3933-result-index.json",
+    "result_index_sha256": "2aadcdcc5946bf33527a71e53726c13456d655f8d6e178e981f561eb0648f71d",
+    "direct_lean_verified": false
+  },
+  "repairs": [
+    {
+      "id": "V63-F3933-PROGRESSION",
+      "sequence": 10,
+      "stage": 0,
+      "depends_on": [],
+      "conflicts_with": [],
+      "owner": {
+        "declaration_index": 3933,
+        "declaration_name": "inner_literalStagePlaneWave",
+        "expected_header": "theorem inner_literalStagePlaneWave\n    (Y : ℝ) (k l : Fin 2 → ℤ) :\n    inner ℂ (literalStagePlaneWave Y k)\n        (literalStagePlaneWave Y l) = if k = l then 1 else 0 ",
+        "expected_header_sha256": "a2b27930d6539bf6d2bf6ead73ab957bfc8c265b06d2c17f99e8d4d486d25220",
+        "expected_authority_region_sha256": "74b180d55166924f3fe81667c8e1c578a0852dccf65dbc23cd1c227596b4d6f9"
+      },
+      "operations": [
+        {
+          "id": "f3933-direct-evidence-progression",
+          "old": "          simp only [RCLike.inner_apply, starRingEnd_apply, map_mul,\n            Complex.star_def, Complex.conj_ofReal]",
+          "new": "          simp only [RCLike.inner_apply, starRingEnd_apply]\n          rw [star_mul]\n          simp only [Complex.star_def, Complex.conj_ofReal]",
+          "old_sha256": "dd7b6af07cd37cd68cc3c0e4cd011cae2c8def73d977c98fdb13242b3dfee627",
+          "new_sha256": "07e618ac2899b2dbcd839d00c456a26cf6b96f30ef05ba2407ef75ca881e4c2d",
+          "old_bytes": 119,
+          "new_bytes": 143,
+          "counts": {
+            "old_global_before": 1,
+            "old_owner_before": 1,
+            "new_global_before": 0,
+            "new_owner_before": 0,
+            "old_global_after": 0,
+            "old_owner_after": 0,
+            "new_global_after": 1,
+            "new_owner_after": 1
+          }
+        }
+      ],
+      "diagnostic_roots": ["F3933"],
+      "constraints": {
+        "body_only": true,
+        "header_unchanged": true,
+        "statement_unchanged": true,
+        "comments_unchanged": true,
+        "attributes_unchanged": true,
+        "source_move": false,
+        "maxHeartbeats_unchanged": true,
+        "trust_six_unchanged": true
+      }
+    },
+    {
+      "id": "V63-F3933-EXPLICIT-CANCEL",
+      "sequence": 11,
+      "stage": 1,
+      "depends_on": ["V63-F3933-PROGRESSION"],
+      "conflicts_with": ["V63-F3933-FIELDSIMP"],
+      "owner": {
+        "declaration_index": 3933,
+        "declaration_name": "inner_literalStagePlaneWave",
+        "expected_header": "theorem inner_literalStagePlaneWave\n    (Y : ℝ) (k l : Fin 2 → ℤ) :\n    inner ℂ (literalStagePlaneWave Y k)\n        (literalStagePlaneWave Y l) = if k = l then 1 else 0 ",
+        "expected_header_sha256": "a2b27930d6539bf6d2bf6ead73ab957bfc8c265b06d2c17f99e8d4d486d25220",
+        "expected_authority_region_sha256": "74b180d55166924f3fe81667c8e1c578a0852dccf65dbc23cd1c227596b4d6f9"
+      },
+      "operations": [
+        {
+          "id": "f3933-explicit-cancel",
+          "old": "          simp only [Complex.star_def, Complex.conj_ofReal]\n          field_simp [literalStageFourierScale_ne_zero Y]\n          ring",
+          "new": "          have hScaleStar :\n              star (literalStageFourierScale Y : ℂ) =\n                (literalStageFourierScale Y : ℂ) := by\n            exact Complex.conj_ofReal _\n          have hScaleInvStar :\n              star ((literalStageFourierScale Y : ℂ)⁻¹) =\n                (literalStageFourierScale Y : ℂ)⁻¹ := by\n            change (starRingEnd ℂ)\n                ((literalStageFourierScale Y : ℂ)⁻¹) =\n              (literalStageFourierScale Y : ℂ)⁻¹\n            rw [map_inv₀, hScaleStar]\n          rw [hScaleInvStar]\n          have hScaleNe : (literalStageFourierScale Y : ℂ) ≠ 0 :=\n            Complex.ofReal_ne_zero.mpr (literalStageFourierScale_ne_zero Y)\n          calc\n            _ = ((literalStageFourierScale Y : ℂ) *\n                  (literalStageFourierScale Y : ℂ)⁻¹) *\n                ((UnitAddTorus.mFourier l)\n                    (fun i ↦ (x i : UnitAddCircle)) *\n                  star ((UnitAddTorus.mFourier k)\n                    (fun i ↦ (x i : UnitAddCircle)))) := by\n              ring\n            _ = _ := by\n              rw [mul_inv_cancel₀ hScaleNe, one_mul]",
+          "old_sha256": "02e7ac01cd8d9912d0e66f464caf1312faa42f9ca3e4b74c9ad5d5de7b9465f9",
+          "new_sha256": "3630f78667a847293e9fd3334cf3e806ccc8155f6d8ede13ed23deefbdde9085",
+          "old_bytes": 132,
+          "new_bytes": 1141,
+          "counts": {
+            "old_global_before": 1,
+            "old_owner_before": 1,
+            "new_global_before": 0,
+            "new_owner_before": 0,
+            "old_global_after": 0,
+            "old_owner_after": 0,
+            "new_global_after": 1,
+            "new_owner_after": 1
+          }
+        }
+      ],
+      "diagnostic_roots": ["F3933"],
+      "constraints": {
+        "body_only": true,
+        "header_unchanged": true,
+        "statement_unchanged": true,
+        "comments_unchanged": true,
+        "attributes_unchanged": true,
+        "source_move": false,
+        "maxHeartbeats_unchanged": true,
+        "trust_six_unchanged": true
+      }
+    },
+    {
+      "id": "V63-F3933-FIELDSIMP",
+      "sequence": 12,
+      "stage": 1,
+      "depends_on": ["V63-F3933-PROGRESSION"],
+      "conflicts_with": ["V63-F3933-EXPLICIT-CANCEL"],
+      "owner": {
+        "declaration_index": 3933,
+        "declaration_name": "inner_literalStagePlaneWave",
+        "expected_header": "theorem inner_literalStagePlaneWave\n    (Y : ℝ) (k l : Fin 2 → ℤ) :\n    inner ℂ (literalStagePlaneWave Y k)\n        (literalStagePlaneWave Y l) = if k = l then 1 else 0 ",
+        "expected_header_sha256": "a2b27930d6539bf6d2bf6ead73ab957bfc8c265b06d2c17f99e8d4d486d25220",
+        "expected_authority_region_sha256": "74b180d55166924f3fe81667c8e1c578a0852dccf65dbc23cd1c227596b4d6f9"
+      },
+      "operations": [
+        {
+          "id": "f3933-bounded-fieldsimp",
+          "old": "          simp only [Complex.star_def, Complex.conj_ofReal]\n          field_simp [literalStageFourierScale_ne_zero Y]\n          ring",
+          "new": "          have hScaleStar :\n              star (literalStageFourierScale Y : ℂ) =\n                (literalStageFourierScale Y : ℂ) := by\n            exact Complex.conj_ofReal _\n          have hScaleInvStar :\n              star ((literalStageFourierScale Y : ℂ)⁻¹) =\n                (literalStageFourierScale Y : ℂ)⁻¹ := by\n            change (starRingEnd ℂ)\n                ((literalStageFourierScale Y : ℂ)⁻¹) =\n              (literalStageFourierScale Y : ℂ)⁻¹\n            rw [map_inv₀, hScaleStar]\n          rw [hScaleInvStar]\n          have hScaleNe : (literalStageFourierScale Y : ℂ) ≠ 0 :=\n            Complex.ofReal_ne_zero.mpr (literalStageFourierScale_ne_zero Y)\n          field_simp [hScaleNe] <;> ring",
+          "old_sha256": "02e7ac01cd8d9912d0e66f464caf1312faa42f9ca3e4b74c9ad5d5de7b9465f9",
+          "new_sha256": "0a28a37f275f2c1053fba60a0ff643c4ffa9ab3923104d6aea689433f7114030",
+          "old_bytes": 132,
+          "new_bytes": 743,
+          "counts": {
+            "old_global_before": 1,
+            "old_owner_before": 1,
+            "new_global_before": 0,
+            "new_owner_before": 0,
+            "old_global_after": 0,
+            "old_owner_after": 0,
+            "new_global_after": 1,
+            "new_owner_after": 1
+          }
+        }
+      ],
+      "diagnostic_roots": ["F3933"],
+      "constraints": {
+        "body_only": true,
+        "header_unchanged": true,
+        "statement_unchanged": true,
+        "comments_unchanged": true,
+        "attributes_unchanged": true,
+        "source_move": false,
+        "maxHeartbeats_unchanged": true,
+        "trust_six_unchanged": true
+      }
+    }
+  ],
+  "constraints": {
+    "body_only": true,
+    "source_moves": 0,
+    "maxHeartbeats_delta": 0,
+    "trust_six_delta": 0,
+    "runtime_fallback_allowed": false,
+    "composition": "EXACT_FROM_AUTHORITY_NONCUMULATIVE"
+  }
+}

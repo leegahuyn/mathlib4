@@ -1,0 +1,22 @@
+{
+  "schema": "fa-dynamic-cluster-3112-3135-followup-v1",
+  "status": "API_AND_ANALOGUE_VALIDATED_PENDING_MODULE_DIRECT_LEAN",
+  "evidence": {
+    "complex_real_sub_norm_probe_run": 31530246486,
+    "reciprocal_analogue_note": "same file already uses RealSmooth.inv realSmooth_heightC heightC_ne_zero in realSmooth_weightCoefficient and lowerCuspEuclideanCommutatorCoefficient_realSmooth"
+  },
+  "repairs": [
+    {
+      "declaration_index": 3112,
+      "declaration_name": "intrinsicCuspCutoff_fderiv_hyperbolic_bound",
+      "old_fragment": "      rw [Real.dist_eq]\n      simp only [upperLift, Function.comp_def, intrinsicCuspCutoff,\n        Complex.norm_real, UpperHalfPlane.ofComplex_apply_of_im_pos z.im_pos]",
+      "new_fragment": "      rw [Real.dist_eq]\n      simp only [upperLift, Function.comp_def, intrinsicCuspCutoff,\n        UpperHalfPlane.ofComplex_apply_of_im_pos z.im_pos]\n      rw [← Complex.ofReal_sub]\n      exact Complex.norm_real _"
+    },
+    {
+      "declaration_index": 3135,
+      "declaration_name": "intrinsicLowerCommutatorCoefficient_realSmooth",
+      "old_fragment": "  (realSmooth_heightC.inv (fun z hz ↦ by\n    change heightC ⟨z, hz⟩ ≠ 0\n    exact heightC_ne_zero _)).mul\n    (realSmooth_lowerRaw 0 (intrinsicCuspCutoff_realSmooth N))",
+      "new_fragment": "  (RealSmooth.inv realSmooth_heightC heightC_ne_zero).mul\n    (realSmooth_lowerRaw 0 (intrinsicCuspCutoff_realSmooth N))"
+    }
+  ]
+}

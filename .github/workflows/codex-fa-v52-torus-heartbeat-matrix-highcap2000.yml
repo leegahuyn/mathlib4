@@ -1,0 +1,149 @@
+name: Codex FA v52 torus heartbeat matrix highcap2000
+run-name: "Codex: exclusive FA v52 torus heartbeat full compile"
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [codex/fa-exclusive-focus-20260814]
+    paths:
+      - .github/workflows/codex-fa-v52-torus-heartbeat-matrix-highcap2000.yml
+      - scripts/fa_v52_materialize.py
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  direct:
+    name: direct-${{ matrix.variant }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      max-parallel: 6
+      matrix:
+        variant:
+          - calc_hb2m_star_convert
+          - calc_hb10m_star_convert
+          - calc_hb2m_simp_convert
+          - calc_hb10m_simp_calc
+          - calc_nohb_star_convert
+          - calc_hb5m_star_calc
+    env:
+      VARIANT: ${{ matrix.variant }}
+      OUT: build-logs/codex-fa-v52/${{ matrix.variant }}
+      BASE_RUN: "31774351117"
+      BASE_ARTIFACT: "9209647939"
+      BASE_ARTIFACT_NAME: codex-fa-v51-ring_simpa_adj-highcap2000-0c0025aba1e08e59a416cc0d76bb13e4772af6c7
+      BASE_ARTIFACT_DIGEST: sha256:1b846f63ee8a8309ab1d72b062c7dc846a880be4db7be898a4ba609f13cdc8e0
+      BASE_SOURCE_SHA: 6093e976dd6c4d5217850ab39318eeef50531aef3acd8c6d66dcd0a4426c294d
+      BASE_SOURCE_BYTES: "2798992"
+      BASE_SOURCE_LINES: "62637"
+
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Verify authority and materialize candidate
+        id: materialize
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT" /tmp/v52-authority
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${BASE_ARTIFACT}" >"$OUT/authority.json"
+          python3 - <<'PY'
+          import json, os
+          a=json.load(open(os.path.join(os.environ['OUT'],'authority.json')))
+          assert a['id']==int(os.environ['BASE_ARTIFACT'])
+          assert a['name']==os.environ['BASE_ARTIFACT_NAME']
+          assert a['digest']==os.environ['BASE_ARTIFACT_DIGEST']
+          assert a['workflow_run']['id']==int(os.environ['BASE_RUN'])
+          assert a['expired'] is False
+          PY
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${BASE_ARTIFACT}/zip" >/tmp/v52-authority.zip
+          test "sha256:$(sha256sum /tmp/v52-authority.zip | awk '{print $1}')" = "$BASE_ARTIFACT_DIGEST"
+          unzip -q /tmp/v52-authority.zip -d /tmp/v52-authority
+          base="$(find /tmp/v52-authority -type f -name 'Mock2_FunctionalAnalysis-candidate.lean' -print -quit)"
+          test -n "$base"
+          test "$(sha256sum "$base" | awk '{print $1}')" = "$BASE_SOURCE_SHA"
+          test "$(wc -c < "$base" | tr -d ' ')" = "$BASE_SOURCE_BYTES"
+          test "$(wc -l < "$base" | tr -d ' ')" = "$BASE_SOURCE_LINES"
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path("scripts/fa_v52_materialize.py")
+          s = p.read_text()
+          for next_name in ("REM_CONVERT", "REM_CALC", "ADJ_OLD", "ADJ_STAR"):
+              old = f"\n''\n{next_name}="
+              new = f"\n'''\n{next_name}="
+              count = s.count(old)
+              if count != 1:
+                  raise SystemExit(f"materializer quote-repair anchor {next_name}: count={count}")
+              s = s.replace(old, new, 1)
+          compile(s, str(p), "exec")
+          p.write_text(s)
+          PY
+          python3 -m py_compile scripts/fa_v52_materialize.py
+          sha256sum scripts/fa_v52_materialize.py >"$OUT/materializer-runtime.sha256"
+          python3 scripts/fa_v52_materialize.py \
+            --base "$base" --variant "$VARIANT" \
+            --out "$OUT/Mock2_FunctionalAnalysis-candidate.lean" \
+            --audit "$OUT/PATCH_AUDIT.json"
+          cp "$OUT/Mock2_FunctionalAnalysis-candidate.lean" PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          sha="$(sha256sum PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | awk '{print $1}')"
+          printf 'FA_V42_EXPECTED_CANDIDATE_SHA256=%s\n' "$sha" >>"$GITHUB_ENV"
+          printf 'FA_V42_VARIANT=%s\n' "$VARIANT" >>"$GITHUB_ENV"
+          printf 'FA_V42_OUT=%s\n' "$OUT" >>"$GITHUB_ENV"
+          printf '%s\n' "$sha" >"$OUT/candidate.sha256"
+
+      - name: Install pinned Lean and cache
+        id: install
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none >"$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          printf '%s\n' "$HOME/.elan/bin" >>"$GITHUB_PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >"$OUT/toolchain.log" 2>&1
+          lake exe cache get >"$OUT/cache.log" 2>&1
+          lean --version | tee "$OUT/lean-version.txt"
+
+      - name: Direct full dependency chain highcap2000
+        id: direct_lean
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          bash scripts/fa_v42_direct_compile_ci.sh
+
+      - name: Collect complete diagnostics
+        id: collect
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          python3 scripts/fa_v42_collect_full_diagnostics.py \
+            --source PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+            --out "$OUT" --max-errors 2000 | tee "$OUT/metric-console.log"
+
+      - name: Upload exact evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-v52-${{ matrix.variant }}-highcap2000-${{ github.sha }}
+          path: build-logs/codex-fa-v52/${{ matrix.variant }}
+          retention-days: 30
+
+      - name: Preserve actual FA exit
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f "$OUT/Mock2_FunctionalAnalysis.exit"
+          exit "$(tr -d '\r\n' < "$OUT/Mock2_FunctionalAnalysis.exit")"

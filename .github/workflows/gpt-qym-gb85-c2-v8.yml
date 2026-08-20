@@ -1,0 +1,135 @@
+name: GPT QYM GB85 C2 v8 verified driver
+# trigger: v8-direct-lean-1
+
+on:
+  push:
+    branches:
+      - gpt/qym-gb85-c2-v8-convert-20260819
+    paths:
+      - .github/workflows/gpt-qym-gb85-c2-v8.yml
+      - .github/qym_patch_gb85_c2_v8.py
+      - .github/qym_gb85_c2_v8_driver.py
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: gpt-qym-gb85-c2-v8-driver
+  cancel-in-progress: false
+
+jobs:
+  repair:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: leegahuyn/mathlib4
+      BRANCH: gpt/qym-gb85-c2-v8-convert-20260819
+      QYM: PrimalitySheafVerification/QYM.lean
+      OLEAN: .lake/build/lib/lean/PrimalitySheafVerification
+      OUT: /tmp/qym-gb85-c2-v8
+      BASELINE_ARTIFACT: "9354072137"
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Gate exact branch and pinned Lean
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF_NAME" = "$BRANCH"
+          test "$(tr -d '\r\n' < lean-toolchain)" = leanprover/lean4:v4.33.0-rc1
+          test -s .github/qym_patch_gb85_c2_v8.py
+          test -s .github/qym_gb85_c2_v8_driver.py
+          test -z "$(git status --porcelain=v1 --untracked-files=all)"
+
+      - name: Install pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT" "$OLEAN"
+          curl --retry 8 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none > "$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          tc="$(tr -d '\r\n' < lean-toolchain)"
+          for a in 1 2 3 4 5; do elan toolchain install "$tc" >> "$OUT/toolchain.log" 2>&1 && break || sleep $((a * 5)); done
+          lean --version | tee "$OUT/lean-version.txt"
+          lake --version | tee "$OUT/lake-version.txt"
+          for a in 1 2 3 4 5; do lake exe cache get >> "$OUT/mathlib-cache.log" 2>&1 && break || sleep $((a * 5)); done
+
+      - name: Restore dependency objects
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: |
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.ilean
+          key: qym-deps-v3-${{ runner.os }}-${{ hashFiles('lean-toolchain','lake-manifest.json','lakefile.lean','PrimalitySheafVerification/Mock2.lean','PrimalitySheafVerification/Mock2_Advanced.lean','PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean','PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean') }}
+          restore-keys: |
+            qym-probe4-deps-v1-${{ runner.os }}-
+
+      - name: Ensure completed dependency objects only
+        shell: bash
+        run: |
+          set -euo pipefail
+          for s in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated; do
+            if [[ ! -s "$OLEAN/$s.olean" || ! -s "$OLEAN/$s.ilean" ]]; then
+              cap=1
+              if [[ "$s" = Mock2_FunctionalAnalysis || "$s" = Mock2_FunctionalAnalysis_Integrated ]]; then cap=2000; fi
+              rm -f "$OLEAN/$s.olean" "$OLEAN/$s.ilean"
+              lake env lean "-DmaxErrors=$cap" -DwarningAsError=false -o "$OLEAN/$s.olean" -i "$OLEAN/$s.ilean" "PrimalitySheafVerification/$s.lean" > "$OUT/$s.log" 2>&1
+            fi
+            test -s "$OLEAN/$s.olean"
+            test -s "$OLEAN/$s.ilean"
+          done
+
+      - name: Run serial C2 local gates and authoritative full-QYM comparison
+        shell: bash
+        run: python3 -B .github/qym_gb85_c2_v8_driver.py
+
+      - name: Promote one verified strict frontier
+        if: success()
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s "$OUT/QYM.best.lean"
+          test -s "$OUT/BEST_RESULT.json"
+          test "$(jq -r '.strict_improvement' "$OUT/BEST_RESULT.json")" = true
+          test "$(jq -r '.panic_lines' "$OUT/BEST_RESULT.json")" -eq 0
+          errors="$(jq -r '.error_headers' "$OUT/BEST_RESULT.json")"
+          test "$errors" -lt 85
+          cp "$OUT/QYM.best.lean" "$QYM"
+          mkdir -p .github/qym-frontier
+          cp "$OUT/QYM.best.lean" .github/qym-frontier/QYM_GB85_C2_V8_BEST.lean
+          cp "$OUT/BEST_RESULT.json" .github/qym-frontier/GB85_C2_V8_RESULT.json
+          cp "$OUT/SELECTION.json" .github/qym-frontier/GB85_C2_V8_SELECTION.json
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "$QYM" .github/qym-frontier
+          git commit -m "QYM C2 v8: promote verified ${errors}-error frontier"
+          git push origin "HEAD:$BRANCH"
+
+      - name: Restore checked-in source after non-promotion
+        if: always()
+        shell: bash
+        run: git checkout -- "$QYM" || true
+
+      - name: Upload immutable evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-gb85-c2-v8-${{ github.sha }}-attempt${{ github.run_attempt }}
+          path: /tmp/qym-gb85-c2-v8
+          if-no-files-found: error
+          retention-days: 30

@@ -1,0 +1,14 @@
+{
+  "schema": "fa-dynamic-cluster-3314-remove-redundant-ringnf-v1",
+  "status": "DIRECT_HIGHCAP_DERIVED_PENDING_RECOMPILE",
+  "source_run_id": 31565555626,
+  "source_sha256": "f527d8437d25ab6925dfa24a6a4bc9b7a3823557a4845c5814423783742fb59c",
+  "repairs": [
+    {
+      "declaration_index": 3314,
+      "declaration_name": "fderiv_height_mul_friedrichsMollifier",
+      "old_fragment": "  dsimp only [a]\n  ring_nf",
+      "new_fragment": "  dsimp only [a]"
+    }
+  ]
+}

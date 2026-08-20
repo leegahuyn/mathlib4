@@ -1,0 +1,13 @@
+{
+  "schema": "fa-dynamic-environment-nhds-bracket-v1",
+  "status": "STATIC_STAGED_PENDING_DIRECT_LEAN",
+  "environment_replacement": {
+    "id": "intrinsic-cutoff-nhds-bracket-macro",
+    "old_fragment": "open Set Function Topology Filter MeasureTheory Metric\nopen scoped LinearPMap ContDiff",
+    "new_fragment": "open Set Function Topology Filter MeasureTheory Metric\nopen scoped LinearPMap ContDiff\nlocal syntax:max \"nhds[\" term \"]\" term:max : term\nlocal macro_rules\n  | `(nhds[$s] $x) => `(nhdsWithin $x $s)"
+  },
+  "evidence": {
+    "api_probe_run_id": 31524685417,
+    "note": "The exact local syntax/macro expansion nhds[s] x -> nhdsWithin x s elaborated under the pinned project toolchain. Probe success is API evidence only, not module PASS."
+  }
+}

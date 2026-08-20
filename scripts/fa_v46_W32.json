@@ -1,0 +1,118 @@
+{
+  "schema": "fa-v42-declaration-local-repairs-v1",
+  "status": "PATCH_READY_STATIC_EXACT_PI_POINTWISE_FUNCTION_SMUL_API_REAUDITED_DIRECT_LEAN_REQUIRED_V46_W32",
+  "worker_id": "W32",
+  "cluster_id": "V46-IDX4395-LP-PI-POINTWISE-FUNCTION-SMUL-COERCION-ELIMINATION",
+  "authority": {
+    "repository": "leegahuyn/mathlib4",
+    "run_id": 31728453514,
+    "head_sha": "5ec44f3d343955f3124e7efecc048b648dccc5ab",
+    "job_id": 94542617528,
+    "artifact_id": 9192669673,
+    "artifact_digest": "sha256:8f07a678145b62342aaa9cb94ebbce6c9f7cc1a45c400560918d42499e67f2f3",
+    "variant": "all_probes",
+    "source_path": "work/v45-results/run-31728453514/all_probes/Mock2_FunctionalAnalysis-candidate.lean",
+    "source_sha256": "726f40d1dd03d32f03592adf4f6b02e3f7f52e7e1f71087ee53bdb83c4bb0caf",
+    "source_bytes": 2788764,
+    "source_lines": 62383,
+    "declaration_count": 4416,
+    "diagnostics_path": "work/v45-results/run-31728453514/all_probes/FULL_DIAGNOSTICS.json",
+    "diagnostics_sha256": "1fb14600849d7281df6ff65ae9213b6671b19a396cf539041f864fea157476a1",
+    "fa_log_path": "work/v45-results/run-31728453514/all_probes/Mock2_FunctionalAnalysis.log",
+    "fa_log_sha256": "bcc92a247a531419b25677cfdd5e28ce1705e6c3fb87301b93e24510932b4888"
+  },
+  "assignment": {
+    "declaration_index": 4395,
+    "declaration": "fullPlaneTestMulCLM_apply",
+    "v45_error_ordinals": [53, 54, 55, 56, 57, 58],
+    "diagnostic_count": 6,
+    "lines": [61644, 61645],
+    "columns": [10, 9, 47, 46, 5, 4],
+    "normalized_signature": "invalid coercion notation, expected type is not known",
+    "baseline_status": "new relative to v43 middle winner after V44-Q1-HC07",
+    "root_or_cascade": "ONE_ROOT_SIX_TOKEN_LEVEL_COERCION_DIAGNOSTICS",
+    "ownership": "W32-only"
+  },
+  "historical_progression": [
+    {
+      "stage": "V42 HolderTriple repair",
+      "repair": "V42-Q2-4395-pin-holder-exponents",
+      "effect": "Pinning p=infinity, q=2, r=2 on Lp.coeFn_lpSMul removed the earlier Infinity.HolderTriple 2 metavariable failure. This repair must remain."
+    },
+    {
+      "stage": "V43 direct remote residual",
+      "effect": "The owner advanced to one rewrite failure because Pi.smul_apply is the constant-scalar Pi action theorem and did not match the function-valued pointwise scalar action `(coe f smul coe u) z` produced after hmul. The Lp coercions themselves were available and hmul, hphi, and htarget were all well typed."
+    },
+    {
+      "stage": "V44-Q1-HC07 explicit-change attempt",
+      "effect": "It correctly kept lpInfinityMultiplier_apply and hmul first, but then wrote six expected-type-dependent coercion tokens in a tactic `change`."
+    },
+    {
+      "stage": "V45 all_probes",
+      "effect": "Exactly those six up-arrow tokens generated six invalid-coercion diagnostics: four on the two left-side Lp representatives and two on the right-side representative. No additional owner-local semantic diagnostic was emitted."
+    }
+  ],
+  "diagnosis": {
+    "exact_root_cause": "The tactic-level `change` expression has no sufficiently known expected type at each nested `↑↑` site. The six diagnostics are not six independent Lp failures: they map one-for-one to the six coercion tokens in `↑↑fullPlaneTestToLInfinity`, `↑↑u`, and `↑↑fullPlaneTestMulL2`.",
+    "repair_strategy": "Delete the ill-typed explicit `change`. After rewriting the bundled multiplier and the EventuallyEq witness hmul, normalize the resulting function-valued scalar action with `Pi.smul_apply'`, the theorem for the Pi.smul' instance, then use `smul_eq_mul`, hphi, and htarget.",
+    "exact_api_evidence": [
+      "The exact v45 all_probes idx4389 target has the same L-infinity-function acting pointwise on an L2 representative. Its unqualified smul_apply rewrite fails at ordinal 44 with the constant-scalar pattern `(?r • ?f) ?x`; it is not a compiled-clean precedent.",
+      "Mathlib/Algebra/Group/Action/Pi.lean lines 33-42 defines Pi.smul' for function-valued scalars and proves `[simp] Pi.smul_apply' : (s • x) i = s i • x i` by rfl.",
+      "W28 corrects idx4389 with this exact apostrophe theorem. The v43 idx4395 context already supplied hmul, hphi, and htarget in exactly the orientations consumed by the same rewrite chain."
+    ],
+    "rejected_attempts": [
+      {
+        "attempt": "Remove the p/q/r pins",
+        "reason": "This would restore the proven HolderTriple inference failure."
+      },
+      {
+        "attempt": "Retain Pi.smul_apply",
+        "reason": "Two independent v43 variants report that its constant-scalar pattern does not occur in the function-valued scalar target."
+      },
+      {
+        "attempt": "Use unqualified smul_apply",
+        "reason": "The locked idx4389 remote diagnostic proves it selects another constant-scalar pattern and fails on the identical pointwise function-valued scalar action."
+      },
+      {
+        "attempt": "Keep the explicit double-coercion change without type annotations",
+        "reason": "It is exactly the source of all six authority diagnostics. Pi.smul_apply' eliminates the action without context-free coercion notation."
+      }
+    ],
+    "required_imports": [],
+    "expected_owner_errors_closed": 6,
+    "expected_new_owner_errors": 0,
+    "dependency_assumptions": [
+      "The V42 p/q/r exponent pins remain present, as they do in the locked v45 source.",
+      "W28's correction from unqualified smul_apply to Pi.smul_apply' is composed before or atomically with W32."
+    ],
+    "semantic_risk": "LOW",
+    "confidence": "VERY_HIGH_STATIC_EXACT_SIX_TOKEN_MAPPING_AND_EXACT_PI_SMUL_PRIME_RFL_API_DIRECT_LEAN_REQUIRED",
+    "theorem_proposition_changed": false,
+    "disposition": "PATCH_READY"
+  },
+  "header_policy": "NO_HEADER_CHANGES_BODY_ONLY",
+  "trust_policy": {
+    "tokens": ["sorry", "admit", "axiom", "unsafe", "native_decide", "Lean.ofReduceBool"],
+    "required_before": 0,
+    "required_after": 0
+  },
+  "repairs": [
+    {
+      "id": "V46-W32-IDX4395-use-generic-smul-apply-without-ambiguous-double-coercions",
+      "owner": "fullPlaneTestMulCLM_apply",
+      "declaration_index": 4395,
+      "diagnostics": [53, 54, 55, 56, 57, 58],
+      "kind": "body",
+      "classification": "REPLACE-AMBIGUOUS-TACTIC-CHANGE-BY-EXACT-PI-POINTWISE-FUNCTION-SMUL-API",
+      "confidence": "very-high-static-exact-v45-token-diagnostics-and-Pi-smul-prime-rfl-API-direct-Lean-required",
+      "expected_count_in_owner": 1,
+      "old": "  rw [lpInfinityMultiplier_apply, hmul]\n  change ↑↑(fullPlaneTestToLInfinity phi) z * ↑↑u z =\n    ↑↑(fullPlaneTestMulL2 phi u) z\n  rw [hphi, htarget]",
+      "new": "  rw [lpInfinityMultiplier_apply, hmul, Pi.smul_apply',\n    smul_eq_mul, hphi, htarget]",
+      "evidence": "All six v45 errors point to the six arrows in the removed `change`. The preceding target is pointwise smul where both scalar and operand are coerced functions. Pi.smul_apply' is the rfl theorem for exactly that Pi.smul' instance; hphi and htarget then rewrite both representatives to the same literal product."
+    }
+  ],
+  "promotion_rule": "Compose only against exact v45 all_probes SHA 726f40d1, after or atomically with corrected W28 idx4389. Require direct remote Mock2=0, Mock2_Advanced=0, full FA maxErrors=2000 execution, disappearance of all six idx4395 diagnostics without a new owner-local diagnostic, complete inventory comparison, source identity, all 4416 declaration headers/comments/attributes preserved, executable trust-six zero, and synthetic-sorry zero before promotion.",
+  "direct_lean_verified": false,
+  "clean_build_claimed": false,
+  "lean_lake_git_github_network_invoked_by_worker": false
+}

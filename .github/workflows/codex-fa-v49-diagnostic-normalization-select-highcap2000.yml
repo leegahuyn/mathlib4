@@ -1,0 +1,351 @@
+name: Codex FA v49 diagnostic normalization select highcap2000
+
+on:
+  push:
+    branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
+    paths:
+      - .github/codex/FA_V48_SELECTION.json
+  workflow_dispatch: {}
+
+permissions:
+  actions: read
+  contents: write
+
+env:
+  TARGET_BRANCH: codex/fa-qym-cleanbuild-final-20260811-fast
+  LOCKED_RUNNER_SHA256: 2459f0a2cd44f6a3716de1ed2934c7588ba1a1e27ef443947d9e6089af196514
+  LOCKED_COLLECTOR_SHA256: 7de7bc92e4e2735c0d25706d70777ea67340d8afcf67434e43b051d5cb8c90c6
+
+jobs:
+  direct:
+    if: github.ref == 'refs/heads/codex/fa-qym-cleanbuild-final-20260811-fast'
+    strategy:
+      fail-fast: false
+      matrix:
+        variant:
+          - selected_base
+          - tendsto_comp_def
+          - interval_linarith
+          - interval_nlinarith
+          - combined_linarith
+          - combined_nlinarith
+    name: direct-${{ matrix.variant }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    env:
+      VARIANT: ${{ matrix.variant }}
+      OUT: build-logs/codex-fa-v49-diagnostic-normalization-select-highcap2000/${{ matrix.variant }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Re-prove and materialize exact v48 selected artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f .github/codex/FA_V48_SELECTION.json
+          mkdir -p "$OUT"
+          root="/tmp/fa-v49-parent-${GITHUB_RUN_ID}-${VARIANT}"
+          zip="/tmp/fa-v49-parent-${GITHUB_RUN_ID}-${VARIANT}.zip"
+          rm -rf "$root" "$zip"; mkdir -p "$root"
+          python3 - <<'PY'
+          from pathlib import Path
+          import json, os
+          report=json.loads(Path('.github/codex/FA_V48_SELECTION.json').read_text())
+          assert report['schema']=='fa-v48-strict-selector-v1'
+          records={r['variant']:r for r in report['records']}
+          selected=records[report['selected_variant']]
+          assert selected['source_sha256']==report['selected_source_sha256']
+          out=Path(os.environ['OUT'])
+          (out/'PARENT_SELECTION.json').write_text(json.dumps(report,indent=2,sort_keys=True)+'\n')
+          (out/'parent-run-id.txt').write_text(str(report['github_run_id'])+'\n')
+          (out/'parent-head-sha.txt').write_text(report['github_sha']+'\n')
+          (out/'parent-artifact-name.txt').write_text(selected['artifact_directory']+'\n')
+          (out/'parent-source-sha256.txt').write_text(report['selected_source_sha256']+'\n')
+          PY
+          parent_run="$(tr -d '\r\n' < "$OUT/parent-run-id.txt")"
+          parent_sha="$(tr -d '\r\n' < "$OUT/parent-head-sha.txt")"
+          artifact_name="$(tr -d '\r\n' < "$OUT/parent-artifact-name.txt")"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${parent_run}" >"$OUT/PARENT_RUN.json"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${parent_run}/artifacts?per_page=100" >"$OUT/PARENT_ARTIFACTS.json"
+          python3 - <<'PY'
+          from pathlib import Path
+          import json, os
+          out=Path(os.environ['OUT'])
+          run=json.loads((out/'PARENT_RUN.json').read_text())
+          listing=json.loads((out/'PARENT_ARTIFACTS.json').read_text())
+          parent_run=int((out/'parent-run-id.txt').read_text().strip())
+          parent_sha=(out/'parent-head-sha.txt').read_text().strip()
+          name=(out/'parent-artifact-name.txt').read_text().strip()
+          assert int(run['id'])==parent_run
+          assert run['head_sha']==parent_sha
+          assert run['head_branch']==os.environ['TARGET_BRANCH']
+          assert run['status']=='completed'
+          hits=[a for a in listing['artifacts'] if a['name']==name]
+          assert len(hits)==1,(name,hits)
+          a=hits[0]
+          assert a['expired'] is False
+          assert int(a['workflow_run']['id'])==parent_run
+          assert a['workflow_run']['head_sha']==parent_sha
+          (out/'PARENT_ARTIFACT.json').write_text(json.dumps(a,indent=2,sort_keys=True)+'\n')
+          (out/'parent-artifact-id.txt').write_text(str(a['id'])+'\n')
+          (out/'parent-artifact-digest.txt').write_text(a['digest']+'\n')
+          PY
+          artifact_id="$(tr -d '\r\n' < "$OUT/parent-artifact-id.txt")"
+          artifact_digest="$(tr -d '\r\n' < "$OUT/parent-artifact-digest.txt")"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${artifact_id}/zip" >"$zip"
+          test "sha256:$(sha256sum "$zip" | awk '{print $1}')" = "$artifact_digest"
+          unzip -q "$zip" -d "$root"
+          ROOT="$root" python3 - <<'PY'
+          from pathlib import Path
+          import hashlib,json,os,shutil
+          root=Path(os.environ['ROOT']);out=Path(os.environ['OUT'])
+          sources=list(root.rglob('Mock2_FunctionalAnalysis-candidate.lean'));metrics=list(root.rglob('METRIC.json'))
+          assert len(sources)==1,sources;assert len(metrics)==1,metrics
+          source=sources[0];metric=json.loads(metrics[0].read_text());sha=hashlib.sha256(source.read_bytes()).hexdigest();expected=(out/'parent-source-sha256.txt').read_text().strip()
+          assert sha==expected,(sha,expected)
+          if 'source_sha256' in metric:assert metric['source_sha256']==sha
+          assert int(metric['Mock2_exit'])==0;assert int(metric['Mock2_Advanced_exit'])==0
+          assert metric['FA_error_cap_sentinel_present'] is False
+          assert metric['FA_inventory_complete_by_header_evidence'] is True
+          assert metric['source_executable_trust_six_zero'] is True
+          shutil.copyfile(source,'PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean')
+          shutil.copyfile(source,out/'PARENT_SELECTED_SOURCE.lean')
+          shutil.copyfile(metrics[0],out/'PARENT_METRIC.json')
+          logs=[]
+          for p in root.rglob('*'):
+              if p.is_file() and 'Mock2_FunctionalAnalysis' in p.name and p.suffix in {'.log','.txt'}:
+                  text=p.read_text(errors='replace')
+                  if 'error:' in text:logs.append((len(text),p,text))
+          assert logs,'No FA diagnostic log found in selected parent artifact'
+          _,p,text=max(logs,key=lambda x:x[0])
+          (out/'PARENT_FA_DIAGNOSTICS.log').write_text(text,errors='replace')
+          (out/'parent-log-source.txt').write_text(str(p)+'\n')
+          PY
+
+      - name: Apply diagnostic-local normalization recipe
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib,json,os,re
+          source_path=Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean');out=Path(os.environ['OUT']);variant=os.environ['VARIANT']
+          before=source_path.read_text(encoding='utf-8');lines=before.splitlines(keepends=True);log=(out/'PARENT_FA_DIAGNOSTICS.log').read_text(errors='replace')
+          decl_re=re.compile(r'^(?:protected\s+|private\s+|noncomputable\s+|local\s+)*(?:theorem|lemma|def|abbrev|instance|structure|class)\s+')
+          header=re.compile(r'(?m)^.*Mock2_FunctionalAnalysis\.lean:(\d+):(\d+): error:.*$')
+          matches=list(header.finditer(log));errors=[]
+          for i,m in enumerate(matches):
+              end=matches[i+1].start() if i+1<len(matches) else len(log)
+              errors.append({'line':int(m.group(1)),'column':int(m.group(2)),'block':log[m.start():end]})
+          assert errors,'No parseable Lean errors in parent diagnostics'
+          report={'schema':'fa-v49-diagnostic-local-body-only-probe-v1','variant':variant,'parent_source_sha256':hashlib.sha256(before.encode()).hexdigest(),'parent_error_header_count':len(errors),'theorem_statements_changed':False,'declaration_order_changed':False,'source_moves':[],'edits':[]}
+
+          def owner_for(idx):
+              starts=[i for i in range(idx+1) if decl_re.match(lines[i])]
+              assert starts,idx
+              ds=starts[-1]
+              prefix=''.join(lines[ds:idx+1])
+              assert ':= by' in prefix,(idx+1,lines[idx])
+              return ds,lines[ds].strip()
+
+          def add_comp_def(line):
+              if 'Function.comp_def' in line:return line
+              if 'simpa only [' in line:return line.replace('simpa only [','simpa only [Function.comp_def, ',1)
+              m=re.search(r'\bsimpa\s*\[',line)
+              if m:
+                  pos=line.find('[',m.start())+1
+                  return line[:pos]+'Function.comp_def, '+line[pos:]
+              if 'simpa using' in line:return line.replace('simpa using','simpa only [Function.comp_def] using',1)
+              return line
+
+          def find_near_simpa(line_no):
+              idx=max(0,min(len(lines)-1,line_no-1))
+              for off in (0,-1,1,-2,2,-3,3,-4,4):
+                  j=idx+off
+                  if 0<=j<len(lines) and 'simpa' in lines[j]:return j
+              return None
+
+          def find_near_tactic(line_no):
+              idx=max(0,min(len(lines)-1,line_no-1))
+              starts=('exact ','simpa','norm_num','omega','positivity','linarith','nlinarith','aesop','ring','ring_nf')
+              for off in (0,-1,1,-2,2,-3,3,-4,4):
+                  j=idx+off
+                  if not (0<=j<len(lines)):continue
+                  stripped=lines[j].lstrip();body=stripped[2:].lstrip() if stripped.startswith('· ') else stripped
+                  if body.startswith(starts):return j
+              return None
+
+          tendsto_targets=[];interval_targets=[]
+          for e in errors:
+              b=e['block']
+              if 'Tendsto' in b or 'Filter.Tendsto' in b or 'Function.comp' in b:
+                  j=find_near_simpa(e['line'])
+                  if j is not None:tendsto_targets.append((j,e))
+              half=any(t in b for t in ('1 / 2','2⁻¹','(2 : ℝ)⁻¹','0.5'))
+              inequality=('≤' in b or '<=' in b)
+              if half and inequality:
+                  j=find_near_tactic(e['line'])
+                  if j is not None:interval_targets.append((j,e))
+          tendsto_targets=list({j:(j,e) for j,e in tendsto_targets}.values())
+          interval_targets=list({j:(j,e) for j,e in interval_targets}.values())
+          report['classified_tendsto_target_count']=len(tendsto_targets);report['classified_interval_target_count']=len(interval_targets)
+
+          do_tendsto=variant in {'tendsto_comp_def','combined_linarith','combined_nlinarith'}
+          interval_tactic=None
+          if variant in {'interval_linarith','combined_linarith'}:interval_tactic='linarith'
+          if variant in {'interval_nlinarith','combined_nlinarith'}:interval_tactic='nlinarith'
+          if variant=='selected_base':pass
+          elif not do_tendsto and interval_tactic is None:raise AssertionError(variant)
+
+          replacements={}
+          if do_tendsto:
+              for j,e in tendsto_targets:
+                  old=lines[j];new=add_comp_def(old)
+                  if new!=old:
+                      ds,owner=owner_for(j);replacements[j]=new
+                      report['edits'].append({'classification':'TENDSTO_ETA_NORMALIZE_FUNCTION_COMP_DEF','line':j+1,'owner_header':owner,'old':old.rstrip('\n'),'new':new.rstrip('\n'),'diagnostic_line':e['line']})
+          if interval_tactic:
+              for j,e in interval_targets:
+                  old=replacements.get(j,lines[j]);m=re.match(r'^(\s*(?:·\s*)?).*?(\r?\n)?$',old);assert m
+                  nl='\n' if old.endswith('\n') else ''
+                  new=m.group(1)+interval_tactic+nl
+                  if new!=old:
+                      ds,owner=owner_for(j);replacements[j]=new
+                      report['edits'].append({'classification':'INTERVAL_HALF_BOUND_LINEAR_ARITHMETIC','tactic':interval_tactic,'line':j+1,'owner_header':owner,'old':old.rstrip('\n'),'new':new.rstrip('\n'),'diagnostic_line':e['line']})
+          for j,new in replacements.items():lines[j]=new
+          after=''.join(lines)
+          if variant=='selected_base':assert after==before
+          source_path.write_text(after,encoding='utf-8')
+          report['candidate_sha256']=hashlib.sha256(after.encode()).hexdigest();report['source_bytes']=len(after.encode());report['source_lines']=len(after.splitlines());report['edit_count']=len(report['edits'])
+          (out/'PATCH_REPORT.json').write_text(json.dumps(report,indent=2,sort_keys=True)+'\n');(out/'candidate.sha256').write_text(report['candidate_sha256']+'\n');(out/'Mock2_FunctionalAnalysis-candidate.lean').write_text(after,encoding='utf-8')
+          PY
+
+      - name: Fail-closed trust and locked runner preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(sha256sum scripts/fa_v42_direct_compile_ci.sh | awk '{print $1}')" = "$LOCKED_RUNNER_SHA256"
+          test "$(sha256sum scripts/fa_v42_collect_full_diagnostics.py | awk '{print $1}')" = "$LOCKED_COLLECTOR_SHA256"
+          python3 - <<'PY'
+          from pathlib import Path
+          import json,os,re
+          p=Path(os.environ['OUT'])/'PATCH_REPORT.json';r=json.loads(p.read_text());s=Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean').read_text()
+          def strip_noncode(x):
+              c=list(x);i=0;d=0;q=False;e=False
+              while i<len(c):
+                  if d:
+                      if x.startswith('/-',i):c[i]=c[i+1]=' ';d+=1;i+=2;continue
+                      if x.startswith('-/',i):c[i]=c[i+1]=' ';d-=1;i+=2;continue
+                      if c[i]!='\n':c[i]=' '
+                      i+=1;continue
+                  if q:
+                      o=c[i]
+                      if o!='\n':c[i]=' '
+                      if e:e=False
+                      elif o=='\\':e=True
+                      elif o=='"':q=False
+                      i+=1;continue
+                  if x.startswith('/-',i):c[i]=c[i+1]=' ';d=1;i+=2;continue
+                  if x.startswith('--',i):
+                      while i<len(c) and c[i]!='\n':c[i]=' ';i+=1
+                      continue
+                  if c[i]=='"':c[i]=' ';q=True
+                  i+=1
+              return ''.join(c)
+          code=strip_noncode(s);tokens=('sorry','admit','axiom','unsafe','native_decide','Lean.ofReduceBool');counts={t:len(re.findall(r'(?<![A-Za-z0-9_])'+re.escape(t)+r'(?![A-Za-z0-9_])',code)) for t in tokens};assert all(v==0 for v in counts.values()),counts;r['trust_counts_after']=counts;r['trust_six_zero']=True;p.write_text(json.dumps(r,indent=2,sort_keys=True)+'\n')
+          PY
+
+      - name: Install pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none >"$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH";elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >"$OUT/toolchain.log" 2>&1;lake exe cache get >"$OUT/cache.log" 2>&1;lean --version >"$OUT/lean-version.txt" 2>&1;lake --version >"$OUT/lake-version.txt" 2>&1
+      - name: Directly compile Mock2 then Mock2 Advanced then full FA highcap2000
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH";export FA_V42_OUT="$OUT";export FA_V42_EXPECTED_CANDIDATE_SHA256="$(tr -d '\r\n' < "$OUT/candidate.sha256")";export FA_V42_VARIANT="$VARIANT";bash scripts/fa_v42_direct_compile_ci.sh
+      - name: Collect complete diagnostics and metrics
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT";cp PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean "$OUT/Mock2_FunctionalAnalysis-observed.lean" 2>/dev/null || true;export FA_V42_EXPECTED_CANDIDATE_SHA256="$(cat "$OUT/candidate.sha256" 2>/dev/null || true)";export FA_V42_VARIANT="$VARIANT";python3 scripts/fa_v42_collect_full_diagnostics.py --source PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean --out "$OUT" --max-errors 2000 >"$OUT/metric-console.log"
+      - name: Upload exact candidate and evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-v49-${{ matrix.variant }}-highcap2000-${{ github.sha }}
+          path: build-logs/codex-fa-v49-diagnostic-normalization-select-highcap2000/${{ matrix.variant }}
+          retention-days: 30
+      - name: Mirror strict direct-chain exit
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f "$OUT/Mock2.exit" || exit 86;test -f "$OUT/Mock2_Advanced.exit" || exit 86;test -f "$OUT/Mock2_FunctionalAnalysis.exit" || exit 86;test "$(tr -d '\r\n' < "$OUT/Mock2.exit")" = 0 || exit 86;test "$(tr -d '\r\n' < "$OUT/Mock2_Advanced.exit")" = 0 || exit 86;exit "$(tr -d '\r\n' < "$OUT/Mock2_FunctionalAnalysis.exit")"
+
+  select:
+    name: select-strictly-better-normalization-candidate
+    if: always()
+    needs: [direct]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: codex/fa-qym-cleanbuild-final-20260811-fast
+          fetch-depth: 0
+          persist-credentials: true
+      - name: Download current artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/v49-artifacts;mkdir -p /tmp/v49-artifacts;gh run download "$GITHUB_RUN_ID" --repo "$GITHUB_REPOSITORY" --dir /tmp/v49-artifacts
+      - name: Select and stage strict improvement
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .github/codex
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib,json,os,re,shutil
+          root=Path('/tmp/v49-artifacts');variants=['selected_base','tendsto_comp_def','interval_linarith','interval_nlinarith','combined_linarith','combined_nlinarith'];decl_re=re.compile(r'^(?:protected\s+|private\s+|noncomputable\s+|local\s+)*(?:theorem|lemma|def|abbrev|instance|structure|class)\s+')
+          def one(x,b):z=list(b.rglob(x));assert len(z)==1,(x,z);return z[0]
+          def ai(x,d=10**9):
+              try:return int(x)
+              except:return d
+          def mi(m,exact,tokens):
+              for k in exact:
+                  if k in m and ai(m[k])!=10**9:return ai(m[k])
+              z=[]
+              for k,v in m.items():
+                  lk=k.lower();iv=ai(v)
+                  if iv!=10**9 and all(t in lk for t in tokens):z.append((0 if lk.startswith('fa_') else 1,len(lk),k,iv))
+              return sorted(z)[0][3] if z else 10**9
+          def le(b):
+              z=[]
+              for p in b.rglob('*'):
+                  if p.is_file() and 'Mock2_FunctionalAnalysis' in p.name and p.suffix in {'.log','.txt'}:z.append(len(re.findall(r'(?m)^.*error:',p.read_text(errors='replace'))))
+              q=[x for x in z if x>0];return min(q) if q else (0 if z else 10**9)
+          rec=[];headers0=None
+          for v in variants:
+              ds=[p for p in root.iterdir() if p.is_dir() and f'-{v}-highcap2000-' in p.name];assert len(ds)==1,(v,ds);d=ds[0];m=json.loads(one('METRIC.json',d).read_text());p=json.loads(one('PATCH_REPORT.json',d).read_text());sp=one('Mock2_FunctionalAnalysis-candidate.lean',d);s=sp.read_text();sha=hashlib.sha256(s.encode()).hexdigest();assert sha==p['candidate_sha256'];assert p['variant']==v;assert p['theorem_statements_changed'] is False and p['declaration_order_changed'] is False and p['source_moves']==[] and p['trust_six_zero'] is True and all(int(x)==0 for x in p['trust_counts_after'].values());h=[x.rstrip('\n') for x in s.splitlines(keepends=True) if decl_re.match(x)];headers0=h if v=='selected_base' else headers0;assert h==headers0;me=ai(m.get('Mock2_exit'));ae=ai(m.get('Mock2_Advanced_exit'));fe=ai(m.get('FA_exit'));assert me==0 and ae==0;assert m.get('FA_error_cap_sentinel_present') is False and m.get('FA_inventory_complete_by_header_evidence') is True;ec=mi(m,['FA_error_count','FA_compile_error_count','FA_total_error_count'],['fa','error','count']);ec=le(d) if ec==10**9 else ec;fd=mi(m,['FA_failing_declaration_count','FA_error_declaration_count'],['fa','declaration','count']);us=mi(m,['FA_unique_error_signature_count','FA_error_signature_count'],['fa','signature','count']);wc=mi(m,['FA_warning_count','warning_count'],['warning','count']);rank=[0 if fe==0 else 1,ec,fd,us,wc];rec.append({'variant':v,'source_sha256':sha,'Mock2_exit':me,'Mock2_Advanced_exit':ae,'FA_exit':fe,'error_count':ec,'failing_declaration_count':fd,'unique_error_signature_count':us,'warning_count':wc,'rank':rank,'artifact_directory':d.name,'candidate_path':str(sp)})
+          base=next(r for r in rec if r['variant']=='selected_base');best=min(rec,key=lambda r:(r['rank'],variants.index(r['variant'])));better=best['rank']<base['rank'];sel=best if better else base;report={'schema':'fa-v49-strict-selector-v1','github_run_id':os.environ['GITHUB_RUN_ID'],'github_sha':os.environ['GITHUB_SHA'],'target_branch':os.environ['TARGET_BRANCH'],'parent_selection':json.loads(Path('.github/codex/FA_V48_SELECTION.json').read_text()),'baseline':base,'best_observed':best,'strictly_better':better,'selected_variant':sel['variant'],'selected_source_sha256':sel['source_sha256'],'source_update_authorized':better and sel['variant']!='selected_base','clean_build_claimed':sel['FA_exit']==0,'direct_lean_verified':sel['FA_exit']==0,'theorem_statements_changed':False,'declaration_order_changed':False,'source_moves':[],'records':rec};Path('.github/codex/FA_V49_SELECTION.json').write_text(json.dumps(report,indent=2,sort_keys=True)+'\n');Path('/tmp/v49-authorized.txt').write_text(('1' if report['source_update_authorized'] else '0')+'\n');
+          if report['source_update_authorized']:shutil.copyfile(sel['candidate_path'],'PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean')
+          PY
+      - name: Commit audit report and authorized improved source
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]";git config user.email "41898282+github-actions[bot]@users.noreply.github.com";git add .github/codex/FA_V49_SELECTION.json;if test "$(cat /tmp/v49-authorized.txt)" = 1;then git add PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean;fi;if git diff --cached --quiet;then exit 0;fi;git commit -m "Codex: record FA v49 normalization selector result";git pull --rebase origin "$TARGET_BRANCH";git push origin "HEAD:$TARGET_BRANCH"

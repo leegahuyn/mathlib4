@@ -1,0 +1,115 @@
+name: Codex FA standard sequence static materialization
+
+on:
+  push:
+    branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
+    paths:
+      - .github/workflows/codex-fa-standard-sequence-static.yml
+      - scripts/fa_dynamic_apply_library_sequence.py
+      - scripts/fa_dynamic_action_cluster_2953_2967_v2.json
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  materialize:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Attest exact direct-tested 3002-staged source
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT=build-logs/codex-fa-standard-sequence-static
+          mkdir -p "$OUT" /tmp/fa-seq-base
+          gh api repos/${GITHUB_REPOSITORY}/actions/artifacts/9111168001 > "$OUT/base-artifact.json"
+          gh api repos/${GITHUB_REPOSITORY}/actions/artifacts/9111168001/zip > /tmp/fa-seq-base.zip
+          unzip -q /tmp/fa-seq-base.zip -d /tmp/fa-seq-base
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib,json
+          out=Path('build-logs/codex-fa-standard-sequence-static')
+          art=json.loads((out/'base-artifact.json').read_text()); z=Path('/tmp/fa-seq-base.zip').read_bytes()
+          checks={
+            'artifact_id':art.get('id')==9111168001,
+            'artifact_name':art.get('name')=='codex-fa-frontier-3002-v3-472eba9176c785c63784dc86cfc943a1b192e7a4',
+            'artifact_size':art.get('size_in_bytes')==1071813,
+            'artifact_digest':art.get('digest')=='sha256:bf72ead13e6d82e3e488566b467d2e4157e5d5c5a188a3e99399767067c816c3',
+            'artifact_live':art.get('expired') is False,
+            'archive_digest':'sha256:'+hashlib.sha256(z).hexdigest()=='sha256:bf72ead13e6d82e3e488566b467d2e4157e5d5c5a188a3e99399767067c816c3'}
+          if not all(checks.values()): raise SystemExit('artifact attestation failed '+repr(checks))
+          valid=[]
+          for p in Path('/tmp/fa-seq-base').rglob('Mock2_FunctionalAnalysis.lean'):
+            if 'PrimalitySheafVerification' not in p.as_posix(): continue
+            b=p.read_bytes()
+            if hashlib.sha256(b).hexdigest()=='abaced9e5c98fdb4afea72ae24a45a6d3f1cc00b507784f67e0bb5c42db10496' and len(b)==2704601 and len(b.decode().splitlines())==60626 and b'\r' not in b: valid.append(p)
+          if not valid: raise SystemExit('exact base source not found')
+          p=min(valid,key=lambda x:(len(x.parts),x.as_posix())); (out/'BASE_SOURCE.txt').write_text(str(p.resolve())+'\n')
+          PY
+
+      - name: Materialize action cluster and standard later-root sequence
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT=build-logs/codex-fa-standard-sequence-static
+          python3 -m py_compile scripts/fa_dynamic_apply_library_sequence.py
+          python3 scripts/fa_dynamic_apply_staged_library.py \
+            --base-source "$(cat "$OUT/BASE_SOURCE.txt")" \
+            --library scripts/fa_dynamic_action_cluster_2953_2967_v2.json \
+            --no-environment \
+            --target /tmp/fa-seq-action.lean \
+            --audit-out "$OUT/AUDIT_ACTION.json"
+          python3 scripts/fa_dynamic_apply_library_sequence.py \
+            --base-source /tmp/fa-seq-action.lean \
+            --library scripts/fa_d0a3_r002_high_confidence_overrides.json \
+            --library scripts/fa_d0a3_r003_high_confidence_overrides.json \
+            --library scripts/fa_d0a3_r004_high_confidence_overrides.json \
+            --library scripts/fa_d0a3_r005_high_confidence_overrides.json \
+            --library scripts/fa_d0a3_r006_high_confidence_overrides.json \
+            --library scripts/fa_d0a3_r007_high_confidence_overrides.json \
+            --library scripts/fa_d0a3_r008_high_confidence_overrides.json \
+            --library scripts/fa_d0a3_r009_high_confidence_overrides.json \
+            --library scripts/fa_d0a3_r010_remaining_high_confidence_overrides.json \
+            --library scripts/fa_d0a3_r011_remaining_root_library.json \
+            --library scripts/fa_full_compile_two_torus_fourier_basis_type_overrides.json \
+            --library scripts/fa_d0a3_bounded_continuous_linear_map_environment_overlay.json \
+            --library scripts/fa_full_compile_gamma_cusp_namespace_environment_override.json \
+            --library scripts/fa_full_compile_p5_physical_namespace_environment_override.json \
+            --library scripts/fa_full_compile_plane_wave_integration_by_parts_overrides.json \
+            --library scripts/fa_full_compile_negative_plane_wave_differentiability_overrides.json \
+            --library scripts/fa_full_compile_literal_stage_scaling_coordinate_overrides.json \
+            --library scripts/fa_full_compile_norm_square_arithmetic_overrides.json \
+            --library scripts/fa_full_compile_inner_finite_projection_overrides.json \
+            --library scripts/fa_full_compile_complex_inner_self_overrides.json \
+            --library scripts/fa_full_compile_r010_structural_overrides.json \
+            --library scripts/fa_full_compile_r010_dense_linearity_overrides.json \
+            --library scripts/fa_full_compile_ambient_upper_l2_norm_override.json \
+            --library scripts/fa_full_compile_ambient_upper_noncomputable_environment_override.json \
+            --library scripts/fa_full_compile_discriminant_weight_namespace_environment_override.json \
+            --library scripts/fa_full_compile_actual_scalar_fredholm_namespace_environment_override.json \
+            --library scripts/fa_full_compile_completion_uniform_inducing_override.json \
+            --library scripts/fa_d0a3_r012_remaining_root_library.json \
+            --target PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+            --audit-out "$OUT/AUDIT_SEQUENCE.json"
+          cp PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean "$OUT/Mock2_FunctionalAnalysis-sequence-candidate.lean"
+
+      - name: Upload materialization evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-standard-sequence-static-${{ github.sha }}
+          path: |
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+            build-logs/codex-fa-standard-sequence-static
+          if-no-files-found: warn
+          retention-days: 14

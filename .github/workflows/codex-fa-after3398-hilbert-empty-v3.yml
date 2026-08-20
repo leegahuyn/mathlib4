@@ -1,0 +1,56 @@
+name: Codex FA after3398 Hilbert empty v3
+on:
+  push:
+    branches:
+      - codex/fa-qym-cleanbuild-final-20260811-fast
+    paths:
+      - .github/workflows/codex-fa-after3398-hilbert-empty-v3.yml
+  workflow_dispatch:
+permissions:
+  actions: read
+  contents: read
+jobs:
+  frontier:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    steps:
+      - name: Checkout exact trigger commit
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Build empty-structure Hilbert witness runner
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          src = Path('scripts/codex_fa_after3398_hilbert_witness_v1.sh').read_text()
+          src = src.replace('codex-fa-after3398-hilbert-witness-v1', 'codex-fa-after3398-hilbert-empty-v3')
+          old = "  weightedWeakSobolevCompleteSpace n'''"
+          new = "  ⟨⟩'''"
+          assert src.count(old) == 1, src.count(old)
+          src = src.replace(old, new, 1)
+          src = src.replace('use_explicit_complete_space_witness_for_HilbertSpace_abbrev', 'construct_empty_variable_alias_HilbertSpace_structure')
+          Path('/tmp/codex_fa_after3398_hilbert_empty_v3.sh').write_text(src)
+          PY
+      - name: Attest patch and direct compile exact full source
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: bash /tmp/codex_fa_after3398_hilbert_empty_v3.sh
+      - name: Upload exact evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-after3398-hilbert-empty-v3-${{ github.sha }}
+          path: |
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+            build-logs/codex-fa-after3398-hilbert-empty-v3
+          retention-days: 30
+      - name: Preserve FA direct exit
+        if: always()
+        shell: bash
+        run: |
+          test -f build-logs/codex-fa-after3398-hilbert-empty-v3/Mock2_FunctionalAnalysis.exit || exit 86
+          exit "$(cat build-logs/codex-fa-after3398-hilbert-empty-v3/Mock2_FunctionalAnalysis.exit)"

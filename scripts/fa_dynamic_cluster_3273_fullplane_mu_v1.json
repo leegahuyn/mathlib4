@@ -1,0 +1,12 @@
+{
+  "schema": "fa-dynamic-cluster-3273-fullplane-mu-v1",
+  "status": "COMPILER_EXACT_NAMED_ARGUMENT_FIX_PENDING_DIRECT_LEAN",
+  "repairs": [
+    {
+      "declaration_index": 3273,
+      "declaration_name": "integral_fullPlaneDirectionalDerivative_eq_zero",
+      "old_fragment": "  have h := integral_mul_fderiv_eq_neg_fderiv_mul_of_integrable\n    (mu := (volume : Measure ℂ))",
+      "new_fragment": "  have h := integral_mul_fderiv_eq_neg_fderiv_mul_of_integrable\n    (μ := (volume : Measure ℂ))"
+    }
+  ]
+}

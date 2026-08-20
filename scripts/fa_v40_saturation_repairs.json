@@ -1,0 +1,1129 @@
+{
+  "schema": "fa-v40-saturation-repairs-v1",
+  "authority_source_sha256": "530baa644c7a86eda78328920eda4b8f5fd273bd29d9f04351914396303d4c03",
+  "expected_candidate_sha256": "c88cd9832ea095ab22b0f1dd9307c8f43587d85b10688d47c4a534529cebca5c",
+  "allowed_header_changes": [
+    "4187:modularMassResolvent_orthogonalFamily_eigenspaces",
+    "4262:friedrichsMollifier_convolution_compactIndicator_eq",
+    "4388:coeFn_invariantScalarCarrierLInfinity",
+    "4390:coeFn_finsetSum_Lp",
+    "4393:coeFn_fullPlaneTestToLInfinity"
+  ],
+  "sections": [
+    {
+      "path": "work/v39-workers/early-promoted-repairs.json",
+      "section": "early-promoted",
+      "repair_count": 30,
+      "static_candidate_sha256": null
+    },
+    {
+      "path": "work/v39-workers/middle-promoted-repairs.json",
+      "section": "middle-s01-merge-now",
+      "repair_count": 41,
+      "static_candidate_sha256": null
+    },
+    {
+      "path": "work/v39-workers/late-promoted-repairs.json",
+      "section": "late-promoted",
+      "repair_count": 21,
+      "static_candidate_sha256": "8ea1ec919a0a7e97d13fb9d781f00cc3e549530e3173d1e612c4024c3f8f1c73"
+    }
+  ],
+  "repairs": [
+    {
+      "id": "E-P02-function-product-measurability",
+      "candidate_id": "P02",
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "owner": "integrable_fullPlaneTest_mul_kernel_mul_translate",
+      "old": "  have hMeas : AEStronglyMeasurable\n      (Function.uncurry fun x t : ℂ ↦ v x * K t * u (x - t))\n      ((volume : Measure ℂ).prod (volume : Measure ℂ)) := by\n    change AEStronglyMeasurable\n      (fun p : ℂ × ℂ ↦ v p.1 * K p.2 * u (p.1 - p.2))\n      ((volume : Measure ℂ).prod (volume : Measure ℂ))\n    simpa only [Pi.mul_apply, mul_assoc] using hMeasV.mul hMeasBase\n",
+      "new": "  have hMeas : AEStronglyMeasurable\n      (Function.uncurry fun x t : ℂ ↦ v x * K t * u (x - t))\n      ((volume : Measure ℂ).prod (volume : Measure ℂ)) := by\n    have h := hMeasV.mul hMeasBase\n    change AEStronglyMeasurable\n      (fun p : ℂ × ℂ ↦ v p.1 * (K p.2 * u (p.1 - p.2)))\n      ((volume : Measure ℂ).prod (volume : Measure ℂ)) at h\n    simpa only [mul_assoc] using h\n"
+    },
+    {
+      "id": "E-P05-explicit-linear-equiv-symm",
+      "candidate_id": "P05",
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "owner": "mem_maximalStrongSchrodinger_graph_iff_core_tests",
+      "old": "    have hy : l2CoreRangeEquiv n u = y := by\n      simp only [u, LinearEquiv.apply_symm_apply]\n",
+      "new": "    have hy : l2CoreRangeEquiv n u = y := by\n      simpa only [u] using (l2CoreRangeEquiv n).apply_symm_apply y\n"
+    },
+    {
+      "id": "E-P07-real-height-norm-four-sites",
+      "candidate_id": "P07",
+      "kind": "body",
+      "confidence": "very-high",
+      "expected_count": 4,
+      "owners": [
+        "norm_dx_sq_le_literalStageLowerHeight_inv_sq_mul_graphDensity",
+        "norm_dy_sq_le_literalStageLowerHeight_inv_sq_mul_graphDensity",
+        "norm_dx_sq_le_cutoffSupportLowerHeight_inv_sq_mul_graphDensity",
+        "norm_dy_sq_le_cutoffSupportLowerHeight_inv_sq_mul_graphDensity"
+      ],
+      "old": "  have him : ‖heightC z‖ = z.im := by\n    simp only [heightC, Complex.norm_real, abs_of_pos z.im_pos]\n",
+      "new": "  have him : ‖heightC z‖ = z.im := by\n    rw [heightC, Complex.norm_real]\n    exact Real.norm_of_nonneg z.im_pos.le\n"
+    },
+    {
+      "id": "E-P08-off-support-zero-add",
+      "candidate_id": "P08-off",
+      "kind": "body",
+      "confidence": "very-high",
+      "expected_count": 1,
+      "owner": "localizedGauge_planarDensity_le",
+      "old": "    exact mul_nonneg (literalStageLocalizationDensityConstant_nonneg Y)\n      (fixedPhaseEuclideanGraphDensity_nonneg n u z)\n",
+      "new": "    simpa only [zero_add] using\n      (mul_nonneg (literalStageLocalizationDensityConstant_nonneg Y)\n        (fixedPhaseEuclideanGraphDensity_nonneg n u z))\n"
+    },
+    {
+      "id": "E-P09-orient-quotient-exact",
+      "candidate_id": "P09",
+      "kind": "body",
+      "confidence": "very-high",
+      "expected_count": 1,
+      "owner": "literalStageCutoffUpperSupport_subset_activeTranslates",
+      "old": "  have hOrbit : z ∈ MulAction.orbit GammaTwoEffective w :=\n    MulAction.orbitRel_apply.mp (Quotient.exact' hwq)\n",
+      "new": "  have hOrbit : z ∈ MulAction.orbit GammaTwoEffective w :=\n    MulAction.orbitRel_apply.mp (Quotient.exact' hwq.symm)\n"
+    },
+    {
+      "id": "E-P10-explicit-hyperbolic-density-nonneg",
+      "candidate_id": "P10",
+      "kind": "body",
+      "confidence": "very-high",
+      "expected_count": 1,
+      "owner": "fixedPhaseHyperbolicGraphDensity_nonneg",
+      "old": "  unfold fixedPhaseHyperbolicGraphDensity\n  positivity\n",
+      "new": "  unfold fixedPhaseHyperbolicGraphDensity\n  exact add_nonneg\n    (add_nonneg\n      (mul_nonneg (logHeightTraceBaseCoeff_nonneg n)\n        (WeightCorePetersson.upstairsNormSqDensity_nonneg _ _ _))\n      (mul_nonneg (by norm_num)\n        (WeightCorePetersson.upstairsNormSqDensity_nonneg _ _ _)))\n    (mul_nonneg (by norm_num)\n      (WeightCorePetersson.upstairsNormSqDensity_nonneg _ _ _))\n"
+    },
+    {
+      "id": "E-P11-diagonal-real-part-conversion",
+      "candidate_id": "P11",
+      "kind": "body",
+      "confidence": "very-high",
+      "expected_count": 1,
+      "owner": "upstairsNormSqDensity_integrableOn_chosenCarrier",
+      "old": "  simpa only [WeightCorePetersson.upstairsInnerDensity_self,\n    Complex.ofReal_re] using hInner.re\n",
+      "new": "  convert hInner.re using 1\n  funext z\n  simp only [WeightCorePetersson.upstairsInnerDensity_self,\n    WeightCorePetersson.upstairsNormSqDensity]\n  exact (Complex.ofReal_re _).symm\n"
+    },
+    {
+      "id": "E-P13-pointwise-ae-invariance",
+      "candidate_id": "P13",
+      "kind": "body",
+      "confidence": "very-high",
+      "expected_count": 1,
+      "owner": "setIntegral_fixedPhaseHyperbolicGraphDensity_image_smul",
+      "old": "    _ = ∫ z in S, fixedPhaseHyperbolicGraphDensity n u z\n          ∂hyperbolicMeasure := by\n      apply setIntegral_congr_ae\n      filter_upwards with z\n      intro _hz\n      exact fixedPhaseHyperbolicGraphDensity_effective_invariant n u a z\n",
+      "new": "    _ = ∫ z in S, fixedPhaseHyperbolicGraphDensity n u z\n          ∂hyperbolicMeasure := by\n      apply integral_congr_ae\n      exact Filter.Eventually.of_forall fun z ↦\n        fixedPhaseHyperbolicGraphDensity_effective_invariant n u a z\n"
+    },
+    {
+      "id": "E-P14-nnreal-smul-to-mul",
+      "candidate_id": "P14",
+      "kind": "body",
+      "confidence": "very-high",
+      "expected_count": 1,
+      "owner": "integral_euclideanGraphDensity_cutoffSupport_eq_hyperbolic",
+      "old": "  rw [fixedPhaseEuclideanGraphDensity_eq_hyperbolicDensity_mul]\n  simp only [NNReal.smul_def]\n",
+      "new": "  rw [fixedPhaseEuclideanGraphDensity_eq_hyperbolicDensity_mul]\n  simp only [NNReal.smul_def, smul_eq_mul]\n"
+    },
+    {
+      "id": "E-P15-specialize-integral-const-mul",
+      "candidate_id": "P15",
+      "kind": "body",
+      "confidence": "very-high",
+      "expected_count": 1,
+      "owner": "integral_literalStageLocalizedPlanarDensity_le_coreMap",
+      "old": "    _ = literalStageLocalizationDensityConstant Y *\n        (∫ z in literalStageCutoffUpperSupport Y,\n          fixedPhaseEuclideanGraphDensity n u z\n          ∂upperEuclideanMeasure) := integral_const_mul\n",
+      "new": "    _ = literalStageLocalizationDensityConstant Y *\n        (∫ z in literalStageCutoffUpperSupport Y,\n          fixedPhaseEuclideanGraphDensity n u z\n          ∂upperEuclideanMeasure) := by\n      rw [integral_const_mul]\n"
+    },
+    {
+      "id": "E-P15-preserve-mul-inequality-direction",
+      "candidate_id": "P15",
+      "kind": "body",
+      "confidence": "very-high",
+      "expected_count": 1,
+      "owner": "integral_literalStageLocalizedPlanarDensity_le_coreMap",
+      "old": "          (selectedCuspTraceEnergyConstant n * ‖coreMap n u‖ ^ 2)) := by\n        gcongr\n        exact integral_cutoffSupport_hyperbolicGraphDensity_le Y n u\n",
+      "new": "          (selectedCuspTraceEnergyConstant n * ‖coreMap n u‖ ^ 2)) :=\n      mul_le_mul_of_nonneg_left\n        (integral_cutoffSupport_hyperbolicGraphDensity_le Y n u)\n        (literalStageLocalizationDensityConstant_nonneg Y)\n"
+    },
+    {
+      "id": "E-P16-explicit-energy-constant-nonneg",
+      "candidate_id": "P16",
+      "kind": "body",
+      "confidence": "very-high",
+      "expected_count": 1,
+      "owner": "literalStageLocalizationEnergyConstant_nonneg",
+      "old": "  unfold literalStageLocalizationEnergyConstant\n  positivity\n",
+      "new": "  unfold literalStageLocalizationEnergyConstant\n  exact mul_nonneg\n    (literalStageLocalizationDensityConstant_nonneg Y)\n    (mul_nonneg (Nat.cast_nonneg _)\n      (selectedCuspTraceEnergyConstant_nonneg n))\n"
+    },
+    {
+      "id": "E-P17-expose-support-value",
+      "candidate_id": "P17",
+      "kind": "body",
+      "confidence": "very-high",
+      "expected_count": 1,
+      "owner": "ambientTestCore_memLp_volume",
+      "old": "    by_contra hnot\n    rw [image_eq_zero_of_notMem_tsupport hnot, norm_zero,\n      zero_pow (by norm_num : (2 : ℕ) ≠ 0)] at hw\n    exact hw rfl\n",
+      "new": "    by_contra hnot\n    change ‖v w‖ ^ 2 ≠ 0 at hw\n    apply hw\n    rw [image_eq_zero_of_notMem_tsupport hnot, norm_zero,\n      zero_pow (by norm_num : (2 : ℕ) ≠ 0)]\n"
+    },
+    {
+      "id": "E-P19-base-component-domination",
+      "candidate_id": "P19",
+      "kind": "body",
+      "confidence": "very-high",
+      "expected_count": 1,
+      "owner": "norm_literalStagePlaneBaseCore_sq_le_energy",
+      "old": "  · exact ambientTestCore_normSq_integrable\n      (literalStageLocalizedGauge Y n u)\n  · exact literalStageLocalizedPlanarDensity_integrable Y n u\n  · exact Filter.Eventually.of_forall fun w ↦ by\n      unfold literalStageLocalizedPlanarDensity\n      positivity\n",
+      "new": "  · exact ambientTestCore_normSq_integrable\n      (literalStageLocalizedGauge Y n u)\n  · exact literalStageLocalizedPlanarDensity_integrable Y n u\n  · exact Filter.Eventually.of_forall fun w ↦ by\n      unfold literalStageLocalizedPlanarDensity\n      nlinarith [\n        sq_nonneg ‖HalfWeightCompactCoordinateGreen.dx\n          (literalStageLocalizedGauge Y n u) w‖,\n        sq_nonneg ‖HalfWeightCompactCoordinateGreen.dy\n          (literalStageLocalizedGauge Y n u) w‖]\n"
+    },
+    {
+      "id": "E-P19-dx-component-domination",
+      "candidate_id": "P19",
+      "kind": "body",
+      "confidence": "very-high",
+      "expected_count": 1,
+      "owner": "norm_literalStagePlaneDxCore_sq_le_energy",
+      "old": "  · exact ambientTestCore_normSq_integrable\n      (HalfWeightCompactCoordinateGreen.dx\n        (literalStageLocalizedGauge Y n u))\n  · exact literalStageLocalizedPlanarDensity_integrable Y n u\n  · exact Filter.Eventually.of_forall fun w ↦ by\n      unfold literalStageLocalizedPlanarDensity\n      positivity\n",
+      "new": "  · exact ambientTestCore_normSq_integrable\n      (HalfWeightCompactCoordinateGreen.dx\n        (literalStageLocalizedGauge Y n u))\n  · exact literalStageLocalizedPlanarDensity_integrable Y n u\n  · exact Filter.Eventually.of_forall fun w ↦ by\n      unfold literalStageLocalizedPlanarDensity\n      nlinarith [\n        sq_nonneg ‖literalStageLocalizedGauge Y n u w‖,\n        sq_nonneg ‖HalfWeightCompactCoordinateGreen.dy\n          (literalStageLocalizedGauge Y n u) w‖]\n"
+    },
+    {
+      "id": "E-P19-dy-component-domination",
+      "candidate_id": "P19",
+      "kind": "body",
+      "confidence": "very-high",
+      "expected_count": 1,
+      "owner": "norm_literalStagePlaneDyCore_sq_le_energy",
+      "old": "  · exact ambientTestCore_normSq_integrable\n      (HalfWeightCompactCoordinateGreen.dy\n        (literalStageLocalizedGauge Y n u))\n  · exact literalStageLocalizedPlanarDensity_integrable Y n u\n  · exact Filter.Eventually.of_forall fun w ↦ by\n      unfold literalStageLocalizedPlanarDensity\n      positivity\n",
+      "new": "  · exact ambientTestCore_normSq_integrable\n      (HalfWeightCompactCoordinateGreen.dy\n        (literalStageLocalizedGauge Y n u))\n  · exact literalStageLocalizedPlanarDensity_integrable Y n u\n  · exact Filter.Eventually.of_forall fun w ↦ by\n      unfold literalStageLocalizedPlanarDensity\n      nlinarith [\n        sq_nonneg ‖literalStageLocalizedGauge Y n u w‖,\n        sq_nonneg ‖HalfWeightCompactCoordinateGreen.dx\n          (literalStageLocalizedGauge Y n u) w‖]\n"
+    },
+    {
+      "id": "E-P20-completed-plane-base-definition-instances",
+      "candidate_id": "P20",
+      "kind": "body",
+      "confidence": "very-high",
+      "expected_count": 1,
+      "owner": "completedLiteralStagePlaneBase",
+      "old": "noncomputable def completedLiteralStagePlaneBase (Y : ℝ) (n : ℤ) :\n    GraphSobolevCompletion n →L[ℂ] AmbientPlaneL2 :=\n  (literalStagePlaneBaseCore Y n).extendOfNorm (coreMap n)\n",
+      "new": "noncomputable def completedLiteralStagePlaneBase (Y : ℝ) (n : ℤ) :\n    GraphSobolevCompletion n →L[ℂ] AmbientPlaneL2 := by\n  letI : Module ℂ\n      (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :=\n    DefinitionOneSobolev.FixedPhaseGraphCompletion.fixedPhaseGraphCoreModule n\n  letI : AddCommGroup\n      (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :=\n    DefinitionOneSobolev.FixedPhaseGraphCompletion.fixedPhaseGraphCoreAddCommGroup n\n  exact (literalStagePlaneBaseCore Y n).extendOfNorm (coreMap n)\n"
+    },
+    {
+      "id": "E-P20-completed-plane-dx-definition-instances",
+      "candidate_id": "P20",
+      "kind": "body",
+      "confidence": "very-high",
+      "expected_count": 1,
+      "owner": "completedLiteralStagePlaneDx",
+      "old": "noncomputable def completedLiteralStagePlaneDx (Y : ℝ) (n : ℤ) :\n    GraphSobolevCompletion n →L[ℂ] AmbientPlaneL2 :=\n  (literalStagePlaneDxCore Y n).extendOfNorm (coreMap n)\n",
+      "new": "noncomputable def completedLiteralStagePlaneDx (Y : ℝ) (n : ℤ) :\n    GraphSobolevCompletion n →L[ℂ] AmbientPlaneL2 := by\n  letI : Module ℂ\n      (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :=\n    DefinitionOneSobolev.FixedPhaseGraphCompletion.fixedPhaseGraphCoreModule n\n  letI : AddCommGroup\n      (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :=\n    DefinitionOneSobolev.FixedPhaseGraphCompletion.fixedPhaseGraphCoreAddCommGroup n\n  exact (literalStagePlaneDxCore Y n).extendOfNorm (coreMap n)\n"
+    },
+    {
+      "id": "E-P20-completed-plane-dy-definition-instances",
+      "candidate_id": "P20",
+      "kind": "body",
+      "confidence": "very-high",
+      "expected_count": 1,
+      "owner": "completedLiteralStagePlaneDy",
+      "old": "noncomputable def completedLiteralStagePlaneDy (Y : ℝ) (n : ℤ) :\n    GraphSobolevCompletion n →L[ℂ] AmbientPlaneL2 :=\n  (literalStagePlaneDyCore Y n).extendOfNorm (coreMap n)\n",
+      "new": "noncomputable def completedLiteralStagePlaneDy (Y : ℝ) (n : ℤ) :\n    GraphSobolevCompletion n →L[ℂ] AmbientPlaneL2 := by\n  letI : Module ℂ\n      (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :=\n    DefinitionOneSobolev.FixedPhaseGraphCompletion.fixedPhaseGraphCoreModule n\n  letI : AddCommGroup\n      (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :=\n    DefinitionOneSobolev.FixedPhaseGraphCompletion.fixedPhaseGraphCoreAddCommGroup n\n  exact (literalStagePlaneDyCore Y n).extendOfNorm (coreMap n)\n"
+    },
+    {
+      "id": "E-P20-completed-plane-base-core-instances",
+      "candidate_id": "P20",
+      "kind": "body",
+      "confidence": "very-high",
+      "expected_count": 1,
+      "owner": "completedLiteralStagePlaneBase_core",
+      "old": "      literalStagePlaneBaseCore Y n u :=\n  LinearMap.extendOfNorm_eq (denseRange_coreMap n)\n    ⟨literalStageLocalizationConstant Y n,\n      norm_literalStagePlaneBaseCore_le Y n⟩ u\n",
+      "new": "      literalStagePlaneBaseCore Y n u := by\n  letI : Module ℂ\n      (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :=\n    DefinitionOneSobolev.FixedPhaseGraphCompletion.fixedPhaseGraphCoreModule n\n  letI : AddCommGroup\n      (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :=\n    DefinitionOneSobolev.FixedPhaseGraphCompletion.fixedPhaseGraphCoreAddCommGroup n\n  exact LinearMap.extendOfNorm_eq (denseRange_coreMap n)\n    ⟨literalStageLocalizationConstant Y n,\n      norm_literalStagePlaneBaseCore_le Y n⟩ u\n"
+    },
+    {
+      "id": "E-P20-completed-plane-dx-core-instances",
+      "candidate_id": "P20",
+      "kind": "body",
+      "confidence": "very-high",
+      "expected_count": 1,
+      "owner": "completedLiteralStagePlaneDx_core",
+      "old": "      literalStagePlaneDxCore Y n u :=\n  LinearMap.extendOfNorm_eq (denseRange_coreMap n)\n    ⟨literalStageLocalizationConstant Y n,\n      norm_literalStagePlaneDxCore_le Y n⟩ u\n",
+      "new": "      literalStagePlaneDxCore Y n u := by\n  letI : Module ℂ\n      (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :=\n    DefinitionOneSobolev.FixedPhaseGraphCompletion.fixedPhaseGraphCoreModule n\n  letI : AddCommGroup\n      (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :=\n    DefinitionOneSobolev.FixedPhaseGraphCompletion.fixedPhaseGraphCoreAddCommGroup n\n  exact LinearMap.extendOfNorm_eq (denseRange_coreMap n)\n    ⟨literalStageLocalizationConstant Y n,\n      norm_literalStagePlaneDxCore_le Y n⟩ u\n"
+    },
+    {
+      "id": "E-P20-completed-plane-dy-core-instances",
+      "candidate_id": "P20",
+      "kind": "body",
+      "confidence": "very-high",
+      "expected_count": 1,
+      "owner": "completedLiteralStagePlaneDy_core",
+      "old": "      literalStagePlaneDyCore Y n u :=\n  LinearMap.extendOfNorm_eq (denseRange_coreMap n)\n    ⟨literalStageLocalizationConstant Y n,\n      norm_literalStagePlaneDyCore_le Y n⟩ u\n",
+      "new": "      literalStagePlaneDyCore Y n u := by\n  letI : Module ℂ\n      (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :=\n    DefinitionOneSobolev.FixedPhaseGraphCompletion.fixedPhaseGraphCoreModule n\n  letI : AddCommGroup\n      (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :=\n    DefinitionOneSobolev.FixedPhaseGraphCompletion.fixedPhaseGraphCoreAddCommGroup n\n  exact LinearMap.extendOfNorm_eq (denseRange_coreMap n)\n    ⟨literalStageLocalizationConstant Y n,\n      norm_literalStagePlaneDyCore_le Y n⟩ u\n"
+    },
+    {
+      "id": "E-P23-use-set-integral-bound",
+      "candidate_id": "P23",
+      "kind": "body",
+      "confidence": "very-high",
+      "expected_count": 1,
+      "owner": "norm_literalStageTorusTest_sq_le_plane",
+      "old": "    _ ≤ (literalStageFourierScale Y) ^ (-2 : ℤ) *\n        ∫ w : ℂ, ‖v w‖ ^ 2 := by\n      gcongr\n      exact Filter.Eventually.of_forall fun w ↦ sq_nonneg ‖v w‖\n",
+      "new": "    _ ≤ (literalStageFourierScale Y) ^ (-2 : ℤ) *\n        ∫ w : ℂ, ‖v w‖ ^ 2 := by\n      exact mul_le_mul_of_nonneg_left\n        (setIntegral_le_integral (ambientTestCore_normSq_integrable v)\n          (Filter.Eventually.of_forall fun w ↦ sq_nonneg ‖v w‖))\n        (by positivity)\n"
+    },
+    {
+      "id": "E-P24-expose-plane-wave-support",
+      "candidate_id": "P24-support",
+      "kind": "body",
+      "confidence": "very-high",
+      "expected_count": 1,
+      "owner": "literalStagePlaneWaveRepresentative_support_subset",
+      "old": "  intro w hw\n  by_contra hnot\n  simp only [literalStagePlaneWaveRepresentative, if_neg hnot] at hw\n  exact hw rfl\n",
+      "new": "  intro w hw\n  by_contra hnot\n  change literalStagePlaneWaveRepresentative Y k w ≠ 0 at hw\n  apply hw\n  simp only [literalStagePlaneWaveRepresentative, if_neg hnot]\n"
+    },
+    {
+      "id": "E-P24-normalize-inverse-norm",
+      "candidate_id": "P24-support",
+      "kind": "body",
+      "confidence": "very-high",
+      "expected_count": 1,
+      "owner": "literalStagePlaneWaveRepresentative_memLp",
+      "old": "    · rw [norm_mul, Complex.norm_real, Real.norm_eq_abs,\n        abs_inv, abs_of_pos (literalStageFourierScale_pos Y),\n",
+      "new": "    · rw [norm_mul, norm_inv, Complex.norm_real, Real.norm_eq_abs,\n        abs_of_pos (literalStageFourierScale_pos Y),\n"
+    },
+    {
+      "id": "E-P25-fin-two-reverse-inclusion",
+      "candidate_id": "P25",
+      "kind": "body",
+      "confidence": "very-high",
+      "expected_count": 1,
+      "owner": "literalStageFourierBox_eq_smul_unitPiBox",
+      "old": "  · rintro ⟨w, ⟨x, hx, rfl⟩, rfl⟩\n    intro i\n    have hi := hx i\n    rw [Set.mem_Ioc] at hi ⊢\n    constructor\n    · have h := mul_lt_mul_of_pos_left hi.1\n        (literalStageFourierScale_pos Y)\n      simpa [div_eq_mul_inv, mul_assoc] using h\n    · have h := mul_le_mul_of_nonneg_left hi.2\n        (literalStageFourierScale_pos Y).le\n      simpa [div_eq_mul_inv, mul_assoc] using h\n",
+      "new": "  · rintro ⟨w, ⟨x, hx, rfl⟩, rfl⟩\n    intro i\n    fin_cases i\n    · have hi := hx 0\n      rw [Set.mem_Ioc] at hi ⊢\n      constructor\n      · have h := mul_lt_mul_of_pos_left hi.1\n          (literalStageFourierScale_pos Y)\n        simpa [div_eq_mul_inv, mul_assoc] using h\n      · have h := mul_le_mul_of_nonneg_left hi.2\n          (literalStageFourierScale_pos Y).le\n        simpa [div_eq_mul_inv, mul_assoc] using h\n    · have hi := hx 1\n      rw [Set.mem_Ioc] at hi ⊢\n      constructor\n      · have h := mul_lt_mul_of_pos_left hi.1\n          (literalStageFourierScale_pos Y)\n        simpa [div_eq_mul_inv, mul_assoc] using h\n      · have h := mul_le_mul_of_nonneg_left hi.2\n          (literalStageFourierScale_pos Y).le\n        simpa [div_eq_mul_inv, mul_assoc] using h\n"
+    },
+    {
+      "id": "E-P30-scalar-inner-normalization",
+      "candidate_id": "P30",
+      "kind": "body",
+      "confidence": "very-high",
+      "expected_count": 1,
+      "owner": "inner_planeWave_ambientTestCore_eq_integral_negativePlaneWave",
+      "old": "  · rw [literalStageNegativePlaneWave_eq_conj_planeWaveRepresentative\n      Y k hw]\n    rfl\n",
+      "new": "  · rw [literalStageNegativePlaneWave_eq_conj_planeWaveRepresentative\n      Y k hw]\n    simp only [RCLike.inner_apply, starRingEnd_apply]\n"
+    },
+    {
+      "id": "E-P31-remove-inapplicable-basis-repr-rewrite",
+      "candidate_id": "P31-prefix",
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "owner": "inner_planeWave_ambientTestCore_eq_scale_mul_mFourierCoeff",
+      "old": "  rw [MeasureTheory.L2.inner_def,\n    UnitAddTorus.mFourierBasis_repr]\n  unfold UnitAddTorus.mFourierCoeff\n",
+      "new": "  rw [MeasureTheory.L2.inner_def]\n  unfold UnitAddTorus.mFourierCoeff\n"
+    },
+    {
+      "id": "E-P34-fix-conjugate-orientation",
+      "candidate_id": "P34",
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "owner": "inner_finiteOrthonormalProjection_sub",
+      "old": "    intro i hi\n    rw [inner_smul_right, ← inner_conj_symm]\n    ring\n",
+      "new": "    intro i hi\n    rw [inner_smul_right, ← inner_conj_symm]\n    simp only [map_star, starRingEnd_apply, star_star]\n    ring\n"
+    },
+    {
+      "id": "E-P34-recursively-expand-inner-subtraction",
+      "candidate_id": "P34",
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "owner": "inner_finiteOrthonormalProjection_sub",
+      "old": "  rw [inner_sub_left, inner_sub_right, hPP, hPx, hxP]\n  ring\n",
+      "new": "  simp only [inner_sub_left, inner_sub_right, hPP, hPx, hxP]\n  ring\n"
+    },
+    {
+      "id": "M01-P1-square-order-direction",
+      "bundle_id": "M01-P1",
+      "kind": "body",
+      "confidence": "high",
+      "owners": [
+        "torusFourierCoeff_sq_le_of_not_mem",
+        "torusFourierCoeff_sq_le_of_not_mem"
+      ],
+      "owner_span_v39": [
+        53635,
+        53710
+      ],
+      "expected_count": 2,
+      "old": "      exact mul_le_mul_of_nonneg_right\n        (sq_le_sq₀ hpi.le hfreq) (sq_nonneg _)\n",
+      "new": "      exact mul_le_mul_of_nonneg_right\n        ((sq_le_sq₀ hpi.le (norm_nonneg _)).2 hfreq) (sq_nonneg _)\n"
+    },
+    {
+      "id": "M01-P2-delete-no-goal-positivity",
+      "bundle_id": "M01-P2",
+      "kind": "body",
+      "confidence": "very-high",
+      "owners": [
+        "torusFourierCoeff_sq_le_of_not_mem",
+        "torusFourierCoeff_sq_le_of_not_mem"
+      ],
+      "owner_span_v39": [
+        53635,
+        53710
+      ],
+      "expected_count": 2,
+      "old": "        gcongr\n        positivity\n",
+      "new": "        gcongr\n"
+    },
+    {
+      "id": "M02-P1-split-dx-dy-rewrites",
+      "bundle_id": "M02-P1",
+      "kind": "body",
+      "confidence": "very-high",
+      "owner": "norm_literalStagePlaneFiniteApproximation_sub_core_le",
+      "owner_span_v39": [
+        53776,
+        53824
+      ],
+      "expected_count": 1,
+      "old": "  rw [literalStagePlaneDxCore_apply, literalStagePlaneDyCore_apply] at hdx hdy\n",
+      "new": "  rw [literalStagePlaneDxCore_apply] at hdx\n  rw [literalStagePlaneDyCore_apply] at hdy\n"
+    },
+    {
+      "id": "M02-P2-explicit-tail-constant-nonneg",
+      "bundle_id": "M02-P2",
+      "kind": "body",
+      "confidence": "high",
+      "owner": "literalStagePlaneTailConstant_nonneg",
+      "owner_span_v39": [
+        53771,
+        53774
+      ],
+      "expected_count": 1,
+      "old": "theorem literalStagePlaneTailConstant_nonneg (Y : ℝ) (n : ℤ) :\n    0 ≤ literalStagePlaneTailConstant Y n := by\n  unfold literalStagePlaneTailConstant\n  positivity\n",
+      "new": "theorem literalStagePlaneTailConstant_nonneg (Y : ℝ) (n : ℤ) :\n    0 ≤ literalStagePlaneTailConstant Y n := by\n  unfold literalStagePlaneTailConstant\n  exact div_nonneg\n    (mul_nonneg\n      (mul_nonneg (literalStageFourierScale_pos Y).le (Real.sqrt_nonneg 2))\n      (literalStageLocalizationConstant_nonneg Y n))\n    (mul_nonneg (by norm_num) Real.pi_pos.le)\n"
+    },
+    {
+      "id": "M02-P3-dense-extension-induction-on",
+      "bundle_id": "M02-P3",
+      "kind": "body",
+      "confidence": "high",
+      "owner": "norm_literalStagePlaneFiniteApproximation_sub_le",
+      "owner_span_v39": [
+        53826,
+        53837
+      ],
+      "expected_count": 1,
+      "dependencies_satisfied_by": [
+        "early-promoted-repairs:E-P20",
+        "middle-s01-merge-now:M02-P1"
+      ],
+      "old": "theorem norm_literalStagePlaneFiniteApproximation_sub_le\n    (Y : ℝ) (n : ℤ) (N : ℕ) (x : GraphSobolevCompletion n) :\n    ‖literalStagePlaneFiniteApproximation Y n N x -\n        completedLiteralStagePlaneBase Y n x‖ ≤\n      (literalStagePlaneTailConstant Y n / ((N : ℝ) + 1)) * ‖x‖ := by\n  exact (denseRange_coreMap n).induction\n    (fun _ ⟨u, rfl⟩ ↦\n      norm_literalStagePlaneFiniteApproximation_sub_core_le Y n N u)\n    (isClosed_le\n      (((literalStagePlaneFiniteApproximation Y n N) -\n        completedLiteralStagePlaneBase Y n).continuous.norm)\n      (continuous_const.mul continuous_norm)) x\n",
+      "new": "theorem norm_literalStagePlaneFiniteApproximation_sub_le\n    (Y : ℝ) (n : ℤ) (N : ℕ) (x : GraphSobolevCompletion n) :\n    ‖literalStagePlaneFiniteApproximation Y n N x -\n        completedLiteralStagePlaneBase Y n x‖ ≤\n      (literalStagePlaneTailConstant Y n / ((N : ℝ) + 1)) * ‖x‖ := by\n  refine (denseRange_coreMap n).induction_on x\n    (isClosed_le\n      (((literalStagePlaneFiniteApproximation Y n N) -\n        completedLiteralStagePlaneBase Y n).continuous.norm)\n      (continuous_const.mul continuous_norm)) ?_\n  intro u\n  exact norm_literalStagePlaneFiniteApproximation_sub_core_le Y n N u\n"
+    },
+    {
+      "id": "M03-P1-subtype-val-measurable-embedding",
+      "bundle_id": "M03-P1",
+      "kind": "body",
+      "confidence": "high",
+      "owner": "upperHalfPlaneCoe_measurableEmbedding",
+      "owner_span_v39": [
+        53883,
+        53886
+      ],
+      "expected_count": 1,
+      "old": "theorem upperHalfPlaneCoe_measurableEmbedding :\n    MeasurableEmbedding (fun z : ℍ ↦ (z : ℂ)) :=\n  MeasurableEmbedding.subtype_coe\n    UpperHalfPlane.isOpen_upperHalfPlaneSet.measurableSet\n",
+      "new": "theorem upperHalfPlaneCoe_measurableEmbedding :\n    MeasurableEmbedding (fun z : ℍ ↦ (z : ℂ)) := by\n  change MeasurableEmbedding (Subtype.val : ℍ → ℂ)\n  exact MeasurableEmbedding.subtype_coe\n    UpperHalfPlane.isOpen_upperHalfPlaneSet.measurableSet\n"
+    },
+    {
+      "id": "M03-P2-lp-ext-map-add",
+      "bundle_id": "M03-P2",
+      "kind": "body",
+      "confidence": "very-high",
+      "owner": "ambientPlaneToUpperLinear",
+      "owner_span_v39": [
+        53913,
+        53922
+      ],
+      "expected_count": 1,
+      "old": "  map_add' F G := by\n    apply Lp.ext fun z ↦ ?_\n",
+      "new": "  map_add' F G := by\n    apply Lp.ext\n"
+    },
+    {
+      "id": "M03-P2-lp-ext-map-smul",
+      "bundle_id": "M03-P2",
+      "kind": "body",
+      "confidence": "very-high",
+      "owner": "ambientPlaneToUpperLinear",
+      "owner_span_v39": [
+        53923,
+        53929
+      ],
+      "expected_count": 1,
+      "old": "  map_smul' c F := by\n    apply Lp.ext fun z ↦ ?_\n",
+      "new": "  map_smul' c F := by\n    apply Lp.ext\n"
+    },
+    {
+      "id": "M03-P3-continuous-map-ext-dense-induction",
+      "bundle_id": "M03-P3",
+      "kind": "body",
+      "confidence": "high",
+      "owner": "ambientPlaneToLiteralStage_comp_completedPlaneBase",
+      "owner_span_v39": [
+        54030,
+        54042
+      ],
+      "expected_count": 1,
+      "dependencies_satisfied_by": [
+        "early-promoted-repairs:E-P20",
+        "middle-s01-merge-now:M02-P3"
+      ],
+      "old": "theorem ambientPlaneToLiteralStage_comp_completedPlaneBase\n    (Y : ℝ) (n : ℤ) :\n    (ambientPlaneToLiteralStage Y).comp\n        (completedLiteralStagePlaneBase Y n) =\n      graphLiteralStageRestriction Y n := by\n  ext x\n  exact (denseRange_coreMap n).induction\n    (fun _ ⟨u, rfl⟩ ↦\n      ambientPlaneToLiteralStage_completedPlaneBase_core Y n u)\n    (isClosed_eq\n      ((ambientPlaneToLiteralStage Y).continuous.comp\n        (completedLiteralStagePlaneBase Y n).continuous)\n      (graphLiteralStageRestriction Y n).continuous) x\n",
+      "new": "theorem ambientPlaneToLiteralStage_comp_completedPlaneBase\n    (Y : ℝ) (n : ℤ) :\n    (ambientPlaneToLiteralStage Y).comp\n        (completedLiteralStagePlaneBase Y n) =\n      graphLiteralStageRestriction Y n := by\n  apply ContinuousLinearMap.ext\n  intro x\n  refine (denseRange_coreMap n).induction_on x\n    (isClosed_eq\n      ((ambientPlaneToLiteralStage Y).continuous.comp\n        (completedLiteralStagePlaneBase Y n).continuous)\n      (graphLiteralStageRestriction Y n).continuous) ?_\n  intro u\n  exact ambientPlaneToLiteralStage_completedPlaneBase_core Y n u\n"
+    },
+    {
+      "id": "M03-P4-explicit-ringhom-id",
+      "bundle_id": "M03-P4",
+      "kind": "body",
+      "confidence": "high",
+      "owner": "lpInfinityMultiplierLinear",
+      "owner_span_v39": [
+        54091,
+        54098
+      ],
+      "expected_count": 1,
+      "old": "  map_smul' c f := by\n    rw [← MeasureTheory.Lp.smul_comm c a f,\n      MeasureTheory.Lp.smul_assoc]\n",
+      "new": "  map_smul' c f := by\n    rw [← MeasureTheory.Lp.smul_comm c a f]\n    simp only [RingHom.id_apply]\n"
+    },
+    {
+      "id": "M04-P1-unfold-quotient-map-in-measurability",
+      "bundle_id": "M04-P1",
+      "kind": "body",
+      "confidence": "high",
+      "owners": [
+        "discriminantHardStageWeight_measurable",
+        "discriminantTailCarrierWeight_measurable"
+      ],
+      "owner_span_v39": [
+        54203,
+        54226
+      ],
+      "expected_count": 2,
+      "old": "    simpa only [measurableSet_quotient] using\n      (discriminantHardQuotientStage_measurableSet N)\n",
+      "new": "    simpa only [measurableSet_quotient, gammaTwoQuotientMk] using\n      (discriminantHardQuotientStage_measurableSet N)\n"
+    },
+    {
+      "id": "M04-P2-potential-absolute-value-nonneg",
+      "bundle_id": "M04-P2",
+      "kind": "body",
+      "confidence": "high",
+      "owner": "norm_discriminantTailCarrierWeight_le",
+      "owner_span_v39": [
+        54249,
+        54258
+      ],
+      "expected_count": 1,
+      "old": "  · simpa only [Complex.norm_real, Real.norm_eq_abs,\n      abs_of_nonneg (upstairsPotential_nonneg z), ← potential_mk] using\n",
+      "new": "  · simpa only [Complex.norm_real, Real.norm_eq_abs,\n      abs_of_nonneg (upstairsPotential_nonneg z), ← potential_mk,\n      abs_of_nonneg (potential_nonneg (gammaTwoQuotientMk z))] using\n"
+    },
+    {
+      "id": "M07-P1-project-real-gaussian-equality",
+      "bundle_id": "M07-P1",
+      "kind": "body",
+      "confidence": "high",
+      "owner": "evenEntireGaussian_realAxis_re_pos",
+      "owner_span_v39": [
+        54851,
+        54854
+      ],
+      "expected_count": 1,
+      "old": "theorem evenEntireGaussian_realAxis_re_pos (a x : ℝ) :\n    0 < (evenEntireGaussian a (x : ℂ)).re := by\n  rw [evenEntireGaussian_ofReal]\n  simpa using Real.exp_pos (-a * x ^ 2)\n",
+      "new": "theorem evenEntireGaussian_realAxis_re_pos (a x : ℝ) :\n    0 < (evenEntireGaussian a (x : ℂ)).re := by\n  have h := congrArg Complex.re (evenEntireGaussian_ofReal a x)\n  rw [h]\n  exact Real.exp_pos (-a * x ^ 2)\n"
+    },
+    {
+      "id": "M07-P2-project-imag-gaussian-equality",
+      "bundle_id": "M07-P2",
+      "kind": "body",
+      "confidence": "high",
+      "owner": "evenEntireGaussian_realAxis_im",
+      "owner_span_v39": [
+        54857,
+        54860
+      ],
+      "expected_count": 1,
+      "old": "theorem evenEntireGaussian_realAxis_im (a x : ℝ) :\n    (evenEntireGaussian a (x : ℂ)).im = 0 := by\n  rw [evenEntireGaussian_ofReal]\n  simp\n",
+      "new": "theorem evenEntireGaussian_realAxis_im (a x : ℝ) :\n    (evenEntireGaussian a (x : ℂ)).im = 0 := by\n  have h := congrArg Complex.im (evenEntireGaussian_ofReal a x)\n  rw [h]\n  exact Complex.ofReal_im _\n"
+    },
+    {
+      "id": "M07-P3-expose-analytic-polynomial",
+      "bundle_id": "M07-P3",
+      "kind": "body",
+      "confidence": "high",
+      "owner": "symmetricPoleFactor_analyticOnNhd",
+      "owner_span_v39": [
+        54927,
+        54932
+      ],
+      "expected_count": 1,
+      "old": "theorem symmetricPoleFactor_analyticOnNhd (p : ℝ) :\n    AnalyticOnNhd ℂ (symmetricPoleFactor p) Set.univ := by\n  simpa only [symmetricPoleFactor] using\n    (analyticOnNhd_id.pow 2).sub\n      (analyticOnNhd_const :\n        AnalyticOnNhd ℂ (fun _ : ℂ ↦ (p : ℂ) ^ 2) Set.univ)\n",
+      "new": "theorem symmetricPoleFactor_analyticOnNhd (p : ℝ) :\n    AnalyticOnNhd ℂ (symmetricPoleFactor p) Set.univ := by\n  change AnalyticOnNhd ℂ\n    (fun z : ℂ ↦ z ^ 2 - (p : ℂ) ^ 2) Set.univ\n  exact (analyticOnNhd_id.pow 2).sub\n    (analyticOnNhd_const :\n      AnalyticOnNhd ℂ (fun _ : ℂ ↦ (p : ℂ) ^ 2) Set.univ)\n"
+    },
+    {
+      "id": "M08-P1-positive-phase-denominator",
+      "bundle_id": "M08-P1",
+      "kind": "body",
+      "confidence": "very-high",
+      "owner": "norm_normalizedFiniteHalfIntegralKloostermanSum_le_one",
+      "owner_span_v39": [
+        55094,
+        55101
+      ],
+      "expected_count": 1,
+      "old": "theorem norm_normalizedFiniteHalfIntegralKloostermanSum_le_one\n    (q m n : ℕ) :\n    ‖normalizedFiniteHalfIntegralKloostermanSum q m n‖ ≤ 1 := by\n  rw [normalizedFiniteHalfIntegralKloostermanSum, norm_div]\n  rw [Complex.norm_natCast]\n  apply (div_le_one (by simp [phaseModulus] :\n    (0 : ℝ) < phaseModulus q)).2\n  exact norm_finiteHalfIntegralKloostermanSum_le q m n\n",
+      "new": "theorem norm_normalizedFiniteHalfIntegralKloostermanSum_le_one\n    (q m n : ℕ) :\n    ‖normalizedFiniteHalfIntegralKloostermanSum q m n‖ ≤ 1 := by\n  rw [normalizedFiniteHalfIntegralKloostermanSum, norm_div]\n  rw [Complex.norm_natCast]\n  apply (div_le_one (by positivity :\n    (0 : ℝ) < phaseModulus q)).2\n  exact norm_finiteHalfIntegralKloostermanSum_le q m n\n"
+    },
+    {
+      "id": "M10-P1-positive-phase-denominator",
+      "bundle_id": "M10-P1",
+      "kind": "body",
+      "confidence": "very-high",
+      "owner": "norm_modulusNormalizedReducedResidueHalfPhaseSum_le_one",
+      "owner_span_v39": [
+        55665,
+        55672
+      ],
+      "expected_count": 1,
+      "old": "theorem norm_modulusNormalizedReducedResidueHalfPhaseSum_le_one\n    (q m n : ℕ) :\n    ‖modulusNormalizedReducedResidueHalfPhaseSum q m n‖ ≤ 1 := by\n  rw [modulusNormalizedReducedResidueHalfPhaseSum, norm_div]\n  rw [Complex.norm_natCast]\n  apply (div_le_one (by simp [phaseModulus] :\n    (0 : ℝ) < phaseModulus q)).2\n  exact norm_reducedResidueHalfPhaseSum_le_phaseModulus q m n\n",
+      "new": "theorem norm_modulusNormalizedReducedResidueHalfPhaseSum_le_one\n    (q m n : ℕ) :\n    ‖modulusNormalizedReducedResidueHalfPhaseSum q m n‖ ≤ 1 := by\n  rw [modulusNormalizedReducedResidueHalfPhaseSum, norm_div]\n  rw [Complex.norm_natCast]\n  apply (div_le_one (by positivity :\n    (0 : ℝ) < phaseModulus q)).2\n  exact norm_reducedResidueHalfPhaseSum_le_phaseModulus q m n\n"
+    },
+    {
+      "id": "M08-P3-explicit-geometric-bound-calc",
+      "bundle_id": "M08-P3",
+      "kind": "body",
+      "confidence": "high",
+      "owner": "norm_geometricallyDampedPhaseTerm_le",
+      "owner_span_v39": [
+        55131,
+        55140
+      ],
+      "expected_count": 1,
+      "old": "  rw [hnorm]\n  simpa using mul_le_mul_of_nonneg_left\n    (norm_normalizedFiniteHalfIntegralKloostermanSum_le_one c m n)\n    (pow_nonneg (by norm_num) c)\n",
+      "new": "  rw [hnorm]\n  calc\n    (1 / 2 : ℝ) ^ c *\n        ‖normalizedFiniteHalfIntegralKloostermanSum c m n‖ ≤\n      (1 / 2 : ℝ) ^ c * 1 :=\n        mul_le_mul_of_nonneg_left\n          (norm_normalizedFiniteHalfIntegralKloostermanSum_le_one c m n)\n          (pow_nonneg (by norm_num) c)\n    _ = (1 / 2 : ℝ) ^ c := by ring\n"
+    },
+    {
+      "id": "M09-P1-join-solvable-orthogonal-projection",
+      "bundle_id": "M09-P1",
+      "kind": "body",
+      "confidence": "very-high",
+      "owner": "weakSchrodinger_solvable_iff_adjointKernel_orthogonal_unconditional",
+      "owner_span_v39": [
+        55351,
+        55357
+      ],
+      "expected_count": 1,
+      "old": "  (unconditionalFredholmData n t)\n    .solvable_iff_mem_orthogonal_adjointKernel f\n",
+      "new": "  (unconditionalFredholmData n t).solvable_iff_mem_orthogonal_adjointKernel f\n"
+    },
+    {
+      "id": "M09-P1-join-solvable-forall-projection",
+      "bundle_id": "M09-P1",
+      "kind": "body",
+      "confidence": "very-high",
+      "owner": "weakSchrodinger_solvable_iff_forall_adjointKernel_inner_eq_zero",
+      "owner_span_v39": [
+        55360,
+        55367
+      ],
+      "expected_count": 1,
+      "old": "  (unconditionalFredholmData n t)\n    .solvable_iff_forall_adjointKernel_inner_eq_zero f\n",
+      "new": "  (unconditionalFredholmData n t).solvable_iff_forall_adjointKernel_inner_eq_zero f\n"
+    },
+    {
+      "id": "M09-P1-join-canonical-kernel-projection",
+      "bundle_id": "M09-P1",
+      "kind": "body",
+      "confidence": "very-high",
+      "owner": "unconditionalCanonicalWeakSolution_mem_kernelOrthogonal",
+      "owner_span_v39": [
+        55383,
+        55388
+      ],
+      "expected_count": 1,
+      "old": "  (unconditionalFredholmData n t)\n    .canonicalSolution_mem_kernelOrthogonal f\n",
+      "new": "  (unconditionalFredholmData n t).canonicalSolution_mem_kernelOrthogonal f\n"
+    },
+    {
+      "id": "M11-P1-close-nat-cast-contradiction",
+      "bundle_id": "M11-P1",
+      "kind": "body",
+      "confidence": "very-high",
+      "owner": "compatibleAudit_has_no_crossover",
+      "owner_span_v39": [
+        55811,
+        55816
+      ],
+      "expected_count": 1,
+      "old": "  rintro ⟨m, _hm, hcross⟩\n  simp [compatibleAuditUpper, compatibleAuditLower] at hcross\n",
+      "new": "  rintro ⟨m, _hm, hcross⟩\n  simp [compatibleAuditUpper, compatibleAuditLower] at hcross\n  exact (not_lt_of_ge (Nat.cast_nonneg m)) hcross\n"
+    },
+    {
+      "id": "M12-P1-close-resolvent-definition",
+      "bundle_id": "M12-P1",
+      "kind": "body",
+      "confidence": "high",
+      "owner": "modularMassResolvent_apply",
+      "owner_span_v39": [
+        56185,
+        56202
+      ],
+      "expected_count": 1,
+      "old": "  rw [peterssonPivotEmbedding_eq_embeddedAntiDual,\n    FredholmBypass.coerciveFormEquiv_symm_apply]\n",
+      "new": "  rw [peterssonPivotEmbedding_eq_embeddedAntiDual,\n    FredholmBypass.coerciveFormEquiv_symm_apply]\n  rfl\n"
+    },
+    {
+      "id": "M12-P2-simp-local-form-let",
+      "bundle_id": "M12-P2",
+      "kind": "body",
+      "confidence": "high",
+      "owner": "modularMassResolvent_leftInverse",
+      "owner_span_v39": [
+        56258,
+        56307
+      ],
+      "expected_count": 1,
+      "old": "    rw [S, embeddedShiftedForm_apply, hForm', hu]\n",
+      "new": "    simp only [S, embeddedShiftedForm_apply, hForm', hu]\n"
+    },
+    {
+      "id": "M12-P4-real-star-witness-corrected",
+      "bundle_id": "M12-P4",
+      "kind": "body",
+      "confidence": "high",
+      "owner": "modularMassResolvent_isSymmetric",
+      "owner_span_v39": [
+        56398,
+        56421
+      ],
+      "expected_count": 1,
+      "old": "  change inner ℂ (rx : OrbitPeterssonHilbert n) y =\n    inner ℂ x (ry : OrbitPeterssonHilbert n)\n  rw [← hx, ← hy]\n  simp only [inner_add_left, inner_add_right, inner_smul_left,\n    inner_smul_right, starRingEnd_apply, Complex.conj_ofReal]\n  rw [modularAssociatedOperator_inner_swap n t rx ry]\n",
+      "new": "  change inner ℂ (rx : OrbitPeterssonHilbert n) y =\n    inner ℂ x (ry : OrbitPeterssonHilbert n)\n  have hc : star (discriminantMassShift t : ℂ) =\n      (discriminantMassShift t : ℂ) := by simp\n  rw [← hx, ← hy]\n  simp only [inner_add_left, inner_add_right, inner_smul_left,\n    inner_smul_right, starRingEnd_apply, Complex.conj_ofReal]\n  rw [modularAssociatedOperator_inner_swap n t rx ry]\n  rw [hc]\n"
+    },
+    {
+      "id": "M12-P5-normalize-clm-eigenvector-equality",
+      "bundle_id": "M12-P5",
+      "kind": "body",
+      "confidence": "high",
+      "owners": [
+        "modularMassResolvent_eigenvalue_ne_zero",
+        "modularMassResolvent_eigenvalue_norm_le_one"
+      ],
+      "owner_span_v39": [
+        56446,
+        56475
+      ],
+      "expected_count": 2,
+      "old": "  rw [Module.End.mem_eigenspace_iff] at hv\n",
+      "new": "  rw [Module.End.mem_eigenspace_iff] at hv\n  change modularMassResolvent n t v = μ • v at hv\n"
+    },
+    {
+      "id": "M12-P6-module-end-eigenspace-namespace",
+      "bundle_id": "M12-P6",
+      "kind": "header",
+      "confidence": "high",
+      "owners": [
+        "modularMassResolvent_orthogonalFamily_eigenspaces",
+        "modularMassResolvent_orthogonalFamily_eigenspaces"
+      ],
+      "owner_span_v39": [
+        56479,
+        56490
+      ],
+      "expected_count": 2,
+      "old": "LinearMap.eigenspace",
+      "new": "Module.End.eigenspace",
+      "header_change_allowlisted": true,
+      "claim_change": "none; invalid namespace corrected to the eigenspace API of the same module endomorphism"
+    },
+    {
+      "id": "M13-P1-normalize-inverse-action",
+      "bundle_id": "M13-P1",
+      "kind": "body",
+      "confidence": "high",
+      "owner": "smul_gammaTwoOrbitSaturation",
+      "owner_span_v39": [
+        56632,
+        56649
+      ],
+      "expected_count": 1,
+      "old": "    refine ⟨a⁻¹ * b, ?_⟩\n    rw [Set.mem_smul_set_iff_inv_smul_mem] at hb ⊢\n    simpa only [mul_inv_rev, inv_inv, mul_smul] using hb\n",
+      "new": "    refine ⟨a⁻¹ * b, ?_⟩\n    rw [Set.mem_smul_set_iff_inv_smul_mem] at hb ⊢\n    simpa [mul_smul] using hb\n"
+    },
+    {
+      "id": "M13-P4-unfold-norm-density-first",
+      "bundle_id": "M13-P4",
+      "kind": "body",
+      "confidence": "high",
+      "owner": "upstairsNormSqDensity_integrableOn_reducedChart",
+      "owner_span_v39": [
+        56770,
+        56812
+      ],
+      "expected_count": 1,
+      "old": "    simpa only [f, upstairsInnerDensity_self, Complex.ofReal_re] using\n      hSelf.re\n",
+      "new": "    simpa only [f, upstairsInnerDensity_self, upstairsNormSqDensity,\n      Complex.ofReal_re] using\n      hSelf.re\n"
+    },
+    {
+      "id": "M13-P4-unfold-norm-density-duplicate",
+      "bundle_id": "M13-P4",
+      "kind": "body",
+      "confidence": "high",
+      "owner": "orbitPeterssonCoreToReducedChartL2_norm_le",
+      "owner_span_v39": [
+        57063,
+        57111
+      ],
+      "expected_count": 1,
+      "old": "    simpa only [upstairsInnerDensity_self, Complex.ofReal_re] using hSelf.re\n",
+      "new": "    simpa only [upstairsInnerDensity_self, upstairsNormSqDensity,\n      Complex.ofReal_re] using hSelf.re\n"
+    },
+    {
+      "id": "M13-P5-pin-ennreal-infinity-first",
+      "bundle_id": "M13-P5",
+      "kind": "body",
+      "confidence": "very-high",
+      "owner": "upstairsNormSqDensity_integrableOn_reducedChart",
+      "owner_span_v39": [
+        56770,
+        56812
+      ],
+      "expected_count": 1,
+      "old": "      (∫⁻ z in chosenGammaTwoFundamentalDomain.carrier,\n          ENNReal.ofReal (f z) ∂hyperbolicMeasure) < ∞ := by\n",
+      "new": "      (∫⁻ z in chosenGammaTwoFundamentalDomain.carrier,\n          ENNReal.ofReal (f z) ∂hyperbolicMeasure) < (∞ : ℝ≥0∞) := by\n"
+    },
+    {
+      "id": "M13-P5-pin-ennreal-infinity-duplicate",
+      "bundle_id": "M13-P5",
+      "kind": "body",
+      "confidence": "very-high",
+      "owner": "orbitPeterssonCoreToReducedChartL2_norm_le",
+      "owner_span_v39": [
+        57063,
+        57111
+      ],
+      "expected_count": 1,
+      "old": "            ENNReal.ofReal\n              (upstairsNormSqDensity (OrbitMultiplier n)\n                u.toSmoothCore z) ∂hyperbolicMeasure) < ∞ := by\n",
+      "new": "            ENNReal.ofReal\n              (upstairsNormSqDensity (OrbitMultiplier n)\n                u.toSmoothCore z) ∂hyperbolicMeasure) < (∞ : ℝ≥0∞) := by\n"
+    },
+    {
+      "id": "M13-P6-explicit-invariant-density-arguments",
+      "bundle_id": "M13-P6",
+      "kind": "body",
+      "confidence": "high",
+      "owner": "upstairsNormSqDensity_integrableOn_reducedChart",
+      "owner_span_v39": [
+        56770,
+        56812
+      ],
+      "expected_count": 1,
+      "old": "    apply setLIntegral_reducedChart_le_chosenCarrier z₀\n    intro a z\n    rw [upstairsNormSqDensity_effective_invariant]\n",
+      "new": "    apply setLIntegral_reducedChart_le_chosenCarrier z₀\n    intro a z\n    change ENNReal.ofReal\n        (upstairsNormSqDensity (OrbitMultiplier n) u.toSmoothCore (a • z)) =\n      ENNReal.ofReal\n        (upstairsNormSqDensity (OrbitMultiplier n) u.toSmoothCore z)\n    exact congrArg ENNReal.ofReal\n      (upstairsNormSqDensity_effective_invariant\n        (OrbitMultiplier n) u.toSmoothCore a z)\n"
+    },
+    {
+      "id": "M14-P2-indicator-only-simplification",
+      "bundle_id": "M14-P2",
+      "kind": "body",
+      "confidence": "high",
+      "owner": "ambientReducedChartGauge_memLp",
+      "owner_span_v39": [
+        56894,
+        56934
+      ],
+      "expected_count": 1,
+      "old": "      by_cases hw : w ∈ Set.range UpperHalfPlane.coe\n      · simp [hw]\n      · have hzero : ambientReducedChartGauge n z₀ u w = 0 := by\n          by_contra hne\n          exact hw (hSupport hne)\n        simp [hw, hzero]\n",
+      "new": "      by_cases hw : w ∈ Set.range UpperHalfPlane.coe\n      · simp only [Set.indicator_of_mem hw]\n      · have hzero : ambientReducedChartGauge n z₀ u w = 0 := by\n          by_contra hne\n          exact hw (hSupport hne)\n        simp only [Set.indicator_of_not_mem hw, hzero]\n"
+    },
+    {
+      "id": "M14-P3-explicit-pi-add-evaluation",
+      "bundle_id": "M14-P3",
+      "kind": "body",
+      "confidence": "high",
+      "owner": "orbitPeterssonCoreToReducedChartL2",
+      "owner_span_v39": [
+        56943,
+        56958
+      ],
+      "expected_count": 1,
+      "old": "    rw [hsum, hadd, hu, hv]\n",
+      "new": "    rw [hsum, hadd, Pi.add_apply, hu, hv]\n"
+    },
+    {
+      "id": "M14-P5-explicit-measurable-set-side-goal",
+      "bundle_id": "M14-P5",
+      "kind": "body",
+      "confidence": "high",
+      "owner": "orbitPeterssonCoreToReducedChartL2_norm_le",
+      "owner_span_v39": [
+        57063,
+        57111
+      ],
+      "expected_count": 1,
+      "old": "    rw [orbitPeterssonCoreToReducedChartL2_norm_sq,\n      setIntegral_orbitEuclideanGauge_norm_sq_eq_density,\n      orbitPeterssonCore_norm_sq_eq_density_integral]\n    exact hIntegral\n",
+      "new": "    rw [orbitPeterssonCoreToReducedChartL2_norm_sq,\n      setIntegral_orbitEuclideanGauge_norm_sq_eq_density,\n      orbitPeterssonCore_norm_sq_eq_density_integral]\n    · exact hIntegral\n    · exact (gammaTwoReducedChart_isOpen z₀).measurableSet\n"
+    },
+    {
+      "id": "M15-P1-explicit-support-top",
+      "bundle_id": "M15-P1",
+      "kind": "body",
+      "confidence": "high",
+      "owner": "fullPlaneTestProduct",
+      "owner_span_v39": [
+        57191,
+        57196
+      ],
+      "expected_count": 1,
+      "old": "noncomputable def fullPlaneTestProduct\n    (phi v : FullPlaneTest) : FullPlaneTest where\n  toFun := fun x : ℂ => phi x * v x\n  contDiff' := phi.contDiff.mul v.contDiff\n  hasCompactSupport' := v.hasCompactSupport.mul_left\n  tsupport_subset' := subset_univ\n",
+      "new": "noncomputable def fullPlaneTestProduct\n    (phi v : FullPlaneTest) : FullPlaneTest where\n  toFun := fun x : ℂ => phi x * v x\n  contDiff' := phi.contDiff.mul v.contDiff\n  hasCompactSupport' := v.hasCompactSupport.mul_left\n  tsupport_subset' := by\n    simpa using\n      (Set.subset_univ (tsupport (fun x : ℂ => phi x * v x)))\n"
+    },
+    {
+      "id": "M15-P2-expose-principal-support-function",
+      "bundle_id": "M15-P2",
+      "kind": "body",
+      "confidence": "high",
+      "owner": "tsupport_fullPlaneAffinePrincipalCutoff_subset",
+      "owner_span_v39": [
+        57234,
+        57253
+      ],
+      "expected_count": 1,
+      "old": "  refine tsupport_mul_subset_right.trans ?_\n  simpa only [add_apply, smul_apply,\n    smul_eq_mul] using\n      (tsupport_add _ _).trans (union_subset hSigma hI)\n",
+      "new": "  refine tsupport_mul_subset_right.trans ?_\n  change tsupport\n      (fun x : ℂ => sigma * fullPlaneDirectionalDerivative 1 phi x +\n        fullPlaneDirectionalDerivative Complex.I phi x) ≤\n    tsupport (phi : ℂ → ℂ)\n  exact (tsupport_add _ _).trans (union_subset hSigma hI)\n"
+    },
+    {
+      "id": "M15-P3-contdiff-to-differentiable-at",
+      "bundle_id": "M15-P3",
+      "kind": "body",
+      "confidence": "high",
+      "owner": "fullPlaneAffineTranspose_product_add_principal",
+      "owner_span_v39": [
+        57258,
+        57283
+      ],
+      "expected_count": 1,
+      "old": "  have hphi : DifferentiableAt ℝ (phi : ℂ → ℂ) x :=\n    phi.contDiff.differentiableAt (by simp)\n  have hv : DifferentiableAt ℝ (v : ℂ → ℂ) x :=\n    v.contDiff.differentiableAt (by simp)\n",
+      "new": "  have hphi : DifferentiableAt ℝ (phi : ℂ → ℂ) x :=\n    (phi.contDiff.differentiable (by simp)).differentiableAt\n  have hv : DifferentiableAt ℝ (v : ℂ → ℂ) x :=\n    (v.contDiff.differentiable (by simp)).differentiableAt\n"
+    },
+    {
+      "id": "M16-P1-expose-lp-add-evaluation",
+      "bundle_id": "M16-P1",
+      "kind": "body",
+      "confidence": "high",
+      "owner": "coeFn_localizedAffineTarget",
+      "owner_span_v39": [
+        57314,
+        57329
+      ],
+      "expected_count": 1,
+      "old": "      with x hadd hbase hcomm\n  rw [hadd, hbase, hcomm]\n",
+      "new": "      with x hadd hbase hcomm\n  change\n    ((fullPlaneTestMulL2 phi Pu +\n      fullPlaneTestMulL2 (fullPlaneAffinePrincipalCutoff sigma phi) u :\n        AmbientPlaneL2) : ℂ → ℂ) x = _\n  rw [hadd, Pi.add_apply, hbase, hcomm]\n"
+    },
+    {
+      "id": "M16-P4-explicit-univ-support-subset",
+      "bundle_id": "M16-P4",
+      "kind": "body",
+      "confidence": "very-high",
+      "owner": "IsPlanarAffineWeakGraph.localize",
+      "owner_span_v39": [
+        57415,
+        57425
+      ],
+      "expected_count": 1,
+      "old": "  exact hWeakOn.localizeOn phi subset_univ\n",
+      "new": "  exact hWeakOn.localizeOn phi\n    (Set.subset_univ (tsupport (phi : ℂ → ℂ)))\n"
+    },
+    {
+      "id": "L-env-graph-instances-58176",
+      "kind": "environment",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "open FixedPhasePlanarLocalization\nopen HalfWeightDifferentialOperators\n\nnoncomputable section\n",
+      "new": "open FixedPhasePlanarLocalization\nopen HalfWeightDifferentialOperators\n\nattribute [local instance]\n  DefinitionOneSobolev.FixedPhaseGraphCompletion.fixedPhaseGraphCoreModule\n  DefinitionOneSobolev.FixedPhaseGraphCompletion.fixedPhaseGraphCoreAddCommGroup\n\nnoncomputable section\n"
+    },
+    {
+      "id": "L-env-halfweight-open-59743",
+      "kind": "environment",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "open FixedPhaseEssentialCoreRoute\nopen PhysicalLocalL2\n\ntheorem realSmooth_const (c : ℂ) :\n",
+      "new": "open FixedPhaseEssentialCoreRoute\nopen PhysicalLocalL2\nopen HalfWeightDifferentialOperators\n\ntheorem realSmooth_const (c : ℂ) :\n"
+    },
+    {
+      "id": "L-env-invariant-multiplier-instances-and-open",
+      "kind": "environment",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "open P5DiscriminantHardTruncation\nopen HalfWeightDifferentialOperators\n\nnoncomputable section\n",
+      "new": "open P5DiscriminantHardTruncation\nopen HalfWeightDifferentialOperators\nopen FixedPhaseReducedChartFriedrichs\n\nattribute [local instance]\n  DefinitionOneSobolev.FixedPhaseGraphCompletion.fixedPhaseGraphCoreModule\n  DefinitionOneSobolev.FixedPhaseGraphCompletion.fixedPhaseGraphCoreAddCommGroup\n\nnoncomputable section\n"
+    },
+    {
+      "id": "L-4250-4253-coe-im-normalization",
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 4,
+      "old": "    HalfWeightDifferentialOperators.heightC, smul_eq_mul]\n  rw [hdx, hdy, hval]\n  ring\n",
+      "new": "    HalfWeightDifferentialOperators.heightC, UpperHalfPlane.coe_im,\n    smul_eq_mul]\n  rw [hdx, hdy, hval]\n  ring\n",
+      "owners": [
+        "euclideanRaiseGauge_periodized_eq_forwardTest_on_reducedChart",
+        "euclideanLowerFromSuccGauge_periodized_eq_forwardTest_on_reducedChart",
+        "neg_euclideanLowerFromSuccGauge_periodized_eq_raiseTestAdjoint_on_reducedChart",
+        "neg_euclideanRaiseGauge_periodized_eq_lowerFromSuccTestAdjoint_on_reducedChart"
+      ]
+    },
+    {
+      "id": "L-4262-type-continuous-lsmul",
+      "kind": "header-and-body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "    (friedrichsMollifierReal j ⋆[lsmul ℝ ℂ, volume]\n        compactIndicatorRepresentative K u) =\n      friedrichsMollifiedRepresentative j u := by\n  unfold friedrichsMollifiedRepresentative\n  exact convolution_congr (lsmul ℝ ℂ)\n",
+      "new": "    (friedrichsMollifierReal j ⋆[\n        (ContinuousLinearMap.lsmul ℝ ℝ : ℝ →L[ℝ] ℂ →L[ℝ] ℂ), volume]\n        compactIndicatorRepresentative K u) =\n      friedrichsMollifiedRepresentative j u := by\n  unfold friedrichsMollifiedRepresentative\n  exact convolution_congr\n    (ContinuousLinearMap.lsmul ℝ ℝ : ℝ →L[ℝ] ℂ →L[ℝ] ℂ)\n",
+      "owner": "friedrichsMollifier_convolution_compactIndicator_eq"
+    },
+    {
+      "id": "L-4300-inner-integrand-normalization",
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "  rw [MeasureTheory.L2.inner_def]\n  apply integral_congr_ae\n  filter_upwards [coeFn_fullPlaneTestToL2 v] with x hx\n  rw [hx]\n  rfl\n",
+      "new": "  rw [MeasureTheory.L2.inner_def]\n  apply integral_congr_ae\n  filter_upwards [coeFn_fullPlaneTestToL2 v] with x hx\n  rw [hx]\n  simp only [RCLike.inner_apply, starRingEnd_apply]\n        ",
+      "owner": "inner_fullPlaneTestToL2_eq_integral_conj_mul"
+    },
+    {
+      "id": "L-4304-explicit-tsupport-top",
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "  contDiff' := v.contDiff\n  hasCompactSupport' := v.hasCompactSupport\n  tsupport_subset' := subset_univ\n",
+      "new": "  contDiff' := v.contDiff\n  hasCompactSupport' := v.hasCompactSupport\n  tsupport_subset' := by\n    simpa using (Set.subset_univ (tsupport (v : ℂ → ℂ)))\n",
+      "owner": "ambientTestCoreToFullPlaneTest"
+    },
+    {
+      "id": "L-4311-expose-composition-raising",
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "      simpa only [v] using\n        (fullPlaneTestToL2_raiseForward_bufferedEssentialFriedrichs\n",
+      "new": "      simpa only [v, Function.comp_apply] using\n        (fullPlaneTestToL2_raiseForward_bufferedEssentialFriedrichs\n",
+      "owner": "exists_bufferedLocalRaisingApproximation"
+    },
+    {
+      "id": "L-4312-expose-composition-lowering",
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "      simpa only [v] using\n        (fullPlaneTestToL2_lowerForward_bufferedEssentialFriedrichs\n",
+      "new": "      simpa only [v, Function.comp_apply] using\n        (fullPlaneTestToL2_lowerForward_bufferedEssentialFriedrichs\n",
+      "owner": "exists_bufferedLocalLoweringApproximation"
+    },
+    {
+      "id": "L-4317-pin-inner-self-scalar",
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "  simpa only [inner_self_eq_norm_sq, Complex.ofReal_re] using hre\n",
+      "new": "  simpa only [inner_self_eq_norm_sq (𝕜 := ℂ), Complex.ofReal_re] using hre\n",
+      "owner": "norm_l2Coordinate_sq_eq_fullPlaneTestToL2_sq"
+    },
+    {
+      "id": "L-4318-pin-norm-sub-scalar",
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "    rw [norm_sub_sq, norm_sub_sq,\n",
+      "new": "    rw [norm_sub_sq (𝕜 := ℂ), norm_sub_sq (𝕜 := ℂ),\n",
+      "owner": "dist_l2Coordinate_eq_dist_fullPlaneTestToL2"
+    },
+    {
+      "id": "L-4331-effective-seed-real-smooth",
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "  unfold RealSmooth upperLift\n  simpa [Function.comp_def] using v.contDiff.contDiffOn\n",
+      "new": "  unfold RealSmooth\n  refine v.contDiff.contDiffOn.congr ?_\n  intro w hw\n  simp [upperLift, Function.comp_def,\n    UpperHalfPlane.ofComplex_apply_of_im_pos hw]\n",
+      "owner": "effectiveScalarSeed_realSmooth"
+    },
+    {
+      "id": "L-4332-qualify-comp-gamma-two-smul",
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "  have h := (effectiveScalarSeed_realSmooth v).comp_gammaTwo_smul gamma\n",
+      "new": "  have h :=\n    FixedPhaseEssentialCoreRoute.RealSmooth.comp_gammaTwo_smul\n      (effectiveScalarSeed_realSmooth v) gamma\n",
+      "owner": "effectiveScalarPeriodizationTerm_realSmooth"
+    },
+    {
+      "id": "L-4336-close-invariance-definitionally",
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "  rw [effectiveScalarPoincarePeriodization, hreindex]\n  simp_rw [effectiveScalarPeriodizationTerm_mul_smul]\n",
+      "new": "  rw [effectiveScalarPoincarePeriodization, hreindex]\n  simp_rw [effectiveScalarPeriodizationTerm_mul_smul]\n  rfl\n",
+      "owner": "effectiveScalarPoincarePeriodization_invariant"
+    },
+    {
+      "id": "L-4348-apply-fderiv-map-at-one",
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "  unfold HalfWeightDifferentialOperators.dx\n    HalfWeightDifferentialOperators.d1\n  exact Filter.EventuallyEq.fderiv_eq\n    (effectiveScalarPoincarePeriodization_eventuallyEq_seed_on_reducedChart\n      v hv hz) (z : ℂ)\n",
+      "new": "  unfold HalfWeightDifferentialOperators.dx\n    HalfWeightDifferentialOperators.d1\n  exact congrArg (fun A : ℂ →L[ℝ] ℂ ↦ A 1)\n    (Filter.EventuallyEq.fderiv_eq\n      (effectiveScalarPoincarePeriodization_eventuallyEq_seed_on_reducedChart\n        v hv hz))\n",
+      "owner": "dx_effectiveScalarPoincarePeriodization_eq_seed_on_reducedChart"
+    },
+    {
+      "id": "L-4349-apply-fderiv-map-at-I",
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "  unfold HalfWeightDifferentialOperators.dy\n    HalfWeightDifferentialOperators.d1\n  exact Filter.EventuallyEq.fderiv_eq\n    (effectiveScalarPoincarePeriodization_eventuallyEq_seed_on_reducedChart\n      v hv hz) (z : ℂ)\n",
+      "new": "  unfold HalfWeightDifferentialOperators.dy\n    HalfWeightDifferentialOperators.d1\n  exact congrArg (fun A : ℂ →L[ℝ] ℂ ↦ A Complex.I)\n    (Filter.EventuallyEq.fderiv_eq\n      (effectiveScalarPoincarePeriodization_eventuallyEq_seed_on_reducedChart\n        v hv hz))\n",
+      "owner": "dy_effectiveScalarPoincarePeriodization_eq_seed_on_reducedChart"
+    },
+    {
+      "id": "L-4388-ae-notation-carrier",
+      "kind": "header-notation",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "    (invariantScalarCarrierLInfinity c : ℍ → ℂ) =ᶠ[\n",
+      "new": "    (invariantScalarCarrierLInfinity c : ℍ → ℂ) =ᵐ[\n",
+      "owner": "coeFn_invariantScalarCarrierLInfinity"
+    },
+    {
+      "id": "L-4390-ae-notation-finset-lp",
+      "kind": "header-notation",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "    ((∑ i ∈ s, f i : MeasureTheory.Lp E p mu) : alpha → E) =ᶠ[mu]\n",
+      "new": "    ((∑ i ∈ s, f i : MeasureTheory.Lp E p mu) : alpha → E) =ᵐ[mu]\n",
+      "owner": "coeFn_finsetSum_Lp"
+    },
+    {
+      "id": "L-4391-ae-notation-local-hterm",
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "        =ᶠ[Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.chosenEuclideanCarrierMeasure]\n",
+      "new": "        =ᵐ[Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.chosenEuclideanCarrierMeasure]\n",
+      "owner": "finset_sum_invariantScalarMultipliers_eq_of_compactSupport"
+    },
+    {
+      "id": "L-4393-ae-notation-full-plane-linfty",
+      "kind": "header-notation",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "    (fullPlaneTestToLInfinity phi : ℂ → ℂ) =ᶠ[(volume : Measure ℂ)]\n",
+      "new": "    (fullPlaneTestToLInfinity phi : ℂ → ℂ) =ᵐ[(volume : Measure ℂ)]\n",
+      "owner": "coeFn_fullPlaneTestToLInfinity"
+    },
+    {
+      "id": "L-4402-pin-inner-self-scalar",
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "  apply inner_self_eq_zero.mp\n",
+      "new": "  apply (inner_self_eq_zero (𝕜 := ℂ)).mp\n",
+      "owner": "localBaseLimit_eq_invariantScalarMultiplier"
+    }
+  ]
+}

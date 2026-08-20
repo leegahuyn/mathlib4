@@ -1,0 +1,157 @@
+name: GPT QYM Probe40 verified frontier promoter
+
+on:
+  workflow_run:
+    workflows:
+      - GPT QYM Probe40 integrated GammaTwo repair
+    types: [completed]
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: gpt-qym-probe40-promote-${{ github.event.workflow_run.head_branch }}
+  cancel-in-progress: false
+
+jobs:
+  promote:
+    if: >-
+      github.event.workflow_run.head_branch == 'gpt/fa-qym-clean-final-20260816' &&
+      github.event.workflow_run.event != 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      BRANCH: gpt/fa-qym-clean-final-20260816
+      OUT: /tmp/qym-probe40-promote
+
+    steps:
+      - name: Checkout latest working branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: gpt/fa-qym-clean-final-20260816
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Download completed Probe40 evidence
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          pattern: qym-probe40-*
+          path: /tmp/qym-probe40-evidence
+          merge-multiple: true
+          github-token: ${{ github.token }}
+          repository: leegahuyn/mathlib4
+          run-id: ${{ github.event.workflow_run.id }}
+
+      - name: Gate direct Lean evidence and classify promotion
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT"
+          python3 - /tmp/qym-probe40-evidence "$OUT" <<'PY'
+          from pathlib import Path
+          import hashlib, json, os, sys
+
+          root = Path(sys.argv[1])
+          out = Path(sys.argv[2])
+          rp = next(iter(root.rglob('PROBE_RESULT.json')), None)
+          candidate = next(iter(root.rglob('QYM.candidate-probe40.lean')), None)
+          if rp is None or candidate is None:
+              raise SystemExit('missing Probe40 result or candidate')
+          result = json.loads(rp.read_text(encoding='utf-8'))
+          raw = candidate.read_bytes()
+          sha = hashlib.sha256(raw).hexdigest()
+          blob = hashlib.sha1(b'blob ' + str(len(raw)).encode() + b'\0' + raw).hexdigest()
+          if sha != result.get('candidate_qym_sha256'):
+              raise SystemExit('candidate SHA256 mismatch')
+          if blob != result.get('candidate_qym_blob'):
+              raise SystemExit('candidate blob mismatch')
+          if result.get('panic_lines') != 0:
+              raise SystemExit('panic evidence is nonzero')
+          baseline = result.get('baseline_error_headers')
+          errors = result.get('error_headers')
+          semantic = bool(result.get('semantic_pass'))
+          strict = semantic or (
+              isinstance(baseline, int) and isinstance(errors, int) and errors < baseline)
+          state = 'pass' if semantic else ('strict-improvement' if strict else 'no-improvement')
+          manifest = {
+              'schema': 'qym-probe40-promotion-decision-v1',
+              'workflow_run_id': int(os.environ['WORKFLOW_RUN_ID']),
+              'workflow_head_sha': os.environ['WORKFLOW_HEAD_SHA'],
+              'state': state,
+              'strict_improvement': strict,
+              'semantic_pass': semantic,
+              'baseline_error_headers': baseline,
+              'error_headers': errors,
+              'warning_headers': result.get('warning_headers'),
+              'panic_lines': result.get('panic_lines'),
+              'exit': result.get('exit'),
+              'first_error': result.get('first_error'),
+              'candidate_qym_sha256': sha,
+              'candidate_qym_blob': blob,
+          }
+          (out / 'PROMOTION_DECISION.json').write_text(
+              json.dumps(manifest, indent=2, sort_keys=True) + '\n', encoding='utf-8')
+          (out / 'QYM.candidate.lean').write_bytes(raw)
+          with open(os.environ['GITHUB_ENV'], 'a', encoding='utf-8') as env:
+              env.write(f'PROMOTION_STATE={state}\n')
+              env.write(f'CANDIDATE_SHA={sha}\n')
+              env.write(f'CANDIDATE_BLOB={blob}\n')
+          print(json.dumps(manifest, indent=2, sort_keys=True))
+          PY
+        env:
+          WORKFLOW_RUN_ID: ${{ github.event.workflow_run.id }}
+          WORKFLOW_HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+
+      - name: Preserve strict verified frontier
+        if: env.PROMOTION_STATE == 'strict-improvement'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .github/qym-frontier
+          cp "$OUT/QYM.candidate.lean" .github/qym-frontier/QYM_GLOBAL_BEST.lean
+          cp "$OUT/PROMOTION_DECISION.json" .github/qym-frontier/GLOBAL_BEST.json
+          cp /tmp/qym-probe40-evidence/QYM.error-headers.txt \
+            .github/qym-frontier/QYM_GLOBAL_BEST.error-headers.txt
+          cp /tmp/qym-probe40-evidence/QYM.diagnostics.jsonl \
+            .github/qym-frontier/QYM_GLOBAL_BEST.diagnostics.jsonl
+          printf '%s  %s\n' "$CANDIDATE_SHA" \
+            .github/qym-frontier/QYM_GLOBAL_BEST.lean \
+            > .github/qym-frontier/QYM_GLOBAL_BEST.sha256
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add .github/qym-frontier
+          git commit -m "QYM: preserve Probe40 verified strict frontier"
+          git push origin "HEAD:$BRANCH"
+
+      - name: Promote semantic PASS to canonical QYM
+        if: env.PROMOTION_STATE == 'pass'
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp "$OUT/QYM.candidate.lean" PrimalitySheafVerification/QYM.lean
+          mkdir -p .github/qym-final
+          cp "$OUT/PROMOTION_DECISION.json" .github/qym-final/QYM_PASS_DECISION.json
+          printf '%s  %s\n' "$CANDIDATE_SHA" PrimalitySheafVerification/QYM.lean \
+            > .github/qym-final/QYM_PASS.sha256
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add PrimalitySheafVerification/QYM.lean .github/qym-final
+          git commit -m "QYM: promote direct Lean semantic PASS candidate"
+          git push origin "HEAD:$BRANCH"
+
+      - name: Record no-improvement without repository mutation
+        if: env.PROMOTION_STATE == 'no-improvement'
+        shell: bash
+        run: |
+          cat "$OUT/PROMOTION_DECISION.json"
+          exit 1
+
+      - name: Upload promotion evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-probe40-promotion-${{ github.event.workflow_run.id }}
+          path: /tmp/qym-probe40-promote/**
+          if-no-files-found: error
+          retention-days: 30

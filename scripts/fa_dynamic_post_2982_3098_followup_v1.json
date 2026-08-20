@@ -1,0 +1,67 @@
+{
+  "schema": "fa-dynamic-post-2982-3098-followup-v1",
+  "status": "STATIC_STAGED_PENDING_DIRECT_LEAN",
+  "base_direct_tested_source_sha256": "5a1e6c533bb93f1ea68c237632b182b07dfd92ad34e3dbc5dc21beed74627cc6",
+  "repairs": [
+    {
+      "declaration_index": 2982,
+      "declaration_name": "inner_peterssonCuspCutoffCoreMap",
+      "old_fragment": "      simp only [map_mul, hReal]\n      ring",
+      "new_fragment": "      rw [star_mul, star_mul, star_mul, hReal]\n      ring"
+    },
+    {
+      "declaration_index": 3029,
+      "declaration_name": "negativePhysicalRaise_peterssonCuspCutoff_commutator",
+      "old_fragment": "      rw [physicalRaise_apply]\n      rfl",
+      "new_fragment": "      rw [physicalRaise_apply]"
+    },
+    {
+      "declaration_index": 3031,
+      "declaration_name": "negativePhysicalLowerFromSucc_peterssonCuspCutoff_commutator",
+      "old_fragment": "      rw [physicalLowerFromSucc_apply]\n      rfl",
+      "new_fragment": "      rw [physicalLowerFromSucc_apply]"
+    },
+    {
+      "declaration_index": 3046,
+      "declaration_name": "raising_cutoff_and_Friedrichs_of_sequentialApproximation",
+      "old_fragment": "    · intro p hp\n    obtain ⟨q, hqGraph, hqLimit⟩ := hCore p hp\n    exact isClosed_closure.mem_of_tendsto hqLimit\n      (Filter.Eventually.of_forall fun j ↦\n        subset_closure\n          (physicalRaise_graph_subset_compactWeakMaximalGraph n\n            (hqGraph j)).1)",
+      "new_fragment": "    · intro p hp\n      obtain ⟨q, hqGraph, hqLimit⟩ := hCore p hp\n      exact isClosed_closure.mem_of_tendsto hqLimit\n        (Filter.Eventually.of_forall fun j ↦\n          subset_closure\n            (physicalRaise_graph_subset_compactWeakMaximalGraph n\n              (hqGraph j)).1)"
+    },
+    {
+      "declaration_index": 3047,
+      "declaration_name": "lowering_cutoff_and_Friedrichs_of_sequentialApproximation",
+      "old_fragment": "    · intro p hp\n    obtain ⟨q, hqGraph, hqLimit⟩ := hCore p hp\n    exact isClosed_closure.mem_of_tendsto hqLimit\n      (Filter.Eventually.of_forall fun j ↦\n        subset_closure\n          (physicalLowerFromSucc_graph_subset_compactWeakMaximalGraph n\n            (hqGraph j)).1)",
+      "new_fragment": "    · intro p hp\n      obtain ⟨q, hqGraph, hqLimit⟩ := hCore p hp\n      exact isClosed_closure.mem_of_tendsto hqLimit\n        (Filter.Eventually.of_forall fun j ↦\n          subset_closure\n            (physicalLowerFromSucc_graph_subset_compactWeakMaximalGraph n\n              (hqGraph j)).1)"
+    },
+    {
+      "declaration_index": 3074,
+      "declaration_name": "modularMaxHeight_eventuallyEq_maximizer_im_of_one_lt",
+      "old_fragment": "      exact continuous_im.comp (continuous_const_smul gReal)",
+      "new_fragment": "      exact UpperHalfPlane.continuous_im.comp (continuous_const_smul gReal)"
+    },
+    {
+      "declaration_index": 3095,
+      "declaration_name": "intrinsicQuotientCuspCutoffReal_support_subset_truncation",
+      "old_fragment": "  simp only [Function.mem_support] at hq\n  obtain ⟨a, haCarrier⟩ := gammaTwoClosedTileCarrier_orbit_covers z",
+      "new_fragment": "  simp only [Function.mem_support] at hq\n  change intrinsicQuotientCuspCutoffReal N (gammaTwoQuotientMk z) ≠ 0 at hq\n  rw [intrinsicQuotientCuspCutoffReal_mk] at hq\n  obtain ⟨a, haCarrier⟩ := gammaTwoClosedTileCarrier_orbit_covers z"
+    },
+    {
+      "declaration_index": 3095,
+      "declaration_name": "intrinsicQuotientCuspCutoffReal_support_subset_truncation",
+      "old_fragment": "    simpa only [w, intrinsicQuotientCuspCutoffReal_mk,\n      intrinsicCuspCutoffReal_effective_invariant] using hq",
+      "new_fragment": "    simpa only [w, intrinsicCuspCutoffReal_effective_invariant] using hq"
+    },
+    {
+      "declaration_index": 3097,
+      "declaration_name": "intrinsicCuspCutoff_projected_support",
+      "old_fragment": "  · intro hz\n    refine ⟨z, ?_, rfl⟩\n    simpa only [Function.mem_support,\n      intrinsicQuotientCuspCutoffReal_mk, intrinsicCuspCutoff,\n      Complex.ofReal_ne_zero] using hz",
+      "new_fragment": "  · intro hz\n    change intrinsicQuotientCuspCutoffReal N (gammaTwoQuotientMk z) ≠ 0 at hz\n    rw [intrinsicQuotientCuspCutoffReal_mk] at hz\n    refine ⟨z, ?_, rfl⟩\n    simpa only [Function.mem_support, intrinsicCuspCutoff,\n      Complex.ofReal_ne_zero] using hz"
+    },
+    {
+      "declaration_index": 3098,
+      "declaration_name": "intrinsicCuspCutoff_quotientCompact",
+      "old_fragment": "  rw [HasQuotientCompactSupport, quotientTSupport, tsupport,\n    intrinsicCuspCutoff_projected_support]",
+      "new_fragment": "  rw [HasQuotientCompactSupport, quotientTSupport,\n    intrinsicCuspCutoff_projected_support]"
+    }
+  ]
+}

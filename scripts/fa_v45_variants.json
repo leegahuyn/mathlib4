@@ -1,0 +1,653 @@
+{
+  "authority": {
+    "artifact_bytes": 1683548,
+    "artifact_digest": "sha256:78416b511693fe68bd556674246cc0815015f8fddb46afcdc1e34673eefe87e5",
+    "artifact_id": 9189354873,
+    "artifact_name": "codex-fa-v43-middle_probe-highcap2000-dda6274627f628eca6cbfcef48f0c6e572881f0c",
+    "baseline_metrics": {
+      "FA_exit": 1,
+      "Mock2_Advanced_exit": 0,
+      "Mock2_exit": 0,
+      "cap_reached": false,
+      "declarations_with_errors": 39,
+      "distinct_error_signatures": 19,
+      "errors": 60,
+      "max_errors": 2000,
+      "synthetic_sorry_warnings": 1,
+      "warnings": 461
+    },
+    "declaration_count": 4416,
+    "diagnostics_bytes": 38237,
+    "diagnostics_sha256": "baab8be659f062f26d4b7563073c18480263747bfa45de88c642aeb13e1f4d07",
+    "fa_log_bytes": 331298,
+    "fa_log_sha256": "4edd03f6c327dda4fa5a49cc3fac56e85004199d3a5dfa7aca0c726ab533a73c",
+    "head_branch": "codex/fa-qym-cleanbuild-final-20260811-fast",
+    "head_sha": "dda6274627f628eca6cbfcef48f0c6e572881f0c",
+    "job_id": 94514229853,
+    "local_source_path": "work/v43-run-31719983304/9189354873/Mock2_FunctionalAnalysis-candidate.lean",
+    "metric_bytes": 2976,
+    "metric_sha256": "65ccfd8035d1c3044de2385fe132fe36fdb08cbd4b67a1742313b18f4c20ea8e",
+    "repository": "leegahuyn/mathlib4",
+    "run_id": 31719983304,
+    "runtime_source_path": "work/v43-run-31719983304/9189354873/Mock2_FunctionalAnalysis-candidate.lean",
+    "source_bytes": 2785412,
+    "source_lines": 62304,
+    "source_sha256": "f8d1b152e1c12639e4fc4f126e501a2a309333c5b8a6f3c8645df3e433572109",
+    "workflow_name": "Codex FA v43 five-variant highcap2000",
+    "workflow_path": ".github/workflows/codex-fa-v43-five-variant-highcap2000.yml"
+  },
+  "clean_build_claimed": false,
+  "direct_compile_chain": [
+    {
+      "max_errors": 1,
+      "source": "Mock2"
+    },
+    {
+      "max_errors": 1,
+      "source": "Mock2_Advanced"
+    },
+    {
+      "max_errors": 2000,
+      "source": "Mock2_FunctionalAnalysis"
+    }
+  ],
+  "direct_lean_verified": false,
+  "evidence_policy": {
+    "candidate_and_static_audit_uploaded_always": true,
+    "final_gate_mirrors_fa_exit": true,
+    "final_gate_requires_mock2_advanced_zero": true,
+    "final_gate_requires_mock2_zero": true,
+    "full_diagnostics_uploaded_always": true,
+    "if_fa_zero_requires_synthetic_sorry_zero": true,
+    "metric_uploaded_always": true,
+    "raw_logs_uploaded_always": true
+  },
+  "excluded_source_moves": {
+    "middle_m13": {
+      "path": "work/v43-mid/mid-m13-source-move.json",
+      "reason": "EXCLUDED_FROM_ALL_REGULAR_V45_VARIANTS",
+      "selected_by": [],
+      "sha256": "01629f1fa35ebbb802bd6c1388572ed9c8a16e75526641a6f7130d129977456f"
+    }
+  },
+  "hydration": {
+    "cross_manifest_owner_disjoint": true,
+    "direct_lean_verified": false,
+    "lean_lake_git_github_invoked": false,
+    "m13_excluded": true,
+    "paired_3925_3926_all_or_none": true,
+    "pending_index_sha256": "ec2052e56ad30b95e3803f64d84e3d7e327c9b540333bf93119595b7710aeeb6",
+    "q2_hc_sha256": "a37cf0cd72115a472527c033c3e6113088582fe20c2e99acd06cceeb426a7196",
+    "q2_staged_sha256": "c6221bde6796af054e53fd81e24c2ff2aadf3800e8cdaf2debf6966976fa43cc",
+    "status": "STATIC_PASS_DIRECT_LEAN_UNVERIFIED"
+  },
+  "manifests": {
+    "common_exact": {
+      "authority_source_sha256": "f8d1b152e1c12639e4fc4f126e501a2a309333c5b8a6f3c8645df3e433572109",
+      "bytes": 5761,
+      "manifest_status": "STATIC_EXACT_REMOTE_RESIDUAL_DIRECT_LEAN_REQUIRED",
+      "owner_count": 2,
+      "owner_indices": [
+        3838,
+        3949
+      ],
+      "repair_entries": 2,
+      "repair_ids": [
+        "V44-COMMON-HC01-replace-nonexistent-testfunction-apply-names-with-funlike-coe",
+        "V44-COMMON-HC02-strip-accidental-diff-prefixes-from-typed-tendsto-proof"
+      ],
+      "role": "high_confidence",
+      "runtime_path": "scripts/fa_v45_common_exact_repairs.json",
+      "schema": "fa-v42-declaration-local-repairs-v1",
+      "sha256": "55987d766defa36c26aeac27cca04a9023d894964b40552d8af608e58d8dff60",
+      "slice": "common",
+      "source_path": "work/v44-workers/common-hc/common-hc-exact-repairs.json",
+      "status": "LOCKED"
+    },
+    "common_staged": {
+      "authority_source_sha256": "f8d1b152e1c12639e4fc4f126e501a2a309333c5b8a6f3c8645df3e433572109",
+      "bytes": 5420,
+      "manifest_status": "STAGED_DIRECT_LEAN_REQUIRED",
+      "owner_count": 2,
+      "owner_indices": [
+        4015,
+        4017
+      ],
+      "repair_entries": 2,
+      "repair_ids": [
+        "V44-COMMON-S01-expose-weighted-full-inner-before-l2-rewrite",
+        "V44-COMMON-S02-replace-hard-stage-broad-simp-with-exact-inner-change"
+      ],
+      "role": "staged_probe",
+      "runtime_path": "scripts/fa_v45_common_staged_followons.json",
+      "schema": "fa-v42-declaration-local-repairs-v1",
+      "sha256": "e7ae2f13f44f8722ebda362da45c1b89f0fd4e4f680de8d09981d8fc13ce12e0",
+      "slice": "common",
+      "source_path": "work/v44-workers/common-hc/common-hc-staged-followons.json",
+      "status": "LOCKED"
+    },
+    "q1_hc": {
+      "authority_source_sha256": "f8d1b152e1c12639e4fc4f126e501a2a309333c5b8a6f3c8645df3e433572109",
+      "bytes": 9881,
+      "manifest_status": "STATIC_ONLY_DIRECT_LEAN_UNVERIFIED_V44_Q1_HIGH_CONFIDENCE",
+      "owner_count": 7,
+      "owner_indices": [
+        3669,
+        3899,
+        3932,
+        3946,
+        4297,
+        4298,
+        4395
+      ],
+      "repair_entries": 8,
+      "repair_ids": [
+        "V44-Q1-HC01-function-product-associativity-by-change",
+        "V44-Q1-HC02-preserve-scale-around-measurable-equivalence-congruence",
+        "V44-Q1-HC03-reuse-working-dx-Fourier-scalar-proof-for-dy",
+        "V44-Q1-HC04-pass-square-term-not-proof-to-sq-nonneg",
+        "V44-Q1-HC05-simp-conjugated-test-after-operator-unfold",
+        "V44-Q1-HC05b-remove-obsolete-pointwise-conjugate-simp",
+        "V44-Q1-HC06-normalize-negated-gauge-products",
+        "V44-Q1-HC07-rewrite-lp-smul-before-pointwise-scalar-action"
+      ],
+      "role": "high_confidence",
+      "runtime_path": "scripts/fa_v45_q1_high_confidence_repairs.json",
+      "schema": "fa-v42-declaration-local-repairs-v1",
+      "sha256": "f5eac67373d1a58805762fc6c4a505fba72363c2a4a9ba6b792d5537d7c085cf",
+      "slice": "q1",
+      "source_path": "work/v44-workers/q1/q1-high-confidence-repairs.json",
+      "status": "LOCKED"
+    },
+    "q1_staged": {
+      "authority_source_sha256": "f8d1b152e1c12639e4fc4f126e501a2a309333c5b8a6f3c8645df3e433572109",
+      "bytes": 2608,
+      "manifest_status": "STAGED_STATIC_ONLY_DIRECT_LEAN_REQUIRED_V44_Q1",
+      "owner_count": 2,
+      "owner_indices": [
+        3956,
+        4012
+      ],
+      "repair_entries": 2,
+      "repair_ids": [
+        "V44-Q1-S01-expose-upper-Euclidean-comap-before-subtype-integral",
+        "V44-Q1-S02-materialize-hard-stage-linear-map-before-mkContinuous2"
+      ],
+      "role": "staged_probe",
+      "runtime_path": "scripts/fa_v45_q1_staged_probes.json",
+      "schema": "fa-v42-declaration-local-repairs-v1",
+      "sha256": "86c755447437b6dda8d2d6390a2c8fd07d16150e624119e61830b2883c4ad60a",
+      "slice": "q1",
+      "source_path": "work/v44-workers/q1/q1-staged-probes.json",
+      "status": "LOCKED"
+    },
+    "q2_hc": {
+      "authority_source_sha256": "f8d1b152e1c12639e4fc4f126e501a2a309333c5b8a6f3c8645df3e433572109",
+      "bytes": 5517,
+      "manifest_status": "STATIC_ONLY_DIRECT_LEAN_UNVERIFIED_V44_Q2_HIGH_CONFIDENCE",
+      "owner_count": 3,
+      "owner_indices": [
+        3955,
+        4296,
+        4391
+      ],
+      "repair_entries": 4,
+      "repair_ids": [
+        "V44-Q2-HC02-normalize-ringhom-id-scalar",
+        "V44-Q2-HC03-unfold-conjugated-test-before-raising-adjoint",
+        "V44-Q2-HC03b-remove-obsolete-raising-pointwise-simp",
+        "V44-Q2-HC04-expose-invariant-scalar-pointwise-action"
+      ],
+      "role": "high_confidence",
+      "runtime_path": "scripts/fa_v45_q2_high_confidence_repairs.json",
+      "schema": "fa-v42-declaration-local-repairs-v1",
+      "sha256": "a37cf0cd72115a472527c033c3e6113088582fe20c2e99acd06cceeb426a7196",
+      "slice": "q2",
+      "source_path": "work/v44-workers/q2/q2-high-confidence-repairs.json",
+      "status": "LOCKED"
+    },
+    "q2_staged": {
+      "authority_source_sha256": "f8d1b152e1c12639e4fc4f126e501a2a309333c5b8a6f3c8645df3e433572109",
+      "bytes": 2520,
+      "manifest_status": "STAGED_STATIC_ONLY_DIRECT_LEAN_REQUIRED_V44_Q2",
+      "owner_count": 1,
+      "owner_indices": [
+        3883
+      ],
+      "repair_entries": 1,
+      "repair_ids": [
+        "V44-Q2-S01-normalize-hilbert-repr-coefficient-before-single-sum"
+      ],
+      "role": "staged_probe",
+      "runtime_path": "scripts/fa_v45_q2_staged_probes.json",
+      "schema": "fa-v42-declaration-local-repairs-v1",
+      "sha256": "c6221bde6796af054e53fd81e24c2ff2aadf3800e8cdaf2debf6966976fa43cc",
+      "slice": "q2",
+      "source_path": "work/v44-workers/q2/q2-staged-probes.json",
+      "status": "LOCKED"
+    },
+    "q3_hc": {
+      "authority_source_sha256": "f8d1b152e1c12639e4fc4f126e501a2a309333c5b8a6f3c8645df3e433572109",
+      "bytes": 8129,
+      "manifest_status": "STATIC_EXACT_REMOTE_RESIDUAL_DIRECT_LEAN_REQUIRED_V44_Q3_HC",
+      "owner_count": 5,
+      "owner_indices": [
+        3925,
+        3926,
+        4213,
+        4288,
+        4389
+      ],
+      "repair_entries": 5,
+      "repair_ids": [
+        "V44-Q3-HC01-horizontal-fourier-real-to-complex-scomp",
+        "V44-Q3-HC02-vertical-fourier-real-to-complex-scomp",
+        "V44-Q3-HC03-expose-both-chart-toLp-norms",
+        "V44-Q3-HC04-normalize-neighborhood-zero-functions-at-both-domains",
+        "V44-Q3-HC05-use-generic-pointwise-smul-evaluation"
+      ],
+      "role": "high_confidence",
+      "runtime_path": "scripts/fa_v45_q3_high_confidence_repairs.json",
+      "schema": "fa-v42-declaration-local-repairs-v1",
+      "sha256": "930039e14b71a5d5fcafd2c0537337cd1f4a384f225750f37f76ce7de43effd7",
+      "slice": "q3",
+      "source_path": "work/v44-workers/q3/q3-high-confidence-repairs.json",
+      "status": "LOCKED"
+    },
+    "q3_staged": {
+      "authority_source_sha256": "f8d1b152e1c12639e4fc4f126e501a2a309333c5b8a6f3c8645df3e433572109",
+      "bytes": 16359,
+      "manifest_status": "STAGED_STATIC_ONLY_DIRECT_LEAN_REQUIRED_V44_Q3",
+      "owner_count": 6,
+      "owner_indices": [
+        3690,
+        3920,
+        3927,
+        3928,
+        4016,
+        4299
+      ],
+      "repair_entries": 6,
+      "repair_ids": [
+        "V44-Q3-S01-change-nested-withlp-carrier",
+        "V44-Q3-S02-prove-whole-torus-coordinate-function-before-injectivity",
+        "V44-Q3-S03-name-horizontal-ibp-integrability-in-api-order",
+        "V44-Q3-S04-name-vertical-ibp-integrability-in-api-order",
+        "V44-Q3-S05-local-heartbeat-budget-for-dense-range-extensionality",
+        "V44-Q3-S06-use-ring-normal-form-for-negated-submodule-coercions"
+      ],
+      "role": "staged_probe",
+      "runtime_path": "scripts/fa_v45_q3_staged_probes.json",
+      "schema": "fa-v42-declaration-local-repairs-v1",
+      "sha256": "914c17fae6a44a691f2c98578fe87406a291742a2a50a608f89770fa62a80da9",
+      "slice": "q3",
+      "source_path": "work/v44-workers/q3/q3-staged-probes.json",
+      "status": "LOCKED"
+    }
+  },
+  "pair_contracts": [
+    {
+      "declaration_indices": [
+        3925,
+        3926
+      ],
+      "id": "V44-Q3-PAIR-3925-3926",
+      "repair_ids": [
+        "V44-Q3-HC01-horizontal-fourier-real-to-complex-scomp",
+        "V44-Q3-HC02-vertical-fourier-real-to-complex-scomp"
+      ],
+      "selection": "ALL_OR_NONE"
+    }
+  ],
+  "runnable": true,
+  "schema": "fa-v45-six-variant-index-v1",
+  "scripts": {
+    "base_collector": {
+      "bytes": 12932,
+      "runtime_path": "scripts/fa_v42_collect_full_diagnostics.py",
+      "sha256": "7de7bc92e4e2735c0d25706d70777ea67340d8afcf67434e43b051d5cb8c90c6",
+      "source_path": "work/v42-ci/fa_v42_collect_full_diagnostics.py"
+    },
+    "base_composer": {
+      "bytes": 13583,
+      "runtime_path": "scripts/fa_v42_validate_local_repairs.py",
+      "sha256": "3f4dc4a83a994cd3d014ef7d458fce515bbb59ca0ec80965cdb176a27f266ef7",
+      "source_path": "work/v42-workers/validate_local_repairs.py"
+    },
+    "base_runner": {
+      "bytes": 2554,
+      "runtime_path": "scripts/fa_v42_direct_compile_ci.sh",
+      "sha256": "2459f0a2cd44f6a3716de1ed2934c7588ba1a1e27ef443947d9e6089af196514",
+      "source_path": "work/v42-ci/fa_v42_direct_compile_ci.sh"
+    },
+    "collector_wrapper": {
+      "bytes": 3105,
+      "runtime_path": "scripts/fa_v45_collect_full_diagnostics.py",
+      "sha256": "10a397ead47b2e8aeefb85f9daea1371f30da416d784e6c28931f2be2c2fe8e6",
+      "source_path": "work/v45-ci/fa_v45_collect_full_diagnostics.py"
+    },
+    "hydrator": {
+      "bytes": 15254,
+      "sha256": "1d4a1f309b1fb65aa9afe65d80aebc7f84f888e38e49dc1bb5e0bdad5fd74dd7",
+      "source_path": "work/v45-ci/hydrate_v45_variants.py"
+    },
+    "materializer": {
+      "bytes": 15395,
+      "runtime_path": "scripts/fa_v45_materialize_candidate.py",
+      "sha256": "3df9511cc594b8c6f735aeebb8a805ec4283b23ad7ecd479e31dbb5a68393721",
+      "source_path": "work/v45-ci/fa_v45_materialize_candidate.py"
+    },
+    "runner_wrapper": {
+      "bytes": 808,
+      "runtime_path": "scripts/fa_v45_direct_compile_ci.sh",
+      "sha256": "aa1288ccf39531d5c27215289dbbbe303f2a3782ff8fec21383f10c37522fb87",
+      "source_path": "work/v45-ci/fa_v45_direct_compile_ci.sh"
+    }
+  },
+  "status": "STATIC_INPUTS_LOCKED_DIRECT_LEAN_UNVERIFIED",
+  "target_branch": "codex/fa-qym-cleanbuild-final-20260811-fast",
+  "variant_order": [
+    "core",
+    "common_probe",
+    "q1_probe",
+    "q2_probe",
+    "q3_probe",
+    "all_probes"
+  ],
+  "variants": {
+    "all_probes": {
+      "audit_bytes": 19425,
+      "audit_lines": 486,
+      "audit_sha256": "045fe75a7b0b7691e58b01dd97e87d1e9d76d4f84648b34745870d902df7ec94",
+      "candidate_bytes": 2788764,
+      "candidate_lines": 62383,
+      "candidate_sha256": "726f40d1dd03d32f03592adf4f6b02e3f7f52e7e1f71087ee53bdb83c4bb0caf",
+      "classification": "CORE_PLUS_ALL_STAGED_PROBES",
+      "declaration_count": 4416,
+      "direct_lean_verified": false,
+      "m13_excluded": true,
+      "manifest_order": [
+        "common_exact",
+        "q1_hc",
+        "q2_hc",
+        "q3_hc",
+        "common_staged",
+        "q1_staged",
+        "q2_staged",
+        "q3_staged"
+      ],
+      "owner_count": 28,
+      "repair_count": 30,
+      "runnable": true,
+      "selected_repair_ids": [
+        "V44-COMMON-HC01-replace-nonexistent-testfunction-apply-names-with-funlike-coe",
+        "V44-COMMON-HC02-strip-accidental-diff-prefixes-from-typed-tendsto-proof",
+        "V44-Q1-HC01-function-product-associativity-by-change",
+        "V44-Q1-HC02-preserve-scale-around-measurable-equivalence-congruence",
+        "V44-Q1-HC03-reuse-working-dx-Fourier-scalar-proof-for-dy",
+        "V44-Q1-HC04-pass-square-term-not-proof-to-sq-nonneg",
+        "V44-Q1-HC05-simp-conjugated-test-after-operator-unfold",
+        "V44-Q1-HC05b-remove-obsolete-pointwise-conjugate-simp",
+        "V44-Q1-HC06-normalize-negated-gauge-products",
+        "V44-Q1-HC07-rewrite-lp-smul-before-pointwise-scalar-action",
+        "V44-Q2-HC02-normalize-ringhom-id-scalar",
+        "V44-Q2-HC03-unfold-conjugated-test-before-raising-adjoint",
+        "V44-Q2-HC03b-remove-obsolete-raising-pointwise-simp",
+        "V44-Q2-HC04-expose-invariant-scalar-pointwise-action",
+        "V44-Q3-HC01-horizontal-fourier-real-to-complex-scomp",
+        "V44-Q3-HC02-vertical-fourier-real-to-complex-scomp",
+        "V44-Q3-HC03-expose-both-chart-toLp-norms",
+        "V44-Q3-HC04-normalize-neighborhood-zero-functions-at-both-domains",
+        "V44-Q3-HC05-use-generic-pointwise-smul-evaluation",
+        "V44-COMMON-S01-expose-weighted-full-inner-before-l2-rewrite",
+        "V44-COMMON-S02-replace-hard-stage-broad-simp-with-exact-inner-change",
+        "V44-Q1-S01-expose-upper-Euclidean-comap-before-subtype-integral",
+        "V44-Q1-S02-materialize-hard-stage-linear-map-before-mkContinuous2",
+        "V44-Q2-S01-normalize-hilbert-repr-coefficient-before-single-sum",
+        "V44-Q3-S01-change-nested-withlp-carrier",
+        "V44-Q3-S02-prove-whole-torus-coordinate-function-before-injectivity",
+        "V44-Q3-S03-name-horizontal-ibp-integrability-in-api-order",
+        "V44-Q3-S04-name-vertical-ibp-integrability-in-api-order",
+        "V44-Q3-S05-local-heartbeat-budget-for-dense-range-extensionality",
+        "V44-Q3-S06-use-ring-normal-form-for-negated-submodule-coercions"
+      ],
+      "source_moves": [],
+      "status": "LOCKED"
+    },
+    "common_probe": {
+      "audit_bytes": 13859,
+      "audit_lines": 348,
+      "audit_sha256": "159d51a02ad06da950ee4a14225cd537c6dc624dc8629ef9ff6f4843cb8da794",
+      "candidate_bytes": 2787565,
+      "candidate_lines": 62344,
+      "candidate_sha256": "5c7dc979dd2a0587d071c51ffbe7f6aa126baa134ff3f59746bb90756849d339",
+      "classification": "CORE_PLUS_COMMON_STAGED_PROBES",
+      "declaration_count": 4416,
+      "direct_lean_verified": false,
+      "m13_excluded": true,
+      "manifest_order": [
+        "common_exact",
+        "q1_hc",
+        "q2_hc",
+        "q3_hc",
+        "common_staged"
+      ],
+      "owner_count": 19,
+      "repair_count": 21,
+      "runnable": true,
+      "selected_repair_ids": [
+        "V44-COMMON-HC01-replace-nonexistent-testfunction-apply-names-with-funlike-coe",
+        "V44-COMMON-HC02-strip-accidental-diff-prefixes-from-typed-tendsto-proof",
+        "V44-Q1-HC01-function-product-associativity-by-change",
+        "V44-Q1-HC02-preserve-scale-around-measurable-equivalence-congruence",
+        "V44-Q1-HC03-reuse-working-dx-Fourier-scalar-proof-for-dy",
+        "V44-Q1-HC04-pass-square-term-not-proof-to-sq-nonneg",
+        "V44-Q1-HC05-simp-conjugated-test-after-operator-unfold",
+        "V44-Q1-HC05b-remove-obsolete-pointwise-conjugate-simp",
+        "V44-Q1-HC06-normalize-negated-gauge-products",
+        "V44-Q1-HC07-rewrite-lp-smul-before-pointwise-scalar-action",
+        "V44-Q2-HC02-normalize-ringhom-id-scalar",
+        "V44-Q2-HC03-unfold-conjugated-test-before-raising-adjoint",
+        "V44-Q2-HC03b-remove-obsolete-raising-pointwise-simp",
+        "V44-Q2-HC04-expose-invariant-scalar-pointwise-action",
+        "V44-Q3-HC01-horizontal-fourier-real-to-complex-scomp",
+        "V44-Q3-HC02-vertical-fourier-real-to-complex-scomp",
+        "V44-Q3-HC03-expose-both-chart-toLp-norms",
+        "V44-Q3-HC04-normalize-neighborhood-zero-functions-at-both-domains",
+        "V44-Q3-HC05-use-generic-pointwise-smul-evaluation",
+        "V44-COMMON-S01-expose-weighted-full-inner-before-l2-rewrite",
+        "V44-COMMON-S02-replace-hard-stage-broad-simp-with-exact-inner-change"
+      ],
+      "source_moves": [],
+      "status": "LOCKED"
+    },
+    "core": {
+      "audit_bytes": 12445,
+      "audit_lines": 313,
+      "audit_sha256": "a1779e0d5f4427943e7732fd4a8a6f89c9e5d7cd4611d6b006af6f2ea882814f",
+      "candidate_bytes": 2786921,
+      "candidate_lines": 62331,
+      "candidate_sha256": "5268a3c8d769c802a7c97bf48060bc1b79efdae5bc26f8c7a118d2c1960f4c75",
+      "classification": "CORE_ALL_HIGH_CONFIDENCE",
+      "declaration_count": 4416,
+      "direct_lean_verified": false,
+      "m13_excluded": true,
+      "manifest_order": [
+        "common_exact",
+        "q1_hc",
+        "q2_hc",
+        "q3_hc"
+      ],
+      "owner_count": 17,
+      "repair_count": 19,
+      "runnable": true,
+      "selected_repair_ids": [
+        "V44-COMMON-HC01-replace-nonexistent-testfunction-apply-names-with-funlike-coe",
+        "V44-COMMON-HC02-strip-accidental-diff-prefixes-from-typed-tendsto-proof",
+        "V44-Q1-HC01-function-product-associativity-by-change",
+        "V44-Q1-HC02-preserve-scale-around-measurable-equivalence-congruence",
+        "V44-Q1-HC03-reuse-working-dx-Fourier-scalar-proof-for-dy",
+        "V44-Q1-HC04-pass-square-term-not-proof-to-sq-nonneg",
+        "V44-Q1-HC05-simp-conjugated-test-after-operator-unfold",
+        "V44-Q1-HC05b-remove-obsolete-pointwise-conjugate-simp",
+        "V44-Q1-HC06-normalize-negated-gauge-products",
+        "V44-Q1-HC07-rewrite-lp-smul-before-pointwise-scalar-action",
+        "V44-Q2-HC02-normalize-ringhom-id-scalar",
+        "V44-Q2-HC03-unfold-conjugated-test-before-raising-adjoint",
+        "V44-Q2-HC03b-remove-obsolete-raising-pointwise-simp",
+        "V44-Q2-HC04-expose-invariant-scalar-pointwise-action",
+        "V44-Q3-HC01-horizontal-fourier-real-to-complex-scomp",
+        "V44-Q3-HC02-vertical-fourier-real-to-complex-scomp",
+        "V44-Q3-HC03-expose-both-chart-toLp-norms",
+        "V44-Q3-HC04-normalize-neighborhood-zero-functions-at-both-domains",
+        "V44-Q3-HC05-use-generic-pointwise-smul-evaluation"
+      ],
+      "source_moves": [],
+      "status": "LOCKED"
+    },
+    "q1_probe": {
+      "audit_bytes": 13876,
+      "audit_lines": 348,
+      "audit_sha256": "61c267edb061fc0dc177167235e721a3928666a218e075a90c12ec990bef242c",
+      "candidate_bytes": 2787050,
+      "candidate_lines": 62333,
+      "candidate_sha256": "945ec0ff6b46251953e82d8777e0cb276e5c9a4b520aa708551861a2347fed34",
+      "classification": "CORE_PLUS_Q1_STAGED_PROBES",
+      "declaration_count": 4416,
+      "direct_lean_verified": false,
+      "m13_excluded": true,
+      "manifest_order": [
+        "common_exact",
+        "q1_hc",
+        "q2_hc",
+        "q3_hc",
+        "q1_staged"
+      ],
+      "owner_count": 19,
+      "repair_count": 21,
+      "runnable": true,
+      "selected_repair_ids": [
+        "V44-COMMON-HC01-replace-nonexistent-testfunction-apply-names-with-funlike-coe",
+        "V44-COMMON-HC02-strip-accidental-diff-prefixes-from-typed-tendsto-proof",
+        "V44-Q1-HC01-function-product-associativity-by-change",
+        "V44-Q1-HC02-preserve-scale-around-measurable-equivalence-congruence",
+        "V44-Q1-HC03-reuse-working-dx-Fourier-scalar-proof-for-dy",
+        "V44-Q1-HC04-pass-square-term-not-proof-to-sq-nonneg",
+        "V44-Q1-HC05-simp-conjugated-test-after-operator-unfold",
+        "V44-Q1-HC05b-remove-obsolete-pointwise-conjugate-simp",
+        "V44-Q1-HC06-normalize-negated-gauge-products",
+        "V44-Q1-HC07-rewrite-lp-smul-before-pointwise-scalar-action",
+        "V44-Q2-HC02-normalize-ringhom-id-scalar",
+        "V44-Q2-HC03-unfold-conjugated-test-before-raising-adjoint",
+        "V44-Q2-HC03b-remove-obsolete-raising-pointwise-simp",
+        "V44-Q2-HC04-expose-invariant-scalar-pointwise-action",
+        "V44-Q3-HC01-horizontal-fourier-real-to-complex-scomp",
+        "V44-Q3-HC02-vertical-fourier-real-to-complex-scomp",
+        "V44-Q3-HC03-expose-both-chart-toLp-norms",
+        "V44-Q3-HC04-normalize-neighborhood-zero-functions-at-both-domains",
+        "V44-Q3-HC05-use-generic-pointwise-smul-evaluation",
+        "V44-Q1-S01-expose-upper-Euclidean-comap-before-subtype-integral",
+        "V44-Q1-S02-materialize-hard-stage-linear-map-before-mkContinuous2"
+      ],
+      "source_moves": [],
+      "status": "LOCKED"
+    },
+    "q2_probe": {
+      "audit_bytes": 13411,
+      "audit_lines": 337,
+      "audit_sha256": "27da36cde1e0539dc660271ab7028280737aeb6b4360c84d8934c641c3b6545c",
+      "candidate_bytes": 2786962,
+      "candidate_lines": 62332,
+      "candidate_sha256": "72fb56492834ae6e3ea95db9c74fef63eb5ab24767a8071b14bb9f4bd0e1b7ce",
+      "classification": "CORE_PLUS_Q2_STAGED_PROBES",
+      "declaration_count": 4416,
+      "direct_lean_verified": false,
+      "m13_excluded": true,
+      "manifest_order": [
+        "common_exact",
+        "q1_hc",
+        "q2_hc",
+        "q3_hc",
+        "q2_staged"
+      ],
+      "owner_count": 18,
+      "repair_count": 20,
+      "runnable": true,
+      "selected_repair_ids": [
+        "V44-COMMON-HC01-replace-nonexistent-testfunction-apply-names-with-funlike-coe",
+        "V44-COMMON-HC02-strip-accidental-diff-prefixes-from-typed-tendsto-proof",
+        "V44-Q1-HC01-function-product-associativity-by-change",
+        "V44-Q1-HC02-preserve-scale-around-measurable-equivalence-congruence",
+        "V44-Q1-HC03-reuse-working-dx-Fourier-scalar-proof-for-dy",
+        "V44-Q1-HC04-pass-square-term-not-proof-to-sq-nonneg",
+        "V44-Q1-HC05-simp-conjugated-test-after-operator-unfold",
+        "V44-Q1-HC05b-remove-obsolete-pointwise-conjugate-simp",
+        "V44-Q1-HC06-normalize-negated-gauge-products",
+        "V44-Q1-HC07-rewrite-lp-smul-before-pointwise-scalar-action",
+        "V44-Q2-HC02-normalize-ringhom-id-scalar",
+        "V44-Q2-HC03-unfold-conjugated-test-before-raising-adjoint",
+        "V44-Q2-HC03b-remove-obsolete-raising-pointwise-simp",
+        "V44-Q2-HC04-expose-invariant-scalar-pointwise-action",
+        "V44-Q3-HC01-horizontal-fourier-real-to-complex-scomp",
+        "V44-Q3-HC02-vertical-fourier-real-to-complex-scomp",
+        "V44-Q3-HC03-expose-both-chart-toLp-norms",
+        "V44-Q3-HC04-normalize-neighborhood-zero-functions-at-both-domains",
+        "V44-Q3-HC05-use-generic-pointwise-smul-evaluation",
+        "V44-Q2-S01-normalize-hilbert-repr-coefficient-before-single-sum"
+      ],
+      "source_moves": [],
+      "status": "LOCKED"
+    },
+    "q3_probe": {
+      "audit_bytes": 15628,
+      "audit_lines": 392,
+      "audit_sha256": "2be9f249f0bada6923d9f0d653e85ecb3d84c8b5da7971f05788c333d98261db",
+      "candidate_bytes": 2787950,
+      "candidate_lines": 62367,
+      "candidate_sha256": "ca81ad73a69beb4fc5dd4759cfbeac651fd97de1464e17312f0e9f3963df9787",
+      "classification": "CORE_PLUS_Q3_STAGED_PROBES",
+      "declaration_count": 4416,
+      "direct_lean_verified": false,
+      "m13_excluded": true,
+      "manifest_order": [
+        "common_exact",
+        "q1_hc",
+        "q2_hc",
+        "q3_hc",
+        "q3_staged"
+      ],
+      "owner_count": 23,
+      "repair_count": 25,
+      "runnable": true,
+      "selected_repair_ids": [
+        "V44-COMMON-HC01-replace-nonexistent-testfunction-apply-names-with-funlike-coe",
+        "V44-COMMON-HC02-strip-accidental-diff-prefixes-from-typed-tendsto-proof",
+        "V44-Q1-HC01-function-product-associativity-by-change",
+        "V44-Q1-HC02-preserve-scale-around-measurable-equivalence-congruence",
+        "V44-Q1-HC03-reuse-working-dx-Fourier-scalar-proof-for-dy",
+        "V44-Q1-HC04-pass-square-term-not-proof-to-sq-nonneg",
+        "V44-Q1-HC05-simp-conjugated-test-after-operator-unfold",
+        "V44-Q1-HC05b-remove-obsolete-pointwise-conjugate-simp",
+        "V44-Q1-HC06-normalize-negated-gauge-products",
+        "V44-Q1-HC07-rewrite-lp-smul-before-pointwise-scalar-action",
+        "V44-Q2-HC02-normalize-ringhom-id-scalar",
+        "V44-Q2-HC03-unfold-conjugated-test-before-raising-adjoint",
+        "V44-Q2-HC03b-remove-obsolete-raising-pointwise-simp",
+        "V44-Q2-HC04-expose-invariant-scalar-pointwise-action",
+        "V44-Q3-HC01-horizontal-fourier-real-to-complex-scomp",
+        "V44-Q3-HC02-vertical-fourier-real-to-complex-scomp",
+        "V44-Q3-HC03-expose-both-chart-toLp-norms",
+        "V44-Q3-HC04-normalize-neighborhood-zero-functions-at-both-domains",
+        "V44-Q3-HC05-use-generic-pointwise-smul-evaluation",
+        "V44-Q3-S01-change-nested-withlp-carrier",
+        "V44-Q3-S02-prove-whole-torus-coordinate-function-before-injectivity",
+        "V44-Q3-S03-name-horizontal-ibp-integrability-in-api-order",
+        "V44-Q3-S04-name-vertical-ibp-integrability-in-api-order",
+        "V44-Q3-S05-local-heartbeat-budget-for-dense-range-extensionality",
+        "V44-Q3-S06-use-ring-normal-form-for-negated-submodule-coercions"
+      ],
+      "source_moves": [],
+      "status": "LOCKED"
+    }
+  }
+}

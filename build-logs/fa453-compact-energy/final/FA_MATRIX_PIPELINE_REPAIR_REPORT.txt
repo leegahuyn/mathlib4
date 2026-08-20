@@ -1,0 +1,79 @@
+FA MATRIX PIPELINE REPAIR REPORT
+
+Baseline:
+source SHA256: 1f0a7e6c95691a89b3099a829da3e11fbbc731332f87e7c63d24eadade5692eb
+line count: 60450
+direct Lean exit: 1
+first error: 32035:79 Invalid field `paired`: The environment does not contain `Prod.paired`, so it is not possible to project the field `paired` from an expression
+  (q, GammaTwoModularTileEdge.circularArc)
+of type
+  GammaTwoRightCoset × GammaTwoModularTileEdge
+declaration: nativeActualEdgeFluxIntegral_paired_circular
+
+Pipeline issue found:
+root cause: FA442 guarded Lean installation and direct compilation with if: steps.prepare.outputs.ok == 'true'; checked-in promoted bytes failed the authoritative-baseline prepare check, so both direct stages were skipped and the selector received zero baseline metrics. Git identity was configured only on a later path. The repaired lineage now requires execution markers, direct metrics, independent baseline recompilation, and early bot identity.
+workflow files changed: .github/workflows/pre-commit.yml
+scripts changed: scripts/fa453_prepare_compact_energy.py, scripts/fa453_candidate_ci.sh, scripts/fa453_select_compact_energy.py, scripts/fa453_selector_ci.sh
+
+Candidate results:
+variant | SHA256 | Lean executed? | exit | first line:col | declaration | classification
+baseline | 1f0a7e6c95691a89b3099a829da3e11fbbc731332f87e7c63d24eadade5692eb | True | 1 | 32035:79 | nativeActualEdgeFluxIntegral_paired_circular | BASELINE
+macro_pair_only | a4b18ee88c5c35accf58f19e35ffd8e041e2e4d18245f15c9e223a8e9a77bb1e | True | 1 | 32596:5 | selectedHalfOpenTile_ae_eq_openTile | DECLARATION_BREAKTHROUGH
+macro_pair_smul | 39554f77e8e5923922b563f33aca91a4a749d1019ee01c07a4e6ebb6470d7ed9 | True | 1 | 33937:4 | compactSupport_height_mul_normSq_le_energy_Ioi | DECLARATION_BREAKTHROUGH
+macro_pair_smul_cumulative | b51c2ddcdfec8b98a89734575ef57b681f47eefba8b879028a3233439b70906a | True | 1 | 34244:44 | fixedPhaseEuclideanGauge_lower_pred | DECLARATION_BREAKTHROUGH
+
+Best direct-verified candidate:
+variant: macro_pair_smul_cumulative
+SHA256: b51c2ddcdfec8b98a89734575ef57b681f47eefba8b879028a3233439b70906a
+exit: 1
+first error: 34244:44 unsolved goals
+n : ℤ
+u : InverseEtaFixedPhaseCore n
+z : ℍ
+hScale : ↑(z.im ^ euclideanGaugeExponent n) = heightC z * ↑(z.im ^ euclideanGaugeExponent (n - 1))
+hExponent : euclideanGaugeExponent n = euclideanGaugeExponent (n - 1) + 1
+hz : heightC z ≠ 0
+⊢ -(↑(z.im ^ euclideanGaugeExponent (-1 + n)) * heightC z ^ 2 * Complex.I *
+          dx (↑↑u.toSmoothQuotientCompactFunction) z) +
+      ↑(z.im ^ euclideanGaugeExponent (-1 + n)) * heightC z ^ 2 * dy (↑↑u.toSmoothQuotientCompactFunction) z =
+    -(↑(z.im ^ euclideanGaugeExponent (-1 + n)) * heightC z ^ 2 * Complex.I *
+              dx (↑↑u.toSmoothQuotientCompactFunction) z) +
+          ↑(z.im ^ euclideanGaugeExponent (-1 + n)) * heightC z ^ 2 * dy (↑↑u.toSmoothQuotientCompactFunction) z +
+        ↑(1 + euclideanGaugeExponent (-1 + n)) * ↑(z.im ^ (1 + euclideanGaugeExponent (-1 + n))) *
+          ↑↑u.toSmoothQuotientCompactFunction z -
+      ↑(1 + euclideanGaugeExponent (-1 + n)) * fixedPhaseEuclideanGauge n u z
+declaration: fixedPhaseEuclideanGauge_lower_pred
+strictly better than 31726?: True
+
+Checked-in identity:
+selected SHA: b51c2ddcdfec8b98a89734575ef57b681f47eefba8b879028a3233439b70906a
+worktree SHA: b51c2ddcdfec8b98a89734575ef57b681f47eefba8b879028a3233439b70906a
+HEAD source SHA: b51c2ddcdfec8b98a89734575ef57b681f47eefba8b879028a3233439b70906a
+identity_ok: True
+
+Trust audit:
+sorry: 0
+admit: 0
+global axiom: 0
+unsafe: 0
+native_decide: 0
+Lean.ofReduceBool: 0
+
+FA checked-in verification:
+run1: 1
+run2: 1
+FA_TRUE_PASS: False
+
+Downstream:
+Integrated: SKIPPED
+Mock3 bridges: SKIPPED
+QYM: SKIPPED
+
+Final classification: STRICT PROMOTION
+
+Branches/commits:
+branch: fix/fa459-gl-invariant-strict-20260810
+source commit: 45151f1f5a20fecebd3ec9c4800f594ec35525cb
+verification HEAD: 45151f1f5a20fecebd3ec9c4800f594ec35525cb
+Workflow run URL: https://github.com/leegahuyn/mathlib4/actions/runs/31373682702
+Artifact ID: PENDING_UPLOAD

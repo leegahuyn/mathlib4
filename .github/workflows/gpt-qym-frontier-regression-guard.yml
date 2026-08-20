@@ -1,0 +1,38 @@
+name: GPT QYM frontier regression guard
+
+on:
+  workflow_run:
+    workflows:
+      - GPT QYM Probe40 verified frontier promoter
+      - GPT QYM verified-frontier producer selector v3
+      - GPT QYM statement-preserving declaration archaeology
+      - GPT QYM verified frontier direct revalidation v2
+    types: [completed]
+
+permissions:
+  actions: write
+  contents: read
+
+concurrency:
+  group: gpt-qym-frontier-regression-guard-${{ github.event.workflow_run.head_branch }}
+  cancel-in-progress: true
+
+jobs:
+  dispatch-authority-rescan:
+    if: github.event.workflow_run.head_branch == 'gpt/fa-qym-clean-final-20260816'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Dispatch global authority bootstrap
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            -X POST \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            https://api.github.com/repos/leegahuyn/mathlib4/actions/workflows/gpt-qym-authority-bootstrap.yml/dispatches \
+            -d '{"ref":"gpt/fa-qym-clean-final-20260816"}'

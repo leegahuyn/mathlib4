@@ -1,0 +1,348 @@
+{
+  "schema": "fa-v59-cross-normalized-repair-groups-v1",
+  "status": "LOCKED_STATIC_GROUPS_DIRECT_LEAN_UNVERIFIED",
+  "authority": {
+    "variant": "core_base",
+    "workflow_run_id": 31803223990,
+    "head_sha": "14e3e3f5e85f3c3ca7a1381eb88522552ffe29dc",
+    "head_branch": "codex/fa-exclusive-focus-20260814",
+    "artifact_id": 9220688452,
+    "artifact_name": "codex-fa-v58-core_base-highcap2000-14e3e3f5e85f3c3ca7a1381eb88522552ffe29dc",
+    "artifact_size_in_bytes": 619491,
+    "artifact_digest": "sha256:269100960a5e7ecd8b35e39cdde2c774f244b49c269e992aec00203bd2288ab4",
+    "source_sha256": "013f64cf5eaaab544629ad02fc2e33e63f90916e9b1e1581d73f2af2e7ba34ba",
+    "source_bytes": 2807163,
+    "source_lines": 62815,
+    "declaration_count": 4416,
+    "diagnostics_sha256": "a9ec828f9bbe0226b2bc694f26911cfd84fce016adca411f9bb8df52c6833db1",
+    "fa_log_sha256": "8395ab207c12ad32483166ec9a118b4fe1d82a1c772d5cd79d9237563efc9127",
+    "patch_audit_sha256": "372037c8eee8ce1a030e5085b831b5f04c9bfaaa9e8f707767ed48ecbe630b9a"
+  },
+  "authority_evidence_paths": {
+    "artifact_zip": "work/v58-artifact-9220688452.zip",
+    "source": "work/v58-artifact-9220688452/Mock2_FunctionalAnalysis-candidate.lean",
+    "diagnostics": "work/v58-artifact-9220688452/FULL_DIAGNOSTICS.json",
+    "fa_log": "work/v58-artifact-9220688452/Mock2_FunctionalAnalysis.log",
+    "patch_audit": "work/v58-artifact-9220688452/PATCH_AUDIT.json"
+  },
+  "normalization_contract": {
+    "group_count": 7,
+    "one_owner_local_repair_per_group": true,
+    "selection_uses_exact_group_keys": true,
+    "application_order": "strictly ascending declaration_index, independent of selection-list order",
+    "fragment_resolution": "hash-lock the source file, resolve the exact JSON pointer or preview extraction, then verify fragment SHA256 and byte count before any replacement",
+    "replacement_preconditions": {
+      "authority_sha256_must_match": true,
+      "owner_index_and_name_must_match": true,
+      "old_fragment_count_in_owner_must_equal": 1,
+      "old_fragment_count_global_must_equal": 1,
+      "new_fragment_count_global_before_must_equal": 0,
+      "fail_on_duplicate_or_unknown_group_key": true,
+      "fail_on_any_hash_count_or_dependency_mismatch": true
+    },
+    "postconditions": {
+      "declaration_count": 4416,
+      "declaration_name_order_identical": true,
+      "all_raw_declaration_headers_identical": true,
+      "comments_identical": true,
+      "attributes_identical": true,
+      "executable_trust_six_identical_and_zero": true,
+      "maxHeartbeats_token_and_option_counts_identical": true
+    },
+    "direct_lean_verified": false,
+    "clean_build_claimed": false
+  },
+  "source_package_locks": [
+    {
+      "path": "work/v58-workers/fourier/fourier-repair-manifest.json",
+      "sha256": "243e6879937108ff21c4fa676745d00e3d1c90530508a00729d375297ecda934",
+      "bytes": 9318,
+      "producer_schema": "fa-v58-declaration-local-repairs-v1"
+    },
+    {
+      "path": "work/v58-workers/weighted/staged-manifest.json",
+      "sha256": "24fc203adb4bdc3ac00ec06f0039c0f5a0e5456a9ba8be3e26e5a9efb0a4ca44",
+      "bytes": 3864,
+      "producer_schema": "fa-v58-weighted-local-repairs-v1"
+    },
+    {
+      "path": "work/v58-workers/weighted/promoted-manifest.json",
+      "sha256": "50b1f57b6c973a6314dc726e65a80b2787bf8dd068f32b69a6bc1aaa82d7fcee",
+      "bytes": 4116,
+      "producer_schema": "fa-v58-weighted-local-repairs-v1"
+    },
+    {
+      "path": "work/v58-workers/weighted/result-index.json",
+      "sha256": "239a3c7a65815a05ac8e462ec5a5bdf244eaefde80b2417cd5ca73113439585c",
+      "bytes": 2572,
+      "producer_schema": "fa-v58-weighted-worker-result-index-v1"
+    },
+    {
+      "path": "work/v58-workers/weighted-idx4018/probe-01-mkcontinuous2-manifest.json",
+      "sha256": "5674c746d28595cfaa492f7b116e4ee685f0b225bd2e50faf09c8f461970f5c9",
+      "bytes": 5319,
+      "producer_schema": "fa-v58-idx4018-structural-probe-v1"
+    },
+    {
+      "path": "work/v58-workers/weighted-idx4018/result-index.json",
+      "sha256": "5c80df46f3f4dee2a17298a9e3d4fabc4cda12585ea01b04e181ea8b5c369b3a",
+      "bytes": 5217,
+      "producer_schema": "fa-v58-idx4018-worker-result-index-v1"
+    },
+    {
+      "path": "work/v58-workers/reduced-chart/V58_IDX4198_STAGED_BODY_ONLY_MANIFEST.json",
+      "sha256": "c9acdee76dc90a6104a920d85ca70980f0debb44f0116936f7243be4ab875add",
+      "bytes": 7095,
+      "producer_schema": "fa-v58-declaration-local-file-repair-v1"
+    },
+    {
+      "path": "work/v58-workers/reduced-chart/idx4198-body-only-preview.lean",
+      "sha256": "8cebb44101b712d121aef1795cf626d47c3bcce72eb4a0bd16cc1a8771a7370c",
+      "bytes": 5821,
+      "producer_schema": "locked-preview"
+    }
+  ],
+  "groups": [
+    {
+      "group_key": "F3930",
+      "repair_id": "V58-FOURIER-IDX3930-INVERSE-FIRST-REAL-COORDINATE",
+      "classification": "PROMOTED_STATIC_DIRECT_LEAN_UNVERIFIED",
+      "diagnostic_ordinals": [1],
+      "owner": "inner_planeWave_ambientTestCore_eq_scale_mul_mFourierCoeff",
+      "declaration_index": 3930,
+      "owner_header_line": 53562,
+      "owner_header_sha256": "9bb2b8f834fcf921662ca829d782ff59a1a3f104275609f1df60e366dfc7d4fc",
+      "owner_region_sha256": "607813d514a60e3c033105cfdd99845cad793ba88d4f469ef1f2a1a71969c20e",
+      "owner_region_bytes": 6110,
+      "owner_region_byte_span_half_open": [2376460, 2382570],
+      "fragment_source": {
+        "path": "work/v58-workers/fourier/fourier-repair-manifest.json",
+        "sha256": "243e6879937108ff21c4fa676745d00e3d1c90530508a00729d375297ecda934",
+        "old_json_pointer": "/repairs/0/old",
+        "new_json_pointer": "/repairs/0/new"
+      },
+      "old_sha256": "968f3926cebcdc6d6eeed4d2680e629d5a94fe77cb54bc334a68c764bcd9f766",
+      "old_bytes": 290,
+      "old_lines": 7,
+      "new_sha256": "355f9cfcaccb412f2f54d8775a22cc8b0c7dbba0596178366e85f325c3a03745",
+      "new_bytes": 284,
+      "new_lines": 6,
+      "expected_owner_old_count": 1,
+      "expected_global_old_count": 1,
+      "expected_global_new_count_before": 0,
+      "transform_dependencies": [],
+      "direct_lean_success_preconditions": []
+    },
+    {
+      "group_key": "F3933",
+      "repair_id": "V58-FOURIER-IDX3933-DETERMINISTIC-INNER-STAR-REWRITE",
+      "classification": "PROMOTED_STATIC_DIRECT_LEAN_UNVERIFIED",
+      "diagnostic_ordinals": [2],
+      "owner": "inner_literalStagePlaneWave",
+      "declaration_index": 3933,
+      "owner_header_line": 53833,
+      "owner_header_sha256": "a2b27930d6539bf6d2bf6ead73ab957bfc8c265b06d2c17f99e8d4d486d25220",
+      "owner_region_sha256": "74b180d55166924f3fe81667c8e1c578a0852dccf65dbc23cd1c227596b4d6f9",
+      "owner_region_bytes": 6071,
+      "owner_region_byte_span_half_open": [2388600, 2394671],
+      "fragment_source": {
+        "path": "work/v58-workers/fourier/fourier-repair-manifest.json",
+        "sha256": "243e6879937108ff21c4fa676745d00e3d1c90530508a00729d375297ecda934",
+        "old_json_pointer": "/repairs/1/old",
+        "new_json_pointer": "/repairs/1/new"
+      },
+      "old_sha256": "dd7b6af07cd37cd68cc3c0e4cd011cae2c8def73d977c98fdb13242b3dfee627",
+      "old_bytes": 119,
+      "old_lines": 2,
+      "new_sha256": "965ab6e44923f7580ec453bf1b4d231a885e1cb27ccc12b61b5f2fab4b75580b",
+      "new_bytes": 112,
+      "new_lines": 2,
+      "expected_owner_old_count": 1,
+      "expected_global_old_count": 1,
+      "expected_global_new_count_before": 0,
+      "transform_dependencies": [],
+      "direct_lean_success_preconditions": []
+    },
+    {
+      "group_key": "F3939",
+      "repair_id": "V58-FOURIER-IDX3939-RING-NORMALIZE-CASTED-SQUARE",
+      "classification": "PROMOTED_STATIC_DIRECT_LEAN_UNVERIFIED",
+      "diagnostic_ordinals": [3],
+      "owner": "norm_planeFourierRemainder_eq_scale_mul_torusRemainder",
+      "declaration_index": 3939,
+      "owner_header_line": 54049,
+      "owner_header_sha256": "bb9886a7fe948c390550de053e06a36b3aa4bdddf28f614f4c028bc1f55395c7",
+      "owner_region_sha256": "26bc309b26a9b6b100f1ce79334a406be6e3c55ceec52c979922ff4e73308a97",
+      "owner_region_bytes": 5157,
+      "owner_region_byte_span_half_open": [2398524, 2403681],
+      "fragment_source": {
+        "path": "work/v58-workers/fourier/fourier-repair-manifest.json",
+        "sha256": "243e6879937108ff21c4fa676745d00e3d1c90530508a00729d375297ecda934",
+        "old_json_pointer": "/repairs/2/old",
+        "new_json_pointer": "/repairs/2/new"
+      },
+      "old_sha256": "fa1839ae65bb42b5be1fe6e80c0e515b85fbe99bf8bbd10db9432716a896374f",
+      "old_bytes": 110,
+      "old_lines": 3,
+      "new_sha256": "eac895f49dc8a0bcfc4a238599613f59a156a566e2e4d0d82ffac9e7142add3c",
+      "new_bytes": 96,
+      "new_lines": 3,
+      "expected_owner_old_count": 1,
+      "expected_global_old_count": 1,
+      "expected_global_new_count_before": 0,
+      "transform_dependencies": [],
+      "direct_lean_success_preconditions": []
+    },
+    {
+      "group_key": "W4017",
+      "repair_id": "V58-WEIGHTED-IDX4017-explicit-two-level-clm-ext",
+      "classification": "STAGED_STRUCTURAL_DIRECT_LEAN_REQUIRED",
+      "diagnostic_ordinals": [4],
+      "owner": "discriminantHardStageOperator_eq_weightedHard",
+      "declaration_index": 4017,
+      "owner_header_line": 55486,
+      "owner_header_sha256": "3034bc9bb0773d78681bd92d2295b06de1ff46d7658d21d904e18fc87553121e",
+      "owner_region_sha256": "5a8adccf0c4e53ab416228fcdeba37aa9abdff1f7482ffcf0e33654e4c4ef51e",
+      "owner_region_bytes": 2590,
+      "owner_region_byte_span_half_open": [2463834, 2466424],
+      "fragment_source": {
+        "path": "work/v58-workers/weighted/staged-manifest.json",
+        "sha256": "24fc203adb4bdc3ac00ec06f0039c0f5a0e5456a9ba8be3e26e5a9efb0a4ca44",
+        "old_json_pointer": "/repairs/0/old",
+        "new_json_pointer": "/repairs/0/new"
+      },
+      "old_sha256": "386031e17c4818197866dfc5435acf59c3263b097b21d5316e34005ff1aec9dd",
+      "old_bytes": 53,
+      "old_lines": 2,
+      "new_sha256": "2ab02c91c7d5d57d36aa3a8ad24f9be95af178103ba9bbb1462e2ca8df526ad1",
+      "new_bytes": 127,
+      "new_lines": 5,
+      "expected_owner_old_count": 1,
+      "expected_global_old_count": 1,
+      "expected_global_new_count_before": 0,
+      "transform_dependencies": [],
+      "direct_lean_success_preconditions": []
+    },
+    {
+      "group_key": "W4018P1",
+      "repair_id": "V58-IDX4018-P01-EXPLICIT-MKCONTINUOUS2-EVALUATION",
+      "classification": "STAGED_PREFERRED_PROBE_01_DIRECT_LEAN_REQUIRED",
+      "diagnostic_ordinals": [5],
+      "owner": "weightedFull_sub_weightedHard_eq_weightedTail",
+      "declaration_index": 4018,
+      "owner_header_line": 55547,
+      "owner_header_sha256": "5fe2aa90853fad0d65dafbf8f43a69f3c4362248577b3df5dc52046ee23479a2",
+      "owner_region_sha256": "2c500211db28a35281c8ec5ae9cb03b365ddc05114c266fda0bfab7d49ca42d9",
+      "owner_region_bytes": 978,
+      "owner_region_byte_span_half_open": [2466424, 2467402],
+      "fragment_source": {
+        "path": "work/v58-workers/weighted-idx4018/probe-01-mkcontinuous2-manifest.json",
+        "sha256": "5674c746d28595cfaa492f7b116e4ee685f0b225bd2e50faf09c8f461970f5c9",
+        "old_json_pointer": "/repair/old",
+        "new_json_pointer": "/repair/new"
+      },
+      "old_sha256": "d346687043b11b357455703c10fe29a04d7fe9321f5d2cdca5947aa5aed1f1e5",
+      "old_bytes": 119,
+      "old_lines": 2,
+      "new_sha256": "a74a91a89b9a85ac659e4989e8cd4488cc6fd9d2cb2d0565a7066ef888ecf05c",
+      "new_bytes": 156,
+      "new_lines": 3,
+      "expected_owner_old_count": 1,
+      "expected_global_old_count": 1,
+      "expected_global_new_count_before": 0,
+      "transform_dependencies": [],
+      "direct_lean_success_preconditions": ["W4017"],
+      "selection_id": "weighted_idx4018_minimal_p01",
+      "promotion_ready": false
+    },
+    {
+      "group_key": "W4019",
+      "repair_id": "V58-WEIGHTED-IDX4019-use-exact-norm-neg-term",
+      "classification": "PROMOTED_STATIC_FRAGMENT_CAUSALLY_BLOCKED_DIRECT_LEAN_UNVERIFIED",
+      "diagnostic_ordinals": [6],
+      "owner": "norm_discriminantHardStageOperator_sub_graphPotential_le",
+      "declaration_index": 4019,
+      "owner_header_line": 55571,
+      "owner_header_sha256": "8114b7371003c2586c354b382ee6f9ca157d5375e275c28216ebabb6136b051a",
+      "owner_region_sha256": "b9b7da78961ca8abdbc6b0a9d33c3dfcd05954f154799bf87f046334f834b55b",
+      "owner_region_bytes": 1390,
+      "owner_region_byte_span_half_open": [2467402, 2468792],
+      "fragment_source": {
+        "path": "work/v58-workers/weighted/promoted-manifest.json",
+        "sha256": "50b1f57b6c973a6314dc726e65a80b2787bf8dd068f32b69a6bc1aaa82d7fcee",
+        "old_json_pointer": "/repairs/0/old",
+        "new_json_pointer": "/repairs/0/new"
+      },
+      "old_sha256": "5923ac29fe79ce519eaf59391a73a00ec8c1ebd2e9f9c9741a077eb121a17417",
+      "old_bytes": 139,
+      "old_lines": 3,
+      "new_sha256": "6e8202b46a58cae2b6082f4aec79a0c04005d66891483a4899b77f755d6b6397",
+      "new_bytes": 127,
+      "new_lines": 2,
+      "expected_owner_old_count": 1,
+      "expected_global_old_count": 1,
+      "expected_global_new_count_before": 0,
+      "transform_dependencies": [],
+      "direct_lean_success_preconditions": ["W4017", "W4018P1"]
+    },
+    {
+      "group_key": "R4198",
+      "repair_id": "V58-IDX4198-INLINE-EFFECTIVE-FREENESS-BODY-ONLY",
+      "classification": "STAGED_BODY_ONLY_DIRECT_LEAN_REQUIRED",
+      "diagnostic_ordinals": [10],
+      "owner": "gammaTwoReducedChart_pairwise_disjoint_translates",
+      "declaration_index": 4198,
+      "owner_header_line": 57542,
+      "owner_header_sha256": "8cd611748aa4cd530e601635065e242406ad509d0cb4d53707e6a42090dbba41",
+      "owner_region_sha256": "bd80aa7edb9f1b9429cec953dcbd4e35f22668be04ad17d8c9ad8673228ae404",
+      "owner_region_bytes": 438,
+      "owner_region_byte_span_half_open": [2552134, 2552572],
+      "fragment_source": {
+        "old": {
+          "path": "work/v58-workers/reduced-chart/V58_IDX4198_STAGED_BODY_ONLY_MANIFEST.json",
+          "sha256": "c9acdee76dc90a6104a920d85ca70980f0debb44f0116936f7243be4ab875add",
+          "json_pointer": "/repair/old_body"
+        },
+        "new": {
+          "path": "work/v58-workers/reduced-chart/idx4198-body-only-preview.lean",
+          "sha256": "8cebb44101b712d121aef1795cf626d47c3bcce72eb4a0bd16cc1a8771a7370c",
+          "extraction": "take from the first line exactly equal to `by` through EOF, then remove the single terminal LF"
+        }
+      },
+      "old_sha256": "8785c545c7a69c236b552a2d1fd94b70dd84aa2b0316a8152a41e4b81502e61e",
+      "old_bytes": 155,
+      "old_lines": 5,
+      "new_sha256": "d7b2e7e8db8da72a9132559b29bb8f82c078eed99db6da8ca20b7140c8111625",
+      "new_bytes": 5346,
+      "new_lines": 121,
+      "expected_owner_old_count": 1,
+      "expected_global_old_count": 1,
+      "expected_global_new_count_before": 0,
+      "transform_dependencies": [],
+      "direct_lean_success_preconditions": []
+    }
+  ],
+  "excluded_serial_idx4018_fallbacks": [
+    {
+      "repair_id": "V58-IDX4018-P02-EXPLICIT-TWO-LEVEL-CLM-EXT",
+      "manifest_path": "work/v58-workers/weighted-idx4018/probe-02-explicit-ext-manifest.json",
+      "manifest_sha256": "be61f4fe905d9f8b910db8c530941c12866c413bd41ebc37f0ebc78a076db24f",
+      "manifest_bytes": 4409,
+      "requires": ["W4018P1"],
+      "standalone_selection_forbidden": true,
+      "reason_excluded_from_first_matrix": "cumulative fallback only after a direct P01 diagnostic"
+    },
+    {
+      "repair_id": "V58-IDX4018-P03-TYPED-INNER-CONGRARG",
+      "manifest_path": "work/v58-workers/weighted-idx4018/probe-03-typed-inner-congr-manifest.json",
+      "manifest_sha256": "34b258541aafed0465db6ca266fbc08f6f8a986935c8685e56e56cd00d77d2a5",
+      "manifest_bytes": 4400,
+      "requires": ["W4018P1", "V58-IDX4018-P02-EXPLICIT-TWO-LEVEL-CLM-EXT"],
+      "standalone_selection_forbidden": true,
+      "reason_excluded_from_first_matrix": "third cumulative fallback only after direct P01 and P02 diagnostics"
+    }
+  ],
+  "direct_lean_verified": false,
+  "clean_build_claimed": false,
+  "promotion_ready": false
+}

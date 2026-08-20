@@ -1,0 +1,122 @@
+{
+  "schema": "fa-v42-declaration-local-repairs-v1",
+  "status": "STATIC_ONLY_DIRECT_LEAN_UNVERIFIED",
+  "variant_base": "with_conditional_bodies",
+  "authority": {
+    "run_id": 31699916923,
+    "head_sha": "6867203e032c9711b47d8c2e1bd74f30d15cbd59",
+    "artifact_id": 9181214334,
+    "artifact_digest": "sha256:bb18b117b461a4fd36746685ce4437d835382989d4b7e1cff87bb6ebbcc9c870",
+    "source_path": "work/v41-run-31699916923/9181214334/Mock2_FunctionalAnalysis-candidate.lean",
+    "source_sha256": "d7e99092e79b26af21cd8c960b8e9c811731e27343757b750b62c53608805937",
+    "source_bytes": 2774362,
+    "source_lines": 62065,
+    "declaration_count": 4416,
+    "diagnostic_count": 110,
+    "declaration_count_with_errors": 72,
+    "max_errors": 2000,
+    "cap_sentinel_present": false
+  },
+  "purpose": "Close the two failed sesquilinear-map producers and the remaining scalar-associativity goal before accepting their downstream cascade as independent errors.",
+  "owned_declaration_indices": [4006, 4007, 4008, 4009, 4010, 4011, 4012, 4015, 4017, 4018, 4019, 4020],
+  "observed_error_ordinals": [52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70],
+  "root_declarations": [
+    "weightedGraphLinear",
+    "discriminantHardStagePairingLinear",
+    "weightedFull_apply_core"
+  ],
+  "cascade_declarations": [
+    "weightedGraphLinear_bound",
+    "weightedGraphOperator",
+    "norm_weightedGraphOperator_le",
+    "discriminantHardStagePairingLinear_bound",
+    "discriminantHardStagePotentialPairing",
+    "discriminantHardStageOperator_eq_weightedHard",
+    "weightedFull_sub_weightedHard_eq_weightedTail",
+    "norm_discriminantHardStageOperator_sub_graphPotential_le",
+    "graphPotentialOperator_isCompact_unconditional"
+  ],
+  "header_policy": "NO_HEADER_CHANGES",
+  "trust_policy": {
+    "tokens": ["sorry", "admit", "axiom", "unsafe", "native_decide", "Lean.ofReduceBool"],
+    "required_before": 0,
+    "required_after": 0
+  },
+  "repairs": [
+    {
+      "id": "V42-W01-weighted-inner-smul-normalize",
+      "owner": "weightedGraphLinear",
+      "declaration_index": 4006,
+      "kind": "body",
+      "confidence": "very-high-from-exact-residual",
+      "expected_count_in_owner": 1,
+      "old": "      map_smul' := fun c v ↦ by\n        simp only [map_smul, inner_smul_left] }",
+      "new": "      map_smul' := fun c v ↦ by\n        simp only [map_smul, inner_smul_left, smul_eq_mul] }",
+      "evidence": "The exact residual is star c * inner = star c • inner; smul_eq_mul is the missing normalization."
+    },
+    {
+      "id": "V42-W02-weighted-outer-add-evaluation",
+      "owner": "weightedGraphLinear",
+      "declaration_index": 4006,
+      "kind": "body",
+      "confidence": "high-api-present-in-same-source",
+      "expected_count_in_owner": 1,
+      "old": "  map_add' u w := by\n    ext v\n    rw [map_add, map_add, inner_add_right]",
+      "new": "  map_add' u w := by\n    ext v\n    simp only [map_add, inner_add_right, ContinuousLinearMap.add_apply]"
+    },
+    {
+      "id": "V42-W03-weighted-outer-smul-evaluation",
+      "owner": "weightedGraphLinear",
+      "declaration_index": 4006,
+      "kind": "body",
+      "confidence": "high-api-present-in-same-source",
+      "expected_count_in_owner": 1,
+      "old": "  map_smul' c u := by\n    ext v\n    rw [map_smul, map_smul, inner_smul_right]",
+      "new": "  map_smul' c u := by\n    ext v\n    simp only [map_smul, inner_smul_right,\n      ContinuousLinearMap.smul_apply, smul_eq_mul]"
+    },
+    {
+      "id": "V42-W04-hard-stage-inner-smul-normalize",
+      "owner": "discriminantHardStagePairingLinear",
+      "declaration_index": 4010,
+      "kind": "body",
+      "confidence": "very-high-from-exact-residual",
+      "expected_count_in_owner": 1,
+      "old": "      map_smul' := fun c v ↦ by\n        simp only [map_smul, inner_smul_left] }",
+      "new": "      map_smul' := fun c v ↦ by\n        simp only [map_smul, inner_smul_left, smul_eq_mul] }",
+      "evidence": "The exact residual is star c * inner = star c • inner; smul_eq_mul is the missing normalization."
+    },
+    {
+      "id": "V42-W05-hard-stage-outer-add-evaluation",
+      "owner": "discriminantHardStagePairingLinear",
+      "declaration_index": 4010,
+      "kind": "body",
+      "confidence": "high-api-present-in-same-source",
+      "expected_count_in_owner": 1,
+      "old": "  map_add' f g := by\n    ext v\n    simp only [map_add, inner_add_right]",
+      "new": "  map_add' f g := by\n    ext v\n    simp only [map_add, inner_add_right, ContinuousLinearMap.add_apply]"
+    },
+    {
+      "id": "V42-W06-hard-stage-outer-smul-evaluation",
+      "owner": "discriminantHardStagePairingLinear",
+      "declaration_index": 4010,
+      "kind": "body",
+      "confidence": "high-api-present-in-same-source",
+      "expected_count_in_owner": 1,
+      "old": "  map_smul' c f := by\n    ext v\n    simp only [map_smul, inner_smul_right]",
+      "new": "  map_smul' c f := by\n    ext v\n    simp only [map_smul, inner_smul_right,\n      ContinuousLinearMap.smul_apply, smul_eq_mul]"
+    },
+    {
+      "id": "V42-W07-weighted-full-explicit-scalar-associativity",
+      "owner": "weightedFull_apply_core",
+      "declaration_index": 4015,
+      "kind": "body",
+      "confidence": "very-high-from-exact-residual",
+      "expected_count_in_owner": 1,
+      "old": "      simp only [NNReal.smul_def, smul_eq_mul]\n      ring",
+      "new": "      change (upstairsPotential z : ℂ) * (hyperbolicDensity z : ℂ) *\n          upstairsInnerDensity (OrbitMultiplier n) V U z =\n        (hyperbolicDensity z : ℂ) * ((upstairsPotential z : ℂ) *\n          upstairsInnerDensity (OrbitMultiplier n) V U z)\n      ring",
+      "evidence": "The exact residual is scalar associativity with two remaining smul nodes; an explicit complex-valued change exposes a commutative-ring identity."
+    }
+  ],
+  "promotion_rule": "Run only as a full Mock2 -> Mock2 Advanced -> FA maxErrors=2000 matrix candidate; downstream cascade declarations are not edited in this batch.",
+  "direct_lean_verified": false
+}

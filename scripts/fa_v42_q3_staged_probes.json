@@ -1,0 +1,71 @@
+{
+  "schema": "fa-v42-declaration-local-repairs-v1",
+  "status": "STAGED_STATIC_ONLY_DIRECT_LEAN_UNVERIFIED",
+  "variant_base": "with_conditional_bodies",
+  "authority": {
+    "run_id": 31699916923,
+    "head_sha": "6867203e032c9711b47d8c2e1bd74f30d15cbd59",
+    "artifact_id": 9181214334,
+    "artifact_digest": "sha256:bb18b117b461a4fd36746685ce4437d835382989d4b7e1cff87bb6ebbcc9c870",
+    "source_path": "work/v41-run-31699916923/9181214334/Mock2_FunctionalAnalysis-candidate.lean",
+    "source_sha256": "d7e99092e79b26af21cd8c960b8e9c811731e27343757b750b62c53608805937",
+    "source_bytes": 2774362,
+    "source_lines": 62065,
+    "declaration_count": 4416
+  },
+  "queue_id": 3,
+  "owned_declaration_indices": [3925, 3955],
+  "observed_error_ordinals": [16, 42, 43],
+  "header_policy": "NO_HEADER_CHANGES",
+  "trust_policy": {
+    "tokens": ["sorry", "admit", "axiom", "unsafe", "native_decide", "Lean.ofReduceBool"],
+    "required_before": 0,
+    "required_after": 0
+  },
+  "repairs": [
+    {
+      "id": "V42-Q3-S01-use-codomain-const-multiplication",
+      "owner": "fderiv_literalStageNegativePlaneWave_one",
+      "declaration_index": 3925,
+      "diagnostics": [16],
+      "kind": "body",
+      "classification": "STAGE_API_PROBE",
+      "confidence": "medium-high-overload-sensitive",
+      "expected_count_in_owner": 1,
+      "old": "          (((hasDerivAt_id (0 : ℝ)).const_add w.re).const_mul\n            (literalStageFourierScale Y)⁻¹)).mul_const\n        (fourier (-(k 1))",
+      "new": "          (((hasDerivAt_id (0 : ℝ)).const_add w.re).const_mul\n            (literalStageFourierScale Y)⁻¹)).const_mul\n        (fourier (-(k 1))",
+      "evidence": "The selected mul_const overload expects a real constant, while the displayed Fourier factor is complex. The vertical sibling uses const_mul for a complex Fourier factor. The resulting product order is delegated to the existing convert/ring tail.",
+      "probe_risk": "Must confirm the overload and converted product orientation in the exact toolchain."
+    },
+    {
+      "id": "V42-Q3-S02-explicit-upper-lp-add-chain",
+      "owner": "ambientPlaneToUpperLinear",
+      "declaration_index": 3955,
+      "diagnostics": [42],
+      "kind": "body",
+      "classification": "STAGE_COERCION_PROBE",
+      "confidence": "medium-high-explicit-ae-chain",
+      "expected_count_in_owner": 1,
+      "old": "        (Lp.coeFn_add F G)] with z hfg hf hg hadd hFG\n    simpa [hfg, hf, hg, hadd, hFG]",
+      "new": "        (Lp.coeFn_add F G)] with z hfg hf hg hadd hFG\n    calc\n      _ = ↑↑(F + G) (z : ℂ) := hfg\n      _ = ((↑↑F + ↑↑G) ∘ fun z : ℍ => (z : ℂ)) z := hFG\n      _ = (↑↑((ambientPlane_comp_upper_memLp F).toLp\n            (fun z : ℍ ↦ F (z : ℂ))) +\n          ↑↑((ambientPlane_comp_upper_memLp G).toLp\n            (fun z : ℍ ↦ G (z : ℂ)))) z := by\n        simp only [Function.comp_apply, Pi.add_apply, hf, hg]\n      _ = _ := hadd.symm",
+      "evidence": "The five a.e. equalities are sufficient, but simp rewrites them in unstable directions. The calc fixes the intended path from toLp(F+G), through pointwise F+G, to the Lp addition coercion.",
+      "probe_risk": "Coercion display of the two toLp values may require a smaller change or explicit parentheses after elaboration."
+    },
+    {
+      "id": "V42-Q3-S03-explicit-upper-lp-smul-chain",
+      "owner": "ambientPlaneToUpperLinear",
+      "declaration_index": 3955,
+      "diagnostics": [43],
+      "kind": "body",
+      "classification": "STAGE_COERCION_PROBE",
+      "confidence": "medium-high-explicit-ae-chain",
+      "expected_count_in_owner": 1,
+      "old": "        (Lp.coeFn_smul c F)] with z hcf hf hc\n    simpa [hcf, hf, hc]",
+      "new": "        (Lp.coeFn_smul c F)] with z hcf hf hc\n    calc\n      _ = ↑↑(c • F) (z : ℂ) := hcf\n      _ = ((c • ↑↑F) ∘ fun z : ℍ => (z : ℂ)) z := hc\n      _ = c * ↑↑((ambientPlane_comp_upper_memLp F).toLp\n          (fun z : ℍ ↦ F (z : ℂ))) z := by\n        simp only [Function.comp_apply, Pi.smul_apply, smul_eq_mul, hf]\n      _ = _ := by\n        simp only [Lp.coeFn_smul, smul_eq_mul]",
+      "evidence": "This is the scalar counterpart of S02 and uses hcf, hc and hf in a fixed direction instead of asking simp to discover the chain.",
+      "probe_risk": "The final Lp.coeFn_smul lemma may simplify only a.e. rather than pointwise in this elaborated context; direct replay is required."
+    }
+  ],
+  "promotion_rule": "Keep separate from the conservative bundle. Probe only in a separately named full direct-chain candidate and promote individual entries only after their owned residuals disappear without new errors.",
+  "direct_lean_verified": false
+}

@@ -1,0 +1,1 @@
+lake env lean -DmaxErrors=2000 -DwarningAsError=false -o .lake/build/lib/lean/PrimalitySheafVerification/QYM.olean -i .lake/build/lib/lean/PrimalitySheafVerification/QYM.ilean PrimalitySheafVerification/QYM.lean 

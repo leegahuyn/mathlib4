@@ -1,0 +1,32 @@
+{
+  "schema": "fa-dynamic-cutoff-core-cluster-2980-2985-v1",
+  "status": "STATIC_ONLY_PENDING_DIRECT_LEAN",
+  "repairs": [
+    {
+      "declaration_index": 2980,
+      "declaration_name": "norm_peterssonCuspCutoff_apply_le",
+      "old_fragment": "  simpa only [one_mul] using\n    LinearMap.norm_extendOfNorm_apply_le\n      (denseRange_l2Coordinate n) 1\n      (fun v ↦ by\n        simpa only [one_mul] using\n          norm_peterssonCuspCutoffCoreMap_le N n v) x",
+      "new_fragment": "  simpa only [peterssonCuspCutoff, one_mul] using\n    LinearMap.norm_extendOfNorm_apply_le\n      (denseRange_l2Coordinate n) 1\n      (fun v ↦ by\n        simpa only [one_mul] using\n          norm_peterssonCuspCutoffCoreMap_le N n v) x"
+    },
+    {
+      "declaration_index": 2982,
+      "declaration_name": "inner_peterssonCuspCutoffCoreMap",
+      "old_fragment": "      change star\n          (((z.im ^ Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent n : ℝ) : ℂ) *\n            (upstairsCuspCutoff N z *\n              (u : SmoothQuotientCompactFunction) z)) *\n            (((z.im ^ Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent n : ℝ) : ℂ) *\n              (v : SmoothQuotientCompactFunction) z) =\n        star\n          (((z.im ^ Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent n : ℝ) : ℂ) *\n            (u : SmoothQuotientCompactFunction) z) *\n            (((z.im ^ Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent n : ℝ) : ℂ) *\n              (upstairsCuspCutoff N z *\n                (v : SmoothQuotientCompactFunction) z))\n      have hReal : star (upstairsCuspCutoff N z) =\n          upstairsCuspCutoff N z := by\n        simp only [upstairsCuspCutoff, Complex.conj_ofReal]\n      simp only [map_mul, hReal]\n      ring",
+      "new_fragment": "      have hReal : star (upstairsCuspCutoff N z) =\n          upstairsCuspCutoff N z := by\n        simp only [upstairsCuspCutoff, Complex.conj_ofReal]\n      have hLeft :\n          (((z.im ^ Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent n : ℝ) : ℂ) *\n            (upstairsCuspCutoff N z *\n              (u : SmoothQuotientCompactFunction) z)) =\n            (upstairsCuspCutoff N z) •\n              (((z.im ^ Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent n : ℝ) : ℂ) *\n                (u : SmoothQuotientCompactFunction) z) := by\n        simp only [smul_eq_mul]\n        ring\n      have hRight :\n          (((z.im ^ Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent n : ℝ) : ℂ) *\n            (upstairsCuspCutoff N z *\n              (v : SmoothQuotientCompactFunction) z)) =\n            (upstairsCuspCutoff N z) •\n              (((z.im ^ Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent n : ℝ) : ℂ) *\n                (v : SmoothQuotientCompactFunction) z) := by\n        simp only [smul_eq_mul]\n        ring\n      rw [hLeft, hRight, inner_smul_left, inner_smul_right,\n        starRingEnd_apply, hReal]"
+    },
+    {
+      "declaration_index": 2985,
+      "declaration_name": "peterssonCuspCutoff_tendsto_id",
+      "replacements": [
+        {
+          "old_fragment": "  have hApproxTwo : ‖l2Coordinate n u - x‖ < ε / 2 := by\n    simpa only [dist_eq_norm] using hu",
+          "new_fragment": "  have hApproxTwo : ‖l2Coordinate n u - x‖ < ε / 2 := by\n    simpa only [norm_sub_rev] using hApproxOne"
+        },
+        {
+          "old_fragment": "    _ ≤ ‖x - l2Coordinate n u‖ +\n          ‖l2Coordinate n u - x‖ :=\n      add_le_add_right\n        (norm_peterssonCuspCutoff_apply_le M n\n          (x - l2Coordinate n u)) _",
+          "new_fragment": "    _ ≤ ‖x - l2Coordinate n u‖ +\n          ‖l2Coordinate n u - x‖ :=\n      add_le_add\n        (norm_peterssonCuspCutoff_apply_le M n\n          (x - l2Coordinate n u)) le_rfl"
+        }
+      ]
+    }
+  ]
+}

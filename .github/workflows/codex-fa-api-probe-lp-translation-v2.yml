@@ -1,0 +1,62 @@
+name: Codex FA API probe Lp translation v2
+
+on:
+  push:
+    branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
+    paths: [.github/workflows/codex-fa-api-probe-lp-translation-v2.yml]
+  workflow_dispatch:
+permissions: {contents: read}
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with: {ref: "${{ github.sha }}", fetch-depth: 1, persist-credentials: false}
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none >/tmp/elan.log 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1
+          lake exe cache get >/tmp/cache.log 2>&1
+      - name: Verify planar Lp DomAdd continuity
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          cat >/tmp/ProbeLpTranslation.lean <<'LEAN'
+          import Mathlib.MeasureTheory.Function.LpSpace.DomAct.Continuous
+          import Mathlib.MeasureTheory.Measure.Lebesgue.Complex
+          import Mathlib.Tactic
+          open Topology Filter MeasureTheory
+          open scoped ENNReal
+
+          #check MeasureTheory.Lp.instContinuousVAddDomAddAct
+          #synth Fact (1 ≤ (2 : ℝ≥0∞))
+          #synth Fact ((2 : ℝ≥0∞) ≠ ∞)
+          #synth ContinuousVAdd ℂᵈᵃᵃ (MeasureTheory.Lp ℂ 2 (volume : Measure ℂ))
+
+          noncomputable abbrev AmbientPlaneL2Probe := MeasureTheory.Lp ℂ 2 (volume : Measure ℂ)
+
+          example (f : AmbientPlaneL2Probe) :
+              Filter.Tendsto (fun t : ℂ ↦ DomAddAct.mk t +ᵥ f)
+                (nhds 0) (nhds f) := by
+            have h : Continuous (fun t : ℂ ↦ DomAddAct.mk t +ᵥ f) := by
+              fun_prop
+            exact h.continuousAt
+
+          example (f : AmbientPlaneL2Probe) :
+              Filter.Tendsto (fun t : ℂ ↦ ‖DomAddAct.mk t +ᵥ f - f‖)
+                (nhds 0) (nhds 0) := by
+            have h : Continuous (fun t : ℂ ↦ ‖DomAddAct.mk t +ᵥ f - f‖) := by
+              fun_prop
+            simpa using h.continuousAt
+          LEAN
+          lake env lean -DwarningAsError=false /tmp/ProbeLpTranslation.lean | tee /tmp/probe.log
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with: {name: "codex-fa-api-probe-lp-translation-v2-${{ github.sha }}", path: /tmp/probe.log, retention-days: 7}

@@ -1,0 +1,9 @@
+{
+  "schema": "fa-dynamic-env-independent-weak-core-instances-v1",
+  "status": "STRUCTURAL_INSTANCE_ROOT_PENDING_DIRECT_LEAN",
+  "environment_replacement": {
+    "id": "reactivate-fixed-phase-core-instances-independent-weak",
+    "old_fragment": "namespace IndependentWeightedWeakSobolev\n\nopen Function Set Topology\nopen scoped LinearPMap\nopen DefinitionOneSobolev\nopen DefinitionOneSobolev.FixedPhasePeterssonCoordinates\nopen DefinitionOneSobolev.FixedPhaseGraphCompletion\nopen FixedPhaseClosedOperators",
+    "new_fragment": "namespace IndependentWeightedWeakSobolev\n\nopen Function Set Topology\nopen scoped LinearPMap\nopen DefinitionOneSobolev\nopen DefinitionOneSobolev.FixedPhasePeterssonCoordinates\nopen DefinitionOneSobolev.FixedPhaseGraphCompletion\nopen FixedPhaseClosedOperators\n\nattribute [local instance]\n  DefinitionOneSobolev.FixedPhaseGraphCompletion.fixedPhaseGraphCoreModule\n  DefinitionOneSobolev.FixedPhaseGraphCompletion.fixedPhaseGraphCoreAddCommGroup"
+  }
+}

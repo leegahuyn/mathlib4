@@ -1,0 +1,82 @@
+name: Codex FA energy-form transport matrix probe
+on:
+  push:
+    branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
+    paths: [.github/workflows/codex-fa-v38-firstroot-transport-probe.yml]
+  workflow_dispatch: {}
+permissions: {actions: read, contents: read}
+jobs:
+  probe:
+    strategy:
+      fail-fast: false
+      matrix:
+        variant: [convert, energyapply, energyunfold]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with: {ref: "${{ github.sha }}", fetch-depth: 1, persist-credentials: false}
+      - name: Materialize exact v37 and make variant
+        env:
+          GH_TOKEN: "${{ github.token }}"
+          VARIANT: "${{ matrix.variant }}"
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/v37
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/9172306868/zip" >/tmp/v37.zip
+          test "sha256:$(sha256sum /tmp/v37.zip | awk '{print $1}')" = "sha256:f8d9e30cc4c9a972f14bf9cf1d85b1a2c4c7cebb7b39fb0a039af3a6cf7bbc2e"
+          unzip -q /tmp/v37.zip -d /tmp/v37
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib, os, shutil
+          want='e17ff90193c6959b15f743ef930446b4cfd45bc6df4d762057c13b4b06602d05'
+          hits=[p for p in Path('/tmp/v37').rglob('Mock2_FunctionalAnalysis.lean') if hashlib.sha256(p.read_bytes()).hexdigest()==want]
+          assert len(hits)==1,hits
+          dst=Path('/tmp/FA.lean'); shutil.copy2(hits[0],dst)
+          s=dst.read_text(); v=os.environ['VARIANT']
+          old='''  have hs :=\n    successorEnergyForm_eq_inner_strongPrincipalCore (n - 1)\n  simpa only [successorGraphCoordinates, transportSuccessorCoordinates,\n    successorIndexEq, sub_add_cancel] using hs\n'''
+          variants={
+          'convert':'''  have hs :=\n    successorEnergyForm_eq_inner_strongPrincipalCore (n - 1)\n  convert hs using 1 <;>\n    simp only [successorGraphCoordinates, transportSuccessorCoordinates,\n      successorIndexEq, sub_add_cancel]\n''',
+          'energyapply':'''  have hs :=\n    successorEnergyForm_eq_inner_strongPrincipalCore (n - 1)\n  rw [(successorGraphCoordinates (n - 1)).energyForm_apply] at hs\n  rw [(coordinates n).energyForm_apply]\n  simpa only [successorGraphCoordinates_base, successorGraphCoordinates_raised,\n    successorGraphCoordinates_lowered,\n    reindexedActualLoweredCoordinate_eq_lowerFromSuccCoordinate,\n    coordinates_base, coordinates_raised, coordinates_lowered,\n    raisedCoordinate_apply, lowerFromSuccCoordinate_apply, sub_add_cancel] using hs\n''',
+          'energyunfold':'''  have hs :=\n    successorEnergyForm_eq_inner_strongPrincipalCore (n - 1)\n  unfold QuotientHilbertCoordinates.energyForm at hs ⊢\n  simp only [QuotientHilbertCoordinates.graph, successorGraphCoordinates_base,\n    successorGraphCoordinates_raised, successorGraphCoordinates_lowered,\n    reindexedActualLoweredCoordinate_eq_lowerFromSuccCoordinate,\n    coordinates_base, coordinates_raised, coordinates_lowered,\n    raisedCoordinate_apply, lowerFromSuccCoordinate_apply, sub_add_cancel] at hs ⊢\n  exact hs\n'''}
+          assert s.count(old)==1
+          s=s.replace(old,variants[v])
+          marker='/-- The potential form in the same concrete Petersson-coordinate language. -/'
+          pos=s.index(marker)
+          Path('/tmp/Probe3653.lean').write_text(s[:pos]+'\n')
+          Path('/tmp/variant.txt').write_text(v+'\n')
+          print(v, hashlib.sha256(Path('/tmp/Probe3653.lean').read_bytes()).hexdigest())
+          PY
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none >/tmp/elan.log 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1
+          lake exe cache get >/tmp/cache.log 2>&1
+      - name: Compile exact prefix through declaration 3653
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          set +e
+          lake env lean -DmaxErrors=20 -DwarningAsError=false /tmp/Probe3653.lean >/tmp/probe.log 2>&1
+          rc=$?
+          set -e
+          echo "$rc" >/tmp/probe.exit
+          echo "variant=$(cat /tmp/variant.txt) exit=$rc"
+          grep -n "error" /tmp/probe.log | tail -20 || true
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-energy-transport-${{ matrix.variant }}-${{ github.sha }}
+          path: |
+            /tmp/probe.log
+            /tmp/probe.exit
+            /tmp/variant.txt
+            /tmp/Probe3653.lean
+          retention-days: 30

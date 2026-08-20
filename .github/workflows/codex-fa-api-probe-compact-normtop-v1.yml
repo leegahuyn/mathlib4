@@ -1,0 +1,90 @@
+name: Codex FA API probe nested bounded-convergence v6
+on:
+  push:
+    branches:
+      - codex/fa-qym-cleanbuild-final-20260811-fast
+    paths:
+      - .github/workflows/codex-fa-api-probe-compact-normtop-v1.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none >/dev/null
+          export PATH="$HOME/.elan/bin:$PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/dev/null
+          lake exe cache get >/dev/null
+      - name: Compile direct nested bounded-convergence proof
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          cat >/tmp/NestedBoundedTendstoProbe.lean <<'LEAN'
+          import Mathlib
+          noncomputable section
+          open Filter Topology Bornology
+          abbrev SAD (E : Type*) [NormedAddCommGroup E] [NormedSpace ℂ E] := E →L⋆[ℂ] ℂ
+          variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E]
+
+          example (Tn : ℕ → E →L[ℂ] SAD E) (T : E →L[ℂ] SAD E) (eps : ℕ → ℝ)
+              (hTail : ∀ N, ‖Tn N - T‖ ≤ eps N)
+              (heps : Tendsto eps atTop (nhds 0)) :
+              Tendsto Tn atTop (nhds T) := by
+            have hInner := ContinuousLinearMap.hasBasis_nhds_zero_of_basis
+              (𝕜₁ := ℂ) (𝕜₂ := ℂ) (E := E) (F := ℂ) (σ := starRingEnd ℂ)
+              Metric.nhds_basis_ball
+            have hOuter := ContinuousLinearMap.hasBasis_nhds_zero_of_basis
+              (𝕜₁ := ℂ) (𝕜₂ := ℂ) (E := E) (F := SAD E) (σ := RingHom.id ℂ)
+              hInner
+            have hzero : Tendsto (fun N => Tn N - T) atTop (nhds 0) := by
+              rw [hOuter.tendsto_right_iff]
+              rintro ⟨s, ⟨t, δ⟩⟩ ⟨hs, ⟨ht, hδ⟩⟩
+              rcases (NormedSpace.isVonNBounded_iff' ℂ).1 hs with ⟨r, hr⟩
+              rcases (NormedSpace.isVonNBounded_iff' ℂ).1 ht with ⟨q, hq⟩
+              let R : ℝ := max r 0
+              let Q : ℝ := max q 0
+              have hR0 : 0 ≤ R := le_max_right _ _
+              have hrR : ∀ x ∈ s, ‖x‖ ≤ R := by
+                intro x hx
+                exact (hr x hx).trans (le_max_left _ _)
+              have hqQ : ∀ y ∈ t, ‖y‖ ≤ Q := by
+                intro y hy
+                exact (hq y hy).trans (le_max_left _ _)
+              have hCconst : Tendsto (fun _ : ℕ => R * Q) atTop (nhds (R * Q)) :=
+                tendsto_const_nhds
+              have hscaled : Tendsto (fun N => eps N * (R * Q)) atTop (nhds 0) := by
+                simpa using heps.mul hCconst
+              filter_upwards [(tendsto_order.1 hscaled).2 δ hδ] with N hN
+              intro x hx y hy
+              have heN : 0 ≤ eps N :=
+                (norm_nonneg (Tn N - T)).trans (hTail N)
+              have houter : ‖(Tn N - T) x‖ ≤ eps N * R := by
+                calc
+                  ‖(Tn N - T) x‖ ≤ ‖Tn N - T‖ * ‖x‖ := (Tn N - T).le_opNorm x
+                  _ ≤ eps N * R := mul_le_mul (hTail N) (hrR x hx) (norm_nonneg x) heN
+              have hpoint : ‖((Tn N - T) x) y‖ < δ := by
+                calc
+                  ‖((Tn N - T) x) y‖ ≤ ‖(Tn N - T) x‖ * ‖y‖ := ((Tn N - T) x).le_opNorm y
+                  _ ≤ (eps N * R) * Q :=
+                    mul_le_mul houter (hqQ y hy) (norm_nonneg y) (mul_nonneg heN hR0)
+                  _ = eps N * (R * Q) := by ring
+                  _ < δ := hN
+              simpa [Metric.mem_ball, dist_zero_right] using hpoint
+            have htranslated : Tendsto (fun N => (Tn N - T) + T) atTop (nhds (0 + T)) :=
+              (Filter.tendsto_add_const_iff T).2 hzero
+            simpa [sub_add_cancel] using htranslated
+          LEAN
+          lake env lean /tmp/NestedBoundedTendstoProbe.lean

@@ -1,0 +1,620 @@
+name: Codex FA v46 five-variant highcap2000
+
+on:
+  push:
+    branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
+    paths:
+      - .github/workflows/codex-fa-v46-five-variant-highcap2000.yml
+      - scripts/fa_v46_materialize_candidate.py
+      - scripts/fa_v46_build_cumulative.py
+      - scripts/fa_v46_direct_compile_ci.sh
+      - scripts/fa_v46_collect_full_diagnostics.py
+      - scripts/fa_v46_selection.json
+      - scripts/fa_v46_worker_queue.json
+      - scripts/fa_v46_W*.json
+      - scripts/fa_v42_validate_local_repairs.py
+      - scripts/fa_v42_direct_compile_ci.sh
+      - scripts/fa_v42_collect_full_diagnostics.py
+  workflow_dispatch: {}
+
+permissions: {actions: read, contents: read}
+
+env:
+  FA_V46_AUTHORITY_RUN_ID: "31728453514"
+  FA_V46_AUTHORITY_JOB_ID: "94542617528"
+  FA_V46_AUTHORITY_HEAD_SHA: 5ec44f3d343955f3124e7efecc048b648dccc5ab
+  FA_V46_AUTHORITY_ARTIFACT_ID: "9192669673"
+  FA_V46_AUTHORITY_ARTIFACT_DIGEST: sha256:8f07a678145b62342aaa9cb94ebbce6c9f7cc1a45c400560918d42499e67f2f3
+  FA_V46_AUTHORITY_SOURCE_SHA256: 726f40d1dd03d32f03592adf4f6b02e3f7f52e7e1f71087ee53bdb83c4bb0caf
+  FA_V46_AUTHORITY_DIAGNOSTICS_SHA256: 1fb14600849d7281df6ff65ae9213b6671b19a396cf539041f864fea157476a1
+  FA_V46_AUTHORITY_FA_LOG_SHA256: bcc92a247a531419b25677cfdd5e28ce1705e6c3fb87301b93e24510932b4888
+  FA_V46_AUTHORITY_METRIC_SHA256: ff9a1400bc020ac417bab4558dc5313a75a8910b89ee6107d2b913ecc9b6353f
+  FA_V46_AUTHORITY_PATCH_AUDIT_SHA256: 045fe75a7b0b7691e58b01dd97e87d1e9d76d4f84648b34745870d902df7ec94
+  FA_V46_AUTHORITY_VARIANT_INDEX_SHA256: e96fe0bafb8e145148170b9cf46ac223c97887354de68491018d1baa53b3dfdc
+  FA_V46_INDEX_SHA256: 35699ae1ffa3cce89a8325fce2fe3b4286793d89adc16eb9df8114f86af946c4
+  FA_V46_BUILDER_SHA256: d1b02c4ac63723e0630fa513ccea61bbb6bff23abe1123b47a64579ba0e9c044
+  FA_V46_MATERIALIZER_SHA256: b30a176e5290f1dba5023d3e42c101b76c8159012c7492ca6cef0e673d3d77fb
+  FA_V46_RUNNER_WRAPPER_SHA256: 79b42134578fcef331f013cec0db5a39a0d997ab75e9ea1255a07d027f9f6dc3
+  FA_V46_COLLECTOR_WRAPPER_SHA256: 69144aa8a2f12f3120a7df67906daaa2f8101b142e26c2cb6042c0939f1f878c
+  FA_V46_QUEUE_SHA256: 531a58db77a7bfb10c10db9db613a4f35110472245237e257f60632f9c3a1881
+  FA_V46_V42_COMPOSER_SHA256: 3f4dc4a83a994cd3d014ef7d458fce515bbb59ca0ec80965cdb176a27f266ef7
+  FA_V46_V42_RUNNER_SHA256: 2459f0a2cd44f6a3716de1ed2934c7588ba1a1e27ef443947d9e6089af196514
+  FA_V46_V42_COLLECTOR_SHA256: 7de7bc92e4e2735c0d25706d70777ea67340d8afcf67434e43b051d5cb8c90c6
+
+jobs:
+  direct:
+    if: github.ref == 'refs/heads/codex/fa-qym-cleanbuild-final-20260811-fast'
+    strategy:
+      fail-fast: false
+      matrix:
+        variant: [core, w06_probe, w27_probe, w29_w34_probe, all_probes]
+    name: direct-${{ matrix.variant }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    env:
+      FA_V46_VARIANT: "${{ matrix.variant }}"
+      FA_V46_OUT: build-logs/codex-fa-v46-five-variant-highcap2000/${{ matrix.variant }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with: {ref: "${{ github.sha }}", fetch-depth: 1, persist-credentials: false}
+
+      - name: Fail-closed five-variant package and index preflight
+        id: preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$FA_V46_OUT"
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib
+          import json
+          import os
+          import re
+
+          out = Path(os.environ["FA_V46_OUT"])
+          variant = os.environ["FA_V46_VARIANT"]
+          variants = (
+              "core", "w06_probe", "w27_probe", "w29_w34_probe", "all_probes"
+          )
+          locked = {
+              "materializer": (
+                  Path("scripts/fa_v46_materialize_candidate.py"),
+                  os.environ["FA_V46_MATERIALIZER_SHA256"],
+              ),
+              "builder": (
+                  Path("scripts/fa_v46_build_cumulative.py"),
+                  os.environ["FA_V46_BUILDER_SHA256"],
+              ),
+              "runner_wrapper": (
+                  Path("scripts/fa_v46_direct_compile_ci.sh"),
+                  os.environ["FA_V46_RUNNER_WRAPPER_SHA256"],
+              ),
+              "collector_wrapper": (
+                  Path("scripts/fa_v46_collect_full_diagnostics.py"),
+                  os.environ["FA_V46_COLLECTOR_WRAPPER_SHA256"],
+              ),
+              "base_composer": (
+                  Path("scripts/fa_v42_validate_local_repairs.py"),
+                  os.environ["FA_V46_V42_COMPOSER_SHA256"],
+              ),
+              "base_runner": (
+                  Path("scripts/fa_v42_direct_compile_ci.sh"),
+                  os.environ["FA_V46_V42_RUNNER_SHA256"],
+              ),
+              "base_collector": (
+                  Path("scripts/fa_v42_collect_full_diagnostics.py"),
+                  os.environ["FA_V46_V42_COLLECTOR_SHA256"],
+              ),
+              "index": (
+                  Path("scripts/fa_v46_selection.json"),
+                  os.environ["FA_V46_INDEX_SHA256"],
+              ),
+              "queue": (
+                  Path("scripts/fa_v46_worker_queue.json"),
+                  os.environ["FA_V46_QUEUE_SHA256"],
+              ),
+          }
+          expected_audits = {
+              "core": "cd8f7a885b31b5c9cb412f7dada412da72c4ac88243df0269a83eef9b04a7c5d",
+              "w06_probe": "2044f84ab8115312d941a510ed687d39d44f9123adf835a7f3d05d3313da22db",
+              "w27_probe": "6a6d1507503a504ffb77c70c9eb51a4d27a28a0af2ea3ff01db369be67d30a71",
+              "w29_w34_probe": "f4404d2a9ba65614c37285ab57552e1863d702a82ee8f162e7e6623e4cd0221f",
+              "all_probes": "d15c020e21f60dcef7921f17a73488d4ee76c6b27cb56364a38de2d54bb56d38",
+          }
+          evidence = {
+              "schema": "fa-v46-five-variant-package-preflight-v1",
+              "status": "CHECKING",
+              "variant": variant,
+              "files": {},
+              "manifest_files": {},
+              "exit_code_if_stopped": 86,
+          }
+          try:
+              for label, (path, expected) in locked.items():
+                  assert re.fullmatch(r"[0-9a-f]{64}", expected), label
+                  payload = path.read_bytes()
+                  actual = hashlib.sha256(payload).hexdigest()
+                  assert actual == expected, (label, actual, expected)
+                  evidence["files"][label] = {
+                      "path": path.as_posix(), "sha256": actual, "bytes": len(payload)
+                  }
+
+              index_path = locked["index"][0]
+              index_bytes = index_path.read_bytes()
+              assert b"PENDING" not in index_bytes
+              index = json.loads(index_bytes)
+              assert index["schema"] == "fa-v46-cumulative-selection-v1"
+              assert index["status"] == "READY"
+              assert index["runtime_path"] == "scripts/fa_v46_selection.json"
+              assert index["target_branch"] == (
+                  "codex/fa-qym-cleanbuild-final-20260811-fast"
+              )
+              assert index["all_34_workers_terminal"] is True
+              assert index["source_moves"] == []
+              assert index["direct_lean_verified"] is False
+              assert index["clean_build_claimed"] is False
+              assert tuple(index["variant_order"]) == variants
+              assert tuple(row["name"] for row in index["variants"]) == variants
+              assert variant in variants
+              assert index["builder"]["path"] == "scripts/fa_v46_build_cumulative.py"
+              assert index["builder"]["sha256"] == os.environ["FA_V46_BUILDER_SHA256"]
+              assert index["composer"]["path"] == "scripts/fa_v42_validate_local_repairs.py"
+              assert index["composer"]["sha256"] == os.environ["FA_V46_V42_COMPOSER_SHA256"]
+              assert index["queue"]["path"] == "scripts/fa_v46_worker_queue.json"
+              assert index["queue"]["sha256"] == os.environ["FA_V46_QUEUE_SHA256"]
+              assert [row["source"] for row in index["direct_compile_chain"]] == [
+                  "Mock2", "Mock2_Advanced", "Mock2_FunctionalAnalysis"
+              ]
+              assert [row["max_errors"] for row in index["direct_compile_chain"]] == [
+                  1, 1, 2000
+              ]
+              authority = index["authority"]
+              expected_authority = {
+                  "run_id": int(os.environ["FA_V46_AUTHORITY_RUN_ID"]),
+                  "job_id": int(os.environ["FA_V46_AUTHORITY_JOB_ID"]),
+                  "head_sha": os.environ["FA_V46_AUTHORITY_HEAD_SHA"],
+                  "artifact_id": int(os.environ["FA_V46_AUTHORITY_ARTIFACT_ID"]),
+                  "artifact_digest": os.environ["FA_V46_AUTHORITY_ARTIFACT_DIGEST"],
+                  "variant": "all_probes",
+                  "source_sha256": os.environ["FA_V46_AUTHORITY_SOURCE_SHA256"],
+                  "source_bytes": 2_788_764,
+                  "source_lines": 62_383,
+                  "declaration_count": 4_416,
+              }
+              for key, expected in expected_authority.items():
+                  assert authority[key] == expected, (key, authority[key], expected)
+
+              manifests = {}
+              for row in index["variants"]:
+                  for entry in row["manifests"]:
+                      manifests[entry["path"]] = entry
+              for runtime, entry in sorted(manifests.items()):
+                  path = Path(runtime)
+                  payload = path.read_bytes()
+                  actual = hashlib.sha256(payload).hexdigest()
+                  assert actual == entry["sha256"], (runtime, actual, entry["sha256"])
+                  assert len(payload) == entry["bytes"]
+                  evidence["manifest_files"][runtime] = {
+                      "worker_id": entry["worker_id"],
+                      "sha256": actual,
+                      "bytes": len(payload),
+                  }
+
+              row = next(row for row in index["variants"] if row["name"] == variant)
+              expected_candidate = row["expected_candidate"]["sha256"]
+              assert re.fullmatch(r"[0-9a-f]{64}", expected_candidate)
+              evidence["status"] = "READY"
+              evidence["index_sha256"] = evidence["files"]["index"]["sha256"]
+              evidence["candidate_sha256"] = expected_candidate
+              evidence["audit_sha256"] = expected_audits[variant]
+              evidence["manifest_file_count"] = len(manifests)
+              evidence["all_34_workers_terminal"] = True
+              evidence["source_moves"] = []
+              (out / "PACKAGE_PREFLIGHT.json").write_text(
+                  json.dumps(evidence, indent=2, sort_keys=True) + "\n"
+              )
+              with Path(os.environ["GITHUB_ENV"]).open("a") as handle:
+                  handle.write("FA_V46_INDEX_ACTUAL_SHA256=" + evidence["index_sha256"] + "\n")
+                  handle.write("FA_V46_EXPECTED_CANDIDATE_SHA256=" + expected_candidate + "\n")
+                  handle.write("FA_V46_EXPECTED_AUDIT_SHA256=" + expected_audits[variant] + "\n")
+          except BaseException:
+              evidence["status"] = "INVALID_FAIL_CLOSED"
+              (out / "PACKAGE_PREFLIGHT.json").write_text(
+                  json.dumps(evidence, indent=2, sort_keys=True) + "\n"
+              )
+              raise
+          PY
+
+      - name: Re-prove exact v45 all_probes authority and materialize v46 variant
+        id: materialize
+        env:
+          GH_TOKEN: "${{ github.token }}"
+        shell: bash
+        run: |
+          set -euo pipefail
+          authority_root="/tmp/fa-v46-authority-${GITHUB_RUN_ID}-${FA_V46_VARIANT}"
+          authority_zip="/tmp/fa-v46-authority-${GITHUB_RUN_ID}-${FA_V46_VARIANT}.zip"
+          mkdir -p "$FA_V46_OUT" "$authority_root"
+          printf '%s\n' '{"schema":"fa-v46-v45-authority-reproof-v1","status":"CHECKING"}' >"$FA_V46_OUT/AUTHORITY_REPROOF.json"
+
+          gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${FA_V46_AUTHORITY_RUN_ID}" >"$FA_V46_OUT/V45_RUN.json"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/jobs/${FA_V46_AUTHORITY_JOB_ID}" >"$FA_V46_OUT/V45_JOB.json"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${FA_V46_AUTHORITY_ARTIFACT_ID}" >"$FA_V46_OUT/V45_ARTIFACT.json"
+
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          import os
+
+          out = Path(os.environ["FA_V46_OUT"])
+          run = json.loads((out / "V45_RUN.json").read_text())
+          job = json.loads((out / "V45_JOB.json").read_text())
+          artifact = json.loads((out / "V45_ARTIFACT.json").read_text())
+          run_id = int(os.environ["FA_V46_AUTHORITY_RUN_ID"])
+          job_id = int(os.environ["FA_V46_AUTHORITY_JOB_ID"])
+          artifact_id = int(os.environ["FA_V46_AUTHORITY_ARTIFACT_ID"])
+          head = os.environ["FA_V46_AUTHORITY_HEAD_SHA"]
+          branch = "codex/fa-qym-cleanbuild-final-20260811-fast"
+          artifact_name = "codex-fa-v45-all_probes-highcap2000-" + head
+          assert run["id"] == run_id
+          assert run["name"] == "Codex FA v45 six-variant highcap2000"
+          assert run["path"] == (
+              ".github/workflows/codex-fa-v45-six-variant-highcap2000.yml"
+          )
+          assert run["head_sha"] == head and run["head_branch"] == branch
+          assert run["status"] == "completed" and run["conclusion"] == "failure"
+          assert job["id"] == job_id and job["run_id"] == run_id
+          assert job["name"] == "direct-all_probes"
+          assert job["head_sha"] == head
+          assert job["status"] == "completed" and job["conclusion"] == "failure"
+          assert artifact["id"] == artifact_id
+          assert artifact["name"] == artifact_name
+          assert artifact["size_in_bytes"] == 1_680_859
+          assert artifact["expired"] is False
+          assert artifact["digest"] == os.environ["FA_V46_AUTHORITY_ARTIFACT_DIGEST"]
+          assert artifact["workflow_run"]["id"] == run_id
+          assert artifact["workflow_run"]["head_sha"] == head
+          PY
+
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${FA_V46_AUTHORITY_ARTIFACT_ID}/zip" >"$authority_zip"
+          test "sha256:$(sha256sum "$authority_zip" | awk '{print $1}')" = "$FA_V46_AUTHORITY_ARTIFACT_DIGEST"
+          unzip -q "$authority_zip" -d "$authority_root"
+
+          AUTHORITY_ROOT="$authority_root" python3 - <<'PY'
+          from pathlib import Path
+          import hashlib
+          import json
+          import os
+          import shutil
+
+          root = Path(os.environ["AUTHORITY_ROOT"])
+          out = Path(os.environ["FA_V46_OUT"])
+
+          def one(name, expected_sha, expected_bytes, expected_lines):
+              hits = [
+                  path for path in root.rglob(name)
+                  if hashlib.sha256(path.read_bytes()).hexdigest() == expected_sha
+              ]
+              assert len(hits) == 1, (name, hits)
+              payload = hits[0].read_bytes()
+              assert len(payload) == expected_bytes, (name, len(payload), expected_bytes)
+              assert len(payload.decode("utf-8").splitlines()) == expected_lines
+              return hits[0]
+
+          source = one(
+              "Mock2_FunctionalAnalysis-candidate.lean",
+              os.environ["FA_V46_AUTHORITY_SOURCE_SHA256"], 2_788_764, 62_383,
+          )
+          diagnostics = one(
+              "FULL_DIAGNOSTICS.json",
+              os.environ["FA_V46_AUTHORITY_DIAGNOSTICS_SHA256"], 35_977, 814,
+          )
+          fa_log = one(
+              "Mock2_FunctionalAnalysis.log",
+              os.environ["FA_V46_AUTHORITY_FA_LOG_SHA256"], 334_935, 5_535,
+          )
+          metric = one(
+              "METRIC.json",
+              os.environ["FA_V46_AUTHORITY_METRIC_SHA256"], 2_971, 70,
+          )
+          patch_audit = one(
+              "PATCH_AUDIT.json",
+              os.environ["FA_V46_AUTHORITY_PATCH_AUDIT_SHA256"], 19_425, 486,
+          )
+          variant_index = one(
+              "VARIANT_INDEX.json",
+              os.environ["FA_V46_AUTHORITY_VARIANT_INDEX_SHA256"], 27_659, 653,
+          )
+          errors = json.loads(diagnostics.read_text())
+          data = json.loads(metric.read_text())
+          patch = json.loads(patch_audit.read_text())
+          assert isinstance(errors, list) and len(errors) == 58
+          assert data["github_run_id"] == "31728453514"
+          assert data["github_head_sha"] == os.environ["FA_V46_AUTHORITY_HEAD_SHA"]
+          assert data["variant"] == "all_probes"
+          assert data["Mock2_exit"] == 0 and data["Mock2_Advanced_exit"] == 0
+          assert data["FA_exit"] == 1 and data["FA_compile_max_errors"] == 2000
+          assert data["FA_error_headers_captured"] == 58
+          assert data["unique_declarations_with_errors"] == 34
+          assert data["unique_normalized_message_signatures"] == 19
+          assert data["FA_warning_headers_captured"] == 479
+          assert data["synthetic_declaration_uses_sorry_warning_count"] == 0
+          assert data["FA_error_cap_sentinel_present"] is False
+          assert data["FA_inventory_complete_by_header_evidence"] is True
+          assert data["source_executable_trust_six_zero"] is True
+          assert data["source_sha256"] == os.environ["FA_V46_AUTHORITY_SOURCE_SHA256"]
+          assert data["source_declaration_count"] == 4_416
+          assert patch["candidate_sha256"] == os.environ["FA_V46_AUTHORITY_SOURCE_SHA256"]
+          assert patch["declaration_count"] == 4_416
+          assert patch["declaration_sequence_identical"] is True
+          assert patch["all_declaration_headers_byte_identical"] is True
+          assert patch["comments_identical"] is True and patch["attributes_identical"] is True
+          assert all(value == 0 for value in patch["trust_counts_after"].values())
+
+          runtime_source = Path(
+              "work/v45-results/run-31728453514/all_probes/"
+              "Mock2_FunctionalAnalysis-candidate.lean"
+          )
+          runtime_source.parent.mkdir(parents=True, exist_ok=True)
+          shutil.copyfile(source, runtime_source)
+          shutil.copyfile(source, out / "V45_AUTHORITY_SOURCE.lean")
+          shutil.copyfile(diagnostics, out / "V45_FULL_DIAGNOSTICS.json")
+          shutil.copyfile(fa_log, out / "V45_Mock2_FunctionalAnalysis.log")
+          shutil.copyfile(metric, out / "V45_METRIC.json")
+          shutil.copyfile(patch_audit, out / "V45_PATCH_AUDIT.json")
+          shutil.copyfile(variant_index, out / "V45_VARIANT_INDEX.json")
+          reproof = {
+              "schema": "fa-v46-v45-authority-reproof-v1",
+              "status": "EXACT",
+              "run_id": 31728453514,
+              "job_id": 94542617528,
+              "artifact_id": 9192669673,
+              "artifact_digest": os.environ["FA_V46_AUTHORITY_ARTIFACT_DIGEST"],
+              "source_sha256": hashlib.sha256(source.read_bytes()).hexdigest(),
+              "diagnostics_sha256": hashlib.sha256(diagnostics.read_bytes()).hexdigest(),
+              "fa_log_sha256": hashlib.sha256(fa_log.read_bytes()).hexdigest(),
+              "metric_sha256": hashlib.sha256(metric.read_bytes()).hexdigest(),
+              "patch_audit_sha256": hashlib.sha256(patch_audit.read_bytes()).hexdigest(),
+              "variant_index_sha256": hashlib.sha256(variant_index.read_bytes()).hexdigest(),
+              "authority_metric_reproduced": True,
+          }
+          (out / "AUTHORITY_REPROOF.json").write_text(
+              json.dumps(reproof, indent=2, sort_keys=True) + "\n"
+          )
+          PY
+
+          python3 scripts/fa_v46_materialize_candidate.py \
+            --index scripts/fa_v46_selection.json \
+            --variant "$FA_V46_VARIANT" \
+            --builder scripts/fa_v46_build_cumulative.py \
+            --output /tmp/fa-v46-final.lean \
+            --audit "$FA_V46_OUT/PATCH_AUDIT.json" \
+            --evidence "$FA_V46_OUT/MATERIALIZATION.json" \
+            >"$FA_V46_OUT/MATERIALIZATION.stdout.json"
+
+          test "$(sha256sum /tmp/fa-v46-final.lean | awk '{print $1}')" = "$FA_V46_EXPECTED_CANDIDATE_SHA256"
+          test "$(sha256sum "$FA_V46_OUT/PATCH_AUDIT.json" | awk '{print $1}')" = "$FA_V46_EXPECTED_AUDIT_SHA256"
+          cp /tmp/fa-v46-final.lean PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          cp /tmp/fa-v46-final.lean "$FA_V46_OUT/Mock2_FunctionalAnalysis-candidate.lean"
+          cp scripts/fa_v46_selection.json "$FA_V46_OUT/VARIANT_INDEX.json"
+          sha256sum /tmp/fa-v46-final.lean | awk '{print $1}' >"$FA_V46_OUT/candidate.sha256"
+          sha256sum "$FA_V46_OUT/PATCH_AUDIT.json" | awk '{print $1}' >"$FA_V46_OUT/audit.sha256"
+
+      - name: Install pinned Lean and cache
+        id: install
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$FA_V46_OUT"
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none >"$FA_V46_OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >"$FA_V46_OUT/toolchain.log" 2>&1
+          lake exe cache get >"$FA_V46_OUT/cache.log" 2>&1
+          lean --version >"$FA_V46_OUT/lean-version.txt" 2>&1
+          lake --version >"$FA_V46_OUT/lake-version.txt" 2>&1
+
+      - name: Direct Mock2 then Mock2 Advanced then full FA highcap2000
+        id: compile
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          bash scripts/fa_v46_direct_compile_ci.sh
+
+      - name: Build exact metrics and full diagnostic inventory
+        id: collect
+        if: always() && steps.materialize.outcome == 'success'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$FA_V46_OUT"
+          if [[ -f PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean ]]; then
+            cp PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean "$FA_V46_OUT/Mock2_FunctionalAnalysis-observed.lean"
+          fi
+          python3 scripts/fa_v46_collect_full_diagnostics.py \
+            --base-collector scripts/fa_v42_collect_full_diagnostics.py \
+            --base-collector-sha256 "$FA_V46_V42_COLLECTOR_SHA256" \
+            --source PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+            --out "$FA_V46_OUT" \
+            --max-errors 2000 \
+            >"$FA_V46_OUT/metric-console.log"
+
+      - name: Snapshot all step outcomes
+        if: always()
+        env:
+          PREFLIGHT_OUTCOME: "${{ steps.preflight.outcome }}"
+          MATERIALIZE_OUTCOME: "${{ steps.materialize.outcome }}"
+          INSTALL_OUTCOME: "${{ steps.install.outcome }}"
+          COMPILE_OUTCOME: "${{ steps.compile.outcome }}"
+          COLLECT_OUTCOME: "${{ steps.collect.outcome }}"
+        shell: bash
+        run: |
+          mkdir -p "$FA_V46_OUT"
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          import os
+          out = Path(os.environ["FA_V46_OUT"])
+          value = {
+              "schema": "fa-v46-five-variant-step-outcomes-v1",
+              "variant": os.environ["FA_V46_VARIANT"],
+              "preflight": os.environ["PREFLIGHT_OUTCOME"],
+              "materialize": os.environ["MATERIALIZE_OUTCOME"],
+              "install": os.environ["INSTALL_OUTCOME"],
+              "compile": os.environ["COMPILE_OUTCOME"],
+              "collect": os.environ["COLLECT_OUTCOME"],
+          }
+          (out / "STEP_OUTCOMES.json").write_text(
+              json.dumps(value, indent=2, sort_keys=True) + "\n"
+          )
+          PY
+
+      - name: Preserve fail-closed state or mirror strict direct-chain exits
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f "$FA_V46_OUT/PACKAGE_PREFLIGHT.json" || exit 86
+          test -f "$FA_V46_OUT/AUTHORITY_REPROOF.json" || exit 86
+          test -f "$FA_V46_OUT/MATERIALIZATION.json" || exit 86
+          test "$(python3 -c 'import json,os; print(json.load(open(os.path.join(os.environ["FA_V46_OUT"], "PACKAGE_PREFLIGHT.json")))["status"])')" = READY || exit 86
+          test "$(python3 -c 'import json,os; print(json.load(open(os.path.join(os.environ["FA_V46_OUT"], "AUTHORITY_REPROOF.json")))["status"])')" = EXACT || exit 86
+          for stem in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis; do
+            test -f "$FA_V46_OUT/${stem}.exit" || exit 86
+            status="$(tr -d '\r\n' < "$FA_V46_OUT/${stem}.exit")"
+            [[ "$status" =~ ^[0-9]+$ ]] || exit 86
+          done
+          test -f "$FA_V46_OUT/METRIC.json" || exit 86
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib
+          import json
+          import os
+
+          out = Path(os.environ["FA_V46_OUT"])
+          metric = json.loads((out / "METRIC.json").read_text())
+          diagnostics = json.loads((out / "FULL_DIAGNOSTICS.json").read_text())
+          warnings = json.loads((out / "FULL_WARNINGS.json").read_text())
+          synthetic = json.loads((out / "SYNTHETIC_SORRY_WARNINGS.json").read_text())
+          materialization = json.loads((out / "MATERIALIZATION.json").read_text())
+
+          def exit_value(stem):
+              text = (out / f"{stem}.exit").read_text().strip()
+              assert text.isdigit(), (stem, text)
+              return int(text)
+
+          m2 = exit_value("Mock2")
+          m2a = exit_value("Mock2_Advanced")
+          fa = exit_value("Mock2_FunctionalAnalysis")
+          assert m2 == 0 and m2a == 0
+          assert metric["schema"] == "fa-v46-five-variant-highcap2000-metric-v1"
+          assert metric["variant"] == os.environ["FA_V46_VARIANT"]
+          assert metric["Mock2_exit"] == m2
+          assert metric["Mock2_Advanced_exit"] == m2a
+          assert metric["FA_exit"] == fa
+          assert metric["FA_compile_max_errors"] == 2000
+          assert metric["FA_error_cap_sentinel_present"] is False
+          assert metric["FA_inventory_below_configured_cap"] is True
+          assert metric["FA_inventory_complete_by_header_evidence"] is True
+          assert len(diagnostics) == metric["FA_error_headers_captured"]
+          assert len(warnings) == metric["FA_warning_headers_captured"]
+          assert len(synthetic) == metric[
+              "synthetic_declaration_uses_sorry_warning_count"
+          ]
+          assert metric["source_identity_locked"] is True
+          assert metric["source_sha256"] == os.environ[
+              "FA_V46_EXPECTED_CANDIDATE_SHA256"
+          ]
+          assert metric["candidate_expected_sha256"] == os.environ[
+              "FA_V46_EXPECTED_CANDIDATE_SHA256"
+          ]
+          assert metric["candidate_locked_sha256"] == os.environ[
+              "FA_V46_EXPECTED_CANDIDATE_SHA256"
+          ]
+          assert metric["source_declaration_count"] == 4_416
+          assert metric["variant_index_expected_sha256"] == os.environ[
+              "FA_V46_INDEX_SHA256"
+          ]
+          assert metric["variant_index_actual_sha256"] == os.environ[
+              "FA_V46_INDEX_ACTUAL_SHA256"
+          ]
+          assert materialization["selection_index_sha256"] == os.environ[
+              "FA_V46_INDEX_SHA256"
+          ]
+          assert materialization["builder_sha256"] == os.environ[
+              "FA_V46_BUILDER_SHA256"
+          ]
+          assert materialization["candidate_sha256"] == os.environ[
+              "FA_V46_EXPECTED_CANDIDATE_SHA256"
+          ]
+          assert materialization["audit_sha256"] == os.environ[
+              "FA_V46_EXPECTED_AUDIT_SHA256"
+          ]
+          assert metric["source_executable_trust_six_zero"] is True
+          assert set(metric["source_executable_trust_counts"]) == {
+              "sorry", "admit", "axiom", "unsafe",
+              "native_decide", "Lean.ofReduceBool",
+          }
+          assert all(
+              value == 0
+              for value in metric["source_executable_trust_counts"].values()
+          )
+          assert metric["all_required_lean_executed"] is True
+          assert metric["all_required_raw_logs_from_execution"] is True
+          assert metric["all_required_raw_logs_uploaded"] is True
+          assert metric["direct_lean_verified"] is True
+          assert metric["raw_log_placeholders"] == []
+          assert metric["exit_parse_errors"] == {}
+          if fa == 0:
+              assert metric["FA_error_headers_captured"] == 0
+              assert metric["unique_declarations_with_errors"] == 0
+              assert metric["unique_normalized_message_signatures"] == 0
+              assert diagnostics == []
+              assert metric["synthetic_declaration_uses_sorry_warning_count"] == 0
+              assert synthetic == []
+              assert metric["synthetic_trust_clean"] is True
+              assert metric["compiler_exit_clean"] is True
+              assert metric["semantic_clean"] is True
+              gate_status = "CLEAN_EXIT0"
+          else:
+              assert metric["compiler_exit_clean"] is False
+              assert metric["semantic_clean"] is False
+              gate_status = "EVIDENCE_COMPLETE_FA_NONZERO"
+          gate = {
+              "schema": "fa-v46-five-variant-final-gate-v1",
+              "status": gate_status,
+              "variant": os.environ["FA_V46_VARIANT"],
+              "metric_sha256": hashlib.sha256(
+                  (out / "METRIC.json").read_bytes()
+              ).hexdigest(),
+              "Mock2_exit": m2,
+              "Mock2_Advanced_exit": m2a,
+              "FA_exit": fa,
+              "source_identity_locked": True,
+              "source_declaration_count": 4_416,
+              "source_executable_trust_six_zero": True,
+              "max_errors": 2000,
+              "cap_sentinel_present": False,
+              "full_inventory_complete": True,
+              "all_required_lean_executed": True,
+              "direct_lean_verified": True,
+              "semantic_clean": metric["semantic_clean"],
+              "synthetic_sorry_count": metric[
+                  "synthetic_declaration_uses_sorry_warning_count"
+              ],
+          }
+          (out / "FINAL_GATE.json").write_text(
+              json.dumps(gate, indent=2, sort_keys=True) + "\n"
+          )
+          PY
+          fa_exit="$(tr -d '\r\n' < "$FA_V46_OUT/Mock2_FunctionalAnalysis.exit")"
+          exit "$fa_exit"
+
+      - name: Upload exact variant source and all evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-v46-${{ matrix.variant }}-highcap2000-${{ github.sha }}
+          path: build-logs/codex-fa-v46-five-variant-highcap2000/${{ matrix.variant }}
+          retention-days: 30

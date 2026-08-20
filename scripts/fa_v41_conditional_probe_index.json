@@ -1,0 +1,19 @@
+{
+  "schema": "fa-v41-conditional-probe-index-v1",
+  "status": "STATIC_INPUTS_LOCKED_DIRECT_LEAN_UNVERIFIED",
+  "main_candidate_sha256": "091c9c5ab9e2efcabaca6a93d1ceeea056ad2163255efe8078cd0ce18fc3aaef",
+  "manifests": [
+    {
+      "section": "M05_M06",
+      "path": "work/v40-staged/m05-m06-conditional-repairs.json",
+      "sha256": "66d931210349a16620e3be942fec6df1ffb687c093d8db787153837ee71839b1"
+    },
+    {
+      "section": "LR_BODY",
+      "path": "work/v40-staged/l-r25-r26-conditional-body-repairs.json",
+      "sha256": "348dd633371be18333c3e8788d45b519194b4179cd991f0cbcde9eb27fc21f2a"
+    }
+  ],
+  "m13_source_move_included": false,
+  "direct_lean_verified": false
+}

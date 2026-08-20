@@ -1,0 +1,144 @@
+{
+  "schema": "fa-v42-declaration-local-repairs-v1",
+  "status": "PATCH_READY_STATIC_EXACT_SAME_FILE_OPNORM_API_DIRECT_LEAN_REQUIRED_V46_W18",
+  "worker_id": "W18",
+  "cluster_id": "V46-IDX3948-EXPLICIT-OPNORM-MAP-AVOID-WHNF-INFERENCE",
+  "authority": {
+    "repository": "leegahuyn/mathlib4",
+    "run_id": 31728453514,
+    "head_sha": "5ec44f3d343955f3124e7efecc048b648dccc5ab",
+    "job_id": 94542617528,
+    "artifact_id": 9192669673,
+    "artifact_digest": "sha256:8f07a678145b62342aaa9cb94ebbce6c9f7cc1a45c400560918d42499e67f2f3",
+    "variant": "all_probes",
+    "source_path": "work/v45-results/run-31728453514/all_probes/Mock2_FunctionalAnalysis-candidate.lean",
+    "source_sha256": "726f40d1dd03d32f03592adf4f6b02e3f7f52e7e1f71087ee53bdb83c4bb0caf",
+    "source_bytes": 2788764,
+    "source_lines": 62383,
+    "declaration_count": 4416,
+    "diagnostics_path": "work/v45-results/run-31728453514/all_probes/FULL_DIAGNOSTICS.json",
+    "diagnostics_sha256": "1fb14600849d7281df6ff65ae9213b6671b19a396cf539041f864fea157476a1",
+    "fa_log_path": "work/v45-results/run-31728453514/all_probes/Mock2_FunctionalAnalysis.log",
+    "fa_log_sha256": "bcc92a247a531419b25677cfdd5e28ce1705e6c3fb87301b93e24510932b4888"
+  },
+  "assignment": {
+    "declaration_index": 3948,
+    "declaration": "opNorm_literalStagePlaneFiniteApproximation_sub_le",
+    "authority_diagnostic_ordinals": [22],
+    "diagnostic_count": 1,
+    "lines": [54189],
+    "columns": [2],
+    "normalized_signatures": [
+      "(deterministic) timeout at `whnf`, maximum number of heartbeats (200000) has been reached"
+    ],
+    "root_or_cascade": "INDEPENDENT_OWNER_LOCAL_ELABORATOR_INFERENCE_RESOURCE_ROOT",
+    "ownership": "W18-only"
+  },
+  "variant_stability": {
+    "v45_core": {
+      "diagnostic_count": 1,
+      "ordinal": 26,
+      "line": 54153,
+      "signature": "(deterministic) timeout at `whnf`, maximum number of heartbeats (200000) has been reached"
+    },
+    "v45_q1_probe": {
+      "diagnostic_count": 1,
+      "ordinal": 26,
+      "line": 54153,
+      "signature": "(deterministic) timeout at `whnf`, maximum number of heartbeats (200000) has been reached"
+    },
+    "v45_q2_probe": {
+      "diagnostic_count": 1,
+      "ordinal": 26,
+      "line": 54154,
+      "signature": "(deterministic) timeout at `whnf`, maximum number of heartbeats (200000) has been reached"
+    },
+    "v45_q3_probe": {
+      "diagnostic_count": 1,
+      "ordinal": 22,
+      "line": 54188,
+      "signature": "(deterministic) timeout at `whnf`, maximum number of heartbeats (200000) has been reached"
+    },
+    "v45_all_probes": {
+      "diagnostic_count": 1,
+      "ordinal": 22,
+      "line": 54189,
+      "signature": "(deterministic) timeout at `whnf`, maximum number of heartbeats (200000) has been reached"
+    },
+    "reading": "The same deterministic owner-local whnf timeout survives every V45 composition. Its location remains the first opNorm_le_bound application, so it is not a downstream theorem diagnostic exposed by another probe."
+  },
+  "diagnosis": {
+    "exact_remote_failure": "Deterministic heartbeat exhaustion at whnf on `apply ContinuousLinearMap.opNorm_le_bound` before the nonnegativity and pointwise sub-application proof are entered.",
+    "root": "ContinuousLinearMap.opNorm_le_bound has an explicit first argument `f`. The authority body omits it and asks `apply` to recover the large subtraction map from the target norm inequality. Unification/weak-head normalization of that reducible target exhausts 200000 heartbeats.",
+    "repair": "Pass the exact subtraction map as the explicit first argument to opNorm_le_bound. Keep the nonnegative bound proof, pointwise intro, sub_apply normalization, and predecessor theorem unchanged.",
+    "mathlib_api": {
+      "path": "C:/Users/사용자/Desktop/mathlib4_spt2/Mathlib/Analysis/Normed/Operator/Basic.lean",
+      "lines": "200-203",
+      "signature_shape": "opNorm_le_bound (f : E ->SL F) {M : Real} (0 <= M) (forall x, norm (f x) <= M * norm x)"
+    },
+    "same_file_exact_analogue": {
+      "declaration": "opNorm_sub_le_of_quantitativeFiniteModeTail",
+      "authority_lines": "47326-47335",
+      "shape": "apply ContinuousLinearMap.opNorm_le_bound (finiteModeLocalization ... - T) (h.1 N); intro x; simpa only [ContinuousLinearMap.sub_apply] using h.2 N x",
+      "evidence": "This is the identical operator-norm-from-pointwise-subtraction pattern and explicitly supplies the difference map."
+    },
+    "same_file_additional_evidence": [
+      "peterssonPivotLinear_norm_le at authority lines 49768-49782 explicitly passes the map to opNorm_le_bound.",
+      "norm_modularMassResolvent_le_one at authority lines 56891-56895 uses exact opNorm_le_bound with an explicit placeholder for the map and a pointwise theorem."
+    ],
+    "required_imports": [],
+    "expected_errors_closed": 1,
+    "semantic_risk": "LOW_STATIC_ELABORATION_RISK",
+    "confidence": "HIGH_EXACT_API_AND_SAME_FILE_STRUCTURAL_ANALOGUE_DIRECT_LEAN_REQUIRED",
+    "theorem_proposition_changed": false,
+    "disposition": "PATCH_READY"
+  },
+  "history": {
+    "v42": "Q1-S3948 wrapped the theorem with maxHeartbeats 800000 only as a remote diagnostic probe.",
+    "v43": "The 800000-heartbeat variant still timed out. V43 correctly rejected the theorem-level budget wrapper because it did not repair the proof and would change the declaration header contract; it required proof restructuring.",
+    "v44_v45": "No body restructuring was materialized, and the original implicit-f apply persisted with the identical 200000-heartbeat timeout.",
+    "w18_decision": "Do not repeat the failed budget increase. Reduce elaborator search by supplying the API's explicit map argument, following the accepted same-file proof."
+  },
+  "dependency_classification": {
+    "diagnostic_is_cascade": false,
+    "reason": "The timeout is stable at the owner-local first tactic and the predecessor pointwise theorem is resolved by name; there is no unknown declaration or inherited type mismatch in the printed diagnostic.",
+    "direct_predecessor": {
+      "declaration_index": 3947,
+      "declaration": "norm_literalStagePlaneFiniteApproximation_sub_le",
+      "current_diagnostic_count": 0,
+      "use": "Supplies the pointwise inequality after ContinuousLinearMap.sub_apply."
+    },
+    "transitive_dependency": {
+      "worker": "W15",
+      "declaration_index": 3939,
+      "declaration": "norm_planeFourierRemainder_eq_scale_mul_torusRemainder",
+      "use": "The core and pointwise tail estimates transitively depend on this Fourier-remainder identity; compose W15 before cumulative clean probing."
+    },
+    "promotion_policy": "W18 is an exact independent owner patch. For cumulative clean probing, compose it after W15 and the intervening already-clean tail/core/induction declarations."
+  },
+  "header_policy": "NO_HEADER_CHANGES_BODY_ONLY_NO_HEARTBEAT_WRAPPER",
+  "trust_policy": {
+    "tokens": ["sorry", "admit", "axiom", "unsafe", "native_decide", "Lean.ofReduceBool"],
+    "required_before": 0,
+    "required_after": 0
+  },
+  "repairs": [
+    {
+      "id": "V46-W18-IDX3948-explicit-opNorm-difference-map",
+      "owner": "opNorm_literalStagePlaneFiniteApproximation_sub_le",
+      "declaration_index": 3948,
+      "diagnostics": [22],
+      "kind": "body",
+      "classification": "EXPLICIT-REQUIRED-API-ARGUMENT-ELIMINATES-WHNF-INFERENCE",
+      "confidence": "high-exact-same-file-opNorm-subtraction-analogue-direct-Lean-required",
+      "expected_count_in_owner": 1,
+      "old": "  apply ContinuousLinearMap.opNorm_le_bound\n    (div_nonneg (literalStagePlaneTailConstant_nonneg Y n) (by positivity))\n  intro x\n  simpa only [ContinuousLinearMap.sub_apply] using\n    norm_literalStagePlaneFiniteApproximation_sub_le Y n N x",
+      "new": "  apply ContinuousLinearMap.opNorm_le_bound\n    (literalStagePlaneFiniteApproximation Y n N -\n      completedLiteralStagePlaneBase Y n)\n    (div_nonneg (literalStagePlaneTailConstant_nonneg Y n) (by positivity))\n  intro x\n  simpa only [ContinuousLinearMap.sub_apply] using\n    norm_literalStagePlaneFiniteApproximation_sub_le Y n N x",
+      "evidence": "The old full body fragment occurs exactly once in idx3948 and globally. The new call supplies precisely the map already present in the theorem target and mirrors the accepted source lines 47332-47335."
+    }
+  ],
+  "promotion_rule": "Compose after W15 for the cumulative dependency chain. Require authority ordinal 22 to disappear without a new idx3948 diagnostic at the default 200000 heartbeat budget; do not add a theorem-level maxHeartbeats wrapper. Then require Mock2=0, Mock2_Advanced=0, full FA maxErrors=2000, 4416 headers/order/comments/attributes byte-identical, and trust-six zero.",
+  "direct_lean_verified": false,
+  "clean_build_claimed": false,
+  "lean_lake_git_github_network_invoked_by_worker": false
+}

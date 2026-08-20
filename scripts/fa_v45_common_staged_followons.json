@@ -1,0 +1,70 @@
+{
+  "schema": "fa-v42-declaration-local-repairs-v1",
+  "status": "STAGED_DIRECT_LEAN_REQUIRED",
+  "direct_lean_verified": false,
+  "full_fa_clean_claimed": false,
+  "authority": {
+    "repository": "leegahuyn/mathlib4",
+    "run_id": 31719983304,
+    "head_sha": "dda6274627f628eca6cbfcef48f0c6e572881f0c",
+    "job_id": 94514229853,
+    "artifact_id": 9189354873,
+    "artifact_digest": "sha256:78416b511693fe68bd556674246cc0815015f8fddb46afcdc1e34673eefe87e5",
+    "artifact_zip_bytes": 1683548,
+    "variant": "middle_probe",
+    "source_path": "work/v43-run-31719983304/9189354873/Mock2_FunctionalAnalysis-candidate.lean",
+    "source_sha256": "f8d1b152e1c12639e4fc4f126e501a2a309333c5b8a6f3c8645df3e433572109",
+    "source_bytes": 2785412,
+    "source_lines": 62304,
+    "declaration_count": 4416,
+    "diagnostics_path": "work/v43-run-31719983304/9189354873/FULL_DIAGNOSTICS.json",
+    "diagnostics_sha256": "baab8be659f062f26d4b7563073c18480263747bfa45de88c642aeb13e1f4d07",
+    "fa_log_path": "work/v43-run-31719983304/9189354873/Mock2_FunctionalAnalysis.log",
+    "fa_log_sha256": "4edd03f6c327dda4fa5a49cc3fac56e85004199d3a5dfa7aca0c726ab533a73c",
+    "patch_audit_path": "work/v43-run-31719983304/9189354873/PATCH_AUDIT.json",
+    "patch_audit_sha256": "3f4c715041f64b9a607608cc930f5398581a7a7907d686348365f6c3e7657e55"
+  },
+  "repairs": [
+    {
+      "id": "V44-COMMON-S01-expose-weighted-full-inner-before-l2-rewrite",
+      "owner": "weightedFull_apply_core",
+      "declaration_index": 4015,
+      "diagnostic_ordinals": [41, 42],
+      "kind": "body",
+      "classification": "STAGED_EXACT_DISPLAYED_TARGET_FOLLOW_ON",
+      "confidence": "medium-high-body-local-change-matches-remote-target",
+      "expected_count_in_owner": 1,
+      "apply_to_simulation": true,
+      "old": "      simp only [weightedGraphOperator, weightedGraphLinear,\n        lpInfinityMultiplier_apply]\n      rw [MeasureTheory.L2.inner_def]\n",
+      "new": "      change inner ℂ (graphEuclideanBase n (coreMap n v))\n          (lpInfinityMultiplier chosenEuclideanCarrierMeasure\n            discriminantFullCarrierWeightLp\n            (graphEuclideanBase n (coreMap n u))) =\n        ∫ z in chosenGammaTwoFundamentalDomain.carrier,\n          inner ℂ (fixedPhaseEuclideanGauge n v z)\n            ((upstairsPotential z : ℂ) *\n              fixedPhaseEuclideanGauge n u z)\n          ∂upperEuclideanMeasure\n      rw [MeasureTheory.L2.inner_def]\n",
+      "causal_v43_repairs": [
+        "V43-MID-HC02-weighted-outer-add-change",
+        "V43-MID-HC03-weighted-outer-smul-change",
+        "V43-MID-HC04-weighted-bound-unfold-by-change"
+      ],
+      "rollback_decision": "DO_NOT_ROLL_BACK_THREE_RUNTIME_SUCCESSFUL_PRODUCER_REPAIRS_ADD_OWNER_LOCAL_FOLLOW_ON",
+      "evidence": "The three producer owners moved 2+1 errors to zero. The remaining first error prints the unreduced mkContinuous2 structure and says L2.inner_def found no inner; a direct change exposes exactly the inner and set-integral already displayed by this calc step. The second timeout is retained as a runtime question because it may be downstream of the first failure."
+    },
+    {
+      "id": "V44-COMMON-S02-replace-hard-stage-broad-simp-with-exact-inner-change",
+      "owner": "discriminantHardStageOperator_eq_weightedHard",
+      "declaration_index": 4017,
+      "diagnostic_ordinals": [44],
+      "synthetic_warning_ordinals": [421],
+      "kind": "body",
+      "classification": "STAGED_TIMEOUT_AND_SYNTHETIC_RECOVERY_REDUCTION",
+      "confidence": "medium-exact-definitional-shape-but-heartbeat-sensitive",
+      "expected_count_in_owner": 1,
+      "apply_to_simulation": true,
+      "old": "  ext u v\n  simp only [discriminantHardStageOperator,\n    ContinuousLinearMap.comp_apply,\n    discriminantHardStagePotentialPairing,\n    discriminantHardStagePairingLinear,\n    weightedGraphOperator, weightedGraphLinear,\n    lpInfinityMultiplier_apply]\n  rw [MeasureTheory.L2.inner_def, MeasureTheory.L2.inner_def]\n",
+      "new": "  ext u v\n  change inner ℂ\n      (graphLiteralStageRestriction (discriminantHardLiteralStage N) n v)\n      (lpInfinityMultiplier\n        (P5PhysicalHardStageRestriction.literalStageMeasure\n          (discriminantHardLiteralStage N))\n        (discriminantHardStageWeightLp N)\n        (graphLiteralStageRestriction\n          (discriminantHardLiteralStage N) n u)) =\n    inner ℂ (graphEuclideanBase n v)\n      (lpInfinityMultiplier chosenEuclideanCarrierMeasure\n        (discriminantHardCarrierWeightLp N)\n        (graphEuclideanBase n u))\n  rw [MeasureTheory.L2.inner_def, MeasureTheory.L2.inner_def]\n",
+      "causal_v43_repairs": [
+        "V43-MID-HC05-hard-stage-outer-add-change",
+        "V43-MID-HC06-hard-stage-outer-smul-change",
+        "V43-MID-HC07-hard-stage-bound-unfold-by-change"
+      ],
+      "rollback_decision": "DO_NOT_ROLL_BACK_THREE_RUNTIME_SUCCESSFUL_PRODUCER_REPAIRS_STAGE_OWNER_LOCAL_HEARTBEAT_REDUCTION",
+      "evidence": "There is no executable source sorry token. The only synthetic declaration-uses-sorry warning is compiler error recovery inside this owner, at the broad simp argument discriminantHardStagePotentialPairing, followed by an owner-closing whnf timeout. Replacing the broad structure unfolding with one exact definitional change is a bounded probe; direct Lean must decide whether it removes both timeout and synthetic warning."
+    }
+  ]
+}

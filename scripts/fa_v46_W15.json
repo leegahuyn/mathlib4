@@ -1,0 +1,162 @@
+{
+  "schema": "fa-v42-declaration-local-repairs-v1",
+  "status": "PATCH_READY_STATIC_EXACT_REMOTE_PROGRESSION_DIRECT_LEAN_REQUIRED_V46_W15",
+  "worker_id": "W15",
+  "cluster_id": "V46-IDX3939-COMPLEX-SELF-INNER-AND-REAL-NORM-BRIDGES",
+  "authority": {
+    "repository": "leegahuyn/mathlib4",
+    "run_id": 31728453514,
+    "head_sha": "5ec44f3d343955f3124e7efecc048b648dccc5ab",
+    "job_id": 94542617528,
+    "artifact_id": 9192669673,
+    "artifact_digest": "sha256:8f07a678145b62342aaa9cb94ebbce6c9f7cc1a45c400560918d42499e67f2f3",
+    "variant": "all_probes",
+    "source_path": "work/v45-results/run-31728453514/all_probes/Mock2_FunctionalAnalysis-candidate.lean",
+    "source_sha256": "726f40d1dd03d32f03592adf4f6b02e3f7f52e7e1f71087ee53bdb83c4bb0caf",
+    "source_bytes": 2788764,
+    "source_lines": 62383,
+    "declaration_count": 4416,
+    "diagnostics_path": "work/v45-results/run-31728453514/all_probes/FULL_DIAGNOSTICS.json",
+    "diagnostics_sha256": "1fb14600849d7281df6ff65ae9213b6671b19a396cf539041f864fea157476a1",
+    "fa_log_path": "work/v45-results/run-31728453514/all_probes/Mock2_FunctionalAnalysis.log",
+    "fa_log_sha256": "bcc92a247a531419b25677cfdd5e28ce1705e6c3fb87301b93e24510932b4888"
+  },
+  "assignment": {
+    "declaration_index": 3939,
+    "declaration": "norm_planeFourierRemainder_eq_scale_mul_torusRemainder",
+    "requested_ordinal_label": [20, 21, 22, 23],
+    "v45_error_ordinals": [18, 19, 20, 21],
+    "diagnostic_count": 4,
+    "lines": [53772, 53775, 53789, 53815],
+    "columns": [4, 4, 4, 4],
+    "normalized_signatures": [
+      "unsolved goals",
+      "unsolved goals",
+      "Tactic `simp` failed with a nested error:",
+      "Type mismatch: After simplification, term"
+    ],
+    "ordinal_reconciliation": "The locked v45 FULL_DIAGNOSTICS.json and v46 residual-owner inventory both assign this owner ordinals 18-21. The task label 20-23 is a stale plus-two alias; authoritative coverage is 18-21.",
+    "baseline_status": "persisting",
+    "root_or_cascade": "THREE_INDEPENDENT_PROOF-NORMALIZATION_ROOTS_PRODUCING_FOUR_DIAGNOSTICS",
+    "ownership": "W15-only"
+  },
+  "diagnosis": {
+    "root_partition": [
+      {
+        "diagnostics": [18, 19],
+        "classification": "ONE_COMPLEX-SELF-INNER_ROOT_WITH_REAL_AND_IMAG_SUBGOALS",
+        "cause": "Complex.ext exposes real and imaginary projections, but inner_self_eq_norm_sq and inner_self_im are equalities whose left sides are not the projection expressions. The v45 linter confirms both lemmas and hbase are unused, so neither goal is rewritten.",
+        "repair": "Use the direct scalar-valued inner_self_eq_norm_sq_to_K bridge twice, rewrite hbase, push the real casts, and close the exact commutativity residual with ring_nf."
+      },
+      {
+        "diagnostics": [20],
+        "classification": "ONE_RECURSIVE-SIMP_ROOT",
+        "cause": "Including generic map_mul in simp only recursively traverses the star product and reaches maxRecDepth.",
+        "repair": "Perform the star/map normalizations once with deterministic rw, explicitly rewrite Complex.ofReal_pow to identify the two scale-square coercion forms, then normalize the commutative product with ring_nf."
+      },
+      {
+        "diagnostics": [21],
+        "classification": "ONE_REAL-PROJECTION-TO-NORM-SQUARE_API_ROOT",
+        "cause": "congrArg Complex.re succeeds, but inner_self_eq_norm_sq again does not rewrite re (inner x x); the printed hre therefore remains a real-part equality instead of the requested squared-norm equality.",
+        "repair": "Use a four-step calc with norm_sq_eq_re_inner in the two exact orientations and an explicit Complex.mul_re reduction in the middle."
+      }
+    ],
+    "historical_progression": [
+      {
+        "stage": "V40 G1-P28",
+        "effect": "Replaced direct rewriting of a complex equality by Complex.ext, added Complex.star_def, took Complex.re downstream, and replaced the final nlinarith square-root step. Those changes exposed rather than solved the present API-normalization roots."
+      },
+      {
+        "stage": "V42-Q4 / V43-E-S13 staged fragments",
+        "effect": "Proposed the same three structural repairs. The V43 early_probe remotely demonstrated that inner_self_eq_norm_sq_to_K elaborates and leaves only a commutativity goal, and that deterministic rw removes the maxRecDepth failure but leaves only the cast-of-power identity."
+      },
+      {
+        "stage": "V43 early_probe artifact 9189234600",
+        "effect": "The first fragment's remaining goal was exactly `scale^2 * norm^2 = norm^2 * scale^2`, for which Lean explicitly suggested ring_nf. The second fragment's remaining goal differed only by `((scale : Complex)^2)` versus `((scale^2 : Real) : Complex)`. The old third fragment was contaminated by literal diff-prefix plus signs and therefore was not an executable test of its intended calc."
+      },
+      {
+        "stage": "V45 all_probes",
+        "effect": "The staged V43 fragments were not retained; the unchanged V41-era owner again emits four diagnostics. W15 rebuilds the three fragments without diff prefixes and closes the two exact remote follow-on normal forms."
+      }
+    ],
+    "same_file_api_evidence": [
+      "norm_sq_eq_re_inner (k := Complex) is used successfully throughout the locked source, including exact calc bridges at lines 17366, 24018, and 60046-60052.",
+      "inner_self_im is used as an explicit equality rather than a simp projection rule at lines 50549-50553, confirming why the v45 simp argument was unused.",
+      "Complex.ofReal_pow is used elsewhere in the same source to normalize casts of real powers before ring algebra."
+    ],
+    "required_imports": [],
+    "expected_owner_errors_closed": 4,
+    "expected_new_owner_errors": 0,
+    "semantic_risk": "LOW",
+    "confidence": "HIGH_STATIC_EXACT_V45_GOALS_PLUS_V43_REMOTE_PROGRESSION_DIRECT_LEAN_REQUIRED",
+    "theorem_proposition_changed": false,
+    "disposition": "PATCH_READY"
+  },
+  "same_owner_atomic_group": {
+    "policy": "ALL_OR_NONE",
+    "owner": "norm_planeFourierRemainder_eq_scale_mul_torusRemainder",
+    "declaration_index": 3939,
+    "application_order": [
+      "V46-W15-IDX3939-direct-complex-self-inner-scale",
+      "V46-W15-IDX3939-deterministic-star-scale-square-normalization",
+      "V46-W15-IDX3939-explicit-real-inner-to-norm-square-calc"
+    ],
+    "expected_repair_count": 3,
+    "expected_old_count_per_fragment_in_owner": 1,
+    "reason": "All three fragments lie in one proof body and downstream hresInner depends on hbaseInner and hsum. Cumulative composition must select all three in the stated order or none."
+  },
+  "header_policy": "NO_HEADER_CHANGES_BODY_ONLY",
+  "trust_policy": {
+    "tokens": ["sorry", "admit", "axiom", "unsafe", "native_decide", "Lean.ofReduceBool"],
+    "required_before": 0,
+    "required_after": 0
+  },
+  "repairs": [
+    {
+      "id": "V46-W15-IDX3939-direct-complex-self-inner-scale",
+      "owner": "norm_planeFourierRemainder_eq_scale_mul_torusRemainder",
+      "declaration_index": 3939,
+      "diagnostics": [18, 19],
+      "kind": "body",
+      "classification": "DIRECT_K-VALUED_SELF-INNER_NORM_BRIDGE_THEN_RING-NORMALIZE",
+      "confidence": "very-high-exact-v43-remote-follow-on-goal-and-Lean-ring_nf-suggestion",
+      "expected_count_in_owner": 1,
+      "application_order": 1,
+      "old": "  have hbaseInner :\n      inner ℂ F F =\n        (literalStageFourierScale Y ^ 2 : ℝ) * inner ℂ T T := by\n    apply Complex.ext\n    · simp only [Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im,\n        zero_mul, sub_zero, inner_self_eq_norm_sq (𝕜 := ℂ), hbase]\n      ring\n    · simp only [Complex.mul_im, Complex.ofReal_re, Complex.ofReal_im,\n        zero_mul, add_zero, inner_self_im (𝕜 := ℂ)]",
+      "new": "  have hbaseInner :\n      inner ℂ F F =\n        (literalStageFourierScale Y ^ 2 : ℝ) * inner ℂ T T := by\n    rw [inner_self_eq_norm_sq_to_K, inner_self_eq_norm_sq_to_K, hbase]\n    push_cast\n    ring_nf",
+      "evidence": "The v45 two goals and unused-simp warnings prove the projection mismatch. V43 early_probe remotely applied the proposed direct K-valued API and reached exactly a commutative scale-square product; its log explicitly recommends ring_nf."
+    },
+    {
+      "id": "V46-W15-IDX3939-deterministic-star-scale-square-normalization",
+      "owner": "norm_planeFourierRemainder_eq_scale_mul_torusRemainder",
+      "declaration_index": 3939,
+      "diagnostics": [20],
+      "kind": "body",
+      "classification": "REPLACE-RECURSIVE-SIMP-BY-ORDERED-RW-AND-EXPLICIT-OFREAL-POWER-BRIDGE",
+      "confidence": "high-exact-v43-remote-follow-on-cast-goal-and-same-file-API",
+      "expected_count_in_owner": 1,
+      "application_order": 2,
+      "old": "    simp only [map_mul, starRingEnd_apply, Complex.star_def,\n      Complex.conj_ofReal]\n    ring",
+      "new": "    rw [map_mul, starRingEnd_apply, Complex.star_def,\n      Complex.conj_ofReal, Complex.ofReal_pow]\n    ring_nf",
+      "evidence": "Deterministic rw remotely eliminated maxRecDepth and left `((scale : Complex)^2) * X = X * ((scale^2 : Real) : Complex)`. Complex.ofReal_pow identifies those scalar forms, after which ring_nf closes only commutative reassociation."
+    },
+    {
+      "id": "V46-W15-IDX3939-explicit-real-inner-to-norm-square-calc",
+      "owner": "norm_planeFourierRemainder_eq_scale_mul_torusRemainder",
+      "declaration_index": 3939,
+      "diagnostics": [21],
+      "kind": "body",
+      "classification": "EXPLICIT-NORM-SQUARE-REAL-INNER-CALC",
+      "confidence": "high-static-exact-v45-hre-and-same-file-compiled-norm_sq_eq_re_inner",
+      "expected_count_in_owner": 1,
+      "application_order": 3,
+      "old": "  have hsq :\n      ‖literalStagePlaneFiniteProjection Y N F - F‖ ^ 2 =\n        literalStageFourierScale Y ^ 2 *\n          ‖P5LocalFourierRellich.twoTorusFiniteFourierProjection s T - T‖ ^ 2 := by\n    have hre := congrArg Complex.re hresInner\n    simpa only [Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im,\n      zero_mul, sub_zero, inner_self_eq_norm_sq (𝕜 := ℂ)] using hre",
+      "new": "  have hsq :\n      ‖literalStagePlaneFiniteProjection Y N F - F‖ ^ 2 =\n        literalStageFourierScale Y ^ 2 *\n          ‖P5LocalFourierRellich.twoTorusFiniteFourierProjection s T - T‖ ^ 2 := by\n    calc\n      ‖literalStagePlaneFiniteProjection Y N F - F‖ ^ 2 =\n          (inner ℂ (literalStagePlaneFiniteProjection Y N F - F)\n            (literalStagePlaneFiniteProjection Y N F - F)).re :=\n        norm_sq_eq_re_inner (𝕜 := ℂ) _\n      _ = ((literalStageFourierScale Y ^ 2 : ℝ) *\n          inner ℂ\n            (P5LocalFourierRellich.twoTorusFiniteFourierProjection s T - T)\n            (P5LocalFourierRellich.twoTorusFiniteFourierProjection s T - T)).re :=\n        congrArg Complex.re hresInner\n      _ = literalStageFourierScale Y ^ 2 *\n          (inner ℂ\n            (P5LocalFourierRellich.twoTorusFiniteFourierProjection s T - T)\n            (P5LocalFourierRellich.twoTorusFiniteFourierProjection s T - T)).re := by\n        rw [Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im,\n          zero_mul, sub_zero]\n      _ = literalStageFourierScale Y ^ 2 *\n          ‖P5LocalFourierRellich.twoTorusFiniteFourierProjection s T - T‖ ^ 2 := by\n        rw [← norm_sq_eq_re_inner (𝕜 := ℂ)]",
+      "evidence": "The v45 log prints hre with real self-inner projections on both sides. This calc uses norm_sq_eq_re_inner in the exact forward/reverse directions already compiled in the same file and contains no broad simp."
+    }
+  ],
+  "promotion_rule": "Compose only against exact v45 all_probes SHA 726f40d1 and select the three same-owner fragments ALL_OR_NONE in manifest order. Require direct remote Mock2=0, Mock2_Advanced=0, full FA maxErrors=2000 execution, disappearance of authoritative idx3939 ordinals 18-21 without any new owner-local diagnostic, complete inventory comparison, source identity, all 4416 declaration headers/comments/attributes preserved, executable trust-six zero, and synthetic-sorry zero before promotion.",
+  "direct_lean_verified": false,
+  "clean_build_claimed": false,
+  "lean_lake_git_github_network_invoked_by_worker": false
+}

@@ -1,0 +1,86 @@
+{
+  "schema": "fa-v42-declaration-local-repairs-v1",
+  "status": "PATCH_READY_STATIC_MEASURABLE_EMBEDDING_INTEGRAL_TRANSPORT_DIRECT_LEAN_REQUIRED_V46_W16",
+  "worker_id": "W16",
+  "cluster_id": "V46-IDX3956-UPPER-HALF-PLANE-L2-NORM-COMAP-TRANSPORT",
+  "authority": {
+    "repository": "leegahuyn/mathlib4",
+    "run_id": 31728453514,
+    "head_sha": "5ec44f3d343955f3124e7efecc048b648dccc5ab",
+    "job_id": 94542617528,
+    "artifact_id": 9192669673,
+    "artifact_digest": "sha256:8f07a678145b62342aaa9cb94ebbce6c9f7cc1a45c400560918d42499e67f2f3",
+    "variant": "all_probes",
+    "source_path": "work/v45-results/run-31728453514/all_probes/Mock2_FunctionalAnalysis-candidate.lean",
+    "source_sha256": "726f40d1dd03d32f03592adf4f6b02e3f7f52e7e1f71087ee53bdb83c4bb0caf",
+    "source_bytes": 2788764,
+    "source_lines": 62383,
+    "declaration_count": 4416,
+    "diagnostics_path": "work/v45-results/run-31728453514/all_probes/FULL_DIAGNOSTICS.json",
+    "diagnostics_sha256": "1fb14600849d7281df6ff65ae9213b6671b19a396cf539041f864fea157476a1",
+    "fa_log_path": "work/v45-results/run-31728453514/all_probes/Mock2_FunctionalAnalysis.log",
+    "fa_log_sha256": "bcc92a247a531419b25677cfdd5e28ce1705e6c3fb87301b93e24510932b4888"
+  },
+  "assignment": {
+    "declaration_index": 3956,
+    "declaration": "norm_ambientPlaneToUpperLinear_le",
+    "v45_error_ordinals": [24],
+    "v45_error_lines": [54337],
+    "v45_error_columns": [8],
+    "v45_error_signatures": [
+      "Tactic `apply` failed: could not unify the conclusion of `@integral_congr_ae`"
+    ],
+    "root_or_cascade": "INDEPENDENT_LOCAL_MEASURE_DOMAIN_ROOT_AFTER_SUCCESSFUL_V44_COMAP_EXPOSURE",
+    "ownership": "W16-only"
+  },
+  "diagnosis": {
+    "prior_state": "V43 repaired the L2 norm-square bridge and the MemLp integrability projection. V44 then exposed upperEuclideanMeasure definitionally as volume.comap UpperHalfPlane.coe. V45 confirms both repairs elaborate and leaves exactly one later domain mismatch.",
+    "root": "Rewriting with integral_subtype_comap changes the set integral into an integral over the subtype `{w // w ∈ UpperHalfPlane.upperHalfPlaneSet}`. The left integral remains over the distinct structure type `ℍ`. Therefore integral_congr_ae cannot unify a common domain or measure.",
+    "repair": "First use MemLp.coeFn_toLp to replace the integrand while both sides remain integrals over `ℍ` with `volume.comap UpperHalfPlane.coe`. Then use MeasurableEmbedding.integral_map to push that integral to complex volume, map_comap to identify the pushed measure with volume restricted to the range, and UpperHalfPlane.range_coe to identify the range with upperHalfPlaneSet.",
+    "same_file_api_evidence": [
+      "ambientPlane_comp_upper_memLp immediately above uses UpperHalfPlane.measurableEmbedding_coe.integrable_map_iff and UpperHalfPlane.measurableEmbedding_coe.map_comap for the same function and comap measure.",
+      "upperHalfPlaneCoe_measurableEmbedding proves the exact embedding by UpperHalfPlane.measurableEmbedding_coe.",
+      "The existing MemLp.coeFn_toLp event has the exact pointwise equality needed for the same-domain integral_congr_ae step."
+    ],
+    "mathlib_api_evidence": [
+      "MeasurableEmbedding.integral_map states that the integral against Measure.map f μ equals the integral of the composition against μ, without an extra integrability premise.",
+      "MeasurableEmbedding.map_comap identifies Measure.map f (Measure.comap f μ) with μ.restrict (Set.range f).",
+      "UpperHalfPlane.range_coe identifies Set.range UpperHalfPlane.coe with UpperHalfPlane.upperHalfPlaneSet."
+    ],
+    "required_imports": [],
+    "semantic_risk": "LOW",
+    "confidence": "HIGH_STATIC_EXACT_PRINTED_GOAL_SAME_FILE_AND_MATHLIB_API_DIRECT_LEAN_REQUIRED",
+    "theorem_proposition_changed": false,
+    "disposition": "PATCH_READY"
+  },
+  "dependency_policy": {
+    "atomic_group": "NONE",
+    "predecessor_idx3955": "NOT_REQUIRED_FOR_TEXTUAL_COMPOSITION; v45 already elaborated ambientPlaneToUpperLinear through this owner and the residual is inside idx3956 only.",
+    "promotion_order": "Compose declaration-locally against exact v45 all_probes authority; cumulative remote Lean remains the final gate."
+  },
+  "header_policy": "NO_HEADER_CHANGES_BODY_ONLY",
+  "trust_policy": {
+    "tokens": ["sorry", "admit", "axiom", "unsafe", "native_decide", "Lean.ofReduceBool"],
+    "required_before": 0,
+    "required_after": 0
+  },
+  "repairs": [
+    {
+      "id": "V46-W16-IDX3956-transport-upper-integral-through-measurable-embedding",
+      "owner": "norm_ambientPlaneToUpperLinear_le",
+      "declaration_index": 3956,
+      "diagnostics": [24],
+      "kind": "body",
+      "classification": "REPLACE_SUBTYPE_DOMAIN_REWRITE_WITH_SAME_DOMAIN_AE_CONGRUENCE_AND_MAP_COMAP",
+      "confidence": "high-static-exact-v45-goal-and-direct-library-theorem-signatures",
+      "expected_count_in_owner": 1,
+      "old": "      ∫ w in UpperHalfPlane.upperHalfPlaneSet, ‖F w‖ ^ 2 := by\n        change (∫ z : ℍ, ‖ambientPlaneToUpperLinear F z‖ ^ 2\n          ∂volume.comap UpperHalfPlane.coe) = _\n        rw [← integral_subtype_comap\n          UpperHalfPlane.isOpen_upperHalfPlaneSet.measurableSet]\n        apply integral_congr_ae\n        filter_upwards [MemLp.coeFn_toLp\n          (ambientPlane_comp_upper_memLp F)] with z hz\n        rw [hz]",
+      "new": "      ∫ w in UpperHalfPlane.upperHalfPlaneSet, ‖F w‖ ^ 2 := by\n        change (∫ z : ℍ, ‖ambientPlaneToUpperLinear F z‖ ^ 2\n          ∂volume.comap UpperHalfPlane.coe) = _\n        calc\n          (∫ z : ℍ, ‖ambientPlaneToUpperLinear F z‖ ^ 2\n              ∂volume.comap UpperHalfPlane.coe) =\n              ∫ z : ℍ, ‖F (z : ℂ)‖ ^ 2\n                ∂volume.comap UpperHalfPlane.coe := by\n            apply integral_congr_ae\n            filter_upwards [MemLp.coeFn_toLp\n              (ambientPlane_comp_upper_memLp F)] with z hz\n            rw [hz]\n          _ = ∫ w : ℂ, ‖F w‖ ^ 2\n                ∂Measure.map UpperHalfPlane.coe\n                  (volume.comap UpperHalfPlane.coe) :=\n            (UpperHalfPlane.measurableEmbedding_coe.integral_map\n              (μ := volume.comap UpperHalfPlane.coe)\n              (fun w : ℂ ↦ ‖F w‖ ^ 2)).symm\n          _ = ∫ w in UpperHalfPlane.upperHalfPlaneSet, ‖F w‖ ^ 2 := by\n            rw [UpperHalfPlane.measurableEmbedding_coe.map_comap,\n              UpperHalfPlane.range_coe]",
+      "evidence": "The v45 goal explicitly prints an ℍ integral on the left and an upperHalfPlaneSet subtype integral on the right. The replacement delays all domain transport until after the only AE congruence, then follows the exact integral_map/map_comap/range_coe identities."
+    }
+  ],
+  "promotion_rule": "Compose only against the exact v45 all_probes source. Require remote direct Mock2=0, Mock2_Advanced=0, whole-FA maxErrors=2000 execution, disappearance of ordinal 24 without replacement diagnostics in idx3956, complete residual comparison, 4416 byte-identical declaration headers, and trust-six zero before promotion.",
+  "direct_lean_verified": false,
+  "full_fa_clean_claimed": false,
+  "lean_lake_git_github_network_invoked_by_worker": false
+}

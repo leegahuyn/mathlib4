@@ -1,0 +1,30 @@
+{
+  "schema": "fa-dynamic-cluster-3046-3047-unique-v2",
+  "status": "STATIC_STAGED_PENDING_DIRECT_LEAN",
+  "repairs": [
+    {
+      "declaration_index": 3046,
+      "declaration_name": "raising_cutoff_and_Friedrichs_of_sequentialApproximation",
+      "old_fragment": "  · rw [hasSequentialGraphLocalization_iff_graph_subset_closure]\n    refine ⟨raisingCompactWeakMaximalGraphAt_subset_graph n, ?_⟩",
+      "new_fragment": "  · unfold RaisingInvariantCutoffGraphControlAt\n    rw [hasSequentialGraphLocalization_iff_graph_subset_closure]\n    refine ⟨raisingCompactWeakMaximalGraphAt_subset_graph n, ?_⟩"
+    },
+    {
+      "declaration_index": 3046,
+      "declaration_name": "raising_cutoff_and_Friedrichs_of_sequentialApproximation",
+      "old_fragment": "          (physicalRaise_graph_subset_compactWeakMaximalGraph n\n            (hqGraph j)).1)\n  · rw [hasSequentialGraphRegularization_iff_subset_closure_graph]",
+      "new_fragment": "          (physicalRaise_graph_subset_compactWeakMaximalGraph n\n            (hqGraph j)).1)\n  · unfold RaisingCompactFriedrichsPeriodizationAt\n    rw [hasSequentialGraphRegularization_iff_subset_closure_graph]"
+    },
+    {
+      "declaration_index": 3047,
+      "declaration_name": "lowering_cutoff_and_Friedrichs_of_sequentialApproximation",
+      "old_fragment": "  · rw [hasSequentialGraphLocalization_iff_graph_subset_closure]\n    refine ⟨loweringCompactWeakMaximalGraphAt_subset_graph n, ?_⟩",
+      "new_fragment": "  · unfold LoweringInvariantCutoffGraphControlAt\n    rw [hasSequentialGraphLocalization_iff_graph_subset_closure]\n    refine ⟨loweringCompactWeakMaximalGraphAt_subset_graph n, ?_⟩"
+    },
+    {
+      "declaration_index": 3047,
+      "declaration_name": "lowering_cutoff_and_Friedrichs_of_sequentialApproximation",
+      "old_fragment": "          (physicalLowerFromSucc_graph_subset_compactWeakMaximalGraph n\n            (hqGraph j)).1)\n  · rw [hasSequentialGraphRegularization_iff_subset_closure_graph]",
+      "new_fragment": "          (physicalLowerFromSucc_graph_subset_compactWeakMaximalGraph n\n            (hqGraph j)).1)\n  · unfold LoweringCompactFriedrichsPeriodizationAt\n    rw [hasSequentialGraphRegularization_iff_subset_closure_graph]"
+    }
+  ]
+}

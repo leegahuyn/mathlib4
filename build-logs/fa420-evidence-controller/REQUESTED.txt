@@ -1,0 +1,1 @@
+Aggregate only evidence whose reported source SHA matches a checked-in FA source. Replay the highest claim with direct Lean before selection, continue strict LSP-screened repairs, and declare success only after FA, Integrated, every Mock3, and QYM each pass twice.

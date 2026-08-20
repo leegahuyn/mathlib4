@@ -1,0 +1,86 @@
+--- a/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
++++ b/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+@@ -48671,6 +48671,48 @@
+                 Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
+             SmoothQuotientCompactFunction) z) := by
+     rw [strongPrincipalCore_apply]
++    change
++      (((Sub.sub
++          (Sub.sub u
++            (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n
++              (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n u)))
++          (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raiseFromPred n
++            (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lower n u)) :
++            Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
++        SmoothQuotientCompactFunction) z) = _
++    have hOuter :
++        ((Sub.sub
++            (Sub.sub u
++              (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n
++                (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n u)))
++            (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raiseFromPred n
++              (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lower n u)) :
++              Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
++          SmoothQuotientCompactFunction) =
++          (((Sub.sub u
++              (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n
++                (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n u)) :
++                Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
++            SmoothQuotientCompactFunction) -
++            ((Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raiseFromPred n
++                (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lower n u) :
++                Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
++              SmoothQuotientCompactFunction)) := by
++      rfl
++    rw [hOuter]
++    have hInner :
++        ((Sub.sub u
++            (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n
++              (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n u)) :
++              Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
++          SmoothQuotientCompactFunction) =
++          (u : SmoothQuotientCompactFunction) -
++            ((Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n
++                (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n u) :
++                Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
++              SmoothQuotientCompactFunction) := by
++      rfl
++    rw [hInner]
+     rfl
+   rw [hPoint]
+   have hLR := Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lower_raise_factorization n u z
+@@ -48721,6 +48763,34 @@
+               Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
+             SmoothQuotientCompactFunction) z) := by
+     rw [strongSchrodingerCore_apply]
++    change
++      (((Sub.sub (strongPrincipalCore n u)
++          ((t : ℂ) • potentialMultiplicationCore n u) :
++          Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
++        SmoothQuotientCompactFunction) z) = _
++    have hSub :
++        ((Sub.sub (strongPrincipalCore n u)
++            ((t : ℂ) • potentialMultiplicationCore n u) :
++            Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
++          SmoothQuotientCompactFunction) =
++          ((strongPrincipalCore n u :
++              Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
++            SmoothQuotientCompactFunction) -
++            (((t : ℂ) • potentialMultiplicationCore n u :
++                Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
++              SmoothQuotientCompactFunction) := by
++      rfl
++    rw [hSub]
++    have hSmul :
++        (((t : ℂ) • potentialMultiplicationCore n u :
++            Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
++          SmoothQuotientCompactFunction) =
++          (t : ℂ) •
++            ((potentialMultiplicationCore n u :
++                Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
++              SmoothQuotientCompactFunction) := by
++      rfl
++    rw [hSmul]
+     rfl
+   rw [hPoint, strongPrincipalCore_apply_pointwise,
+     potentialMultiplicationCore_apply]

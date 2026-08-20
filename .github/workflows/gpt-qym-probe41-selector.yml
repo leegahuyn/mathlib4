@@ -1,0 +1,247 @@
+name: GPT QYM Probe41 direct frontier selector
+
+on:
+  push:
+    branches:
+      - gpt/fa-qym-clean-final-20260816
+    paths:
+      - .github/workflows/gpt-qym-probe41-selector.yml
+  workflow_dispatch:
+  workflow_run:
+    workflows:
+      - GPT QYM Probe41 Gamma(2) parity repair matrix
+    types:
+      - completed
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: gpt-qym-probe41-selector
+  cancel-in-progress: false
+
+jobs:
+  select:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: leegahuyn/mathlib4
+      BRANCH: gpt/fa-qym-clean-final-20260816
+      FRONTIER: .github/qym-frontier
+      QYM: PrimalitySheafVerification/QYM.lean
+
+    steps:
+      - name: Checkout current branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: gpt/fa-qym-clean-final-20260816
+          persist-credentials: true
+          fetch-depth: 0
+
+      - name: Discover latest completed Probe41 run
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/probe41-selector "$FRONTIER"
+          RID=$(gh api --method GET "repos/$REPO/actions/runs" \
+            -f branch="$BRANCH" -F per_page=100 \
+            --jq '[.workflow_runs[] | select(.status == "completed" and .name == "GPT QYM Probe41 Gamma(2) parity repair matrix")] | sort_by(.created_at) | reverse | .[0].id')
+          test -n "$RID"
+          echo "RID=$RID" >> "$GITHUB_ENV"
+          echo "$RID" > /tmp/probe41-selector/RUN_ID.txt
+
+      - name: Download every Probe41 evidence artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          ROOT=/tmp/probe41-selector/artifacts
+          mkdir -p "$ROOT"
+          gh api --method GET "repos/$REPO/actions/runs/$RID/artifacts" -F per_page=100 \
+            --jq '.artifacts[] | select(.expired == false and (.name | startswith("qym-probe41-"))) | [.id, .name, .digest] | @tsv' \
+            > /tmp/probe41-selector/ARTIFACTS.tsv
+          test -s /tmp/probe41-selector/ARTIFACTS.tsv
+          while IFS=$'\t' read -r aid aname digest; do
+            mkdir -p "$ROOT/$aid"
+            gh api -H 'Accept: application/vnd.github+json' \
+              "repos/$REPO/actions/artifacts/$aid/zip" > "$ROOT/$aid.zip"
+            unzip -q -o "$ROOT/$aid.zip" -d "$ROOT/$aid"
+            printf '%s\t%s\t%s\n' "$aid" "$aname" "$digest" > "$ROOT/$aid/ARTIFACT_META.tsv"
+          done < /tmp/probe41-selector/ARTIFACTS.tsv
+
+      - name: Validate, rank, and persist the exact direct frontier
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - "$RID" /tmp/probe41-selector/artifacts "$FRONTIER" "$QYM" <<'PY'
+          from pathlib import Path
+          import hashlib, json, re, shutil, subprocess, sys
+
+          run_id = int(sys.argv[1])
+          root, frontier, canonical = Path(sys.argv[2]), Path(sys.argv[3]), Path(sys.argv[4])
+          frontier.mkdir(parents=True, exist_ok=True)
+          choices = []
+
+          for rp in root.rglob('PROBE_RESULT.json'):
+              try:
+                  result = json.loads(rp.read_text(encoding='utf-8'))
+              except Exception:
+                  continue
+              if result.get('panic_lines') != 0:
+                  continue
+              errors = result.get('error_headers')
+              if not isinstance(errors, int):
+                  continue
+              candidates = list(rp.parent.glob('QYM.candidate-probe41-*.lean'))
+              if len(candidates) != 1:
+                  continue
+              candidate = candidates[0]
+              raw = candidate.read_bytes()
+              sha256 = hashlib.sha256(raw).hexdigest()
+              blob = hashlib.sha1(b'blob ' + str(len(raw)).encode() + b'\0' + raw).hexdigest()
+              if sha256 != result.get('candidate_qym_sha256'):
+                  continue
+              if blob != result.get('candidate_qym_blob'):
+                  continue
+              meta = (rp.parent / 'ARTIFACT_META.tsv')
+              if not meta.exists():
+                  # meta is at the artifact root; find the nearest one above this result
+                  for parent in rp.parents:
+                      if (parent / 'ARTIFACT_META.tsv').exists():
+                          meta = parent / 'ARTIFACT_META.tsv'
+                          break
+              artifact_id = artifact_name = artifact_digest = None
+              if meta.exists():
+                  parts = meta.read_text(encoding='utf-8').strip().split('\t')
+                  if len(parts) >= 2:
+                      artifact_id, artifact_name = int(parts[0]), parts[1]
+                      artifact_digest = parts[2] if len(parts) > 2 else None
+              first = result.get('first_error') or {}
+              choices.append({
+                  'run_id': run_id,
+                  'artifact_id': artifact_id,
+                  'artifact_name': artifact_name,
+                  'artifact_digest': artifact_digest,
+                  'variant': result.get('variant'),
+                  'candidate_path': str(candidate),
+                  'candidate_qym_sha256': sha256,
+                  'candidate_qym_blob': blob,
+                  'bytes': len(raw),
+                  'lf': raw.count(b'\n'),
+                  'exit': result.get('exit'),
+                  'error_headers': errors,
+                  'warning_headers': result.get('warning_headers', 10**9),
+                  'panic_lines': result.get('panic_lines'),
+                  'first_error': first,
+                  'last_error': result.get('last_error'),
+                  'semantic_pass': bool(result.get('semantic_pass')),
+                  'log_sha256': result.get('log_sha256'),
+                  '_result_path': str(rp),
+              })
+
+          if not choices:
+              raise SystemExit('no hash-valid Probe41 direct result')
+
+          def rank(x):
+              return (
+                  0 if x['semantic_pass'] else 1,
+                  x['error_headers'],
+                  -(x['first_error'].get('line') or 0),
+                  x['warning_headers'],
+              )
+
+          choices.sort(key=rank)
+          best = choices[0]
+          candidate = Path(best.pop('candidate_path'))
+          result_path = Path(best.pop('_result_path'))
+
+          # Preserve the full run comparison even when no candidate improves the authority.
+          (frontier / 'PROBE41_SELECTION.json').write_text(
+              json.dumps({'run_id': run_id, 'best': best, 'all': choices}, indent=2, sort_keys=True) + '\n',
+              encoding='utf-8')
+          shutil.copy2(candidate, frontier / 'QYM_PROBE41_BEST.lean')
+          shutil.copy2(result_path, frontier / 'PROBE41_RESULT.json')
+          for name in ('QYM.error-headers.txt', 'QYM.diagnostics.jsonl', 'QYM.log', 'QYM.time'):
+              source = result_path.parent / name
+              if source.exists():
+                  target = frontier / ('PROBE41_' + name.replace('QYM.', ''))
+                  shutil.copy2(source, target)
+
+          lines = candidate.read_text(encoding='utf-8', errors='replace').splitlines()
+          first_line = (best.get('first_error') or {}).get('line') or 1
+          lo, hi = max(1, first_line - 100), min(len(lines), first_line + 180)
+          (frontier / 'PROBE41_FIRST_ERROR_CONTEXT.txt').write_text(
+              '\n'.join(f'{i}: {lines[i-1]}' for i in range(lo, hi + 1)) + '\n',
+              encoding='utf-8')
+
+          # Global authority floor before Probe41: 89 errors, first error line 37775.
+          floor = {
+              'semantic_pass': False,
+              'error_headers': 89,
+              'warning_headers': 356,
+              'first_error': {'line': 37775},
+              'candidate_qym_sha256': '313c076645a51976237738bd10c7f22b54f2a483499e60b57fa0d69be007cc1e',
+              'candidate_qym_blob': 'ff49510790dd7ca136bf34c3ec7150617ee1c241',
+              'source': 'Probe35 flat_infer direct Lean authority',
+          }
+          current_path = frontier / 'CURRENT_GLOBAL_BEST.json'
+          current = floor
+          if current_path.exists():
+              try:
+                  stored = json.loads(current_path.read_text(encoding='utf-8'))
+                  if rank(stored) < rank(current):
+                      current = stored
+              except Exception:
+                  pass
+
+          promoted = rank(best) < rank(current)
+          if best['semantic_pass']:
+              promoted = True
+          decision = {'promoted': promoted, 'previous': current, 'candidate': best}
+          (frontier / 'PROBE41_PROMOTION_DECISION.json').write_text(
+              json.dumps(decision, indent=2, sort_keys=True) + '\n', encoding='utf-8')
+
+          if promoted:
+              shutil.copy2(candidate, frontier / 'QYM_GLOBAL_BEST.lean')
+              current_path.write_text(json.dumps(best, indent=2, sort_keys=True) + '\n', encoding='utf-8')
+
+          if best['semantic_pass']:
+              # A canonical write is permitted only for the exact direct-PASS bytes.
+              shutil.copy2(candidate, canonical)
+              (frontier / 'QYM_PASS_PENDING_CLEAN_RECHECK').write_text(
+                  best['candidate_qym_sha256'] + '\n', encoding='utf-8')
+
+          # Source audit on every persisted candidate.
+          decoded = candidate.read_text(encoding='utf-8')
+          forbidden = {
+              'sorry': len(re.findall(r'\bsorry\b', decoded)),
+              'admit': len(re.findall(r'\badmit\b', decoded)),
+              'native_decide': len(re.findall(r'\bnative_decide\b', decoded)),
+              'Lean.ofReduceBool': decoded.count('Lean.ofReduceBool'),
+              'global_axiom': len(re.findall(r'(?m)^\s*axiom\s+', decoded)),
+              'unsafe': len(re.findall(r'(?m)^\s*unsafe\s+', decoded)),
+              'maxHeartbeats_zero': len(re.findall(r'set_option\s+maxHeartbeats\s+0\b', decoded)),
+          }
+          if any(forbidden.values()):
+              raise SystemExit(f'forbidden source token: {forbidden}')
+          (frontier / 'PROBE41_FORBIDDEN_AUDIT.json').write_text(
+              json.dumps(forbidden, indent=2, sort_keys=True) + '\n', encoding='utf-8')
+          print(json.dumps(decision, indent=2, sort_keys=True))
+          PY
+
+      - name: Commit selector evidence and any authorized promotion
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add "$FRONTIER"
+          if [[ -f "$FRONTIER/QYM_PASS_PENDING_CLEAN_RECHECK" ]]; then
+            git add "$QYM"
+          fi
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git commit -m "QYM: persist exact Probe41 direct frontier"
+          git push origin "HEAD:$BRANCH"

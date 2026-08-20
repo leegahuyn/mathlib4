@@ -1,0 +1,20 @@
+{
+  "FA_exit": 1,
+  "Mock2_Advanced_exit": 0,
+  "Mock2_exit": 0,
+  "all_required_lean_executed": true,
+  "direct_lean_verified": true,
+  "error_count": 24,
+  "first_error_col": 6,
+  "first_error_declaration": "integrable_fullPlaneTest_mul_kernel_mul_translate",
+  "first_error_declaration_index": 3669,
+  "first_error_line": 49130,
+  "schema": "fa-v48-final-gate-v1",
+  "source_sha256": "1cb1e5c2aba4e76637f8d706ebfbc7cf615b4a5e9b6a2871ef8e992c40e97192",
+  "status": "FAIL",
+  "synthetic_sorry_count": 0,
+  "trust_six_zero": true,
+  "unique_error_declarations": 19,
+  "unique_signatures": 8,
+  "variant": "frontier_ring"
+}

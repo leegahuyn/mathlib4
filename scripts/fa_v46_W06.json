@@ -1,0 +1,82 @@
+{
+  "schema": "fa-v42-declaration-local-repairs-v1",
+  "status": "STAGED_API_PROBE_DIRECT_LEAN_REQUIRED_V46_W06",
+  "direct_lean_verified": false,
+  "full_fa_clean_claimed": false,
+  "worker_id": "W06",
+  "authority": {
+    "repository": "leegahuyn/mathlib4",
+    "run_id": 31728453514,
+    "head_sha": "5ec44f3d343955f3124e7efecc048b648dccc5ab",
+    "job_id": 94542617528,
+    "artifact_id": 9192669673,
+    "artifact_digest": "sha256:8f07a678145b62342aaa9cb94ebbce6c9f7cc1a45c400560918d42499e67f2f3",
+    "variant": "all_probes",
+    "source_path": "work/v45-results/run-31728453514/all_probes/Mock2_FunctionalAnalysis-candidate.lean",
+    "source_sha256": "726f40d1dd03d32f03592adf4f6b02e3f7f52e7e1f71087ee53bdb83c4bb0caf",
+    "source_bytes": 2788764,
+    "source_lines": 62383,
+    "declaration_count": 4416,
+    "diagnostics_path": "work/v45-results/run-31728453514/all_probes/FULL_DIAGNOSTICS.json",
+    "diagnostics_sha256": "1fb14600849d7281df6ff65ae9213b6671b19a396cf539041f864fea157476a1",
+    "fa_log_path": "work/v45-results/run-31728453514/all_probes/Mock2_FunctionalAnalysis.log",
+    "fa_log_sha256": "bcc92a247a531419b25677cfdd5e28ce1705e6c3fb87301b93e24510932b4888"
+  },
+  "scope": {
+    "declaration_index": 3923,
+    "declaration": "literalStageNegativePlaneWave_differentiable",
+    "remote_error_line": 53233,
+    "remote_error_column": 2,
+      "remote_error_signature": "`fun_prop` was unable to prove `Differentiable ℝ fun w =>`",
+    "v45_error_ordinal": 7,
+    "ownership": "W06-only",
+    "v45_error_count": 1,
+    "persists_in_all_six_v45_variants": true
+  },
+  "diagnosis": {
+    "root": "The generic fun_prop search has no registered differentiability theorem for AddCircle.fourier. The exact source already uses hasDerivAt_fourier_neg for the same real lift of each Fourier character in the two following derivative declarations.",
+    "instance_diamond": "A prior explicit composition probe inferred NormedAddCommGroup.toAddCommGroup for intermediate complex Differentiable terms while the declaration target retained Complex.addCommGroup. The authority source globally raises the forgetful instance priority at line 44535, and separately demonstrates local Complex AddCommGroup pinning at lines 31718-31719.",
+    "prior_failed_probe": {
+      "source_paths": [
+        "work/v43-run-31719983304/9189234600/Mock2_FunctionalAnalysis-candidate.lean",
+        "work/v43-run-31719983304/9189365035/Mock2_FunctionalAnalysis-candidate.lean"
+      ],
+      "observed_result": "The old hFourier/hRe/hIm/hScale attempt expanded the one fun_prop error into four errors: two AddCommGroup-instance mismatches, a missing explicit argument to differentiable_const, and a constant-cast/function-multiplication normalization mismatch.",
+      "why_not_promoted": "No direct Lean evidence exists for the corrected composition, so this repair remains an isolated staged probe rather than a high-confidence cumulative repair."
+    },
+    "corrective_deltas": [
+      "Pin AddCommGroup Complex locally to Complex.addCommGroup before constructing calculus witnesses.",
+      "Use hasDerivAt_fourier_neg to build each global real Fourier differentiability witness and compose with scaled re/im maps.",
+      "State the constant factor directly as the complex inverse used by the target and pass the explicit constant argument to differentiable_const.",
+      "Normalize pointwise multiplication with Pi.mul_apply at the final exact witness."
+    ],
+    "required_imports": [],
+    "semantic_risk": "MEDIUM_API_ELABORATION",
+    "confidence": "MEDIUM_HIGH_ROOT_CORRECT_AND_PRIOR_FAILURES_ADDRESSED_DIRECT_LEAN_REQUIRED",
+    "theorem_proposition_changed": false,
+    "disposition": "STAGED_PROBE"
+  },
+  "header_policy": "NO_HEADER_CHANGES_BODY_ONLY",
+  "trust_policy": {
+    "tokens": ["sorry", "admit", "axiom", "unsafe", "native_decide", "Lean.ofReduceBool"],
+    "required_before": 0,
+    "required_after": 0
+  },
+  "repairs": [
+    {
+      "id": "V46-W06-IDX3923-pin-complex-instance-and-compose-fourier-derivatives",
+      "owner": "literalStageNegativePlaneWave_differentiable",
+      "declaration_index": 3923,
+      "diagnostic_ordinals": [7],
+      "kind": "body",
+      "classification": "STAGED_EXPLICIT_FOURIER_DERIVATIVE_COMPOSITION_WITH_INSTANCE_PIN",
+      "confidence": "medium-high-static-exact-root-and-prior-failure-corrections-direct-Lean-required",
+      "expected_count_in_owner": 1,
+      "old": "  unfold literalStageNegativePlaneWave\n  fun_prop",
+      "new": "  unfold literalStageNegativePlaneWave\n  letI : AddCommGroup ℂ := Complex.addCommGroup\n  have hFourier (i : Fin 2) :\n      Differentiable ℝ (fun x : ℝ =>\n        fourier (-(k i)) ((x : ℝ) : UnitAddCircle)) :=\n    fun x =>\n      (hasDerivAt_fourier_neg (1 : ℝ) (k i) x).differentiableAt\n  have hRe : Differentiable ℝ (fun w : ℂ =>\n      fourier (-(k 0))\n        (((literalStageFourierScale Y)⁻¹ * w.re : ℝ) : UnitAddCircle)) := by\n    simpa only [Function.comp_apply] using\n      (hFourier 0).comp\n        (by fun_prop : Differentiable ℝ (fun w : ℂ =>\n          (literalStageFourierScale Y)⁻¹ * w.re))\n  have hIm : Differentiable ℝ (fun w : ℂ =>\n      fourier (-(k 1))\n        (((literalStageFourierScale Y)⁻¹ * w.im : ℝ) : UnitAddCircle)) := by\n    simpa only [Function.comp_apply] using\n      (hFourier 1).comp\n        (by fun_prop : Differentiable ℝ (fun w : ℂ =>\n          (literalStageFourierScale Y)⁻¹ * w.im))\n  have hScale : Differentiable ℝ (fun _ : ℂ =>\n      ((literalStageFourierScale Y : ℂ)⁻¹)) :=\n    differentiable_const _\n  simpa only [Pi.mul_apply] using (hScale.mul hRe).mul hIm",
+      "evidence": "The remote error names only the absent fourier differentiability rule. The next two authority declarations already apply hasDerivAt_fourier_neg to the identical lifted character. The four old probe errors each have an explicit correction in this body, but only a direct remote Lean run can validate the instance-sensitive composition."
+    }
+  ],
+  "promotion_rule": "Do not merge this probe into a broad cumulative variant before an isolated remote direct Lean result shows idx3923 error count zero and no new owner-local diagnostics. Then require Mock2=0, Mock2_Advanced=0, full FA maxErrors=2000 execution, inventory comparison, trust-six zero, and synthetic-sorry zero before cumulative promotion.",
+  "lean_lake_git_github_network_invoked_by_worker": false
+}

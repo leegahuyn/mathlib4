@@ -1,0 +1,56 @@
+name: Codex FA499 eta-expanded Complex.mk continuity smoke
+
+on:
+  push:
+    branches:
+      - fix/fa498-height-basepoint-continuouson-type-20260811
+    paths:
+      - .github/workflows/codex-fa499-continuity-change-smoke.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  smoke:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          elan toolchain install "$(cat lean-toolchain)"
+          lake exe cache get
+      - name: Compile eta-expanded continuity proof
+        id: smoke
+        shell: bash
+        run: |
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          cat > /tmp/FA499Smoke.lean <<'LEAN'
+          import Mathlib
+          open Set
+          example (t : ℝ) : ContinuousOn (Complex.mk t) (Set.Ioi 0) := by
+            change ContinuousOn (fun y : ℝ => Complex.mk t y) (Set.Ioi 0)
+            simpa only [Complex.mk_eq_add_mul_I] using
+              (((by fun_prop : Continuous (fun y : ℝ => (t : ℂ) + (y : ℂ) * Complex.I)).continuousOn :
+                ContinuousOn (fun y : ℝ => (t : ℂ) + (y : ℂ) * Complex.I) (Set.Ioi 0)))
+          LEAN
+          lake env lean /tmp/FA499Smoke.lean 2>&1 | tee /tmp/fa499-smoke.log
+      - name: Post smoke result
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          body="## FA499 eta-expanded continuity API smoke\n\n- run_id: \`${GITHUB_RUN_ID}\`\n- head_sha: \`${GITHUB_SHA}\`\n- result: \`${{ steps.smoke.outcome }}\`\n\n\`\`\`text\n$(tail -80 /tmp/fa499-smoke.log 2>/dev/null || true)\n\`\`\`"
+          gh api "repos/${GITHUB_REPOSITORY}/issues/14/comments" -f body="$body"

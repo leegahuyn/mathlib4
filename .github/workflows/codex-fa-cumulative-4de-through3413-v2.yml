@@ -1,0 +1,103 @@
+name: Codex FA cumulative 4de through3413 v2
+on:
+  push:
+    branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
+    paths:
+      - .github/workflows/codex-fa-cumulative-4de-through3413-v2.yml
+      - scripts/fa_dynamic_cluster_3286_final_simp_v1.json
+      - scripts/fa_dynamic_cluster_3308_3316_fullplane_mollified_v2.json
+      - scripts/fa_dynamic_cluster_3322_fullplane_test_support_v1.json
+      - scripts/fa_dynamic_cluster_3413_nested_withlp_v1.json
+  workflow_dispatch:
+permissions: {actions: read, contents: read}
+env:
+  BASE_RUN_ID: "31564594410"
+  BASE_JOB_ID: "94013733897"
+  BASE_HEAD_SHA: "7ff00cb1dedfbb517d9998f8fa089b4e16f6ed3e"
+  BASE_ARTIFACT_ID: "9129180985"
+  BASE_ARTIFACT_NAME: "codex-fa-after3273-corrective-fast1-v1-7ff00cb1dedfbb517d9998f8fa089b4e16f6ed3e"
+  BASE_ARTIFACT_DIGEST: "sha256:be897f78259c8e9a8d01746146b7b9e2aed566a936b4379b8f4878b651af0fa1"
+  BASE_SOURCE_SHA256: "4de1319b02f2e033cf4123e8d05f1e9f372048f6928f7a5dbe4ce30aa33ec22a"
+  BASE_SOURCE_BYTES: "2727327"
+  BASE_SOURCE_LINES: "61097"
+jobs:
+  frontier:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 600
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with: {ref: "${{ github.sha }}", fetch-depth: 1, persist-credentials: false}
+      - name: Attest exact direct-tested idx3286 source
+        env: {GH_TOKEN: "${{ github.token }}"}
+        shell: bash
+        run: |
+          set -euo pipefail; OUT=build-logs/codex-fa-cumulative-4de-through3413-v2; mkdir -p "$OUT" /tmp/base
+          gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${BASE_RUN_ID}" >"$OUT/run.json"; gh api "repos/${GITHUB_REPOSITORY}/actions/jobs/${BASE_JOB_ID}" >"$OUT/job.json"; gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${BASE_ARTIFACT_ID}" >"$OUT/artifact.json"; gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${BASE_ARTIFACT_ID}/zip" >/tmp/base.zip
+          test "sha256:$(sha256sum /tmp/base.zip|awk '{print $1}')" = "$BASE_ARTIFACT_DIGEST"; unzip -q /tmp/base.zip -d /tmp/base
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib,json,os,shutil
+          out=Path('build-logs/codex-fa-cumulative-4de-through3413-v2');r=json.loads((out/'run.json').read_text());j=json.loads((out/'job.json').read_text());a=json.loads((out/'artifact.json').read_text());m=json.loads(next(Path('/tmp/base').rglob('METRIC.json')).read_text())
+          assert r['id']==int(os.environ['BASE_RUN_ID']) and r['head_sha']==os.environ['BASE_HEAD_SHA'] and r['status']=='completed' and r['conclusion']=='failure'; assert j['id']==int(os.environ['BASE_JOB_ID']) and j['conclusion']=='failure'; assert a['id']==int(os.environ['BASE_ARTIFACT_ID']) and a['name']==os.environ['BASE_ARTIFACT_NAME'] and a['digest']==os.environ['BASE_ARTIFACT_DIGEST'] and not a['expired']; assert m['Mock2_exit']==0 and m['Mock2_Advanced_exit']==0 and m['FA_exit']==1 and m['all_required_lean_executed'] is True and m['FA_error_declaration_index']==3286 and m['source_sha256']==os.environ['BASE_SOURCE_SHA256'] and m['public_proposition_changes_explicitly_audited'] is True and m['declaration_sequence_preserved'] is True
+          hits=[]
+          for p in Path('/tmp/base').rglob('Mock2_FunctionalAnalysis.lean'):
+            b=p.read_bytes()
+            if 'PrimalitySheafVerification' in p.as_posix() and hashlib.sha256(b).hexdigest()==os.environ['BASE_SOURCE_SHA256'] and len(b)==int(os.environ['BASE_SOURCE_BYTES']):hits.append(p)
+          assert len(hits)==1; shutil.copy2(hits[0],'PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'); (out/'ALLOWED.json').write_text(json.dumps(m['allowed_public_proposition_changes'],indent=2)+'\n')
+          PY
+      - name: Compose audited downstream roots
+        shell: bash
+        run: |
+          set -euo pipefail; OUT=build-logs/codex-fa-cumulative-4de-through3413-v2; base=PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          ap(){ t=$1;l=$2;n=/tmp/$t.lean;python3 scripts/fa_dynamic_apply_staged_library_decl_local_strict_v1.py --base-source "$base" --library "$l" --target "$n" --audit-out "$OUT/$t.json";base=$n; }
+          ap F3286 scripts/fa_dynamic_cluster_3286_final_simp_v1.json
+          ap MOLL scripts/fa_dynamic_cluster_3308_3316_fullplane_mollified_v2.json
+          ap S3322 scripts/fa_dynamic_cluster_3322_fullplane_test_support_v1.json
+          ap W3413 scripts/fa_dynamic_cluster_3413_nested_withlp_v1.json
+          cp "$base" PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib,json,os
+          out=Path('build-logs/codex-fa-cumulative-4de-through3413-v2')
+          for t in ('F3286','MOLL','S3322','W3413'):
+            a=json.loads((out/f'{t}.json').read_text()); assert a['public_declaration_headers_preserved'] and a['declaration_sequence_preserved'] and a.get('strict_staged_header_hash_check',{}).get('passed',True)
+          p=Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean');b=p.read_bytes();i={'sha256':hashlib.sha256(b).hexdigest(),'bytes':len(b),'lines':len(b.decode().splitlines())};(out/'CANDIDATE_IDENTITY.json').write_text(json.dumps(i,indent=2)+'\n')
+          with Path(os.environ['GITHUB_ENV']).open('a') as f:f.write(f"CANDIDATE_SHA={i['sha256']}\n")
+          PY
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail; curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh; sh /tmp/elan.sh -y --default-toolchain none >/tmp/elan.log 2>&1; export PATH="$HOME/.elan/bin:$PATH"; elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1; lake exe cache get >/tmp/cache.log 2>&1
+      - name: Direct full-source cumulative diagnostic compile
+        id: direct
+        shell: bash
+        run: |
+          set -euo pipefail;export PATH="$HOME/.elan/bin:$PATH";OUT=build-logs/codex-fa-cumulative-4de-through3413-v2;mkdir -p .lake/build/lib/lean/PrimalitySheafVerification
+          one(){ s=$1;c=$2;o=.lake/build/lib/lean/PrimalitySheafVerification/$s.olean;i=.lake/build/lib/lean/PrimalitySheafVerification/$s.ilean;rm -f "$o" "$i";:>"$OUT/$s.executed";set +e;lake env lean "-DmaxErrors=$c" -DwarningAsError=false -o "$o" -i "$i" "PrimalitySheafVerification/$s.lean" >"$OUT/$s.log" 2>&1;x=$?;set -e;echo $x>"$OUT/$s.exit";}
+          one Mock2 3;one Mock2_Advanced 3;test "$(sha256sum PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean|awk '{print $1}')" = "$CANDIDATE_SHA";one Mock2_FunctionalAnalysis 256
+          python3 - <<'PY'
+          from pathlib import Path
+          from bisect import bisect_right
+          import hashlib,json,os,re
+          out=Path('build-logs/codex-fa-cumulative-4de-through3413-v2');p=Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean');s=p.read_text();b=p.read_bytes();ds=list(re.finditer(r'(?m)^(?:protected\s+|private\s+|noncomputable\s+)?(?:theorem|lemma|def|abbrev|instance|structure|class)\s+(?P<name>[^\s(:]+)',s));starts=[s.count('\n',0,m.start())+1 for m in ds];rx=re.compile(r'^.+?\.lean:(\d+):(\d+): error(?:\([^)]+\))?:(.*)$');es=[]
+          for raw in (out/'Mock2_FunctionalAnalysis.log').read_text(errors='replace').splitlines():
+            m=rx.match(raw)
+            if m:
+              ln=int(m.group(1));i=bisect_right(starts,ln)-1;es.append({'line':ln,'col':int(m.group(2)),'message':m.group(3).strip(),'declaration':ds[i].group('name') if i>=0 else None,'declaration_index':i if i>=0 else None,'declaration_start_line':starts[i] if i>=0 else None})
+          ex={x:int((out/f'{x}.exit').read_text()) for x in ('Mock2','Mock2_Advanced','Mock2_FunctionalAnalysis')};first=es[0] if es else {};allowed=json.loads((out/'ALLOWED.json').read_text());metric={'schema':'fa-cumulative-4de-through3413-v2','run_id':os.environ['GITHUB_RUN_ID'],'head_sha':os.environ['GITHUB_SHA'],'source_sha256':hashlib.sha256(b).hexdigest(),'source_bytes':len(b),'source_lines':len(s.splitlines()),'source_identity_locked_after_materialization':hashlib.sha256(b).hexdigest()==os.environ['CANDIDATE_SHA'],'Mock2_exit':ex['Mock2'],'Mock2_Advanced_exit':ex['Mock2_Advanced'],'FA_exit':ex['Mock2_FunctionalAnalysis'],'all_required_lean_executed':all((out/f'{x}.executed').exists() for x in ex),'FA_error_headers_captured':len(es),'FA_first_actual_error_line':first.get('line'),'FA_first_actual_error_col':first.get('col'),'FA_first_error_declaration':first.get('declaration'),'FA_error_declaration_index':first.get('declaration_index'),'FA_first_error_message':first.get('message'),'declaration_sequence_preserved':True,'public_proposition_changes_explicitly_audited':True,'allowed_public_proposition_changes':allowed,'maxErrors_cap':256};(out/'METRIC.json').write_text(json.dumps(metric,indent=2,sort_keys=True)+'\n');(out/'ERROR_HEADERS.json').write_text(json.dumps(es,indent=2)+'\n')
+          PY
+          echo "fa_exit=$(cat "$OUT/Mock2_FunctionalAnalysis.exit")" >> "$GITHUB_OUTPUT"; exit 0
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-cumulative-4de-through3413-v2-${{ github.sha }}
+          path: |
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+            build-logs/codex-fa-cumulative-4de-through3413-v2
+          retention-days: 30
+      - name: Preserve FA exit
+        if: always()
+        env: {FA_EXIT: "${{ steps.direct.outputs.fa_exit }}"}
+        shell: bash
+        run: test -n "${FA_EXIT:-}" || exit 86;exit "$FA_EXIT"

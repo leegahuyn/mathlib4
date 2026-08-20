@@ -1,0 +1,37 @@
+name: Codex FA API probe vadd continuity v1
+on:
+  push:
+    branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
+    paths: [.github/workflows/codex-fa-api-probe-vadd-continuity-v1.yml]
+  workflow_dispatch:
+permissions: {contents: read}
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with: {ref: "${{ github.sha }}", fetch-depth: 1, persist-credentials: false}
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail;curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh;sh /tmp/elan.sh -y --default-toolchain none >/tmp/elan.log 2>&1;export PATH="$HOME/.elan/bin:$PATH";elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1;lake exe cache get >/tmp/cache.log 2>&1
+      - name: Print vadd continuity APIs
+        shell: bash
+        run: |
+          set -euo pipefail;export PATH="$HOME/.elan/bin:$PATH"
+          cat >/tmp/ProbeVAddContinuity.lean <<'LEAN'
+          import Mathlib
+          #check continuous_vadd
+          #check Continuous.vadd
+          #check ContinuousAt.vadd
+          #check continuous_const_vadd
+          #check continuous_vadd_const
+          #check continuousAt_vadd
+          #check tendsto_nhds_iff_eventually
+          LEAN
+          lake env lean -DwarningAsError=false /tmp/ProbeVAddContinuity.lean | tee /tmp/vadd-continuity.log
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with: {name: "codex-fa-api-probe-vadd-continuity-v1-${{ github.sha }}", path: /tmp/vadd-continuity.log, retention-days: 7}

@@ -1,0 +1,15 @@
+{
+  "schema": "fa-dynamic-cluster-3291-lp-translation-integrable-v1",
+  "status": "PINNED_API_PROBE_VALIDATED_PENDING_MODULE_DIRECT_LEAN",
+  "api_probe_run_id": 31556787824,
+  "source_run_id": 31556830579,
+  "source_sha256": "e23520f4df4c8c1df075667463801511342622cfa1466df3685ca2c7aa71250b",
+  "repairs": [
+    {
+      "declaration_index": 3291,
+      "declaration_name": "integrable_kernel_smul_translation",
+      "old_fragment": "  have hTranslation : Continuous\n      (fun t : ℂ ↦ DomAddAct.mk (-t) +ᵥ f) := by\n    fun_prop",
+      "new_fragment": "  letI : Fact ((2 : ℝ≥0∞) ≠ (⊤ : ℝ≥0∞)) := ⟨by norm_num⟩\n  have hTranslation : Continuous\n      (fun t : ℂ ↦ DomAddAct.mk (-t) +ᵥ f) := by\n    fun_prop"
+    }
+  ]
+}

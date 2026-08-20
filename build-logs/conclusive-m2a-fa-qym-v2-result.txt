@@ -1,0 +1,362 @@
+utc=2026-08-07T06:48:39Z
+verified_source_head=
+repair_exit=1
+runtime_repair_during_final_direct=0
+direct_overall=not-run
+failed_module=
+failed_pass=
+--- atomic repair failure stdout tail ---
+Mock2 Advanced nested Requirement resource options: applied 2
+Mock2 Advanced requirement counts: applied 2
+Mock2 Advanced Section 5.1 definition4 evidence: applied 1
+Mock2 Advanced Section 5.1 definition7 evidence: applied 1
+Mock2 Advanced Section 5.1 definition13 evidence: applied 1
+Mock2 Advanced combined checklist count: applied 1
+===== scripts/apply_three_hundred_thirteenth_pass_repairs.py =====
+FunctionalAnalysis remove duplicate graph-range instances: applied 1
+FunctionalAnalysis identify canonical completion embedding: applied 1
+FunctionalAnalysis unfold page-four completion in dense range: applied 1
+FunctionalAnalysis unfold page-four completion in injectivity: applied 1
+FunctionalAnalysis bridge canonical fixed-phase core algebra: applied 1
+[pass313] FunctionalAnalysis canonical-instance frontier repaired
+===== scripts/apply_three_hundred_fourteenth_pass_repairs.py =====
+FunctionalAnalysis open ContDiff scope for explicit potential: applied 1
+FunctionalAnalysis bridge integral SL action: applied 1
+FunctionalAnalysis reduce quotient positivity definitionally: applied 1
+FunctionalAnalysis reduce quotient bound definitionally: applied 1
+FunctionalAnalysis use explicit Petersson decay theorem: applied 1
+FunctionalAnalysis normalize complex conjugation: applied 1
+FunctionalAnalysis expose Petersson RealSmooth target: applied 1
+FunctionalAnalysis instantiate glue continuity order: applied 4
+[pass314] FunctionalAnalysis explicit-potential frontier repaired
+===== scripts/apply_three_hundred_fifteenth_pass_repairs.py =====
+FunctionalAnalysis identify dense completion-map range without universe coercion: applied 1
+[pass315] FunctionalAnalysis completion-map dense-range bridge repaired
+fa_candidate=numbered_repairs
+[PrimalitySheafVerification/Mock2_Advanced.lean]
+sorry=0
+admit=0
+global_axiom=0
+unsafe=0
+native_decide=0
+Lean.ofReduceBool=0
+[PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean]
+sorry=0
+admit=0
+global_axiom=0
+unsafe=0
+native_decide=0
+Lean.ofReduceBool=0
+[PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean]
+sorry=0
+admit=0
+global_axiom=0
+unsafe=0
+native_decide=0
+Lean.ofReduceBool=0
+[PrimalitySheafVerification/QYM.lean]
+sorry=0
+admit=0
+global_axiom=0
+unsafe=0
+native_decide=0
+Lean.ofReduceBool=0
+Mock2,final-Mock2-pass1,0,0,386
+Mock2_Advanced,final-Advanced-pass1,0,0,803
+Mock2_FunctionalAnalysis,final-FA-pass1,1,75,188
+FAILED: module=Mock2_FunctionalAnalysis stage=final-FA-pass1 exit=1 errors=75
+812:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:18919:4: error: Type mismatch: After simplification, term
+822:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:18923:4: error: Type mismatch: After simplification, term
+832:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:18927:4: error: Type mismatch: After simplification, term
+838:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:18957:2: error: Type mismatch
+846:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:18981:8: error: typeclass instance problem is stuck
+856:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:18994:2: error: Type mismatch
+862:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19000:2: error: Type mismatch
+868:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19013:2: error: Type mismatch
+876:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19019:2: error: Type mismatch
+882:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19055:2: error: (deterministic) timeout at `whnf`, maximum number of heartbeats (200000) has been reached
+896:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19377:2: error: (deterministic) timeout at `whnf`, maximum number of heartbeats (200000) has been reached
+901:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19383:27: error: Function expected at
+910:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19384:9: error: Invalid argument: Variable `completionInclusion` is not a proposition or let-declaration
+911:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19384:2: error: (deterministic) timeout at `whnf`, maximum number of heartbeats (200000) has been reached
+918:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19402:37: error: Function expected at
+927:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19607:2: error: failed to synthesize
+939:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19658:37: error: Function expected at
+948:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19663:49: error: Function expected at
+957:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19664:9: error: Invalid argument: Variable `coreMap` is not a proposition or let-declaration
+958:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19668:56: error: Function expected at
+967:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19668:70: error: unsolved goals
+972:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19676:20: error: Function expected at
+981:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19695:5: error: Function expected at
+990:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19708:5: error: Function expected at
+997:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19712:13: error: Invalid argument: Variable `coreMap` is not a proposition or let-declaration
+998:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19720:4: error: Function expected at
+1007:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19725:4: error: Function expected at
+1016:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19730:4: error: Function expected at
+1025:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19738:4: error: Function expected at
+1034:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19739:9: error: Invalid argument: Variable `baseExtension` is not a proposition or let-declaration
+1407:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20655:12: error: maximum number of errors (100; from option `maxErrors`) reached, exiting
+  ?m.5
+
+Note: Expected a function because this term is being applied to the argument
+  n
+
+Hint: The identifier `GraphSobolevCompletion` is unknown, and Lean's `autoImplicit` option causes an unknown identifier to be treated as an implicitly bound variable with an unknown type. However, the unknown type cannot be a function, and a function is what Lean expects here. This is often the result of a typo or a missing `import` or `open` statement.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19788:15: error: Function expected at
+  baseExtension
+but this term has type
+  ?m.6
+
+Note: Expected a function because this term is being applied to the argument
+  n
+
+Hint: The identifier `baseExtension` is unknown, and Lean's `autoImplicit` option causes an unknown identifier to be treated as an implicitly bound variable with an unknown type. However, the unknown type cannot be a function, and a function is what Lean expects here. This is often the result of a typo or a missing `import` or `open` statement.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19789:7: error: Function expected at
+  raiseExtension
+but this term has type
+  ?m.7
+
+Note: Expected a function because this term is being applied to the argument
+  n
+
+Hint: The identifier `raiseExtension` is unknown, and Lean's `autoImplicit` option causes an unknown identifier to be treated as an implicitly bound variable with an unknown type. However, the unknown type cannot be a function, and a function is what Lean expects here. This is often the result of a typo or a missing `import` or `open` statement.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19789:34: error: Function expected at
+  lowerExtension
+but this term has type
+  ?m.8
+
+Note: Expected a function because this term is being applied to the argument
+  n
+
+Hint: The identifier `lowerExtension` is unknown, and Lean's `autoImplicit` option causes an unknown identifier to be treated as an implicitly bound variable with an unknown type. However, the unknown type cannot be a function, and a function is what Lean expects here. This is often the result of a typo or a missing `import` or `open` statement.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19790:9: error: Invalid argument: Variable `baseExtension` is not a proposition or let-declaration
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19790:24: error: Invalid argument: Variable `raiseExtension` is not a proposition or let-declaration
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19790:40: error: Invalid argument: Variable `lowerExtension` is not a proposition or let-declaration
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19805:36: error(lean.unknownIdentifier): Unknown identifier `GraphSobolevCompletion`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19809:44: error(lean.unknownIdentifier): Unknown identifier `GraphSobolevCompletion`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19814:4: error: Function expected at
+  PaperPageFourHOne
+but this term has type
+  ?m.5
+
+Note: Expected a function because this term is being applied to the argument
+  n
+
+Hint: The identifier `PaperPageFourHOne` is unknown, and Lean's `autoImplicit` option causes an unknown identifier to be treated as an implicitly bound variable with an unknown type. However, the unknown type cannot be a function, and a function is what Lean expects here. This is often the result of a typo or a missing `import` or `open` statement.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19814:31: error: Function expected at
+  PaperPageTwelveGraphSpace
+but this term has type
+  ?m.6
+
+Note: Expected a function because this term is being applied to the argument
+  n
+
+Hint: The identifier `PaperPageTwelveGraphSpace` is unknown, and Lean's `autoImplicit` option causes an unknown identifier to be treated as an implicitly bound variable with an unknown type. However, the unknown type cannot be a function, and a function is what Lean expects here. This is often the result of a typo or a missing `import` or `open` statement.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19815:30: error(lean.unknownIdentifier): Unknown identifier `GraphSobolevCompletion`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19819:17: error: Function expected at
+  PaperPageFourHOne
+but this term has type
+  ?m.5
+
+Note: Expected a function because this term is being applied to the argument
+  n
+
+Hint: The identifier `PaperPageFourHOne` is unknown, and Lean's `autoImplicit` option causes an unknown identifier to be treated as an implicitly bound variable with an unknown type. However, the unknown type cannot be a function, and a function is what Lean expects here. This is often the result of a typo or a missing `import` or `open` statement.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19820:4: error: Function expected at
+  pageFourHOneEquivPageTwelveGraph
+but this term has type
+  ?m.6
+
+Note: Expected a function because this term is being applied to the argument
+  n
+
+Hint: The identifier `pageFourHOneEquivPageTwelveGraph` is unknown, and Lean's `autoImplicit` option causes an unknown identifier to be treated as an implicitly bound variable with an unknown type. However, the unknown type cannot be a function, and a function is what Lean expects here. This is often the result of a typo or a missing `import` or `open` statement.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19826:17: error: Function expected at
+  PaperPageFourHOne
+but this term has type
+  ?m.5
+
+Note: Expected a function because this term is being applied to the argument
+  n
+
+Hint: The identifier `PaperPageFourHOne` is unknown, and Lean's `autoImplicit` option causes an unknown identifier to be treated as an implicitly bound variable with an unknown type. However, the unknown type cannot be a function, and a function is what Lean expects here. This is often the result of a typo or a missing `import` or `open` statement.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19827:15: error: Function expected at
+  baseExtension
+but this term has type
+  ?m.6
+
+Note: Expected a function because this term is being applied to the argument
+  n
+
+Hint: The identifier `baseExtension` is unknown, and Lean's `autoImplicit` option causes an unknown identifier to be treated as an implicitly bound variable with an unknown type. However, the unknown type cannot be a function, and a function is what Lean expects here. This is often the result of a typo or a missing `import` or `open` statement.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19828:7: error: Function expected at
+  raiseExtension
+but this term has type
+  ?m.7
+
+Note: Expected a function because this term is being applied to the argument
+  n
+
+Hint: The identifier `raiseExtension` is unknown, and Lean's `autoImplicit` option causes an unknown identifier to be treated as an implicitly bound variable with an unknown type. However, the unknown type cannot be a function, and a function is what Lean expects here. This is often the result of a typo or a missing `import` or `open` statement.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19828:34: error: Function expected at
+  lowerExtension
+but this term has type
+  ?m.8
+
+Note: Expected a function because this term is being applied to the argument
+  n
+
+Hint: The identifier `lowerExtension` is unknown, and Lean's `autoImplicit` option causes an unknown identifier to be treated as an implicitly bound variable with an unknown type. However, the unknown type cannot be a function, and a function is what Lean expects here. This is often the result of a typo or a missing `import` or `open` statement.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19829:2: error(lean.unknownIdentifier): Unknown identifier `completion_norm_sq`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19867:31: warning: `ModularForm.discriminantCuspForm` has been deprecated: Use `CuspForm.discriminant` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.discriminantCuspForm` to `CuspForm.discriminant x`).
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19868:6: warning: `ModularForm.discriminantCuspForm` has been deprecated: Use `CuspForm.discriminant` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.discriminantCuspForm` to `CuspForm.discriminant x`).
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19875:35: warning: `ModularForm.discriminantCuspForm` has been deprecated: Use `CuspForm.discriminant` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.discriminantCuspForm` to `CuspForm.discriminant x`).
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19876:35: warning: `ModularForm.discriminantCuspForm` has been deprecated: Use `CuspForm.discriminant` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.discriminantCuspForm` to `CuspForm.discriminant x`).
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19886:34: warning: `ModularForm.discriminantCuspForm` has been deprecated: Use `CuspForm.discriminant` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.discriminantCuspForm` to `CuspForm.discriminant x`).
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19896:38: error: unsolved goals
+g : SL(2, ℤ)
+z : ℍ
+hg :
+  Matrix.SpecialLinearGroup.toGL ((Matrix.SpecialLinearGroup.map (Int.castRingHom ℝ)) g) ∈
+    (Matrix.SpecialLinearGroup.mapGL ℝ).range
+gReal : SL(2, ℝ) := (Matrix.SpecialLinearGroup.map (Int.castRingHom ℝ)) g
+⊢ ↑(Matrix.SpecialLinearGroup.toGL ((Matrix.SpecialLinearGroup.map (Int.castRingHom ℝ)) g) • z) =
+    (↑(↑g 0 0) * ↑z + ↑(↑g 0 1)) / (↑(↑g 1 0) * ↑z + ↑(↑g 1 1))
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19902:26: warning: `ModularForm.discriminantCuspForm` has been deprecated: Use `CuspForm.discriminant` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.discriminantCuspForm` to `CuspForm.discriminant x`).
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19903:11: warning: `ModularForm.discriminantCuspForm` has been deprecated: Use `CuspForm.discriminant` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.discriminantCuspForm` to `CuspForm.discriminant x`).
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19959:16: warning: `ModularForm.discriminantCuspForm` has been deprecated: Use `CuspForm.discriminant` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.discriminantCuspForm` to `CuspForm.discriminant x`).
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19960:6: warning: `ModularForm.discriminantCuspForm` has been deprecated: Use `CuspForm.discriminant` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.discriminantCuspForm` to `CuspForm.discriminant x`).
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19994:35: warning: `ModularForm.discriminantCuspForm` has been deprecated: Use `CuspForm.discriminant` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.discriminantCuspForm` to `CuspForm.discriminant x`).
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19995:8: warning: `ModularForm.discriminantCuspForm` has been deprecated: Use `CuspForm.discriminant` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.discriminantCuspForm` to `CuspForm.discriminant x`).
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19998:35: warning: `ModularForm.discriminantCuspForm` has been deprecated: Use `CuspForm.discriminant` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.discriminantCuspForm` to `CuspForm.discriminant x`).
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19999:6: warning: `ModularForm.discriminantCuspForm` has been deprecated: Use `CuspForm.discriminant` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.discriminantCuspForm` to `CuspForm.discriminant x`).
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20128:11: warning: `ModularForm.discriminantCuspForm` has been deprecated: Use `CuspForm.discriminant` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.discriminantCuspForm` to `CuspForm.discriminant x`).
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20133:11: warning: `ModularForm.discriminantCuspForm` has been deprecated: Use `CuspForm.discriminant` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.discriminantCuspForm` to `CuspForm.discriminant x`).
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20137:6: warning: `ModularForm.discriminantCuspForm` has been deprecated: Use `CuspForm.discriminant` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.discriminantCuspForm` to `CuspForm.discriminant x`).
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20140:6: error: Invalid dotted identifier notation: The name `restrictScalars.contDiffOn_of_completeSpace` must be atomic
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20146:20: warning: `ModularForm.discriminantCuspForm` has been deprecated: Use `CuspForm.discriminant` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.discriminantCuspForm` to `CuspForm.discriminant x`).
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20154:14: warning: `ModularForm.discriminantCuspForm` has been deprecated: Use `CuspForm.discriminant` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.discriminantCuspForm` to `CuspForm.discriminant x`).
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20164:8: warning: `ModularForm.discriminantCuspForm` has been deprecated: Use `CuspForm.discriminant` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.discriminantCuspForm` to `CuspForm.discriminant x`).
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20165:8: warning: `ModularForm.discriminantCuspForm` has been deprecated: Use `CuspForm.discriminant` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.discriminantCuspForm` to `CuspForm.discriminant x`).
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20293:4: error: Type mismatch: After simplification, term
+  hz
+ has type
+  @Ne ℂ (quotientCoreCutoff (Quotient.mk'' z)) 0
+but is expected to have type
+  @Ne ℂ (upstairsCoreCutoff z) 0
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20320:4: error: Function expected at
+  ModularForm.differentiableAt_eta_of_mem_upperHalfPlaneSet hw
+but this term has type
+  DifferentiableAt ℂ η w
+
+Note: Expected a function because this term is being applied to the argument
+  .differentiableWithinAt
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20325:6: error: Invalid dotted identifier notation: The name `restrictScalars.contDiffOn_of_completeSpace` must be atomic
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20365:24: error(lean.invalidField): Invalid field `covariance`: The environment does not contain `Subtype.covariance`, so it is not possible to project the field `covariance` from an expression
+  inverseEtaSection
+of type
+  ↥inverseEtaPaperCertificate.multiplier.WeightSection
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20358:46: error: unsolved goals
+γ : ↥GammaTwo
+z : ℍ
+⊢ ↑inverseEtaSection (↑γ • z) = (inverseEtaPaperOrbitMultiplier GammaTwo 0).factor γ z * ↑inverseEtaSection z
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20406:22: error(lean.invalidField): Invalid field `covariance`: The environment does not contain `Subtype.covariance`, so it is not possible to project the field `covariance` from an expression
+  inverseEtaSection
+of type
+  ↥inverseEtaPaperCertificate.multiplier.WeightSection
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20397:59: error: unsolved goals
+γ : ↥(CongruenceSubgroup.Gamma 2)
+z : ℍ
+⊢ upstairsCoreCutoff z * ↑inverseEtaSection (↑γ • z) =
+    inverseEtaPaperCertificate.multiplier.factor γ z * (upstairsCoreCutoff z * ↑inverseEtaSection z)
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20452:22: error(lean.invalidField): Invalid field `covariance`: The environment does not contain `Subtype.covariance`, so it is not possible to project the field `covariance` from an expression
+  inverseEtaSection
+of type
+  ↥inverseEtaPaperCertificate.multiplier.WeightSection
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20474:31: error(lean.invalidField): Invalid field `toSection`: The environment does not contain `Subtype.toSection`, so it is not possible to project the field `toSection` from an expression
+  compactInverseEtaPaperCore
+of type
+  ↥(SmoothCompactCore inverseEtaPaperCertificate)
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20486:8: error(lean.invalidField): Invalid field `toSection`: The environment does not contain `Subtype.toSection`, so it is not possible to project the field `toSection` from an expression
+  u
+of type
+  ↥(SmoothCompactCore inverseEtaPaperCertificate)
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20482:60: error: unsolved goals
+hZero : compactInverseEtaPaperCore = 0
+⊢ False
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20500:8: error(lean.invalidField): Invalid field `toSection`: The environment does not contain `Subtype.toSection`, so it is not possible to project the field `toSection` from an expression
+  u
+of type
+  ↥(SmoothCompactWeightCore inverseEtaPaperCertificate.multiplier)
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20495:50: error: unsolved goals
+hZero : compactInverseEtaWeightCore = 0
+⊢ False
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20515:8: error(lean.invalidField): Invalid field `toSection`: The environment does not contain `Subtype.toSection`, so it is not possible to project the field `toSection` from an expression
+  u
+of type
+  ↥(SmoothCompactWeightCore (inverseEtaPaperOrbitMultiplier GammaTwo 0))
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20510:56: error: unsolved goals
+hZero : compactInverseEtaOrbitZeroWeightCore = 0
+⊢ False
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20526:42: error(lean.invalidField): Invalid field `toSection`: The environment does not contain `Subtype.toSection`, so it is not possible to project the field `toSection` from an expression
+  compactInverseEtaOrbitZeroWeightCore
+of type
+  ↥(SmoothCompactWeightCore (inverseEtaPaperOrbitMultiplier GammaTwo 0))
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20527:43: error(lean.invalidField): Invalid field `realSmooth`: The environment does not contain `Subtype.realSmooth`, so it is not possible to project the field `realSmooth` from an expression
+  compactInverseEtaOrbitZeroWeightCore
+of type
+  ↥(SmoothCompactWeightCore (inverseEtaPaperOrbitMultiplier GammaTwo 0))
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20528:41: error(lean.invalidField): Invalid field `quotientCompact`: The environment does not contain `Subtype.quotientCompact`, so it is not possible to project the field `quotientCompact` from an expression
+  compactInverseEtaOrbitZeroWeightCore
+of type
+  ↥(SmoothCompactWeightCore (inverseEtaPaperOrbitMultiplier GammaTwo 0))
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20537:43: error(lean.invalidField): Invalid field `covariance`: The environment does not contain `Subtype.covariance`, so it is not possible to project the field `covariance` from an expression
+  compactInverseEtaOrbitZeroWeightCore
+of type
+  ↥(SmoothCompactWeightCore (inverseEtaPaperOrbitMultiplier GammaTwo 0))
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20535:9: warning: declaration uses `sorry`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20655:12: error: maximum number of errors (100; from option `maxErrors`) reached, exiting
+--- atomic repair failure stderr tail ---
+From https://github.com/leegahuyn/mathlib4
+ * branch            623dfac27a24c170330d6218005e67b06490b814 -> FETCH_HEAD
+grep: write error: Broken pipe

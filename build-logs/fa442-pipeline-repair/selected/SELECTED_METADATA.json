@@ -1,0 +1,90 @@
+{
+  "variant": "slope_paired_dot_all_known",
+  "baseline_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+  "candidate_sha256": "1243b2ba563d364a6977cbf9aa867e628de50a28b0f56677dc70456a210e209a",
+  "line_count": 60453,
+  "target_declaration": "actualEdgeAmbientParam_hasDerivAt",
+  "target_header_sha256": "20f8d04dfc32eb6aa027b1523622e01b26feac09d7a78cbafac93f98b0abc84a",
+  "repairs": [
+    {
+      "repair": "slope_plain",
+      "applied": 1
+    },
+    {
+      "repair": "paired_dot",
+      "applied": 9,
+      "per_edge": {
+        "circularArc": 5,
+        "leftVerticalSegment": 2,
+        "rightVerticalSegment": 2
+      }
+    },
+    {
+      "repair": "left_selected_piola_ring",
+      "applied": 1
+    },
+    {
+      "repair": "height_membership",
+      "applied": 1
+    },
+    {
+      "repair": "upper_half_plane_cluster",
+      "details": [
+        {
+          "repair": "upperHalfPlaneMk",
+          "applied": 1
+        },
+        {
+          "repair": "UpperHalfPlane.ext_contextual",
+          "applied": 1
+        }
+      ]
+    },
+    {
+      "repair": "tail_projection",
+      "applied": 2
+    },
+    {
+      "repair": "Pi.zero_apply",
+      "applied": 1
+    },
+    {
+      "repair": "misc_known",
+      "details": [
+        {
+          "repair": "absolute_triangle_rename",
+          "applied": 1
+        },
+        {
+          "repair": "product_derivative_normalization",
+          "applied": 1
+        },
+        {
+          "repair": "positive_tail_height",
+          "applied": 1
+        },
+        {
+          "repair": "nonnegative_multiplier",
+          "applied": 1
+        }
+      ]
+    }
+  ],
+  "baseline_forbidden_counts": {
+    "sorry": 0,
+    "admit": 0,
+    "new_global_axiom": 0,
+    "unsafe": 0,
+    "native_decide": 0,
+    "Lean.ofReduceBool": 0
+  },
+  "candidate_forbidden_counts": {
+    "sorry": 0,
+    "admit": 0,
+    "new_global_axiom": 0,
+    "unsafe": 0,
+    "native_decide": 0,
+    "Lean.ofReduceBool": 0
+  },
+  "declaration_sequence_sha256": "a9f15910d7e589feb18eac7d42370c5bfa07233a188d32554f5711a8e3446a5b"
+}

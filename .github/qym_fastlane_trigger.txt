@@ -1,0 +1,5 @@
+stage=gamma-two-local-v7
+frontier=probe35-flat_named
+candidate_sha256=00f2c8ba7fc0329b04ae67c5a67b5814f8118b14222a7831a0401c9d3d374e53
+proof=qym_tinv01_via_coe_T_zpow
+trigger=2026-08-18T12:45:00Z

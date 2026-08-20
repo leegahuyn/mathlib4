@@ -1,0 +1,84 @@
+{
+  "frontiers": [
+    {
+      "candidate_qym_sha256": "830563b33d873354809594d9e9dce962c1253052f8e70bd4d1513226f7598217",
+      "error_headers": 88,
+      "panic_lines": 0,
+      "result_file": ".github/qym-frontier/C1_RESULT.json",
+      "run_id": 32215528216,
+      "semantic_pass": false,
+      "variant": null
+    },
+    {
+      "candidate_qym_sha256": "313c076645a51976237738bd10c7f22b54f2a483499e60b57fa0d69be007cc1e",
+      "error_headers": 89,
+      "panic_lines": 0,
+      "result_file": ".github/qym-frontier/PROBE42_RESULT.json",
+      "run_id": null,
+      "semantic_pass": false,
+      "variant": "baseline"
+    }
+  ],
+  "generated_at": "2026-08-19T08:15:49.078564+00:00",
+  "schema": "qym-current-dashboard-v1",
+  "workflows": [
+    {
+      "conclusion": "failure",
+      "created_at": "2026-08-19T07:53:21Z",
+      "head_sha": "9c10ba2623ecc9c514fbfc2b0c002f621a32ec1f",
+      "html_url": "https://github.com/leegahuyn/mathlib4/actions/runs/32229939830",
+      "run_id": 32229939830,
+      "status": "completed",
+      "updated_at": "2026-08-19T08:10:35Z",
+      "workflow": "gpt-qym-gb85-c2-matrix-v2.yml"
+    },
+    {
+      "conclusion": "success",
+      "created_at": "2026-08-19T07:55:20Z",
+      "head_sha": "4b8276ef68565beecce25850268cc5559a65a274",
+      "html_url": "https://github.com/leegahuyn/mathlib4/actions/runs/32230098037",
+      "run_id": 32230098037,
+      "status": "completed",
+      "updated_at": "2026-08-19T08:10:47Z",
+      "workflow": "gpt-qym-gb85-c2-observer-v2.yml"
+    },
+    {
+      "conclusion": "success",
+      "created_at": "2026-08-19T07:56:34Z",
+      "head_sha": "1ea17e9978fff0cbba6308cc987fa012bede8073",
+      "html_url": "https://github.com/leegahuyn/mathlib4/actions/runs/32230194807",
+      "run_id": 32230194807,
+      "status": "completed",
+      "updated_at": "2026-08-19T07:57:35Z",
+      "workflow": "gpt-qym-gb85-inventory-v1.yml"
+    },
+    {
+      "conclusion": null,
+      "created_at": "2026-08-19T08:07:58Z",
+      "head_sha": "0907c00c3a44c82755f3246cb456de6d3af5730f",
+      "html_url": "https://github.com/leegahuyn/mathlib4/actions/runs/32231113566",
+      "run_id": 32231113566,
+      "status": "in_progress",
+      "updated_at": "2026-08-19T08:08:07Z",
+      "workflow": "gpt-qym-gb85-c2-matrix-v3.yml"
+    },
+    {
+      "conclusion": null,
+      "created_at": "2026-08-19T08:13:56Z",
+      "head_sha": "b2fb38475aecb34ee6c3364d942ffed69ccde5c9",
+      "html_url": "https://github.com/leegahuyn/mathlib4/actions/runs/32231589799",
+      "run_id": 32231589799,
+      "status": "in_progress",
+      "updated_at": "2026-08-19T08:15:18Z",
+      "workflow": "gpt-qym-gb85-c2-discovered-v4.yml"
+    },
+    {
+      "api_error": "gh: Not Found (HTTP 404)",
+      "workflow": "gpt-qym-c2-to-autofix-bridge-v1.yml"
+    },
+    {
+      "api_error": "gh: Not Found (HTTP 404)",
+      "workflow": "gpt-qym-c2-to-autofix-bridge-v2.yml"
+    }
+  ]
+}

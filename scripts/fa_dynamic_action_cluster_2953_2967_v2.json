@@ -1,0 +1,29 @@
+{
+  "schema": "fa-dynamic-action-cluster-2953-2967-v3",
+  "repairs": [
+    {
+      "declaration_index": 2953,
+      "declaration_name": "support_gammaTwoPeriodizationTerm_subset",
+      "old_fragment": "  · simp only [mul_smul, mul_inv, one_smul]",
+      "new_fragment": "  · change gamma • ((gamma⁻¹ : GammaTwo) • z) = z\n    rw [← mul_smul]\n    simp"
+    },
+    {
+      "declaration_index": 2957,
+      "declaration_name": "gammaTwoPoincarePeriodization_realSmooth",
+      "old_fragment": "  change RealSmooth\n    (fun z : ℍ ↦ (1 / 2 : ℂ) *\n      ∑ᶠ gamma : GammaTwo, gammaTwoPeriodizationTerm m v gamma z)\n  simpa only [Pi.smul_apply, smul_eq_mul] using\n    hsum.const_complex_smul (1 / 2 : ℂ)",
+      "new_fragment": "  change RealSmooth\n    (fun z : ℍ ↦ (1 / 2 : ℂ) *\n      ∑ᶠ gamma : GammaTwo, gammaTwoPeriodizationTerm m v gamma z)\n  have hsmul := hsum.const_complex_smul (1 / 2 : ℂ)\n  have heq :\n      ((1 / 2 : ℂ) •\n        (fun z : ℍ ↦ ∑ᶠ gamma : GammaTwo,\n          gammaTwoPeriodizationTerm m v gamma z)) =\n      (fun z : ℍ ↦ (1 / 2 : ℂ) *\n        ∑ᶠ gamma : GammaTwo,\n          gammaTwoPeriodizationTerm m v gamma z) := by\n    funext z\n    simp only [Pi.smul_apply, smul_eq_mul]\n  rw [← heq]\n  exact hsmul"
+    },
+    {
+      "declaration_index": 2958,
+      "declaration_name": "gammaTwoPeriodizationTerm_mul_smul",
+      "old_fragment": "    change\n      inverseEtaPaperOrbitFactor m (delta * gamma)\n          (((gamma⁻¹ : GammaTwo) : SL(2, ℤ)) • z) =\n        inverseEtaPaperOrbitFactor m delta\n            ((gamma : GammaTwo) •\n              ((gamma⁻¹ : GammaTwo) • z)) *\n          inverseEtaPaperOrbitFactor m gamma\n            (((gamma⁻¹ : GammaTwo) : SL(2, ℤ)) • z) at hraw\n    simpa only [mul_smul, mul_inv, one_smul] using hraw",
+      "new_fragment": "    change\n      inverseEtaPaperOrbitFactor m (delta * gamma)\n          (((gamma⁻¹ : GammaTwo) : SL(2, ℤ)) • z) =\n        inverseEtaPaperOrbitFactor m delta\n            ((gamma : GammaTwo) •\n              ((gamma⁻¹ : GammaTwo) • z)) *\n          inverseEtaPaperOrbitFactor m gamma\n            (((gamma⁻¹ : GammaTwo) : SL(2, ℤ)) • z) at hraw\n    have hact :\n        (gamma : GammaTwo) • ((gamma⁻¹ : GammaTwo) • z) = z := by\n      rw [← mul_smul]\n      simp\n    rw [hact] at hraw\n    exact hraw"
+    },
+    {
+      "declaration_index": 2967,
+      "declaration_name": "support_periodizationIndex_at_openCarrier",
+      "old_fragment": "    simp only [a, gammaTwoEffectiveElement_smul,\n      mul_smul, mul_inv, one_smul]",
+      "new_fragment": "    simp only [a, gammaTwoEffectiveElement_smul]\n    rw [← mul_smul]\n    simp"
+    }
+  ]
+}

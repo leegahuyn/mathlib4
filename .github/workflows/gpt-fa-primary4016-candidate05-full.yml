@@ -1,0 +1,143 @@
+name: GPT FA primary4016 Candidate05 full direct validation
+
+on:
+  push:
+    branches:
+      - gpt/fa-qym-clean-final-20260816
+    paths:
+      - .github/workflows/gpt-fa-primary4016-candidate05-full.yml
+      - scripts/gpt_fa_primary4016_candidate05_patch.py
+      - scripts/gpt_fa_primary4016_candidate05_patch_v2.py
+      - PrimalitySheafVerification/FA_Blocker_WrapperCandidates/Candidate05.lean
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+
+concurrency:
+  group: gpt-fa-primary4016-candidate05-full-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  full-direct:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    env:
+      OUT: build-logs/gpt-fa-primary4016-candidate05-full
+      SOURCE: PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+      CANDIDATE: PrimalitySheafVerification/FA_Blocker_WrapperCandidates/Candidate05.lean
+      EXPECTED_BASE_SHA256: 1c3d12594a3e8b14f9cf7b7294da7c29221758c72d00a596215198f7623fad8c
+      EXPECTED_CANDIDATE_SHA256: 6ff74433b057db1ad0cb877771688c28bf597fd6c447e38e1e7fa80886495bbf
+
+    steps:
+      - name: Check out exact triggering commit
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Lock global best and apply deterministic Candidate05 repair
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT"
+          baseline_sha="$(sha256sum "$SOURCE" | awk '{print $1}')"
+          printf '%s\n' "$baseline_sha" > "$OUT/baseline.sha256"
+          test "$baseline_sha" = "$EXPECTED_BASE_SHA256"
+          cp "$SOURCE" "$OUT/Mock2_FunctionalAnalysis-baseline.lean"
+          python3 scripts/gpt_fa_primary4016_candidate05_patch_v2.py \
+            --source "$SOURCE" --candidate "$CANDIDATE" --output "$SOURCE" \
+            --audit "$OUT/PATCH_AUDIT.json" | tee "$OUT/PATCH_AUDIT.stdout.json"
+          candidate_sha="$(sha256sum "$SOURCE" | awk '{print $1}')"
+          printf '%s\n' "$candidate_sha" > "$OUT/candidate.sha256"
+          test "$candidate_sha" = "$EXPECTED_CANDIDATE_SHA256"
+          cp "$SOURCE" "$OUT/Mock2_FunctionalAnalysis-candidate.lean"
+          python3 - "$SOURCE" "$OUT/TRUST_SIX.json" <<'PY'
+          import json, re, sys
+          from pathlib import Path
+          text = Path(sys.argv[1]).read_text(encoding='utf-8')
+          names = ['sorry', 'admit', 'axiom', 'unsafe', 'native_decide', 'Lean.ofReduceBool']
+          counts = {name: len(re.findall(r'(?<![A-Za-z0-9_])' + re.escape(name) + r'(?![A-Za-z0-9_])', text)) for name in names}
+          Path(sys.argv[2]).write_text(json.dumps(counts, indent=2, sort_keys=True) + '\n')
+          print(json.dumps(counts, sort_keys=True))
+          PY
+
+      - name: Install exact pinned Lean and Mathlib cache
+        run: |
+          set -euo pipefail
+          test "$(tr -d '\r\n' < lean-toolchain)" = "leanprover/lean4:v4.33.0-rc1"
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none > "$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          printf '%s\n' "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" \
+            > "$OUT/toolchain.log" 2>&1
+          lake exe cache get > "$OUT/cache.log" 2>&1
+          elan --version | tee "$OUT/elan-version.txt"
+          lean --version | tee "$OUT/lean-version.txt"
+          lake --version | tee "$OUT/lake-version.txt"
+
+      - name: Run exact Mock2 then Mock2 Advanced then full FA direct chain
+        run: |
+          set -euo pipefail
+          export FA_V42_OUT="$OUT"
+          export FA_V42_EXPECTED_CANDIDATE_SHA256="$EXPECTED_CANDIDATE_SHA256"
+          set +e
+          bash scripts/fa_v42_direct_compile_ci.sh
+          wrapper_rc=$?
+          set -e
+          printf '%s\n' "$wrapper_rc" > "$OUT/wrapper.exit"
+          printf 'M2_EXIT=%s\n' "$(tr -d '\r\n' < "$OUT/Mock2.exit")" >> "$GITHUB_ENV"
+          printf 'M2A_EXIT=%s\n' "$(tr -d '\r\n' < "$OUT/Mock2_Advanced.exit")" >> "$GITHUB_ENV"
+          printf 'FA_EXIT=%s\n' "$(tr -d '\r\n' < "$OUT/Mock2_FunctionalAnalysis.exit")" >> "$GITHUB_ENV"
+          exit 0
+
+      - name: Collect exact diagnostics and frontier metrics
+        if: always()
+        run: |
+          set -euo pipefail
+          test -s "$OUT/Mock2_FunctionalAnalysis.log"
+          python3 scripts/fa_v42_collect_full_diagnostics.py \
+            --source "$SOURCE" --out "$OUT" --max-errors 2000 \
+            > "$OUT/metric-console.log"
+          python3 - "$OUT/Mock2_FunctionalAnalysis.log" "$OUT/FRONTIER.json" <<'PY'
+          import json, os, re, sys
+          from pathlib import Path
+          out = Path(os.environ['OUT'])
+          log = Path(sys.argv[1]).read_text(encoding='utf-8', errors='replace')
+          headers = re.findall(r'^([^\n:]+\.lean):(\d+):(\d+): error:\s*(.*)$', log, re.M)
+          data = {
+              'schema': 'gpt-fa-primary4016-candidate05-full-frontier-v1',
+              'head_sha': os.environ.get('GITHUB_SHA'),
+              'candidate_sha256': os.environ.get('EXPECTED_CANDIDATE_SHA256'),
+              'Mock2_exit': int((out / 'Mock2.exit').read_text().strip()),
+              'Mock2_Advanced_exit': int((out / 'Mock2_Advanced.exit').read_text().strip()),
+              'FA_exit': int((out / 'Mock2_FunctionalAnalysis.exit').read_text().strip()),
+              'error_headers': len(headers),
+              'first_error': ({'file': headers[0][0], 'line': int(headers[0][1]), 'column': int(headers[0][2]), 'message': headers[0][3]} if headers else None),
+              'strict_error_count_improvement_over_4': len(headers) < 4,
+          }
+          Path(sys.argv[2]).write_text(json.dumps(data, indent=2, ensure_ascii=False) + '\n')
+          print(json.dumps(data, ensure_ascii=False))
+          PY
+          grep -n ': error:' "$OUT/Mock2_FunctionalAnalysis.log" \
+            > "$OUT/error-headers.txt" || true
+
+      - name: Upload complete authoritative evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: gpt-fa-primary4016-candidate05-full-${{ github.sha }}-attempt${{ github.run_attempt }}
+          path: build-logs/gpt-fa-primary4016-candidate05-full/**
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Fail closed and mirror the actual FA exit
+        if: always()
+        run: |
+          set -euo pipefail
+          test "$(tr -d '\r\n' < "$OUT/Mock2.exit")" = 0
+          test "$(tr -d '\r\n' < "$OUT/Mock2_Advanced.exit")" = 0
+          exit "$(tr -d '\r\n' < "$OUT/Mock2_FunctionalAnalysis.exit")"

@@ -1,0 +1,136 @@
+{
+  "schema": "fa-v42-declaration-local-repairs-v1",
+  "status": "STAGED_STATIC_EXECUTABLE_COMPOSED_SUBTYPE_NEGATION_ATOMIC_W29_DIRECT_LEAN_REQUIRED_V46_W34",
+  "worker_id": "W34",
+  "cluster_id": "V46-IDX4299-EXPOSE-COMPOSED-SUBTYPE-NEGATION",
+  "authority": {
+    "repository": "leegahuyn/mathlib4",
+    "run_id": 31728453514,
+    "head_sha": "5ec44f3d343955f3124e7efecc048b648dccc5ab",
+    "job_id": 94542617528,
+    "artifact_id": 9192669673,
+    "artifact_digest": "sha256:8f07a678145b62342aaa9cb94ebbce6c9f7cc1a45c400560918d42499e67f2f3",
+    "variant": "all_probes",
+    "source_path": "work/v45-results/run-31728453514/all_probes/Mock2_FunctionalAnalysis-candidate.lean",
+    "source_sha256": "726f40d1dd03d32f03592adf4f6b02e3f7f52e7e1f71087ee53bdb83c4bb0caf",
+    "source_bytes": 2788764,
+    "source_lines": 62383,
+    "declaration_count": 4416,
+    "diagnostics_path": "work/v45-results/run-31728453514/all_probes/FULL_DIAGNOSTICS.json",
+    "diagnostics_sha256": "1fb14600849d7281df6ff65ae9213b6671b19a396cf539041f864fea157476a1",
+    "fa_log_path": "work/v45-results/run-31728453514/all_probes/Mock2_FunctionalAnalysis.log",
+    "fa_log_sha256": "bcc92a247a531419b25677cfdd5e28ce1705e6c3fb87301b93e24510932b4888"
+  },
+  "assignment": {
+    "declaration_index": 4299,
+    "declaration": "signedRaisePeriodization_isReducedChartGaugeModel",
+    "v45_error_ordinals": [42, 43],
+    "diagnostic_count": 2,
+    "lines": [59352, 59376],
+    "columns": [57, 57],
+    "normalized_signatures": ["unsolved goals", "unsolved goals"],
+    "baseline_status": "persisting",
+    "root_or_cascade": "TWO_INDEPENDENT_OCCURRENCES_OF_ONE_OWNER_LOCAL_NESTED_SUBTYPE_NEGATION_ROOT",
+    "ownership": "W34-only-with-W29-symmetric-atomic-promotion-contract"
+  },
+  "diagnosis": {
+    "exact_residual_shape": "Each goal is scalar * coe(coe((-(raise n periodized)).toSmoothQuotientCompactFunction)) z = -(scalar * coe(coe((raise n periodized).toSmoothQuotientCompactFunction)) z). The first occurs in the reduced-chart branch and the second in the outside-saturation zero branch.",
+    "root_cause": "fixedPhaseEuclideanGauge_apply exposes a named toSmoothQuotientCompactFunction projection, but map_neg cannot cross that definition and the three underlying nested submodule projections. Pi.neg_apply also has no function-level negation to evaluate, so both simplifiers are unused and ring_nf treats the projected values as unrelated atoms.",
+    "historical_runtime_evidence": [
+      "The V43 late explicit-subtype probe for idx4299 exposed inverseEtaFixedPhaseStableCoreSubmodule.subtype. Its first map_neg succeeded, proving that the projection boundary is the root.",
+      "The same probe then failed at Pi.neg_apply, with a residual containing a negated SmoothQuotientCompactFunction still behind the smoothQuotientCompactSubmodule and realSmoothSubmodule projections.",
+      "V44 replaced that probe with ring_nf; v45 all_probes retains the two original unsolved goals and warns that map_neg and Pi.neg_apply are unused at both sites."
+    ],
+    "repair_strategy": "Mirror W29 exactly: change each proof block to application of the composite of realSmoothSubmodule.subtype, smoothQuotientCompactSubmodule.subtype, and inverseEtaFixedPhaseStableCoreSubmodule (n + 1).subtype. map_neg then reaches the function codomain, Pi.neg_apply evaluates it, and ring closes scalar distributivity.",
+    "same_file_api_evidence": [
+      "InverseEtaFixedPhaseCore.raise n returns InverseEtaFixedPhaseCore (n + 1), matching inverseEtaFixedPhaseStableCoreSubmodule (n + 1).subtype.",
+      "SmoothQuotientCompactFunction and SmoothFunction are the successive subtype abbreviations used by the custom core coercion chain.",
+      "All three Submodule.subtype maps are complex linear, so their composite has exact map_neg into the function space."
+    ],
+    "independence": {
+      "ordinal_42": "Independent local root before the later rewrite with euclideanLowerFromSuccTestAdjoint_conjugate_eq_conj_affineTranspose from W33.",
+      "ordinal_43": "Independent local root in the zero branch; it does not reference W26 or W33 and occurs before hRaise is used.",
+      "not_W25_cascade": "hBase and hRaise are already constructed. The failing negation equality precedes the use of hRaise, so W25 is not the diagnostic root."
+    },
+    "required_imports": [],
+    "expected_owner_errors_closed": 2,
+    "semantic_risk": "LOW",
+    "elaboration_risk": "MEDIUM_LOW_COMPOSED_SUBTYPE_CHANGE_NOT_DIRECTLY_REPLAYED",
+    "confidence": "MEDIUM_HIGH_STATIC_EXACT_W29_SYMMETRY_AND_REMOTE_ONE_LAYER_PROGRESS_DIRECT_LEAN_REQUIRED",
+    "theorem_proposition_changed": false,
+    "disposition": "STAGED"
+  },
+  "dependency_contract": {
+    "upstream_proof_trust_pair": {
+      "pair_id": "V46-PAIR-4296-4297-ORDERED-CONJUGATE-DERIVATIVES",
+      "selection_policy": "ALL_OR_NONE",
+      "repair_ids": [
+        "V46-W26-IDX4296-order-specialized-conjugate-derivatives-before-general-fderiv",
+        "V46-W33-IDX4297-order-specialized-conjugate-derivatives-before-general-fderiv"
+      ],
+      "relationship": "DOWNSTREAM_PROOF_TRUST_PREREQUISITE_NOT_DIAGNOSTIC_ROOT",
+      "reason": "After ordinal 42's local equality is closed, idx4299 rewrites with the W33 theorem. W26 is its required symmetric companion. Ordinal 43 has no dependency on either theorem."
+    },
+    "zero_branch_producer": {
+      "worker": "W25",
+      "declaration_index": 4288,
+      "declaration": "periodizedFixedPhaseGauge_eventuallyEq_zero_of_not_mem_saturation",
+      "relationship": "FINAL_VALIDATION_PREREQUISITE_NOT_CURRENT_ROOT",
+      "reason": "W25 supplies hBase, which already elaborates in the current context; the residual occurs in the earlier negation equality before hRaise is used."
+    },
+    "promotion_dag": [
+      "Promote and directly verify W26/W33 ALL_OR_NONE.",
+      "Promote and directly verify W29/W34 ALL_OR_NONE.",
+      "Revalidate W25 plus idx4298/idx4299 downstream declarations in the integrated candidate."
+    ]
+  },
+  "symmetric_atomic_pair": {
+    "pair_id": "V46-PAIR-4298-4299-EXPOSE-COMPOSED-SUBTYPE-NEGATION",
+    "selection_policy": "ALL_OR_NONE",
+    "application_order": [
+      "V46-W29-IDX4298-expose-composed-subtype-negation",
+      "V46-W34-IDX4299-expose-composed-subtype-negation"
+    ],
+    "owners": [
+      {
+        "declaration_index": 4298,
+        "declaration": "signedLowerPeriodization_isReducedChartGaugeModel",
+        "worker": "W29"
+      },
+      {
+        "declaration_index": 4299,
+        "declaration": "signedRaisePeriodization_isReducedChartGaugeModel",
+        "worker": "W34"
+      }
+    ],
+    "mirror_contract_fulfilled": "W34 uses W29's exact composed-map/change/rw/ring structure. Only the typed core index changes from n to n + 1 and the core producer changes from lowerFromSucc n on periodized n + 1 to raise n on periodized n. W34 touches idx4299 only.",
+    "reason": "idx4298 and idx4299 are signed lowering/raising mirrors. Historical V43 probes selected them together, both progressed one subtype layer and failed at the same Pi.neg_apply boundary, and v45 gives each exactly two identical branch-local residuals."
+  },
+  "header_policy": "NO_HEADER_CHANGES_BODY_ONLY",
+  "trust_policy": {
+    "tokens": ["sorry", "admit", "axiom", "unsafe", "native_decide", "Lean.ofReduceBool"],
+    "required_before": 0,
+    "required_after": 0
+  },
+  "repairs": [
+    {
+      "id": "V46-W34-IDX4299-expose-composed-subtype-negation",
+      "pair_id": "V46-PAIR-4298-4299-EXPOSE-COMPOSED-SUBTYPE-NEGATION",
+      "owner": "signedRaisePeriodization_isReducedChartGaugeModel",
+      "declaration_index": 4299,
+      "diagnostics": [42, 43],
+      "kind": "body",
+      "classification": "EXPOSE_THREE_SUBTYPE_PROJECTIONS_AS_ONE_LINEAR_MAP_BEFORE_MAP_NEG",
+      "confidence": "medium-high-static-exact-W29-symmetry-historical-outer-layer-runtime-progress-direct-Lean-required",
+      "expected_count_in_owner": 2,
+      "old": "        simp only [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,\n          map_neg, Pi.neg_apply]\n        ring_nf",
+      "new": "        change\n          _ *\n              (((realSmoothSubmodule.subtype.comp\n                    smoothQuotientCompactSubmodule.subtype).comp\n                  (inverseEtaFixedPhaseStableCoreSubmodule (n + 1)).subtype)\n                (-(InverseEtaFixedPhaseCore.raise n)\n                  (gammaTwoPeriodizedPhysicalCore n a))) z =\n            -(_ *\n              (((realSmoothSubmodule.subtype.comp\n                    smoothQuotientCompactSubmodule.subtype).comp\n                  (inverseEtaFixedPhaseStableCoreSubmodule (n + 1)).subtype)\n                ((InverseEtaFixedPhaseCore.raise n)\n                  (gammaTwoPeriodizedPhysicalCore n a))) z)\n        rw [map_neg, Pi.neg_apply]\n        ring",
+      "evidence": "The authority old block occurs exactly twice in idx4299. The replacement is the exact typed raising mirror of W29 and explicitly traverses all three subtype layers demonstrated by the definitions and historical runtime residual.",
+      "expected_effect": "Remove authoritative ordinals 42 and 43 at idx4299 and remove the four unused simp-argument warnings attached to the two old blocks. Direct paired Lean replay with W29 is required before promotion."
+    }
+  ],
+  "promotion_rule": "Compose only against exact v45 all_probes SHA 726f40d1. First select the W26/W33 pair ALL_OR_NONE, then select this W29/W34 pair ALL_OR_NONE in declaration order. Require direct disappearance of idx4298 ordinals 40-41 and idx4299 ordinals 42-43 with no replacement errors or synthetic-sorry warnings. Revalidate W25 and all four downstream owners, then require Mock2=0, Mock2_Advanced=0, full FA maxErrors=2000 exit 0, complete diagnostic inventory comparison, 4416 byte-identical headers/order/comments/attributes, no diff prefix/source move, and trust-six zero.",
+  "direct_lean_verified": false,
+  "clean_build_claimed": false,
+  "lean_lake_git_github_network_invoked_by_worker": false
+}

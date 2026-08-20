@@ -1,0 +1,107 @@
+name: Codex FA473 direct strict frontier
+
+on:
+  push:
+    branches:
+      - codex/fa-qym-cleanbuild-final-20260810
+    paths:
+      - .github/workflows/codex-fa473-trace-tail.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: codex-fa473-trace-tail
+  cancel-in-progress: false
+
+jobs:
+  candidate:
+    strategy:
+      fail-fast: false
+      matrix:
+        trace_variant: [const_add_simp, const_add_norm, const_add_map_zero]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+    env:
+      VARIANT: norms
+      TRACE_VARIANT: ${{ matrix.trace_variant }}
+      HORIZONTAL_STYLE: calc_four
+      MAX_ERRORS: "32"
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Generate strict-frontier candidate and directly compile
+        run: bash scripts/fa473_candidate_ci.sh
+      - name: Print captured Lean error headers
+        if: always()
+        run: |
+          OUT="build-logs/codex-fa473-trace-tail/candidates/norms"
+          if test -f "$OUT/Mock2_FunctionalAnalysis.log"; then
+            grep -nE '^PrimalitySheafVerification/Mock2_FunctionalAnalysis\.lean:[0-9]+:[0-9]+: error' "$OUT/Mock2_FunctionalAnalysis.log" || true
+          fi
+      - name: Upload exact candidate and direct evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa473-${{ matrix.trace_variant }}
+          path: build-logs/codex-fa473-trace-tail/candidates/norms
+          if-no-files-found: error
+          retention-days: 90
+      - name: Require direct passes and an intact audit manifest
+        if: always()
+        run: |
+          python3 - \
+            "build-logs/codex-fa473-trace-tail/candidates/norms/METRIC.json" \
+            "build-logs/codex-fa473-trace-tail/candidates/norms/CANDIDATE.json" <<'PY'
+          import json
+          import sys
+
+          with open(sys.argv[1], encoding="utf-8") as stream:
+              metric = json.load(stream)
+          with open(sys.argv[2], encoding="utf-8") as stream:
+              candidate = json.load(stream)
+          print(json.dumps(metric, indent=2, ensure_ascii=False))
+          print(json.dumps(candidate, indent=2, ensure_ascii=False))
+
+          forbidden = metric.get("candidate_forbidden_counts", {})
+          hashes_match = (
+              candidate.get("candidate_sha256") == metric.get("source_sha256")
+              and candidate.get("candidate_sha256")
+                  == metric.get("candidate_metadata_sha256")
+              and candidate.get("declaration_sequence_sha256")
+                  == metric.get("declaration_sequence_sha256")
+              and candidate.get("declaration_count")
+                  == metric.get("declaration_count")
+              and candidate.get("target_header_sha256")
+                  == metric.get("target_header_sha256")
+          )
+          ok = (
+              metric.get("classification") != "INFRA_FAILURE"
+              and metric.get("all_required_lean_executed") is True
+              and metric.get("source_metadata_identity") is True
+              and metric.get("Mock2_executed") is True
+              and metric.get("Mock2_exit") == 0
+              and metric.get("Mock2_Advanced_executed") is True
+              and metric.get("Mock2_Advanced_exit") == 0
+              and metric.get("FA_executed") is True
+              and metric.get("FA_exit") == 0
+              and metric.get("FA_error_headers_captured") == 0
+              and metric.get("maxErrors_cap") == 32
+              and metric.get("diagnostic_parser")
+                  == "strict_error_and_error_category_v1"
+              and metric.get("forbidden_not_increased") is True
+              and metric.get("forbidden_clean") is True
+              and bool(forbidden)
+              and all(value == 0 for value in forbidden.values())
+              and hashes_match
+          )
+          if not ok:
+              raise SystemExit(
+                  "FA473 is not a direct M2/M2A/FA pass with an intact audit manifest"
+              )
+          PY

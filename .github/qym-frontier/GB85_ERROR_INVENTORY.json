@@ -1,0 +1,1972 @@
+{
+  "clusters": [
+    {
+      "codes": {
+        "uncoded": 1
+      },
+      "error_count": 1,
+      "first_error_line": 41515,
+      "last_error_line": 41515,
+      "owner": "actualFixedPhaseCuspHorocyclePoint_coe_contDiff",
+      "owner_kind": "theorem",
+      "owner_line": 41497,
+      "signatures": {
+        "Tactic `rewrite` failed: Did not find an occurrence of the pattern": 1
+      }
+    },
+    {
+      "codes": {
+        "uncoded": 1
+      },
+      "error_count": 1,
+      "first_error_line": 41537,
+      "last_error_line": 41537,
+      "owner": "actualFixedPhaseNamedCuspTraceRepresentative_contDiff",
+      "owner_kind": "theorem",
+      "owner_line": 41525,
+      "signatures": {
+        "'change' tactic failed, pattern": 1
+      }
+    },
+    {
+      "codes": {
+        "uncoded": 3
+      },
+      "error_count": 3,
+      "first_error_line": 43880,
+      "last_error_line": 43903,
+      "owner": "baseEdgeCoordinate_hasDerivAt",
+      "owner_kind": "theorem",
+      "owner_line": 43857,
+      "signatures": {
+        "Type mismatch: After simplification, term": 3
+      }
+    },
+    {
+      "codes": {
+        "uncoded": 1
+      },
+      "error_count": 1,
+      "first_error_line": 43935,
+      "last_error_line": 43935,
+      "owner": "selectedRepresentativeChart_hasStrictDerivAt",
+      "owner_kind": "theorem",
+      "owner_line": 43931,
+      "signatures": {
+        "Type mismatch: After simplification, term": 1
+      }
+    },
+    {
+      "codes": {
+        "uncoded": 1
+      },
+      "error_count": 1,
+      "first_error_line": 44152,
+      "last_error_line": 44152,
+      "owner": "edgeParameterTransport_hasDerivAt",
+      "owner_kind": "theorem",
+      "owner_line": 44148,
+      "signatures": {
+        "Type mismatch: After simplification, term": 1
+      }
+    },
+    {
+      "codes": {
+        "uncoded": 1
+      },
+      "error_count": 1,
+      "first_error_line": 44666,
+      "last_error_line": 44666,
+      "owner": "conj_mul_hyperbolicRightNormal_realMultiple_re",
+      "owner_kind": "theorem",
+      "owner_line": 44663,
+      "signatures": {
+        "unsolved goals": 1
+      }
+    },
+    {
+      "codes": {
+        "uncoded": 1
+      },
+      "error_count": 1,
+      "first_error_line": 44674,
+      "last_error_line": 44674,
+      "owner": "conj_mul_hyperbolicRightNormal_im",
+      "owner_kind": "theorem",
+      "owner_line": 44671,
+      "signatures": {
+        "unsolved goals": 1
+      }
+    },
+    {
+      "codes": {
+        "lean.synthInstanceFailed": 1,
+        "uncoded": 2
+      },
+      "error_count": 3,
+      "first_error_line": 45432,
+      "last_error_line": 45445,
+      "owner": "allCoveringSheets_hasGroupoid",
+      "owner_kind": "theorem",
+      "owner_line": 45406,
+      "signatures": {
+        "This instance has N argument that cannot be inferred using typeclass synthesis. Specifically": 1,
+        "failed to synthesize instance of type class": 1,
+        "unsolved goals": 1
+      }
+    },
+    {
+      "codes": {
+        "uncoded": 1
+      },
+      "error_count": 1,
+      "first_error_line": 48303,
+      "last_error_line": 48303,
+      "owner": "inverseEtaFibreOfCoordinate_coordinate",
+      "owner_kind": "theorem",
+      "owner_line": 48297,
+      "signatures": {
+        "Tactic `rewrite` failed: motive is not type correct:": 1
+      }
+    },
+    {
+      "codes": {
+        "lean.synthInstanceFailed": 1
+      },
+      "error_count": 1,
+      "first_error_line": 48317,
+      "last_error_line": 48317,
+      "owner": "inverseEtaFibreCoordinate_continuous",
+      "owner_kind": "theorem",
+      "owner_line": 48316,
+      "signatures": {
+        "failed to synthesize instance of type class": 1
+      }
+    },
+    {
+      "codes": {
+        "lean.synthInstanceFailed": 1,
+        "uncoded": 2
+      },
+      "error_count": 3,
+      "first_error_line": 48322,
+      "last_error_line": 48329,
+      "owner": "inverseEtaFibreOfCoordinate_continuous",
+      "owner_kind": "theorem",
+      "owner_line": 48321,
+      "signatures": {
+        "Type mismatch": 1,
+        "Type mismatch: After simplification, term": 1,
+        "failed to synthesize instance of type class": 1
+      }
+    },
+    {
+      "codes": {
+        "lean.synthInstanceFailed": 1
+      },
+      "error_count": 1,
+      "first_error_line": 48334,
+      "last_error_line": 48334,
+      "owner": "inverseEtaFibreCoordinateHomeomorph",
+      "owner_kind": "def",
+      "owner_line": 48333,
+      "signatures": {
+        "failed to synthesize instance of type class": 1
+      }
+    },
+    {
+      "codes": {
+        "uncoded": 1
+      },
+      "error_count": 1,
+      "first_error_line": 48375,
+      "last_error_line": 48375,
+      "owner": "inverseEtaFibreCoordinate_smul",
+      "owner_kind": "theorem",
+      "owner_line": 48371,
+      "signatures": {
+        "Type mismatch: After simplification, term": 1
+      }
+    },
+    {
+      "codes": {
+        "uncoded": 1
+      },
+      "error_count": 1,
+      "first_error_line": 48392,
+      "last_error_line": 48392,
+      "owner": "inverseEtaFibreMk_zero",
+      "owner_kind": "theorem",
+      "owner_line": 48389,
+      "signatures": {
+        "unsolved goals": 1
+      }
+    },
+    {
+      "codes": {
+        "uncoded": 1
+      },
+      "error_count": 1,
+      "first_error_line": 48401,
+      "last_error_line": 48401,
+      "owner": "inverseEtaFibreMk_add",
+      "owner_kind": "theorem",
+      "owner_line": 48396,
+      "signatures": {
+        "`simp` made no progress": 1
+      }
+    },
+    {
+      "codes": {
+        "uncoded": 1
+      },
+      "error_count": 1,
+      "first_error_line": 48409,
+      "last_error_line": 48409,
+      "owner": "inverseEtaFibreMk_smul",
+      "owner_kind": "theorem",
+      "owner_line": 48404,
+      "signatures": {
+        "`simp` made no progress": 1
+      }
+    },
+    {
+      "codes": {
+        "uncoded": 1
+      },
+      "error_count": 1,
+      "first_error_line": 48452,
+      "last_error_line": 48452,
+      "owner": "inverseEtaFibreHermitian_smul_right",
+      "owner_kind": "theorem",
+      "owner_line": 48449,
+      "signatures": {
+        "unsolved goals": 1
+      }
+    },
+    {
+      "codes": {
+        "uncoded": 1
+      },
+      "error_count": 1,
+      "first_error_line": 48470,
+      "last_error_line": 48470,
+      "owner": "inverseEtaFibreHermitian_self_pos",
+      "owner_kind": "theorem",
+      "owner_line": 48466,
+      "signatures": {
+        "Tactic `rewrite` failed: Did not find an occurrence of the pattern": 1
+      }
+    },
+    {
+      "codes": {
+        "uncoded": 1
+      },
+      "error_count": 1,
+      "first_error_line": 48555,
+      "last_error_line": 48555,
+      "owner": "covariantTotalLift",
+      "owner_kind": "def",
+      "owner_line": 48553,
+      "signatures": {
+        "Application type mismatch: The argument": 1
+      }
+    },
+    {
+      "codes": {
+        "uncoded": 1
+      },
+      "error_count": 1,
+      "first_error_line": 48568,
+      "last_error_line": 48568,
+      "owner": "covariantTotalLift_invariant",
+      "owner_kind": "theorem",
+      "owner_line": 48558,
+      "signatures": {
+        "'change' tactic failed, pattern": 1
+      }
+    },
+    {
+      "codes": {
+        "uncoded": 1
+      },
+      "error_count": 1,
+      "first_error_line": 48594,
+      "last_error_line": 48594,
+      "owner": "covariantToSectionFun_quotientMap",
+      "owner_kind": "theorem",
+      "owner_line": 48589,
+      "signatures": {
+        "Tactic `rfl` failed: The left-hand side": 1
+      }
+    },
+    {
+      "codes": {
+        "uncoded": 1
+      },
+      "error_count": 1,
+      "first_error_line": 48603,
+      "last_error_line": 48603,
+      "owner": "covariantToSection",
+      "owner_kind": "def",
+      "owner_line": 48597,
+      "signatures": {
+        "Tactic `rfl` failed: The left-hand side": 1
+      }
+    },
+    {
+      "codes": {
+        "uncoded": 1
+      },
+      "error_count": 1,
+      "first_error_line": 48610,
+      "last_error_line": 48610,
+      "owner": "covariantToSection_quotientMap",
+      "owner_kind": "theorem",
+      "owner_line": 48605,
+      "signatures": {
+        "Tactic `rfl` failed: The left-hand side": 1
+      }
+    },
+    {
+      "codes": {
+        "uncoded": 1
+      },
+      "error_count": 1,
+      "first_error_line": 48647,
+      "last_error_line": 48647,
+      "owner": "quotientSectionToCovariant_covariantToSection",
+      "owner_kind": "theorem",
+      "owner_line": 48642,
+      "signatures": {
+        "'change' tactic failed, pattern": 1
+      }
+    },
+    {
+      "codes": {
+        "uncoded": 1
+      },
+      "error_count": 1,
+      "first_error_line": 48664,
+      "last_error_line": 48664,
+      "owner": "covariantToSection_quotientSectionToCovariant",
+      "owner_kind": "theorem",
+      "owner_line": 48657,
+      "signatures": {
+        "'change' tactic failed, pattern": 1
+      }
+    },
+    {
+      "codes": {
+        "uncoded": 1
+      },
+      "error_count": 1,
+      "first_error_line": 48713,
+      "last_error_line": 48713,
+      "owner": "covariantToSection_distinguished_toFun",
+      "owner_kind": "theorem",
+      "owner_line": 48707,
+      "signatures": {
+        "Tactic `rfl` failed: The left-hand side": 1
+      }
+    },
+    {
+      "codes": {
+        "uncoded": 1
+      },
+      "error_count": 1,
+      "first_error_line": 48722,
+      "last_error_line": 48722,
+      "owner": "distinguishedInverseEtaSection_coordinate",
+      "owner_kind": "theorem",
+      "owner_line": 48717,
+      "signatures": {
+        "'change' tactic failed, pattern": 1
+      }
+    },
+    {
+      "codes": {
+        "uncoded": 1
+      },
+      "error_count": 1,
+      "first_error_line": 49408,
+      "last_error_line": 49408,
+      "owner": "actualFixedPhaseOldGraphToProductCollarExtension_norm_le",
+      "owner_kind": "theorem",
+      "owner_line": 49396,
+      "signatures": {
+        "(deterministic) timeout at `whnf`, maximum number of heartbeats (N) has been reached": 1
+      }
+    },
+    {
+      "codes": {
+        "uncoded": 1
+      },
+      "error_count": 1,
+      "first_error_line": 50436,
+      "last_error_line": 50436,
+      "owner": "actualStageBundleValue",
+      "owner_kind": "def",
+      "owner_line": 50433,
+      "signatures": {
+        "Application type mismatch: The argument": 1
+      }
+    },
+    {
+      "codes": {
+        "lean.synthInstanceFailed": 1
+      },
+      "error_count": 1,
+      "first_error_line": 50451,
+      "last_error_line": 50451,
+      "owner": "actualStageBundleValue_aemeasurable",
+      "owner_kind": "theorem",
+      "owner_line": 50442,
+      "signatures": {
+        "failed to synthesize instance of type class": 1
+      }
+    },
+    {
+      "codes": {
+        "uncoded": 2
+      },
+      "error_count": 2,
+      "first_error_line": 50454,
+      "last_error_line": 50457,
+      "owner": "actualStageBundleValue_projection",
+      "owner_kind": "theorem",
+      "owner_line": 50454,
+      "signatures": {
+        "Cannot add `simp` attribute to `actualStageBundleValue_projection`: It is not a proposition nor a definition (to unfold)": 1,
+        "Type mismatch": 1
+      }
+    },
+    {
+      "codes": {
+        "uncoded": 1
+      },
+      "error_count": 1,
+      "first_error_line": 50463,
+      "last_error_line": 50463,
+      "owner": "actualStageFibreValue",
+      "owner_kind": "def",
+      "owner_line": 50461,
+      "signatures": {
+        "Application type mismatch: The argument": 1
+      }
+    },
+    {
+      "codes": {
+        "uncoded": 1
+      },
+      "error_count": 1,
+      "first_error_line": 50486,
+      "last_error_line": 50486,
+      "owner": "actualStageFibreValue_eq_iff",
+      "owner_kind": "theorem",
+      "owner_line": 50476,
+      "signatures": {
+        "Application type mismatch: The argument": 1
+      }
+    },
+    {
+      "codes": {
+        "uncoded": 1
+      },
+      "error_count": 1,
+      "first_error_line": 50549,
+      "last_error_line": 50549,
+      "owner": "actualStagePeterssonInner_self_re_eq_zero_iff",
+      "owner_kind": "theorem",
+      "owner_line": 50544,
+      "signatures": {
+        "`simp` made no progress": 1
+      }
+    },
+    {
+      "codes": {
+        "uncoded": 1
+      },
+      "error_count": 1,
+      "first_error_line": 50558,
+      "last_error_line": 50558,
+      "owner": "actualStageSectionCoordinate",
+      "owner_kind": "def",
+      "owner_line": 50556,
+      "signatures": {
+        "Application type mismatch: The argument": 1
+      }
+    },
+    {
+      "codes": {
+        "uncoded": 2
+      },
+      "error_count": 2,
+      "first_error_line": 50570,
+      "last_error_line": 50571,
+      "owner": "distinguishedInverseEtaQuotientSection_coordinate",
+      "owner_kind": "theorem",
+      "owner_line": 50567,
+      "signatures": {
+        "Application type mismatch: The argument": 2
+      }
+    },
+    {
+      "codes": {
+        "uncoded": 7
+      },
+      "error_count": 7,
+      "first_error_line": 50577,
+      "last_error_line": 50587,
+      "owner": "distinguishedInverseEtaQuotientSection_eq_totalOfBaseScalar",
+      "owner_kind": "theorem",
+      "owner_line": 50575,
+      "signatures": {
+        "Application type mismatch: The argument": 6,
+        "unsolved goals": 1
+      }
+    },
+    {
+      "codes": {
+        "uncoded": 2
+      },
+      "error_count": 2,
+      "first_error_line": 50594,
+      "last_error_line": 50596,
+      "owner": "distinguishedInverseEtaQuotientSection_continuous",
+      "owner_kind": "theorem",
+      "owner_line": 50593,
+      "signatures": {
+        "Application type mismatch: The argument": 1,
+        "unsolved goals": 1
+      }
+    },
+    {
+      "codes": {
+        "lean.synthInstanceFailed": 1
+      },
+      "error_count": 1,
+      "first_error_line": 50604,
+      "last_error_line": 50604,
+      "owner": "distinguishedInverseEtaQuotientSection_measurable",
+      "owner_kind": "theorem",
+      "owner_line": 50602,
+      "signatures": {
+        "failed to synthesize instance of type class": 1
+      }
+    },
+    {
+      "codes": {
+        "lean.synthInstanceFailed": 1
+      },
+      "error_count": 1,
+      "first_error_line": 50620,
+      "last_error_line": 50620,
+      "owner": "actualStageSectionCoordinate_measurable",
+      "owner_kind": "theorem",
+      "owner_line": 50616,
+      "signatures": {
+        "failed to synthesize instance of type class": 1
+      }
+    },
+    {
+      "codes": {
+        "uncoded": 3
+      },
+      "error_count": 3,
+      "first_error_line": 50674,
+      "last_error_line": 50678,
+      "owner": "quotientSectionToActualStageL2_bundleValue_ae",
+      "owner_kind": "theorem",
+      "owner_line": 50667,
+      "signatures": {
+        "Application type mismatch: The argument": 2,
+        "unsolved goals": 1
+      }
+    },
+    {
+      "codes": {
+        "uncoded": 1
+      },
+      "error_count": 1,
+      "first_error_line": 50734,
+      "last_error_line": 50734,
+      "owner": "actualStageDistinguishedInverseEtaSection_bundleValue_ae",
+      "owner_kind": "theorem",
+      "owner_line": 50726,
+      "signatures": {
+        "Application type mismatch: The argument": 1
+      }
+    },
+    {
+      "codes": {
+        "uncoded": 2
+      },
+      "error_count": 2,
+      "first_error_line": 50803,
+      "last_error_line": 50807,
+      "owner": "actualStageInverseEtaL2Certificate",
+      "owner_kind": "theorem",
+      "owner_line": 50803,
+      "signatures": {
+        "(kernel) unknown constant 'QYM.FullCertification.PNActualStageLNSectionsExtension.actualStageBundleValue_projection'": 1,
+        "Type mismatch": 1
+      }
+    },
+    {
+      "codes": {
+        "uncoded": 1
+      },
+      "error_count": 1,
+      "first_error_line": 50841,
+      "last_error_line": 50841,
+      "owner": "actualStageInverseEtaL2PositiveCertificate",
+      "owner_kind": "theorem",
+      "owner_line": 50831,
+      "signatures": {
+        "Application type mismatch: The argument": 1
+      }
+    },
+    {
+      "codes": {
+        "uncoded": 1
+      },
+      "error_count": 1,
+      "first_error_line": 51511,
+      "last_error_line": 51511,
+      "owner": "inverseEtaBaseChartedSpaceH",
+      "owner_kind": "def",
+      "owner_line": 51509,
+      "signatures": {
+        "Type mismatch": 1
+      }
+    },
+    {
+      "codes": {
+        "uncoded": 2
+      },
+      "error_count": 2,
+      "first_error_line": 51526,
+      "last_error_line": 51532,
+      "owner": "inverseEtaBase_hasGroupoid",
+      "owner_kind": "theorem",
+      "owner_line": 51521,
+      "signatures": {
+        "Type mismatch": 2
+      }
+    },
+    {
+      "codes": {
+        "uncoded": 2
+      },
+      "error_count": 2,
+      "first_error_line": 51540,
+      "last_error_line": 51545,
+      "owner": "inverseEtaBase_isManifold",
+      "owner_kind": "theorem",
+      "owner_line": 51535,
+      "signatures": {
+        "Type mismatch": 2
+      }
+    },
+    {
+      "codes": {
+        "uncoded": 1
+      },
+      "error_count": 1,
+      "first_error_line": 51610,
+      "last_error_line": 51610,
+      "owner": "inverseEtaTotalTransported_extChartAt_target",
+      "owner_kind": "theorem",
+      "owner_line": 51594,
+      "signatures": {
+        "Tactic `rewrite` failed: Did not find an occurrence of the pattern": 1
+      }
+    },
+    {
+      "codes": {
+        "uncoded": 1
+      },
+      "error_count": 1,
+      "first_error_line": 51693,
+      "last_error_line": 51693,
+      "owner": "inverseEtaTotalTrivialization_contMDiff",
+      "owner_kind": "theorem",
+      "owner_line": 51673,
+      "signatures": {
+        "unsolved goals": 1
+      }
+    },
+    {
+      "codes": {
+        "uncoded": 3
+      },
+      "error_count": 3,
+      "first_error_line": 51727,
+      "last_error_line": 51733,
+      "owner": "inverseEtaTotalTrivialization_symm_contMDiff",
+      "owner_kind": "theorem",
+      "owner_line": 51696,
+      "signatures": {
+        "Type mismatch: After simplification, term": 2,
+        "unsolved goals": 1
+      }
+    },
+    {
+      "codes": {
+        "lean.synthInstanceFailed": 1
+      },
+      "error_count": 1,
+      "first_error_line": 51755,
+      "last_error_line": 51755,
+      "owner": "inverseEtaTotalTrivializationDiffeomorph",
+      "owner_kind": "def",
+      "owner_line": 51749,
+      "signatures": {
+        "failed to synthesize instance of type class": 1
+      }
+    },
+    {
+      "codes": {
+        "uncoded": 1
+      },
+      "error_count": 1,
+      "first_error_line": 51774,
+      "last_error_line": 51774,
+      "owner": "inverseEtaProjection_contMDiff",
+      "owner_kind": "theorem",
+      "owner_line": 51763,
+      "signatures": {
+        "Type mismatch: After simplification, term": 1
+      }
+    },
+    {
+      "codes": {
+        "uncoded": 1
+      },
+      "error_count": 1,
+      "first_error_line": 51824,
+      "last_error_line": 51824,
+      "owner": "etaCoordinate_contMDiff",
+      "owner_kind": "theorem",
+      "owner_line": 51811,
+      "signatures": {
+        "Type mismatch: After simplification, term": 1
+      }
+    },
+    {
+      "codes": {
+        "uncoded": 1
+      },
+      "error_count": 1,
+      "first_error_line": 52250,
+      "last_error_line": 52250,
+      "owner": "actualStageContinuousToL2_bundleValue_ae",
+      "owner_kind": "theorem",
+      "owner_line": 52244,
+      "signatures": {
+        "Application type mismatch: The argument": 1
+      }
+    },
+    {
+      "codes": {
+        "uncoded": 2
+      },
+      "error_count": 2,
+      "first_error_line": 57408,
+      "last_error_line": 57410,
+      "owner": "globalStageProjection_add",
+      "owner_kind": "theorem",
+      "owner_line": 57393,
+      "signatures": {
+        "unsolved goals": 2
+      }
+    },
+    {
+      "codes": {
+        "uncoded": 2
+      },
+      "error_count": 2,
+      "first_error_line": 57427,
+      "last_error_line": 57429,
+      "owner": "globalStageProjection_smul",
+      "owner_kind": "theorem",
+      "owner_line": 57414,
+      "signatures": {
+        "unsolved goals": 2
+      }
+    },
+    {
+      "codes": {
+        "uncoded": 2
+      },
+      "error_count": 2,
+      "first_error_line": 57753,
+      "last_error_line": 57756,
+      "owner": "globalStageProjectionErrorDensity_le",
+      "owner_kind": "theorem",
+      "owner_line": 57747,
+      "signatures": {
+        "unsolved goals": 2
+      }
+    },
+    {
+      "codes": {
+        "uncoded": 1
+      },
+      "error_count": 1,
+      "first_error_line": 57778,
+      "last_error_line": 57778,
+      "owner": "globalStageProjectionErrorDensity_eventually_zero",
+      "owner_kind": "theorem",
+      "owner_line": 57776,
+      "signatures": {
+        "unsolved goals": 1
+      }
+    },
+    {
+      "codes": {
+        "uncoded": 1
+      },
+      "error_count": 1,
+      "first_error_line": 57787,
+      "last_error_line": 57787,
+      "owner": "globalStageProjectionErrorDensity_tendsto_pointwise",
+      "owner_kind": "theorem",
+      "owner_line": 57784,
+      "signatures": {
+        "unsolved goals": 1
+      }
+    },
+    {
+      "codes": {
+        "uncoded": 1
+      },
+      "error_count": 1,
+      "first_error_line": 59175,
+      "last_error_line": 59175,
+      "owner": "coordinateHamiltonianForm_re_self",
+      "owner_kind": "theorem",
+      "owner_line": 59173,
+      "signatures": {
+        "unsolved goals": 1
+      }
+    }
+  ],
+  "code_counts": {
+    "lean.synthInstanceFailed": 8,
+    "uncoded": 77
+  },
+  "error_headers": 85,
+  "errors": [
+    {
+      "code": null,
+      "column": 6,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 1,
+      "line": 41515,
+      "message": "Tactic `rewrite` failed: Did not find an occurrence of the pattern",
+      "owner": "actualFixedPhaseCuspHorocyclePoint_coe_contDiff",
+      "owner_kind": "theorem",
+      "owner_line": 41497,
+      "severity": "error",
+      "signature": "Tactic `rewrite` failed: Did not find an occurrence of the pattern"
+    },
+    {
+      "code": null,
+      "column": 2,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 2,
+      "line": 41537,
+      "message": "'change' tactic failed, pattern",
+      "owner": "actualFixedPhaseNamedCuspTraceRepresentative_contDiff",
+      "owner_kind": "theorem",
+      "owner_line": 41525,
+      "severity": "error",
+      "signature": "'change' tactic failed, pattern"
+    },
+    {
+      "code": null,
+      "column": 6,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 3,
+      "line": 43880,
+      "message": "Type mismatch: After simplification, term",
+      "owner": "baseEdgeCoordinate_hasDerivAt",
+      "owner_kind": "theorem",
+      "owner_line": 43857,
+      "severity": "error",
+      "signature": "Type mismatch: After simplification, term"
+    },
+    {
+      "code": null,
+      "column": 6,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 4,
+      "line": 43891,
+      "message": "Type mismatch: After simplification, term",
+      "owner": "baseEdgeCoordinate_hasDerivAt",
+      "owner_kind": "theorem",
+      "owner_line": 43857,
+      "severity": "error",
+      "signature": "Type mismatch: After simplification, term"
+    },
+    {
+      "code": null,
+      "column": 6,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 5,
+      "line": 43903,
+      "message": "Type mismatch: After simplification, term",
+      "owner": "baseEdgeCoordinate_hasDerivAt",
+      "owner_kind": "theorem",
+      "owner_line": 43857,
+      "severity": "error",
+      "signature": "Type mismatch: After simplification, term"
+    },
+    {
+      "code": null,
+      "column": 2,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 6,
+      "line": 43935,
+      "message": "Type mismatch: After simplification, term",
+      "owner": "selectedRepresentativeChart_hasStrictDerivAt",
+      "owner_kind": "theorem",
+      "owner_line": 43931,
+      "severity": "error",
+      "signature": "Type mismatch: After simplification, term"
+    },
+    {
+      "code": null,
+      "column": 2,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 7,
+      "line": 44152,
+      "message": "Type mismatch: After simplification, term",
+      "owner": "edgeParameterTransport_hasDerivAt",
+      "owner_kind": "theorem",
+      "owner_line": 44148,
+      "severity": "error",
+      "signature": "Type mismatch: After simplification, term"
+    },
+    {
+      "code": null,
+      "column": 61,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 8,
+      "line": 44666,
+      "message": "unsolved goals",
+      "owner": "conj_mul_hyperbolicRightNormal_realMultiple_re",
+      "owner_kind": "theorem",
+      "owner_line": 44663,
+      "severity": "error",
+      "signature": "unsolved goals"
+    },
+    {
+      "code": null,
+      "column": 18,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 9,
+      "line": 44674,
+      "message": "unsolved goals",
+      "owner": "conj_mul_hyperbolicRightNormal_im",
+      "owner_kind": "theorem",
+      "owner_line": 44671,
+      "severity": "error",
+      "signature": "unsolved goals"
+    },
+    {
+      "code": null,
+      "column": 0,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 10,
+      "line": 45432,
+      "message": "This instance has 1 argument that cannot be inferred using typeclass synthesis. Specifically",
+      "owner": "allCoveringSheets_hasGroupoid",
+      "owner_kind": "theorem",
+      "owner_line": 45406,
+      "severity": "error",
+      "signature": "This instance has N argument that cannot be inferred using typeclass synthesis. Specifically"
+    },
+    {
+      "code": "lean.synthInstanceFailed",
+      "column": 8,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 11,
+      "line": 45445,
+      "message": "failed to synthesize instance of type class",
+      "owner": "allCoveringSheets_hasGroupoid",
+      "owner_kind": "theorem",
+      "owner_line": 45406,
+      "severity": "error",
+      "signature": "failed to synthesize instance of type class"
+    },
+    {
+      "code": null,
+      "column": 62,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 12,
+      "line": 45444,
+      "message": "unsolved goals",
+      "owner": "allCoveringSheets_hasGroupoid",
+      "owner_kind": "theorem",
+      "owner_line": 45406,
+      "severity": "error",
+      "signature": "unsolved goals"
+    },
+    {
+      "code": null,
+      "column": 6,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 13,
+      "line": 48303,
+      "message": "Tactic `rewrite` failed: motive is not type correct:",
+      "owner": "inverseEtaFibreOfCoordinate_coordinate",
+      "owner_kind": "theorem",
+      "owner_line": 48297,
+      "severity": "error",
+      "signature": "Tactic `rewrite` failed: motive is not type correct:"
+    },
+    {
+      "code": "lean.synthInstanceFailed",
+      "column": 4,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 14,
+      "line": 48317,
+      "message": "failed to synthesize instance of type class",
+      "owner": "inverseEtaFibreCoordinate_continuous",
+      "owner_kind": "theorem",
+      "owner_line": 48316,
+      "severity": "error",
+      "signature": "failed to synthesize instance of type class"
+    },
+    {
+      "code": "lean.synthInstanceFailed",
+      "column": 4,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 15,
+      "line": 48322,
+      "message": "failed to synthesize instance of type class",
+      "owner": "inverseEtaFibreOfCoordinate_continuous",
+      "owner_kind": "theorem",
+      "owner_line": 48321,
+      "severity": "error",
+      "signature": "failed to synthesize instance of type class"
+    },
+    {
+      "code": null,
+      "column": 4,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 16,
+      "line": 48325,
+      "message": "Type mismatch: After simplification, term",
+      "owner": "inverseEtaFibreOfCoordinate_continuous",
+      "owner_kind": "theorem",
+      "owner_line": 48321,
+      "severity": "error",
+      "signature": "Type mismatch: After simplification, term"
+    },
+    {
+      "code": null,
+      "column": 14,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 17,
+      "line": 48329,
+      "message": "Type mismatch",
+      "owner": "inverseEtaFibreOfCoordinate_continuous",
+      "owner_kind": "theorem",
+      "owner_line": 48321,
+      "severity": "error",
+      "signature": "Type mismatch"
+    },
+    {
+      "code": "lean.synthInstanceFailed",
+      "column": 27,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 18,
+      "line": 48334,
+      "message": "failed to synthesize instance of type class",
+      "owner": "inverseEtaFibreCoordinateHomeomorph",
+      "owner_kind": "def",
+      "owner_line": 48333,
+      "severity": "error",
+      "signature": "failed to synthesize instance of type class"
+    },
+    {
+      "code": null,
+      "column": 2,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 19,
+      "line": 48375,
+      "message": "Type mismatch: After simplification, term",
+      "owner": "inverseEtaFibreCoordinate_smul",
+      "owner_kind": "theorem",
+      "owner_line": 48371,
+      "severity": "error",
+      "signature": "Type mismatch: After simplification, term"
+    },
+    {
+      "code": null,
+      "column": 57,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 20,
+      "line": 48392,
+      "message": "unsolved goals",
+      "owner": "inverseEtaFibreMk_zero",
+      "owner_kind": "theorem",
+      "owner_line": 48389,
+      "severity": "error",
+      "signature": "unsolved goals"
+    },
+    {
+      "code": null,
+      "column": 2,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 21,
+      "line": 48401,
+      "message": "`simp` made no progress",
+      "owner": "inverseEtaFibreMk_add",
+      "owner_kind": "theorem",
+      "owner_line": 48396,
+      "severity": "error",
+      "signature": "`simp` made no progress"
+    },
+    {
+      "code": null,
+      "column": 2,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 22,
+      "line": 48409,
+      "message": "`simp` made no progress",
+      "owner": "inverseEtaFibreMk_smul",
+      "owner_kind": "theorem",
+      "owner_line": 48404,
+      "severity": "error",
+      "signature": "`simp` made no progress"
+    },
+    {
+      "code": null,
+      "column": 42,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 23,
+      "line": 48452,
+      "message": "unsolved goals",
+      "owner": "inverseEtaFibreHermitian_smul_right",
+      "owner_kind": "theorem",
+      "owner_line": 48449,
+      "severity": "error",
+      "signature": "unsolved goals"
+    },
+    {
+      "code": null,
+      "column": 6,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 24,
+      "line": 48470,
+      "message": "Tactic `rewrite` failed: Did not find an occurrence of the pattern",
+      "owner": "inverseEtaFibreHermitian_self_pos",
+      "owner_kind": "theorem",
+      "owner_line": 48466,
+      "severity": "error",
+      "signature": "Tactic `rewrite` failed: Did not find an occurrence of the pattern"
+    },
+    {
+      "code": null,
+      "column": 24,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 25,
+      "line": 48555,
+      "message": "Application type mismatch: The argument",
+      "owner": "covariantTotalLift",
+      "owner_kind": "def",
+      "owner_line": 48553,
+      "severity": "error",
+      "signature": "Application type mismatch: The argument"
+    },
+    {
+      "code": null,
+      "column": 2,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 26,
+      "line": 48568,
+      "message": "'change' tactic failed, pattern",
+      "owner": "covariantTotalLift_invariant",
+      "owner_kind": "theorem",
+      "owner_line": 48558,
+      "severity": "error",
+      "signature": "'change' tactic failed, pattern"
+    },
+    {
+      "code": null,
+      "column": 2,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 27,
+      "line": 48594,
+      "message": "Tactic `rfl` failed: The left-hand side",
+      "owner": "covariantToSectionFun_quotientMap",
+      "owner_kind": "theorem",
+      "owner_line": 48589,
+      "severity": "error",
+      "signature": "Tactic `rfl` failed: The left-hand side"
+    },
+    {
+      "code": null,
+      "column": 4,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 28,
+      "line": 48603,
+      "message": "Tactic `rfl` failed: The left-hand side",
+      "owner": "covariantToSection",
+      "owner_kind": "def",
+      "owner_line": 48597,
+      "severity": "error",
+      "signature": "Tactic `rfl` failed: The left-hand side"
+    },
+    {
+      "code": null,
+      "column": 2,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 29,
+      "line": 48610,
+      "message": "Tactic `rfl` failed: The left-hand side",
+      "owner": "covariantToSection_quotientMap",
+      "owner_kind": "theorem",
+      "owner_line": 48605,
+      "severity": "error",
+      "signature": "Tactic `rfl` failed: The left-hand side"
+    },
+    {
+      "code": null,
+      "column": 2,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 30,
+      "line": 48647,
+      "message": "'change' tactic failed, pattern",
+      "owner": "quotientSectionToCovariant_covariantToSection",
+      "owner_kind": "theorem",
+      "owner_line": 48642,
+      "severity": "error",
+      "signature": "'change' tactic failed, pattern"
+    },
+    {
+      "code": null,
+      "column": 2,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 31,
+      "line": 48664,
+      "message": "'change' tactic failed, pattern",
+      "owner": "covariantToSection_quotientSectionToCovariant",
+      "owner_kind": "theorem",
+      "owner_line": 48657,
+      "severity": "error",
+      "signature": "'change' tactic failed, pattern"
+    },
+    {
+      "code": null,
+      "column": 2,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 32,
+      "line": 48713,
+      "message": "Tactic `rfl` failed: The left-hand side",
+      "owner": "covariantToSection_distinguished_toFun",
+      "owner_kind": "theorem",
+      "owner_line": 48707,
+      "severity": "error",
+      "signature": "Tactic `rfl` failed: The left-hand side"
+    },
+    {
+      "code": null,
+      "column": 2,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 33,
+      "line": 48722,
+      "message": "'change' tactic failed, pattern",
+      "owner": "distinguishedInverseEtaSection_coordinate",
+      "owner_kind": "theorem",
+      "owner_line": 48717,
+      "severity": "error",
+      "signature": "'change' tactic failed, pattern"
+    },
+    {
+      "code": null,
+      "column": 2,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 34,
+      "line": 49408,
+      "message": "(deterministic) timeout at `whnf`, maximum number of heartbeats (2000000) has been reached",
+      "owner": "actualFixedPhaseOldGraphToProductCollarExtension_norm_le",
+      "owner_kind": "theorem",
+      "owner_line": 49396,
+      "severity": "error",
+      "signature": "(deterministic) timeout at `whnf`, maximum number of heartbeats (N) has been reached"
+    },
+    {
+      "code": null,
+      "column": 78,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 35,
+      "line": 50436,
+      "message": "Application type mismatch: The argument",
+      "owner": "actualStageBundleValue",
+      "owner_kind": "def",
+      "owner_line": 50433,
+      "severity": "error",
+      "signature": "Application type mismatch: The argument"
+    },
+    {
+      "code": "lean.synthInstanceFailed",
+      "column": 8,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 36,
+      "line": 50451,
+      "message": "failed to synthesize instance of type class",
+      "owner": "actualStageBundleValue_aemeasurable",
+      "owner_kind": "theorem",
+      "owner_line": 50442,
+      "severity": "error",
+      "signature": "failed to synthesize instance of type class"
+    },
+    {
+      "code": null,
+      "column": 6,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 37,
+      "line": 50457,
+      "message": "Type mismatch",
+      "owner": "actualStageBundleValue_projection",
+      "owner_kind": "theorem",
+      "owner_line": 50454,
+      "severity": "error",
+      "signature": "Type mismatch"
+    },
+    {
+      "code": null,
+      "column": 2,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 38,
+      "line": 50454,
+      "message": "Cannot add `simp` attribute to `actualStageBundleValue_projection`: It is not a proposition nor a definition (to unfold)",
+      "owner": "actualStageBundleValue_projection",
+      "owner_kind": "theorem",
+      "owner_line": 50454,
+      "severity": "error",
+      "signature": "Cannot add `simp` attribute to `actualStageBundleValue_projection`: It is not a proposition nor a definition (to unfold)"
+    },
+    {
+      "code": null,
+      "column": 78,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 39,
+      "line": 50463,
+      "message": "Application type mismatch: The argument",
+      "owner": "actualStageFibreValue",
+      "owner_kind": "def",
+      "owner_line": 50461,
+      "severity": "error",
+      "signature": "Application type mismatch: The argument"
+    },
+    {
+      "code": null,
+      "column": 6,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 40,
+      "line": 50486,
+      "message": "Application type mismatch: The argument",
+      "owner": "actualStageFibreValue_eq_iff",
+      "owner_kind": "theorem",
+      "owner_line": 50476,
+      "severity": "error",
+      "signature": "Application type mismatch: The argument"
+    },
+    {
+      "code": null,
+      "column": 2,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 41,
+      "line": 50549,
+      "message": "`simp` made no progress",
+      "owner": "actualStagePeterssonInner_self_re_eq_zero_iff",
+      "owner_kind": "theorem",
+      "owner_line": 50544,
+      "severity": "error",
+      "signature": "`simp` made no progress"
+    },
+    {
+      "code": null,
+      "column": 97,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 42,
+      "line": 50558,
+      "message": "Application type mismatch: The argument",
+      "owner": "actualStageSectionCoordinate",
+      "owner_kind": "def",
+      "owner_line": 50556,
+      "severity": "error",
+      "signature": "Application type mismatch: The argument"
+    },
+    {
+      "code": null,
+      "column": 48,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 43,
+      "line": 50570,
+      "message": "Application type mismatch: The argument",
+      "owner": "distinguishedInverseEtaQuotientSection_coordinate",
+      "owner_kind": "theorem",
+      "owner_line": 50567,
+      "severity": "error",
+      "signature": "Application type mismatch: The argument"
+    },
+    {
+      "code": null,
+      "column": 108,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 44,
+      "line": 50571,
+      "message": "Application type mismatch: The argument",
+      "owner": "distinguishedInverseEtaQuotientSection_coordinate",
+      "owner_kind": "theorem",
+      "owner_line": 50567,
+      "severity": "error",
+      "signature": "Application type mismatch: The argument"
+    },
+    {
+      "code": null,
+      "column": 43,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 45,
+      "line": 50577,
+      "message": "Application type mismatch: The argument",
+      "owner": "distinguishedInverseEtaQuotientSection_eq_totalOfBaseScalar",
+      "owner_kind": "theorem",
+      "owner_line": 50575,
+      "severity": "error",
+      "signature": "Application type mismatch: The argument"
+    },
+    {
+      "code": null,
+      "column": 82,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 46,
+      "line": 50578,
+      "message": "Application type mismatch: The argument",
+      "owner": "distinguishedInverseEtaQuotientSection_eq_totalOfBaseScalar",
+      "owner_kind": "theorem",
+      "owner_line": 50575,
+      "severity": "error",
+      "signature": "Application type mismatch: The argument"
+    },
+    {
+      "code": null,
+      "column": 43,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 47,
+      "line": 50580,
+      "message": "Application type mismatch: The argument",
+      "owner": "distinguishedInverseEtaQuotientSection_eq_totalOfBaseScalar",
+      "owner_kind": "theorem",
+      "owner_line": 50575,
+      "severity": "error",
+      "signature": "Application type mismatch: The argument"
+    },
+    {
+      "code": null,
+      "column": 52,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 48,
+      "line": 50583,
+      "message": "Application type mismatch: The argument",
+      "owner": "distinguishedInverseEtaQuotientSection_eq_totalOfBaseScalar",
+      "owner_kind": "theorem",
+      "owner_line": 50575,
+      "severity": "error",
+      "signature": "Application type mismatch: The argument"
+    },
+    {
+      "code": null,
+      "column": 52,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 49,
+      "line": 50585,
+      "message": "Application type mismatch: The argument",
+      "owner": "distinguishedInverseEtaQuotientSection_eq_totalOfBaseScalar",
+      "owner_kind": "theorem",
+      "owner_line": 50575,
+      "severity": "error",
+      "signature": "Application type mismatch: The argument"
+    },
+    {
+      "code": null,
+      "column": 84,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 50,
+      "line": 50587,
+      "message": "Application type mismatch: The argument",
+      "owner": "distinguishedInverseEtaQuotientSection_eq_totalOfBaseScalar",
+      "owner_kind": "theorem",
+      "owner_line": 50575,
+      "severity": "error",
+      "signature": "Application type mismatch: The argument"
+    },
+    {
+      "code": null,
+      "column": 91,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 51,
+      "line": 50587,
+      "message": "unsolved goals",
+      "owner": "distinguishedInverseEtaQuotientSection_eq_totalOfBaseScalar",
+      "owner_kind": "theorem",
+      "owner_line": 50575,
+      "severity": "error",
+      "signature": "unsolved goals"
+    },
+    {
+      "code": null,
+      "column": 180,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 52,
+      "line": 50596,
+      "message": "Application type mismatch: The argument",
+      "owner": "distinguishedInverseEtaQuotientSection_continuous",
+      "owner_kind": "theorem",
+      "owner_line": 50593,
+      "severity": "error",
+      "signature": "Application type mismatch: The argument"
+    },
+    {
+      "code": null,
+      "column": 63,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 53,
+      "line": 50594,
+      "message": "unsolved goals",
+      "owner": "distinguishedInverseEtaQuotientSection_continuous",
+      "owner_kind": "theorem",
+      "owner_line": 50593,
+      "severity": "error",
+      "signature": "unsolved goals"
+    },
+    {
+      "code": "lean.synthInstanceFailed",
+      "column": 2,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 54,
+      "line": 50604,
+      "message": "failed to synthesize instance of type class",
+      "owner": "distinguishedInverseEtaQuotientSection_measurable",
+      "owner_kind": "theorem",
+      "owner_line": 50602,
+      "severity": "error",
+      "signature": "failed to synthesize instance of type class"
+    },
+    {
+      "code": "lean.synthInstanceFailed",
+      "column": 8,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 55,
+      "line": 50620,
+      "message": "failed to synthesize instance of type class",
+      "owner": "actualStageSectionCoordinate_measurable",
+      "owner_kind": "theorem",
+      "owner_line": 50616,
+      "severity": "error",
+      "signature": "failed to synthesize instance of type class"
+    },
+    {
+      "code": null,
+      "column": 84,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 56,
+      "line": 50674,
+      "message": "Application type mismatch: The argument",
+      "owner": "quotientSectionToActualStageL2_bundleValue_ae",
+      "owner_kind": "theorem",
+      "owner_line": 50667,
+      "severity": "error",
+      "signature": "Application type mismatch: The argument"
+    },
+    {
+      "code": null,
+      "column": 27,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 57,
+      "line": 50678,
+      "message": "Application type mismatch: The argument",
+      "owner": "quotientSectionToActualStageL2_bundleValue_ae",
+      "owner_kind": "theorem",
+      "owner_line": 50667,
+      "severity": "error",
+      "signature": "Application type mismatch: The argument"
+    },
+    {
+      "code": null,
+      "column": 180,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 58,
+      "line": 50674,
+      "message": "unsolved goals",
+      "owner": "quotientSectionToActualStageL2_bundleValue_ae",
+      "owner_kind": "theorem",
+      "owner_line": 50667,
+      "severity": "error",
+      "signature": "unsolved goals"
+    },
+    {
+      "code": null,
+      "column": 10,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 59,
+      "line": 50734,
+      "message": "Application type mismatch: The argument",
+      "owner": "actualStageDistinguishedInverseEtaSection_bundleValue_ae",
+      "owner_kind": "theorem",
+      "owner_line": 50726,
+      "severity": "error",
+      "signature": "Application type mismatch: The argument"
+    },
+    {
+      "code": null,
+      "column": 10,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 60,
+      "line": 50807,
+      "message": "Type mismatch",
+      "owner": "actualStageInverseEtaL2Certificate",
+      "owner_kind": "theorem",
+      "owner_line": 50803,
+      "severity": "error",
+      "signature": "Type mismatch"
+    },
+    {
+      "code": null,
+      "column": 8,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 61,
+      "line": 50803,
+      "message": "(kernel) unknown constant 'QYM.FullCertification.P3ActualStageL2SectionsExtension.actualStageBundleValue_projection'",
+      "owner": "actualStageInverseEtaL2Certificate",
+      "owner_kind": "theorem",
+      "owner_line": 50803,
+      "severity": "error",
+      "signature": "(kernel) unknown constant 'QYM.FullCertification.PNActualStageLNSectionsExtension.actualStageBundleValue_projection'"
+    },
+    {
+      "code": null,
+      "column": 12,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 62,
+      "line": 50841,
+      "message": "Application type mismatch: The argument",
+      "owner": "actualStageInverseEtaL2PositiveCertificate",
+      "owner_kind": "theorem",
+      "owner_line": 50831,
+      "severity": "error",
+      "signature": "Application type mismatch: The argument"
+    },
+    {
+      "code": null,
+      "column": 2,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 63,
+      "line": 51511,
+      "message": "Type mismatch",
+      "owner": "inverseEtaBaseChartedSpaceH",
+      "owner_kind": "def",
+      "owner_line": 51509,
+      "severity": "error",
+      "signature": "Type mismatch"
+    },
+    {
+      "code": null,
+      "column": 6,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 64,
+      "line": 51526,
+      "message": "Type mismatch",
+      "owner": "inverseEtaBase_hasGroupoid",
+      "owner_kind": "theorem",
+      "owner_line": 51521,
+      "severity": "error",
+      "signature": "Type mismatch"
+    },
+    {
+      "code": null,
+      "column": 2,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 65,
+      "line": 51532,
+      "message": "Type mismatch",
+      "owner": "inverseEtaBase_hasGroupoid",
+      "owner_kind": "theorem",
+      "owner_line": 51521,
+      "severity": "error",
+      "signature": "Type mismatch"
+    },
+    {
+      "code": null,
+      "column": 6,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 66,
+      "line": 51540,
+      "message": "Type mismatch",
+      "owner": "inverseEtaBase_isManifold",
+      "owner_kind": "theorem",
+      "owner_line": 51535,
+      "severity": "error",
+      "signature": "Type mismatch"
+    },
+    {
+      "code": null,
+      "column": 2,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 67,
+      "line": 51545,
+      "message": "Type mismatch",
+      "owner": "inverseEtaBase_isManifold",
+      "owner_kind": "theorem",
+      "owner_line": 51535,
+      "severity": "error",
+      "signature": "Type mismatch"
+    },
+    {
+      "code": null,
+      "column": 6,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 68,
+      "line": 51610,
+      "message": "Tactic `rewrite` failed: Did not find an occurrence of the pattern",
+      "owner": "inverseEtaTotalTransported_extChartAt_target",
+      "owner_kind": "theorem",
+      "owner_line": 51594,
+      "severity": "error",
+      "signature": "Tactic `rewrite` failed: Did not find an occurrence of the pattern"
+    },
+    {
+      "code": null,
+      "column": 58,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 69,
+      "line": 51693,
+      "message": "unsolved goals",
+      "owner": "inverseEtaTotalTrivialization_contMDiff",
+      "owner_kind": "theorem",
+      "owner_line": 51673,
+      "severity": "error",
+      "signature": "unsolved goals"
+    },
+    {
+      "code": null,
+      "column": 4,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 70,
+      "line": 51727,
+      "message": "Type mismatch: After simplification, term",
+      "owner": "inverseEtaTotalTrivialization_symm_contMDiff",
+      "owner_kind": "theorem",
+      "owner_line": 51696,
+      "severity": "error",
+      "signature": "Type mismatch: After simplification, term"
+    },
+    {
+      "code": null,
+      "column": 50,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 71,
+      "line": 51730,
+      "message": "unsolved goals",
+      "owner": "inverseEtaTotalTrivialization_symm_contMDiff",
+      "owner_kind": "theorem",
+      "owner_line": 51696,
+      "severity": "error",
+      "signature": "unsolved goals"
+    },
+    {
+      "code": null,
+      "column": 4,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 72,
+      "line": 51733,
+      "message": "Type mismatch: After simplification, term",
+      "owner": "inverseEtaTotalTrivialization_symm_contMDiff",
+      "owner_kind": "theorem",
+      "owner_line": 51696,
+      "severity": "error",
+      "signature": "Type mismatch: After simplification, term"
+    },
+    {
+      "code": "lean.synthInstanceFailed",
+      "column": 27,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 73,
+      "line": 51755,
+      "message": "failed to synthesize instance of type class",
+      "owner": "inverseEtaTotalTrivializationDiffeomorph",
+      "owner_kind": "def",
+      "owner_line": 51749,
+      "severity": "error",
+      "signature": "failed to synthesize instance of type class"
+    },
+    {
+      "code": null,
+      "column": 2,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 74,
+      "line": 51774,
+      "message": "Type mismatch: After simplification, term",
+      "owner": "inverseEtaProjection_contMDiff",
+      "owner_kind": "theorem",
+      "owner_line": 51763,
+      "severity": "error",
+      "signature": "Type mismatch: After simplification, term"
+    },
+    {
+      "code": null,
+      "column": 2,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 75,
+      "line": 51824,
+      "message": "Type mismatch: After simplification, term",
+      "owner": "etaCoordinate_contMDiff",
+      "owner_kind": "theorem",
+      "owner_line": 51811,
+      "severity": "error",
+      "signature": "Type mismatch: After simplification, term"
+    },
+    {
+      "code": null,
+      "column": 84,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 76,
+      "line": 52250,
+      "message": "Application type mismatch: The argument",
+      "owner": "actualStageContinuousToL2_bundleValue_ae",
+      "owner_kind": "theorem",
+      "owner_line": 52244,
+      "severity": "error",
+      "signature": "Application type mismatch: The argument"
+    },
+    {
+      "code": null,
+      "column": 2,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 77,
+      "line": 57408,
+      "message": "unsolved goals",
+      "owner": "globalStageProjection_add",
+      "owner_kind": "theorem",
+      "owner_line": 57393,
+      "severity": "error",
+      "signature": "unsolved goals"
+    },
+    {
+      "code": null,
+      "column": 2,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 78,
+      "line": 57410,
+      "message": "unsolved goals",
+      "owner": "globalStageProjection_add",
+      "owner_kind": "theorem",
+      "owner_line": 57393,
+      "severity": "error",
+      "signature": "unsolved goals"
+    },
+    {
+      "code": null,
+      "column": 2,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 79,
+      "line": 57427,
+      "message": "unsolved goals",
+      "owner": "globalStageProjection_smul",
+      "owner_kind": "theorem",
+      "owner_line": 57414,
+      "severity": "error",
+      "signature": "unsolved goals"
+    },
+    {
+      "code": null,
+      "column": 2,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 80,
+      "line": 57429,
+      "message": "unsolved goals",
+      "owner": "globalStageProjection_smul",
+      "owner_kind": "theorem",
+      "owner_line": 57414,
+      "severity": "error",
+      "signature": "unsolved goals"
+    },
+    {
+      "code": null,
+      "column": 2,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 81,
+      "line": 57753,
+      "message": "unsolved goals",
+      "owner": "globalStageProjectionErrorDensity_le",
+      "owner_kind": "theorem",
+      "owner_line": 57747,
+      "severity": "error",
+      "signature": "unsolved goals"
+    },
+    {
+      "code": null,
+      "column": 2,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 82,
+      "line": 57756,
+      "message": "unsolved goals",
+      "owner": "globalStageProjectionErrorDensity_le",
+      "owner_kind": "theorem",
+      "owner_line": 57747,
+      "severity": "error",
+      "signature": "unsolved goals"
+    },
+    {
+      "code": null,
+      "column": 66,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 83,
+      "line": 57778,
+      "message": "unsolved goals",
+      "owner": "globalStageProjectionErrorDensity_eventually_zero",
+      "owner_kind": "theorem",
+      "owner_line": 57776,
+      "severity": "error",
+      "signature": "unsolved goals"
+    },
+    {
+      "code": null,
+      "column": 21,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 84,
+      "line": 57787,
+      "message": "unsolved goals",
+      "owner": "globalStageProjectionErrorDensity_tendsto_pointwise",
+      "owner_kind": "theorem",
+      "owner_line": 57784,
+      "severity": "error",
+      "signature": "unsolved goals"
+    },
+    {
+      "code": null,
+      "column": 78,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "index": 85,
+      "line": 59175,
+      "message": "unsolved goals",
+      "owner": "coordinateHamiltonianForm_re_self",
+      "owner_kind": "theorem",
+      "owner_line": 59173,
+      "severity": "error",
+      "signature": "unsolved goals"
+    }
+  ],
+  "producer_count": 60,
+  "schema": "qym-gb85-error-inventory-v1",
+  "source_blob": "bd28d0436230a8f0bcb01806dac01787542256b8",
+  "source_sha256": "f4c9b27a297be772cde7183526378ad42ae826053f69cf3ce521670da4f06210"
+}

@@ -774,25 +774,33 @@ variable (hM : 1 ≤ M)
 variable (hp : Nat.Prime p)
 variable (hk : 1 ≤ k)
 
+include hM in
 theorem M_pos_of_setup : 0 < M := pos_of_one_le hM
 
+include hM in
 theorem M_ne_zero_of_setup : M ≠ 0 :=
   Nat.ne_of_gt (M_pos_of_setup M hM)
 
+include hk in
 theorem k_pos_of_setup : 0 < k := pos_of_one_le hk
 
+include hk in
 theorem k_ne_zero_of_setup : k ≠ 0 :=
   Nat.ne_of_gt (k_pos_of_setup k hk)
 
+include hp in
 theorem p_pos_of_prime : 0 < p := hp.pos
 
+include hp in
 theorem p_ne_zero_of_prime : p ≠ 0 :=
   Nat.ne_of_gt (p_pos_of_prime p hp)
 
+include hp in
 theorem padicExponentProxy_eq_padicValNat :
     padicExponentProxy M p = padicValNat p M := by
   simpa [padicExponentProxy] using (Nat.factorization_def M hp)
 
+include hM hp in
 /-- The factorization exponent has the defining divisibility property of the
 `p`-adic valuation on the nonzero paper-level modulus `M`. -/
 theorem p_pow_dvd_M_iff_le_padicExponentProxy (e : ℕ) :
@@ -801,56 +809,70 @@ theorem p_pow_dvd_M_iff_le_padicExponentProxy (e : ℕ) :
     (Nat.Prime.pow_dvd_iff_le_factorization
       (p := p) (k := e) (n := M) hp (M_ne_zero_of_setup M hM))
 
+include hM hp in
 /-- The same valuation specification stated with Mathlib's `padicValNat`. -/
 theorem p_pow_dvd_M_iff_le_padicValNat (e : ℕ) :
     p ^ e ∣ M ↔ e ≤ padicValNat p M := by
   rw [← padicExponentProxy_eq_padicValNat M p hp]
   exact p_pow_dvd_M_iff_le_padicExponentProxy M p hM hp e
 
+include hp in
 theorem Pk_pos : 0 < Pk p k := by
-  exact Nat.pow_pos (p_pos_of_prime p hp) k
+  exact Nat.pow_pos (p_pos_of_prime p hp)
 
+include hp in
 theorem Pk_ne_zero : Pk p k ≠ 0 := by
   exact Nat.ne_of_gt (Pk_pos p k hp)
 
+include hp in
 theorem Pk_one_le : 1 ≤ Pk p k := by
   exact Nat.succ_le_iff.mpr (Pk_pos p k hp)
 
+include hk in
 /-- The assumption `1 ≤ k` ensures that the distinguished prime really occurs
 in the prime-power modulus. -/
 theorem p_dvd_Pk : p ∣ Pk p k := by
   simpa [Pk] using (dvd_pow_self p (k_ne_zero_of_setup k hk))
 
+include hp in
 theorem Pk_factorization :
     (Pk p k).factorization = Finsupp.single p k := by
   simpa [Pk] using (Nat.Prime.factorization_pow (p := p) (k := k) hp)
 
+include hp in
 theorem Pk_factorization_self :
     (Pk p k).factorization p = k := by
   simpa [Pk] using (Nat.factorization_pow_self (p := p) (n := k) hp)
 
+include hp in
 theorem prime_pow_factorization_ne {q : ℕ} (hq : q ≠ p) :
     (p ^ k).factorization q = 0 := by
   classical
   rw [Nat.Prime.factorization_pow (p := p) (k := k) hp]
   simp [Finsupp.single_eq_of_ne hq]
 
+include hp in
 theorem Pk_factorization_ne {q : ℕ} (hq : q ≠ p) :
     (Pk p k).factorization q = 0 := by
   simpa [Pk] using
     (prime_pow_factorization_ne (p := p) (k := k) hp hq)
 
+include hp in
 /-- Uniform pointwise form of the full factorization of `Pk`. -/
 theorem Pk_factorization_apply (q : ℕ) :
     (Pk p k).factorization q = if q = p then k else 0 := by
   by_cases hq : q = p
   · subst q
-    simp [Pk_factorization_self p k hp]
-  · simp [hq, Pk_factorization_ne p k hp hq]
+    rw [if_pos rfl]
+    exact Pk_factorization_self p k hp
+  · rw [if_neg hq]
+    exact Pk_factorization_ne p k hp hq
 
+include hM in
 theorem gcd_M_Pk_ne_zero : Nat.gcd M (Pk p k) ≠ 0 :=
   Nat.gcd_ne_zero_left (M_ne_zero_of_setup M hM)
 
+include hM in
 theorem gcd_M_Pk_pos : 0 < Nat.gcd M (Pk p k) :=
   Nat.pos_of_ne_zero (gcd_M_Pk_ne_zero M p k hM)
 
@@ -860,6 +882,7 @@ theorem gcd_M_Pk_dvd_M : Nat.gcd M (Pk p k) ∣ M :=
 theorem gcd_M_Pk_dvd_Pk : Nat.gcd M (Pk p k) ∣ Pk p k :=
   Nat.gcd_dvd_right M (Pk p k)
 
+include hM hp in
 /-- Pointwise factorization of `gcd(M,p^k)` at the distinguished prime `p`. -/
 theorem gcd_M_Pk_factorization_self :
     (Nat.gcd M (Pk p k)).factorization p =
@@ -867,6 +890,7 @@ theorem gcd_M_Pk_factorization_self :
   rw [factorization_gcd_apply (M_ne_zero_of_setup M hM)
       (Pk_ne_zero p k hp) p, Pk_factorization_self p k hp]
 
+include hM hp in
 /-- Away from `p`, the gcd with `p^k` has no prime support. -/
 theorem gcd_M_Pk_factorization_ne {q : ℕ} (hq : q ≠ p) :
     (Nat.gcd M (Pk p k)).factorization q = 0 := by
@@ -874,15 +898,19 @@ theorem gcd_M_Pk_factorization_ne {q : ℕ} (hq : q ≠ p) :
       (Pk_ne_zero p k hp) q, Pk_factorization_ne p k hp hq]
   simp
 
+include hM hp in
 /-- Uniform pointwise proxy for the valuation profile of `gcd(M,p^k)`. -/
 theorem gcd_M_Pk_factorization_apply (q : ℕ) :
     (Nat.gcd M (Pk p k)).factorization q =
       if q = p then min (M.factorization p) k else 0 := by
   by_cases hq : q = p
   · subst q
-    simp [gcd_M_Pk_factorization_self M p k hM hp]
-  · simp [hq, gcd_M_Pk_factorization_ne M p k hM hp hq]
+    rw [if_pos rfl]
+    exact gcd_M_Pk_factorization_self M p k hM hp
+  · rw [if_neg hq]
+    exact gcd_M_Pk_factorization_ne M p k hM hp hq
 
+include hM hp in
 /-- Full valuation-free factorization of `gcd(M,p^k)`.  This is stronger than
 the distinguished-prime equality alone: it also certifies that no other prime
 occurs in the gcd. -/
@@ -898,6 +926,7 @@ theorem gcd_M_Pk_factorization :
   · rw [gcd_M_Pk_factorization_ne M p k hM hp hq,
       Finsupp.single_eq_of_ne hq]
 
+include hM hp in
 /-- Full factorization stated with the named valuation proxy. -/
 theorem gcd_M_Pk_factorization_padicProxy :
     (Nat.gcd M (Pk p k)).factorization =
@@ -905,6 +934,7 @@ theorem gcd_M_Pk_factorization_padicProxy :
   simpa [padicExponentProxy] using
     (gcd_M_Pk_factorization M p k hM hp)
 
+include hM hp in
 /-- Full factorization stated with Mathlib's `padicValNat`. -/
 theorem gcd_M_Pk_factorization_padicValNat :
     (Nat.gcd M (Pk p k)).factorization =
@@ -912,6 +942,7 @@ theorem gcd_M_Pk_factorization_padicValNat :
   rw [← padicExponentProxy_eq_padicValNat M p hp]
   exact gcd_M_Pk_factorization_padicProxy M p k hM hp
 
+include hM hp in
 /-- Proposition 21 prime-power gcd formula, using `factorization p` as the
 valuation-free proxy for the `p`-adic valuation of `M`. -/
 theorem gcd_M_Pk_eq_pow_min_factorization :
@@ -920,24 +951,28 @@ theorem gcd_M_Pk_eq_pow_min_factorization :
     (gcd_M_Pk_ne_zero M p k hM)
     (gcd_M_Pk_factorization M p k hM hp)
 
+include hM hp in
 /-- Same formula with the named valuation proxy used in paper-level statements. -/
 theorem gcd_M_Pk_eq_pow_min_padicProxy :
     Nat.gcd M (Pk p k) = p ^ min (padicExponentProxy M p) k := by
   simpa [padicExponentProxy] using
     (gcd_M_Pk_eq_pow_min_factorization M p k hM hp)
 
+include hM hp in
 /-- The same gcd formula stated with Mathlib's `padicValNat`. -/
 theorem gcd_M_Pk_eq_pow_min_padicValNat :
     Nat.gcd M (Pk p k) = p ^ min (padicValNat p M) k := by
   rw [← padicExponentProxy_eq_padicValNat M p hp]
   exact gcd_M_Pk_eq_pow_min_padicProxy M p k hM hp
 
+include hM hp in
 /-- The `v_p(M) ≤ k` branch used in the paper's kernel computation. -/
 theorem gcd_M_Pk_eq_padicPart_of_padicValNat_le
     (hv : padicValNat p M ≤ k) :
     Nat.gcd M (Pk p k) = p ^ padicValNat p M := by
   rw [gcd_M_Pk_eq_pow_min_padicValNat M p k hM hp, min_eq_left hv]
 
+include hM hp in
 /-- The `k ≤ v_p(M)` branch: the entire prime-power modulus survives in the
 gcd. -/
 theorem gcd_M_Pk_eq_Pk_of_k_le_padicValNat
@@ -984,6 +1019,7 @@ structure PrimePowerSetupCertificate : Prop where
   gcd_eq_pow_min_padicValNat :
     Nat.gcd M (Pk p k) = p ^ min (padicValNat p M) k
 
+include hM hp hk in
 theorem primePowerSetup_certificate :
     PrimePowerSetupCertificate M p k := by
   exact
@@ -1288,7 +1324,8 @@ theorem Phi_intersectionIdealIncl_eq_zero
 /-- Homomorphism-level zero composite for the literal ideal model. -/
 theorem Phi_comp_intersectionIdealIncl_eq_zero (M N : ℕ) :
     (Phi M N).comp (intersectionIdealIncl M N) = 0 := by
-  ext x
+  apply AddMonoidHom.ext
+  intro x
   exact Phi_intersectionIdealIncl_eq_zero M N x
 
 /-- Auditable package for the complete ideal-intersection/kernel bridge. -/
@@ -1603,7 +1640,15 @@ def psi (M N : ℕ) : ZMod M × ZMod N →+ ZMod (Nat.gcd M N) where
       ZMod.castHom (Nat.gcd_dvd_right M N) (ZMod (Nat.gcd M N)) x.2
   map_zero' := by simp
   map_add' x y := by
-    simp [sub_eq_add_neg, add_assoc, add_left_comm, add_comm]
+    change
+      (ZMod.castHom (Nat.gcd_dvd_left M N) (ZMod (Nat.gcd M N))) (x.1 + y.1) -
+          (ZMod.castHom (Nat.gcd_dvd_right M N) (ZMod (Nat.gcd M N))) (x.2 + y.2) =
+        ((ZMod.castHom (Nat.gcd_dvd_left M N) (ZMod (Nat.gcd M N))) x.1 -
+            (ZMod.castHom (Nat.gcd_dvd_right M N) (ZMod (Nat.gcd M N))) x.2) +
+          ((ZMod.castHom (Nat.gcd_dvd_left M N) (ZMod (Nat.gcd M N))) y.1 -
+            (ZMod.castHom (Nat.gcd_dvd_right M N) (ZMod (Nat.gcd M N))) y.2)
+    rw [map_add, map_add]
+    abel
 
 @[simp] theorem psi_apply (M N : ℕ) (x : ZMod M × ZMod N) :
     psi M N x =
@@ -1629,17 +1674,19 @@ image in the gcd quotient. -/
 @[simp] theorem psi_representatives_apply (M N : ℕ) (a b : ℤ) :
     psi M N ((a : ZMod M), (b : ZMod N)) =
       ((a - b : ℤ) : ZMod (Nat.gcd M N)) := by
-  simp [psi, sub_eq_add_neg]
+  simp only [psi_apply, map_intCast, Int.cast_sub]
 
 /-- The composite `ψ ∘ Φ` vanishes. -/
 theorem psi_Phi_eq_zero (M N : ℕ) (z : ℤ) :
     psi M N (Phi M N z) = 0 := by
-  simp [Phi, psi]
+  rw [Phi_apply, psi_representatives_apply]
+  simp
 
 /-- Homomorphism-level form of `ψ ∘ Φ = 0`. -/
 theorem psi_comp_Phi_eq_zero (M N : ℕ) :
     (psi M N).comp (Phi M N) = 0 := by
-  ext z
+  apply AddMonoidHom.ext
+  intro z
   exact psi_Phi_eq_zero M N z
 
 /-- Representative form of the cokernel condition:
@@ -1922,7 +1969,9 @@ theorem PhiKernelIncl_range_eq_Phi_ker (M N : ℕ) :
   constructor
   · intro hz
     obtain ⟨x, rfl⟩ := AddMonoidHom.mem_range.mp hz
-    simpa [PhiKernelModel] using x.property
+    change (PhiKernelIncl M N x : ℤ) ∈
+      AddSubgroup.zmultiples (lcm (M : ℤ) (N : ℤ))
+    exact x.property
   · intro hz
     exact AddMonoidHom.mem_range.mpr
       ⟨⟨z, by simpa [PhiKernelModel] using hz⟩, rfl⟩
@@ -1941,7 +1990,8 @@ theorem Phi_PhiKernelIncl_eq_zero (M N : ℕ) (x : PhiKernelModel M N) :
 /-- Homomorphism-level zero composite `Φ ∘ i = 0`. -/
 theorem Phi_comp_PhiKernelIncl_eq_zero (M N : ℕ) :
     (Phi M N).comp (PhiKernelIncl M N) = 0 := by
-  ext x
+  apply AddMonoidHom.ext
+  intro x
   exact Phi_PhiKernelIncl_eq_zero M N x
 
 /-- Mathlib `Function.Exact` formulation of exactness at the product term. -/
@@ -2079,7 +2129,7 @@ both zero endpoints.
 namespace Prop21StandardSequence
 
 /-- The categorical zero object used at both ends of the sequence. -/
-def zeroObject : Ab := 0
+abbrev zeroObject : Ab := AddCommGrpCat.of (ZMod 1)
 
 /-- The paper's literal ideal-intersection term as an object of `Ab`. -/
 def intersectionObject (M N : ℕ) : Ab :=
@@ -2127,13 +2177,14 @@ theorem zeroToIntersection_comp_intersectionInclusion (M N : ℕ) :
 theorem intersectionInclusion_comp_comparison (M N : ℕ) :
     intersectionInclusion M N ≫ comparison M N = 0 := by
   apply AddCommGrpCat.hom_ext
-  simpa [intersectionInclusion, comparison] using
-    (Phi_comp_intersectionIdealIncl_eq_zero M N)
+  change (Phi M N).comp (intersectionIdealIncl M N) = 0
+  exact Phi_comp_intersectionIdealIncl_eq_zero M N
 
 theorem comparison_comp_difference (M N : ℕ) :
     comparison M N ≫ difference M N = 0 := by
   apply AddCommGrpCat.hom_ext
-  simpa [comparison, difference] using (psi_comp_Phi_eq_zero M N)
+  change (psi M N).comp (Phi M N) = 0
+  exact psi_comp_Phi_eq_zero M N
 
 theorem difference_comp_gcdToZero (M N : ℕ) :
     difference M N ≫ gcdToZero M N = 0 := by
@@ -2215,10 +2266,10 @@ theorem leftEndpoint_exact (M N : ℕ) :
   change intersectionIdealIncl M N x = 0 at hx
   have hx0 : x = 0 := by
     apply intersectionIdealIncl_injective M N
-    simpa using hx
+    exact hx.trans (map_zero (intersectionIdealIncl M N)).symm
   subst x
   refine ⟨0, ?_⟩
-  simp [leftEndpoint, zeroToIntersection]
+  rfl
 
 /-- Exactness at `ℤ`, transported from the proved `Function.Exact` theorem. -/
 theorem atInteger_exact (M N : ℕ) :
@@ -2273,7 +2324,7 @@ end Prop21StandardSequence
 /-! ### §D.5.1 — The actual quotient cokernel of `Phi`. -/
 
 /-- The literal additive cokernel of `Phi`, defined as codomain modulo range. -/
-def PhiCokernel (M N : ℕ) : Type :=
+abbrev PhiCokernel (M N : ℕ) : Type :=
   (ZMod M × ZMod N) ⧸ (Phi M N).range
 
 namespace PhiCokernel
@@ -2299,7 +2350,8 @@ theorem quotientMap_ker (M N : ℕ) :
 /-- The canonical quotient map annihilates the comparison map. -/
 theorem quotientMap_comp_Phi_eq_zero (M N : ℕ) :
     (quotientMap M N).comp (Phi M N) = 0 := by
-  ext z
+  apply AddMonoidHom.ext
+  intro z
   change quotientMap M N (Phi M N z) = 0
   apply AddMonoidHom.mem_ker.mp
   rw [quotientMap_ker]
@@ -2419,8 +2471,8 @@ def quotientMorphism (M N : ℕ) :
 theorem comparison_comp_quotientMorphism (M N : ℕ) :
     Prop21StandardSequence.comparison M N ≫ quotientMorphism M N = 0 := by
   apply AddCommGrpCat.hom_ext
-  simpa [Prop21StandardSequence.comparison, quotientMorphism] using
-    (quotientMap_comp_Phi_eq_zero M N)
+  change (quotientMap M N).comp (Phi M N) = 0
+  exact quotientMap_comp_Phi_eq_zero M N
 
 /-- The short complex whose third term is the literal quotient cokernel. -/
 def atResidueProduct (M N : ℕ) : ShortComplex Ab where
@@ -2475,8 +2527,8 @@ theorem quotientMorphism_comp_gcdIso_hom (M N : ℕ) :
     quotientMorphism M N ≫ (gcdIso M N).hom =
       Prop21StandardSequence.difference M N := by
   apply AddCommGrpCat.hom_ext
-  simpa [quotientMorphism, gcdIso, Prop21StandardSequence.difference] using
-    (equivZMod_toAddMonoidHom_comp_quotientMap M N)
+  change (equivZMod M N).toAddMonoidHom.comp (quotientMap M N) = psi M N
+  exact equivZMod_toAddMonoidHom_comp_quotientMap M N
 
 /-- Isomorphism between the literal-cokernel short complex and the paper's
 `ZMod (gcd M N)` short complex. -/
@@ -2567,9 +2619,13 @@ def residueRestriction
     (ZMod.castHom hM (ZMod M') x.1,
       ZMod.castHom hN (ZMod N') x.2)
   map_zero' := by
-    ext <;> simp
+    apply Prod.ext
+    · exact map_zero (ZMod.castHom hM (ZMod M'))
+    · exact map_zero (ZMod.castHom hN (ZMod N'))
   map_add' x y := by
-    ext <;> simp
+    apply Prod.ext
+    · exact map_add (ZMod.castHom hM (ZMod M')) x.1 y.1
+    · exact map_add (ZMod.castHom hN (ZMod N')) x.2 y.2
 
 @[simp] theorem residueRestriction_apply
     {M N M' N' : ℕ} (hM : M' ∣ M) (hN : N' ∣ N)
@@ -2594,6 +2650,14 @@ def gcdRestriction
   (ZMod.castHom (gcd_dvd_gcd_of_dvd hM hN)
     (ZMod (Nat.gcd M' N'))).toAddMonoidHom
 
+@[simp] theorem gcdRestriction_apply
+    {M N M' N' : ℕ} (hM : M' ∣ M) (hN : N' ∣ N)
+    (x : ZMod (Nat.gcd M N)) :
+    gcdRestriction hM hN x =
+      ZMod.castHom (gcd_dvd_gcd_of_dvd hM hN)
+        (ZMod (Nat.gcd M' N')) x :=
+  rfl
+
 /-- Naturality of the literal ideal inclusion. -/
 theorem intersectionRestriction_comp_inclusion
     {M N M' N' : ℕ} (hM : M' ∣ M) (hN : N' ∣ N) :
@@ -2606,18 +2670,22 @@ theorem intersectionRestriction_comp_inclusion
 theorem residueRestriction_comp_Phi
     {M N M' N' : ℕ} (hM : M' ∣ M) (hN : N' ∣ N) :
     (residueRestriction hM hN).comp (Phi M N) = Phi M' N' := by
-  ext z <;> simp [residueRestriction, Phi]
+  apply AddMonoidHom.ext
+  intro z
+  apply Prod.ext <;> simp only [AddMonoidHom.comp_apply, residueRestriction_apply,
+    Phi_apply, map_intCast]
 
 /-- Naturality square for the difference map `psi`. -/
 theorem gcdRestriction_comp_psi
     {M N M' N' : ℕ} (hM : M' ∣ M) (hN : N' ∣ N) :
     (gcdRestriction hM hN).comp (psi M N) =
       (psi M' N').comp (residueRestriction hM hN) := by
-  ext x
-  rcases x with ⟨x, y⟩
+  apply AddMonoidHom.ext
+  rintro ⟨x, y⟩
   obtain ⟨a, rfl⟩ := ZMod.intCast_surjective x
   obtain ⟨b, rfl⟩ := ZMod.intCast_surjective y
-  simp [gcdRestriction, residueRestriction, psi]
+  simp only [AddMonoidHom.comp_apply, gcdRestriction_apply,
+    psi_representatives_apply, residueRestriction_apply, map_intCast]
 
 /-- The residue restriction carries `range Phi` into the target range. -/
 theorem Phi_range_le_comap_residueRestriction
@@ -2690,14 +2758,20 @@ def leftEndpointHom
     {M N M' N' : ℕ} (hM : M' ∣ M) (hN : N' ∣ N) :
     Prop21StandardSequence.leftEndpoint M N ⟶
       Prop21StandardSequence.leftEndpoint M' N' where
-  τ₁ := 𝟙 _
+  τ₁ := 0
   τ₂ := AddCommGrpCat.ofHom (intersectionRestriction hM hN)
-  τ₃ := 𝟙 _
-  comm₁₂ := by simp [Prop21StandardSequence.zeroToIntersection]
+  τ₃ := 𝟙 Prop21StandardSequence.integerObject
+  comm₁₂ := by
+    apply AddCommGrpCat.hom_ext
+    apply AddMonoidHom.ext
+    intro x
+    change 0 = 0
+    rfl
   comm₂₃ := by
     apply AddCommGrpCat.hom_ext
-    simpa [Prop21StandardSequence.intersectionInclusion] using
-      (intersectionRestriction_comp_inclusion hM hN)
+    change (intersectionIdealIncl M' N').comp
+      (intersectionRestriction hM hN) = intersectionIdealIncl M N
+    exact intersectionRestriction_comp_inclusion hM hN
 
 /-- Standard short-complex morphism across the integer exactness square. -/
 def atIntegerHom
@@ -2705,33 +2779,35 @@ def atIntegerHom
     Prop21StandardSequence.atInteger M N ⟶
       Prop21StandardSequence.atInteger M' N' where
   τ₁ := AddCommGrpCat.ofHom (intersectionRestriction hM hN)
-  τ₂ := 𝟙 _
+  τ₂ := 𝟙 Prop21StandardSequence.integerObject
   τ₃ := AddCommGrpCat.ofHom (residueRestriction hM hN)
   comm₁₂ := by
     apply AddCommGrpCat.hom_ext
-    simpa [Prop21StandardSequence.intersectionInclusion] using
-      (intersectionRestriction_comp_inclusion hM hN)
+    change (intersectionIdealIncl M' N').comp
+      (intersectionRestriction hM hN) = intersectionIdealIncl M N
+    exact intersectionRestriction_comp_inclusion hM hN
   comm₂₃ := by
     apply AddCommGrpCat.hom_ext
-    simpa [Prop21StandardSequence.comparison] using
-      (residueRestriction_comp_Phi hM hN).symm
+    change Phi M' N' = (residueRestriction hM hN).comp (Phi M N)
+    exact (residueRestriction_comp_Phi hM hN).symm
 
 /-- Standard short-complex morphism across the residue-product square. -/
 def atResidueProductHom
     {M N M' N' : ℕ} (hM : M' ∣ M) (hN : N' ∣ N) :
     Prop21StandardSequence.atResidueProduct M N ⟶
       Prop21StandardSequence.atResidueProduct M' N' where
-  τ₁ := 𝟙 _
+  τ₁ := 𝟙 Prop21StandardSequence.integerObject
   τ₂ := AddCommGrpCat.ofHom (residueRestriction hM hN)
   τ₃ := AddCommGrpCat.ofHom (gcdRestriction hM hN)
   comm₁₂ := by
     apply AddCommGrpCat.hom_ext
-    simpa [Prop21StandardSequence.comparison] using
-      (residueRestriction_comp_Phi hM hN).symm
+    change Phi M' N' = (residueRestriction hM hN).comp (Phi M N)
+    exact (residueRestriction_comp_Phi hM hN).symm
   comm₂₃ := by
     apply AddCommGrpCat.hom_ext
-    simpa [Prop21StandardSequence.difference] using
-      (gcdRestriction_comp_psi hM hN).symm
+    change (psi M' N').comp (residueRestriction hM hN) =
+      (gcdRestriction hM hN).comp (psi M N)
+    exact (gcdRestriction_comp_psi hM hN).symm
 
 /-- Standard short-complex morphism for the right endpoint. -/
 def rightEndpointHom
@@ -2740,31 +2816,37 @@ def rightEndpointHom
       Prop21StandardSequence.rightEndpoint M' N' where
   τ₁ := AddCommGrpCat.ofHom (residueRestriction hM hN)
   τ₂ := AddCommGrpCat.ofHom (gcdRestriction hM hN)
-  τ₃ := 𝟙 _
+  τ₃ := 0
   comm₁₂ := by
     apply AddCommGrpCat.hom_ext
-    simpa [Prop21StandardSequence.difference] using
-      (gcdRestriction_comp_psi hM hN).symm
-  comm₂₃ := by simp [Prop21StandardSequence.gcdToZero]
+    change (psi M' N').comp (residueRestriction hM hN) =
+      (gcdRestriction hM hN).comp (psi M N)
+    exact (gcdRestriction_comp_psi hM hN).symm
+  comm₂₃ := by
+    apply AddCommGrpCat.hom_ext
+    apply AddMonoidHom.ext
+    intro x
+    change 0 = 0
+    rfl
 
 /-- Naturality morphism for the short complex ending in the literal cokernel. -/
 def actualAtResidueProductHom
     {M N M' N' : ℕ} (hM : M' ∣ M) (hN : N' ∣ N) :
     PhiCokernel.atResidueProduct M N ⟶
       PhiCokernel.atResidueProduct M' N' where
-  τ₁ := 𝟙 _
+  τ₁ := 𝟙 Prop21StandardSequence.integerObject
   τ₂ := AddCommGrpCat.ofHom (residueRestriction hM hN)
   τ₃ := AddCommGrpCat.ofHom (cokernelMap hM hN)
   comm₁₂ := by
     apply AddCommGrpCat.hom_ext
-    simpa [PhiCokernel.atResidueProduct,
-      Prop21StandardSequence.comparison] using
-      (residueRestriction_comp_Phi hM hN).symm
+    change Phi M' N' = (residueRestriction hM hN).comp (Phi M N)
+    exact (residueRestriction_comp_Phi hM hN).symm
   comm₂₃ := by
     apply AddCommGrpCat.hom_ext
-    simpa [PhiCokernel.atResidueProduct,
-      PhiCokernel.quotientMorphism] using
-      (cokernelMap_comp_quotientMap hM hN).symm
+    change (PhiCokernel.quotientMap M' N').comp
+      (residueRestriction hM hN) =
+        (cokernelMap hM hN).comp (PhiCokernel.quotientMap M N)
+    exact (cokernelMap_comp_quotientMap hM hN).symm
 
 /-- Naturality morphism for the literal cokernel's right zero endpoint. -/
 def actualRightEndpointHom
@@ -2773,13 +2855,19 @@ def actualRightEndpointHom
       PhiCokernel.rightEndpoint M' N' where
   τ₁ := AddCommGrpCat.ofHom (residueRestriction hM hN)
   τ₂ := AddCommGrpCat.ofHom (cokernelMap hM hN)
-  τ₃ := 𝟙 _
+  τ₃ := 0
   comm₁₂ := by
     apply AddCommGrpCat.hom_ext
-    simpa [PhiCokernel.rightEndpoint,
-      PhiCokernel.quotientMorphism] using
-      (cokernelMap_comp_quotientMap hM hN).symm
-  comm₂₃ := by simp [PhiCokernel.rightEndpoint, PhiCokernel.toZero]
+    change (PhiCokernel.quotientMap M' N').comp
+      (residueRestriction hM hN) =
+        (cokernelMap hM hN).comp (PhiCokernel.quotientMap M N)
+    exact (cokernelMap_comp_quotientMap hM hN).symm
+  comm₂₃ := by
+    apply AddCommGrpCat.hom_ext
+    apply AddMonoidHom.ext
+    intro x
+    change 0 = 0
+    rfl
 
 /-- Auditable statement of the proven naturality range. -/
 structure Certificate
@@ -2839,17 +2927,19 @@ end Prop21Naturality
 
 /-! ### §D.5.3 — Integrated, unconditional Section 3.2 certificates. -/
 
+universe uSection32
+
 /-- All Section 3.2 claims for arbitrary natural moduli, with no positivity or
 coprimality assumptions. -/
 structure Prop21Section32Certificate (M N : ℕ) : Prop where
   standard_exact_diagram :
     Prop21StandardSequence.StandardDiagramCertificate M N
-  actual_quotient_cokernel : PhiCokernel.Certificate M N
+  actual_quotient_cokernel : PhiCokernel.Certificate.{uSection32} M N
   legacy_five_term_exactness : ShortExact5 M N
   literal_five_term_exactness : LiteralIntersectionShortExact5 M N
 
 theorem prop21Section32_certificate (M N : ℕ) :
-    Prop21Section32Certificate M N := by
+    Prop21Section32Certificate.{uSection32} M N := by
   exact
     { standard_exact_diagram :=
         Prop21StandardSequence.standardDiagram_certificate M N
@@ -2863,11 +2953,11 @@ structure Prop21PrimePowerSection32Certificate (M p k : ℕ) : Prop where
   paper_assumptions : 1 ≤ M ∧ Nat.Prime p ∧ 1 ≤ k
   prime_power_setup : PrimePowerSetupCertificate M p k
   previous_exact_sequence : Prop21ExactSequenceCertificate M p k
-  standard_and_actual_cokernel : Prop21Section32Certificate M (Pk p k)
+  standard_and_actual_cokernel : Prop21Section32Certificate.{uSection32} M (Pk p k)
 
 theorem prop21PrimePowerSection32_certificate
     (M p k : ℕ) (hM : 1 ≤ M) (hp : Nat.Prime p) (hk : 1 ≤ k) :
-    Prop21PrimePowerSection32Certificate M p k := by
+    Prop21PrimePowerSection32Certificate.{uSection32} M p k := by
   exact
     { paper_assumptions := ⟨hM, hp, hk⟩
       prime_power_setup := primePowerSetup_certificate
@@ -2881,7 +2971,7 @@ theorem prop21PrimePowerSection32_certificate
 /-! ## §E — Tor₁ obstruction model. -/
 
 /-- The elementary `Tor₁` obstruction model used by the SPT overlap block. -/
-def Tor1Model (M N : ℕ) := ZMod (Nat.gcd M N)
+abbrev Tor1Model (M N : ℕ) := ZMod (Nat.gcd M N)
 
 theorem Tor1Model_card (M N : ℕ) [NeZero (Nat.gcd M N)] :
     Fintype.card (Tor1Model M N) = Nat.gcd M N := by
@@ -2892,8 +2982,8 @@ theorem Tor1Model_trivial_iff (M N : ℕ) [NeZero (Nat.gcd M N)] :
   simpa [Tor1Model] using (obstructionFree_iff_card (g := Nat.gcd M N))
 
 theorem Tor1Model_exp_IC (M N : ℕ) (hM : M ≠ 0) (hN : N ≠ 0) :
+    letI : NeZero (Nat.gcd M N) := ⟨Nat.gcd_ne_zero_left hM⟩
     (Fintype.card (Tor1Model M N) : ℝ) = Real.exp (IC M N) := by
-  haveI : NeZero (Nat.gcd M N) := ⟨Nat.gcd_ne_zero_left hM⟩
   rw [Tor1Model_card, card_Tor_eq_exp_IC hM hN]
 
 /-!
@@ -3103,9 +3193,10 @@ def quotientStepIntegerHom (M N : ℕ) : ℤ →+ ZMod N :=
 modulus changes the image by the full modulus `N`. -/
 theorem quotientStepIntegerHom_gcd_eq_zero (M N : ℕ) :
     quotientStepIntegerHom M N (Nat.gcd M N : ℤ) = 0 := by
-  change (quotientStep M N : ZMod N) *
-    (Nat.gcd M N : ZMod N) = 0
-  rw [← Nat.cast_mul, quotientStep_mul_gcd, ZMod.natCast_self]
+  rw [quotientStepIntegerHom_apply]
+  have h := congrArg (fun n : ℕ => (n : ZMod N))
+    (quotientStep_mul_gcd M N)
+  simpa only [Nat.cast_mul, Int.cast_natCast, ZMod.natCast_self] using h
 
 /-- Canonical additive map
 `ZMod (gcd M N) → ZMod N`, `[a] ↦ [(N / gcd M N) * a]`. -/
@@ -3141,7 +3232,7 @@ def gcdToKernelHom (M N : ℕ) :
     simp
   map_add' x y := by
     apply Subtype.ext
-    simp
+    exact map_add (quotientToAmbientHom M N) x y
 
 @[simp] theorem gcdToKernelHom_val (M N : ℕ)
     (x : ZMod (Nat.gcd M N)) :
@@ -3152,7 +3243,7 @@ def gcdToKernelHom (M N : ℕ) :
     (M N : ℕ) (z : ℤ) :
     (gcdToKernelHom M N (z : ZMod (Nat.gcd M N)) : ZMod N) =
       (quotientStep M N : ZMod N) * (z : ZMod N) := by
-  simp
+  exact quotientToAmbientHom_intCast M N z
 
 theorem quotientStep_ne_zero (M N : ℕ) [NeZero N] :
     quotientStep M N ≠ 0 := by
@@ -3180,7 +3271,7 @@ theorem quotientToAmbientHom_injective
     rw [Int.cast_sub, mul_sub, hxy, sub_self]
   have hz' :
       ((((quotientStep M N : ℕ) : ℤ) * (a - b) : ℤ) : ZMod N) = 0 := by
-    simpa using hz
+    simpa only [Int.cast_mul, Int.cast_natCast] using hz
   have hdiv : (N : ℤ) ∣
       (quotientStep M N : ℤ) * (a - b) :=
     (ZMod.intCast_zmod_eq_zero_iff_dvd
@@ -3209,7 +3300,7 @@ theorem leftFactor_coprime_quotientStep
     (M N : ℕ) [NeZero N] :
     Nat.Coprime (leftFactor M N) (quotientStep M N) := by
   simpa [leftFactor, quotientStep] using
-    (coprime_div_gcd_div_gcd
+    (Nat.coprime_div_gcd_div_gcd
       (m := M) (n := N)
       (Nat.pos_of_ne_zero (gcd_ne_zero_of_right M N)))
 
@@ -3256,9 +3347,8 @@ theorem gcdToKernelHom_surjective
   change quotientToAmbientHom M N
       (q : ZMod (Nat.gcd M N)) = (z : ZMod N)
   rw [quotientToAmbientHom_intCast]
-  change ((((quotientStep M N : ℕ) : ℤ) * q : ℤ) : ZMod N) =
-    (z : ZMod N)
-  simpa [hq]
+  simpa only [Int.cast_mul, Int.cast_natCast] using
+    congrArg (fun t : ℤ => (t : ZMod N)) hq.symm
 
 /-- Canonical additive equivalence in the forward direction.  Its inverse is
 unique because the displayed homomorphism is bijective; no cyclic generator is
@@ -3281,7 +3371,8 @@ theorem gcdToKernelHom_unique
     (M N : ℕ) (f : ZMod (Nat.gcd M N) →+ Tor1CyclicModel M N)
     (h_one : f 1 = gcdToKernelHom M N 1) :
     f = gcdToKernelHom M N := by
-  ext x
+  apply AddMonoidHom.ext
+  intro x
   obtain ⟨z, rfl⟩ := ZMod.intCast_surjective x
   have hz : (z : ZMod (Nat.gcd M N)) =
       z • (1 : ZMod (Nat.gcd M N)) := by
@@ -3289,10 +3380,10 @@ theorem gcdToKernelHom_unique
   calc
     f (z : ZMod (Nat.gcd M N)) = f (z • (1 : ZMod (Nat.gcd M N))) :=
       congrArg f hz
-    _ = z • f 1 := f.map_zsmul 1 z
+    _ = z • f 1 := f.map_zsmul z 1
     _ = z • gcdToKernelHom M N 1 := congrArg (z • ·) h_one
     _ = gcdToKernelHom M N (z • (1 : ZMod (Nat.gcd M N))) :=
-      ((gcdToKernelHom M N).map_zsmul 1 z).symm
+      ((gcdToKernelHom M N).map_zsmul z 1).symm
     _ = gcdToKernelHom M N (z : ZMod (Nat.gcd M N)) :=
       congrArg (gcdToKernelHom M N) hz.symm
 
@@ -3406,8 +3497,9 @@ theorem M_cast_eq_unit_mul_padicPower
     (M : ZMod (Pk p k)) =
       (unitFactorUnit M p k hM hp : ZMod (Pk p k)) *
         (p ^ valuationExponent M p : ZMod (Pk p k)) := by
-  rw [unitFactor_decomposition M p hp, Nat.cast_mul,
-    coe_unitFactorUnit, mul_comm]
+  have h := congrArg (fun n : ℕ => (n : ZMod (Pk p k)))
+    (unitFactor_decomposition M p hp)
+  simpa only [Nat.cast_mul, Nat.cast_pow, coe_unitFactorUnit, mul_comm] using h
 
 /-- Multiplication by `M'` is an automorphism, so it does not alter the
 multiplication kernel. -/
@@ -3417,7 +3509,7 @@ theorem kernel_condition_iff_padicPower
     (M : ZMod (Pk p k)) * x = 0 ↔
       (p ^ valuationExponent M p : ZMod (Pk p k)) * x = 0 := by
   rw [M_cast_eq_unit_mul_padicPower M p k hM hp, mul_assoc,
-    Units.mul_left_eq_zero]
+    Units.mul_right_eq_zero]
 
 /-- Integer map `a ↦ p^(k-m) * a` before quotient descent. -/
 def powerShiftIntegerHom (M p k : ℕ) : ℤ →+ ZMod (Pk p k) :=
@@ -3436,10 +3528,14 @@ def powerShiftIntegerHom (M p k : ℕ) : ℤ →+ ZMod (Pk p k) :=
 theorem powerShiftIntegerHom_modulus_eq_zero (M p k : ℕ) :
     powerShiftIntegerHom M p k
       (p ^ thicknessExponent M p k : ℤ) = 0 := by
-  change (p ^ shiftExponent M p k : ZMod (Pk p k)) *
-      (p ^ thicknessExponent M p k : ZMod (Pk p k)) = 0
-  rw [← Nat.cast_mul, pow_shift_mul_pow_thickness]
-  exact ZMod.natCast_self (Pk p k)
+  rw [powerShiftIntegerHom_apply]
+  have h :
+      ((p ^ shiftExponent M p k * p ^ thicknessExponent M p k : ℕ) :
+        ZMod (Pk p k)) = 0 := by
+    rw [pow_shift_mul_pow_thickness]
+    exact ZMod.natCast_self (Pk p k)
+  simpa only [Nat.cast_mul, Nat.cast_pow, Int.cast_pow,
+    Int.cast_natCast] using h
 
 /-- The explicit, representative-independent power-shift homomorphism. -/
 def powerShiftHom (M p k : ℕ) :
@@ -3454,7 +3550,19 @@ def powerShiftHom (M p k : ℕ) :
         (z : ZMod (p ^ thicknessExponent M p k)) =
       (p ^ shiftExponent M p k : ZMod (Pk p k)) *
         (z : ZMod (Pk p k)) := by
-  simp [powerShiftHom]
+  rw [powerShiftHom]
+  calc
+    (ZMod.lift (p ^ thicknessExponent M p k)
+        ⟨powerShiftIntegerHom M p k,
+          powerShiftIntegerHom_modulus_eq_zero M p k⟩)
+        (z : ZMod (p ^ thicknessExponent M p k)) =
+      powerShiftIntegerHom M p k z :=
+        ZMod.lift_coe (p ^ thicknessExponent M p k)
+          ⟨powerShiftIntegerHom M p k,
+            powerShiftIntegerHom_modulus_eq_zero M p k⟩ z
+    _ = (p ^ shiftExponent M p k : ZMod (Pk p k)) *
+        (z : ZMod (Pk p k)) :=
+      powerShiftIntegerHom_apply M p k z
 
 theorem powerShiftHom_add
     (M p k : ℕ) (x y : ZMod (p ^ thicknessExponent M p k)) :
@@ -3474,7 +3582,8 @@ theorem Pk_dvd_M_mul_shift
   calc
     M * p ^ shiftExponent M p k =
         (p ^ thicknessExponent M p k * c) *
-          p ^ shiftExponent M p k := by rw [hc]
+          p ^ shiftExponent M p k :=
+      congrArg (fun t => t * p ^ shiftExponent M p k) hc
     _ = (p ^ thicknessExponent M p k *
           p ^ shiftExponent M p k) * c := by ac_rfl
     _ = p ^ k * c := by rw [pow_thickness_mul_pow_shift]
@@ -3486,11 +3595,15 @@ theorem powerShiftHom_mem_kernel
     powerShiftHom M p k x ∈ Tor1CyclicModel M (Pk p k) := by
   apply (Tor1CyclicModel_mem_iff M (Pk p k) _).2
   obtain ⟨z, rfl⟩ := ZMod.intCast_surjective x
-  rw [powerShiftHom_intCast, ← mul_assoc, ← Nat.cast_mul]
+  rw [powerShiftHom_intCast, ← mul_assoc]
   have hzero :
-      (M * p ^ shiftExponent M p k : ZMod (Pk p k)) = 0 :=
-    (ZMod.natCast_eq_zero_iff _ _).2
-      (Pk_dvd_M_mul_shift M p k hM hp)
+      (M : ZMod (Pk p k)) *
+        (p ^ shiftExponent M p k : ZMod (Pk p k)) = 0 := by
+    have hcast :
+        ((M * p ^ shiftExponent M p k : ℕ) : ZMod (Pk p k)) = 0 :=
+      (ZMod.natCast_eq_zero_iff _ _).2
+        (Pk_dvd_M_mul_shift M p k hM hp)
+    simpa only [Nat.cast_mul, Nat.cast_pow] using hcast
   rw [hzero, zero_mul]
 
 /-- The explicit power-shift map with codomain restricted to the kernel. -/
@@ -3502,10 +3615,12 @@ def powerShiftKernelHom
     powerShiftHom_mem_kernel M p k hM hp x⟩
   map_zero' := by
     apply Subtype.ext
-    simp
+    exact map_zero (powerShiftHom M p k)
   map_add' x y := by
     apply Subtype.ext
-    simp
+    change powerShiftHom M p k (x + y) =
+      powerShiftHom M p k x + powerShiftHom M p k y
+    exact map_add (powerShiftHom M p k) x y
 
 @[simp] theorem powerShiftKernelHom_val
     (M p k : ℕ) (hM : 1 ≤ M) (hp : Nat.Prime p)
@@ -3520,7 +3635,7 @@ def powerShiftKernelHom
         (z : ZMod (p ^ thicknessExponent M p k)) : ZMod (Pk p k)) =
       (p ^ shiftExponent M p k : ZMod (Pk p k)) *
         (z : ZMod (Pk p k)) := by
-  simp
+  exact powerShiftHom_intCast M p k z
 
 /-- Injectivity follows by cancelling the nonzero factor `p^(k-m)` from the
 integer divisibility relation `p^k ∣ p^(k-m) * (a-b)`. -/
@@ -3537,7 +3652,8 @@ theorem powerShiftHom_injective
   have hz' :
       ((((p ^ shiftExponent M p k : ℕ) : ℤ) * (a - b) : ℤ) :
         ZMod (Pk p k)) = 0 := by
-    simpa using hz
+    simpa only [Int.cast_mul, Int.cast_pow, Int.cast_natCast,
+      Nat.cast_pow] using hz
   have hdiv : (Pk p k : ℤ) ∣
       (p ^ shiftExponent M p k : ℤ) * (a - b) :=
     (ZMod.intCast_zmod_eq_zero_iff_dvd
@@ -3578,11 +3694,13 @@ theorem powerShiftKernelHom_surjective
   · have hm : thicknessExponent M p k = valuationExponent M p := by
       exact min_eq_left hvk
     have hs : shiftExponent M p k = k - valuationExponent M p := by
-      simp [shiftExponent, hm]
+      unfold shiftExponent
+      rw [hm]
     have hpz' :
         ((((p ^ valuationExponent M p : ℕ) : ℤ) * z : ℤ) :
           ZMod (Pk p k)) = 0 := by
-      simpa using hpz
+      simpa only [Int.cast_mul, Int.cast_pow, Int.cast_natCast,
+        Nat.cast_pow] using hpz
     have hdiv : (Pk p k : ℤ) ∣
         (p ^ valuationExponent M p : ℤ) * z :=
       (ZMod.intCast_zmod_eq_zero_iff_dvd
@@ -3606,21 +3724,23 @@ theorem powerShiftKernelHom_surjective
     change powerShiftHom M p k
         (q : ZMod (p ^ thicknessExponent M p k)) =
       (z : ZMod (Pk p k))
-    rw [powerShiftHom_intCast]
-    change ((((p ^ shiftExponent M p k : ℕ) : ℤ) * q : ℤ) :
-      ZMod (Pk p k)) = (z : ZMod (Pk p k))
-    simpa [hs, hq]
+    rw [powerShiftHom_intCast, hs]
+    have hqcast := congrArg
+      (fun t : ℤ => (t : ZMod (Pk p k))) hq.symm
+    simpa only [Int.cast_mul, Int.cast_pow, Int.cast_natCast,
+      Nat.cast_pow] using hqcast
   · have hkv : k ≤ valuationExponent M p := le_of_not_ge hvk
     have hm : thicknessExponent M p k = k := min_eq_right hkv
     have hs : shiftExponent M p k = 0 := by
-      simp [shiftExponent, hm]
+      unfold shiftExponent
+      rw [hm]
+      exact Nat.sub_self k
     refine ⟨(z : ZMod (p ^ thicknessExponent M p k)), ?_⟩
     apply Subtype.ext
     change powerShiftHom M p k
         (z : ZMod (p ^ thicknessExponent M p k)) =
       (z : ZMod (Pk p k))
-    rw [powerShiftHom_intCast]
-    simp [hs]
+    rw [powerShiftHom_intCast, hs, pow_zero, one_mul]
 
 /-- The explicit canonical equivalence in the direction displayed in the
 checklist. -/
@@ -3643,8 +3763,7 @@ theorem generic_quotientStep_eq_pow_shift
     (M p k : ℕ) (hM : 1 ≤ M) (hp : Nat.Prime p) :
     Tor1Canonical.quotientStep M (Pk p k) =
       p ^ shiftExponent M p k := by
-  apply Nat.mul_right_cancel
-    (Nat.pow_pos hp.pos (thicknessExponent M p k))
+  apply Nat.mul_right_cancel (pow_pos hp.pos _)
   calc
     Tor1Canonical.quotientStep M (Pk p k) *
         p ^ thicknessExponent M p k =
@@ -3667,7 +3786,10 @@ theorem powerShiftKernelHom_agrees_gcdToKernelHom_intCast
       Tor1Canonical.gcdToKernelHom M (Pk p k)
         (z : ZMod (Nat.gcd M (Pk p k))) := by
   apply Subtype.ext
-  simp [generic_quotientStep_eq_pow_shift M p k hM hp]
+  rw [powerShiftKernelHom_intCast,
+    Tor1Canonical.gcdToKernelHom_intCast,
+    generic_quotientStep_eq_pow_shift M p k hM hp,
+    Nat.cast_pow]
 
 /-- The explicit forward map is uniquely characterized by the image of the
 standard class of `1`; this is the generator-independent meaning of canonical
@@ -3678,21 +3800,22 @@ theorem powerShiftKernelHom_unique
       Tor1CyclicModel M (Pk p k))
     (h_one : f 1 = powerShiftKernelHom M p k hM hp 1) :
     f = powerShiftKernelHom M p k hM hp := by
-  ext x
+  apply AddMonoidHom.ext
+  intro x
   obtain ⟨z, rfl⟩ := ZMod.intCast_surjective x
   have hz : (z : ZMod (p ^ thicknessExponent M p k)) =
       z • (1 : ZMod (p ^ thicknessExponent M p k)) := by
-    simp
+    exact (zsmul_one z).symm
   calc
     f (z : ZMod (p ^ thicknessExponent M p k)) =
         f (z • (1 : ZMod (p ^ thicknessExponent M p k))) :=
       congrArg f hz
-    _ = z • f 1 := f.map_zsmul 1 z
+    _ = z • f 1 := f.map_zsmul z 1
     _ = z • powerShiftKernelHom M p k hM hp 1 :=
       congrArg (z • ·) h_one
     _ = powerShiftKernelHom M p k hM hp
         (z • (1 : ZMod (p ^ thicknessExponent M p k))) :=
-      ((powerShiftKernelHom M p k hM hp).map_zsmul 1 z).symm
+      ((powerShiftKernelHom M p k hM hp).map_zsmul z 1).symm
     _ = powerShiftKernelHom M p k hM hp
         (z : ZMod (p ^ thicknessExponent M p k)) :=
       congrArg (powerShiftKernelHom M p k hM hp) hz.symm
@@ -3716,7 +3839,13 @@ def PkReduction (p k k' : ℕ) (hkk : k' ≤ k) :
     (p k k' : ℕ) (hkk : k' ≤ k) (z : ℤ) :
     PkReduction p k k' hkk (z : ZMod (Pk p k)) =
       (z : ZMod (Pk p k')) := by
-  simp [PkReduction]
+  change
+    ZMod.castHom (by simpa [Pk] using pow_dvd_pow p hkk)
+        (ZMod (Pk p k')) (z : ZMod (Pk p k)) =
+      (z : ZMod (Pk p k'))
+  exact map_intCast
+    (ZMod.castHom (by simpa [Pk] using pow_dvd_pow p hkk)
+      (ZMod (Pk p k'))) z
 
 /-- Covariant map on kernel models induced by reducing the tensor factor. -/
 def rightKernelMap
@@ -3725,16 +3854,26 @@ def rightKernelMap
       Tor1CyclicModel M (Pk p k') where
   toFun x := ⟨PkReduction p k k' hkk x.1, by
     apply (Tor1CyclicModel_mem_iff M (Pk p k') _).2
-    have hx := congrArg
-      (ZMod.castHom (by simpa [Pk] using pow_dvd_pow p hkk)
-        (ZMod (Pk p k'))) x.2
-    simpa [PkReduction] using hx⟩
+    let φ : ZMod (Pk p k) →+* ZMod (Pk p k') :=
+      ZMod.castHom (by simpa [Pk] using pow_dvd_pow p hkk)
+        (ZMod (Pk p k'))
+    change (M : ZMod (Pk p k')) * φ x.1 = 0
+    calc
+      (M : ZMod (Pk p k')) * φ x.1 =
+          φ ((M : ZMod (Pk p k)) * x.1) := by
+        simpa only [map_natCast] using
+          (map_mul φ (M : ZMod (Pk p k)) x.1).symm
+      _ = φ 0 := congrArg φ x.2
+      _ = 0 := map_zero φ⟩
   map_zero' := by
     apply Subtype.ext
-    simp [PkReduction]
+    change PkReduction p k k' hkk 0 = 0
+    exact map_zero (PkReduction p k k' hkk)
   map_add' x y := by
     apply Subtype.ext
-    simp [PkReduction]
+    change PkReduction p k k' hkk (x.1 + y.1) =
+      PkReduction p k k' hkk x.1 + PkReduction p k k' hkk y.1
+    exact map_add (PkReduction p k k' hkk) x.1 y.1
 
 @[simp] theorem rightKernelMap_val
     (M p k k' : ℕ) (hkk : k' ≤ k)
@@ -3758,10 +3897,15 @@ def leftKernelMap
       exact x.2⟩
   map_zero' := by
     apply Subtype.ext
-    simp
+    change (M / M' : ZMod (Pk p k)) * 0 = 0
+    exact mul_zero _
   map_add' x y := by
     apply Subtype.ext
-    simp [mul_add]
+    change
+      (M / M' : ZMod (Pk p k)) * (x.1 + y.1) =
+        (M / M' : ZMod (Pk p k)) * x.1 +
+          (M / M' : ZMod (Pk p k)) * y.1
+    exact mul_add _ _ _
 
 @[simp] theorem leftKernelMap_val
     {M M' : ℕ} (hMM : M' ∣ M) (p k : ℕ)
@@ -3778,15 +3922,14 @@ theorem thicknessExponent_mono_of_le_k
 theorem shiftExponent_mono_of_le_k
     (M p : ℕ) {k' k : ℕ} (hkk : k' ≤ k) :
     shiftExponent M p k' ≤ shiftExponent M p k := by
-  by_cases hv : valuationExponent M p ≤ k'
-  · have hv' : valuationExponent M p ≤ k := hv.trans hkk
-    simpa [shiftExponent, thicknessExponent, min_eq_left hv,
-      min_eq_left hv'] using
-        (Nat.sub_le_sub_right hkk (valuationExponent M p))
-  · have hkv : k' ≤ valuationExponent M p := le_of_not_ge hv
-    have hz : shiftExponent M p k' = 0 := by
-      simp [shiftExponent, thicknessExponent, min_eq_right hkv]
-    rw [hz]
+  change k' - min (padicValNat p M) k' ≤
+    k - min (padicValNat p M) k
+  by_cases hv : padicValNat p M ≤ k'
+  · have hv' : padicValNat p M ≤ k := hv.trans hkk
+    rw [min_eq_left hv, min_eq_left hv']
+    exact Nat.sub_le_sub_right hkk (padicValNat p M)
+  · have hkv : k' ≤ padicValNat p M := le_of_not_ge hv
+    rw [min_eq_right hkv, Nat.sub_self]
     exact Nat.zero_le _
 
 /-- The explicit map between the two thickness groups required by right-factor
@@ -3809,7 +3952,14 @@ def rightThicknessMap
       (p ^ (shiftExponent M p k - shiftExponent M p k') :
         ZMod (p ^ thicknessExponent M p k')) *
         (z : ZMod (p ^ thicknessExponent M p k')) := by
-  simp [rightThicknessMap]
+  change
+    (p ^ (shiftExponent M p k - shiftExponent M p k') :
+        ZMod (p ^ thicknessExponent M p k')) *
+      (ZMod.castHom
+        (pow_dvd_pow p (thicknessExponent_mono_of_le_k M p hkk))
+        (ZMod (p ^ thicknessExponent M p k'))
+        (z : ZMod (p ^ thicknessExponent M p k))) = _
+  rw [map_intCast]
 
 theorem rightThicknessMap_intCast_as_intCast
     (M p : ℕ) {k' k : ℕ} (hkk : k' ≤ k) (z : ℤ) :
@@ -3817,7 +3967,8 @@ theorem rightThicknessMap_intCast_as_intCast
         (z : ZMod (p ^ thicknessExponent M p k)) =
       (((p ^ (shiftExponent M p k - shiftExponent M p k') : ℕ) : ℤ) * z :
         ZMod (p ^ thicknessExponent M p k')) := by
-  simpa using rightThicknessMap_intCast M p hkk z
+  rw [rightThicknessMap_intCast]
+  simp only [Int.cast_mul, Int.cast_pow, Int.cast_natCast, Nat.cast_pow]
 
 /-- Explicit naturality square in the prime-power tensor exponent. -/
 theorem rightNaturalitySquare
@@ -3836,10 +3987,57 @@ theorem rightNaturalitySquare
     powerShiftHom M p k'
       (rightThicknessMap M p hkk
         (z : ZMod (p ^ thicknessExponent M p k)))
-  rw [powerShiftHom_intCast, rightThicknessMap_intCast_as_intCast,
-    powerShiftHom_intCast]
-  simp [PkReduction, ← mul_assoc, ← Nat.cast_mul, ← pow_add,
-    Nat.add_sub_of_le (shiftExponent_mono_of_le_k M p hkk)]
+  calc
+    PkReduction p k k' hkk
+        (powerShiftHom M p k
+          (z : ZMod (p ^ thicknessExponent M p k))) =
+      PkReduction p k k' hkk
+        ((p ^ shiftExponent M p k : ZMod (Pk p k)) *
+          (z : ZMod (Pk p k))) :=
+        congrArg (PkReduction p k k' hkk)
+          (powerShiftHom_intCast M p k z)
+    _ =
+      (p ^ shiftExponent M p k' : ZMod (Pk p k')) *
+        ((((p ^ (shiftExponent M p k - shiftExponent M p k') : ℕ) : ℤ) * z : ℤ) :
+          ZMod (Pk p k')) := by
+        have hsrc :
+            (p ^ shiftExponent M p k : ZMod (Pk p k)) *
+                (z : ZMod (Pk p k)) =
+              (((((p ^ shiftExponent M p k : ℕ) : ℤ) * z : ℤ)) :
+                ZMod (Pk p k)) := by
+          simp only [Int.cast_mul, Int.cast_pow, Int.cast_natCast,
+            Nat.cast_pow]
+        have hexp :
+            p ^ shiftExponent M p k =
+              p ^ shiftExponent M p k' *
+                p ^ (shiftExponent M p k - shiftExponent M p k') := by
+          rw [← pow_add,
+            Nat.add_sub_of_le (shiftExponent_mono_of_le_k M p hkk)]
+        rw [hsrc, PkReduction_intCast]
+        calc
+          (((((p ^ shiftExponent M p k : ℕ) : ℤ) * z : ℤ)) :
+              ZMod (Pk p k')) =
+            (((((p ^ shiftExponent M p k' *
+                p ^ (shiftExponent M p k - shiftExponent M p k') : ℕ) : ℤ) * z : ℤ)) :
+              ZMod (Pk p k')) := by rw [hexp]
+          _ =
+              (p ^ shiftExponent M p k' : ZMod (Pk p k')) *
+                ((((p ^ (shiftExponent M p k - shiftExponent M p k') : ℕ) : ℤ) * z : ℤ) :
+                  ZMod (Pk p k')) := by
+            simp only [Nat.cast_mul, Nat.cast_pow, Int.cast_mul, Int.cast_pow,
+              Int.cast_natCast]
+            ac_rfl
+    _ = powerShiftHom M p k'
+        (((((p ^ (shiftExponent M p k - shiftExponent M p k') : ℕ) : ℤ) * z : ℤ)) :
+          ZMod (p ^ thicknessExponent M p k')) :=
+      (powerShiftHom_intCast M p k'
+        (((p ^ (shiftExponent M p k - shiftExponent M p k') : ℕ) : ℤ) * z)).symm
+    _ = powerShiftHom M p k'
+        (rightThicknessMap M p hkk
+          (z : ZMod (p ^ thicknessExponent M p k))) := by
+      rw [rightThicknessMap_intCast_as_intCast]
+      congr 1
+      simp only [Int.cast_mul]
 
 /-- Universality of the second-variable naturality map: commutativity of the
 square determines `rightThicknessMap` uniquely because the target power-shift
@@ -3855,10 +4053,9 @@ theorem rightThicknessMap_unique
         powerShiftKernelHom M p k' hM hp (f x)) :
     f = rightThicknessMap M p hkk := by
   ext x
-  apply (powerShiftEquiv M p k' hM hp).injective
-  have h₁ := hsquare x
-  have h₂ := rightNaturalitySquare M p hkk hM hp x
-  simpa using h₁.symm.trans h₂
+  apply powerShiftKernelHom_injective M p k' hM hp
+  exact (hsquare x).symm.trans
+    (rightNaturalitySquare M p hkk hM hp x)
 
 /-- The map on thickness models forced by covariance in the first cyclic
 argument.  It is defined by the explicit kernel maps and their canonical
@@ -3880,9 +4077,15 @@ theorem leftNaturalitySquare
     leftKernelMap hMM p k (powerShiftKernelHom M p k hM hp x) =
       powerShiftKernelHom M' p k hM' hp
         (leftThicknessMap hMM p k hM hM' hp x) := by
-  simpa [leftThicknessMap] using
-    ((powerShiftEquiv M' p k hM' hp).apply_symm_apply
-      (leftKernelMap hMM p k (powerShiftKernelHom M p k hM hp x))).symm
+  change
+    leftKernelMap hMM p k (powerShiftKernelHom M p k hM hp x) =
+      (powerShiftEquiv M' p k hM' hp)
+        ((powerShiftEquiv M' p k hM' hp).symm
+          (leftKernelMap hMM p k
+            (powerShiftKernelHom M p k hM hp x)))
+  exact ((powerShiftEquiv M' p k hM' hp).apply_symm_apply
+    (leftKernelMap hMM p k
+      (powerShiftKernelHom M p k hM hp x))).symm
 
 /-- Universality of the first-variable naturality map: the square determines
 it uniquely because the target power-shift map is injective. -/
@@ -3896,10 +4099,9 @@ theorem leftThicknessMap_unique
         powerShiftKernelHom M' p k hM' hp (f x)) :
     f = leftThicknessMap hMM p k hM hM' hp := by
   ext x
-  apply (powerShiftEquiv M' p k hM' hp).injective
-  have h₁ := hsquare x
-  have h₂ := leftNaturalitySquare hMM p k hM hM' hp x
-  simpa using h₁.symm.trans h₂
+  apply powerShiftKernelHom_injective M' p k hM' hp
+  exact (hsquare x).symm.trans
+    (leftNaturalitySquare hMM p k hM hM' hp x)
 
 end Tor1PrimePowerCanonical
 
@@ -4307,8 +4509,8 @@ theorem prop21CanonicalTor_certificate
       explicit_equivalence :=
         ⟨Tor1PrimePowerCanonical.powerShiftEquiv M p k hM hp⟩
       agrees_with_gcd_on_representatives :=
-        Tor1PrimePowerCanonical.
-          powerShiftKernelHom_agrees_gcdToKernelHom_intCast M p k hM hp
+        Tor1PrimePowerCanonical.powerShiftKernelHom_agrees_gcdToKernelHom_intCast
+          M p k hM hp
       generator_independent :=
         Tor1PrimePowerCanonical.powerShiftKernelHom_unique M p k hM hp
       right_naturality := fun hkk =>
@@ -4339,6 +4541,10 @@ open CategoryTheory.MonoidalCategory
 /-- The tensor unit in `ModuleCat ℤ`, definitionally the free rank-one module
 `ℤ`. -/
 abbrev integerModule : ModuleCat ℤ := 𝟙_ (ModuleCat ℤ)
+
+/-- An explicit zero integer module used in categorical object positions. -/
+abbrev zeroIntegerModule : ModuleCat ℤ :=
+  ModuleCat.of ℤ (Fin 0 → ℤ)
 
 /-- `ZMod n` regarded as a module over `ℤ`. -/
 abbrev residueModule (n : ℕ) : ModuleCat ℤ := ModuleCat.of ℤ (ZMod n)
@@ -4371,7 +4577,8 @@ def residueProjection (M : ℕ) : integerModule ⟶ residueModule M :=
 theorem integerMul_comp_residueProjection (M : ℕ) :
     integerMul M ≫ residueProjection M = 0 := by
   apply ModuleCat.hom_ext
-  ext z
+  apply LinearMap.ext
+  intro z
   change (((M : ℤ) * z : ℤ) : ZMod M) = 0
   rw [ZMod.intCast_zmod_eq_zero_iff_dvd]
   exact dvd_mul_right (M : ℤ) z
@@ -4384,13 +4591,12 @@ def resolutionAtZero (M : ℕ) : ShortComplex (ModuleCat ℤ) :=
 theorem resolutionAtZero_exact (M : ℕ) :
     (resolutionAtZero M).Exact := by
   rw [ShortComplex.moduleCat_exact_iff]
+  change ∀ z : ℤ, ((z : ZMod M) = 0) →
+    ∃ q : ℤ, (M : ℤ) * q = z
   intro z hz
-  change (z : ZMod M) = 0 at hz
   obtain ⟨q, hq⟩ :=
     (ZMod.intCast_zmod_eq_zero_iff_dvd z M).mp hz
-  refine ⟨q, ?_⟩
-  change (M : ℤ) * q = z
-  exact hq.symm
+  exact ⟨q, hq.symm⟩
 
 theorem residueProjection_surjective (M : ℕ) :
     Function.Surjective (residueProjection M) := by
@@ -4403,32 +4609,39 @@ theorem residueProjection_epi (M : ℕ) : Epi (residueProjection M) :=
 
 /-- Exactness at degree one is injectivity of multiplication by nonzero `M`. -/
 def resolutionAtOne (M : ℕ) : ShortComplex (ModuleCat ℤ) :=
-  ShortComplex.mk (0 : (0 : ModuleCat ℤ) ⟶ integerModule)
+  ShortComplex.mk (0 : zeroIntegerModule ⟶ integerModule)
     (integerMul M) (by simp)
 
 theorem integerMul_injective (M : ℕ) (hM : M ≠ 0) :
     Function.Injective (integerMul M) := by
   intro x y hxy
   have hMZ : (M : ℤ) ≠ 0 := by exact_mod_cast hM
-  change (M : ℤ) * x = (M : ℤ) * y at hxy
-  exact mul_left_cancel₀ hMZ hxy
+  let x' : ℤ := x
+  let y' : ℤ := y
+  change (M : ℤ) * x' = (M : ℤ) * y' at hxy
+  have hxy' : x' = y' := mul_left_cancel₀ hMZ hxy
+  simpa [x', y'] using hxy'
 
 theorem resolutionAtOne_exact (M : ℕ) (hM : M ≠ 0) :
     (resolutionAtOne M).Exact := by
+  unfold resolutionAtOne
   rw [ShortComplex.moduleCat_exact_iff]
   intro z hz
+  change integerMul M z = 0 at hz
   have hz0 : z = 0 := by
-    apply integerMul_injective M hM
-    simpa using hz
+    change (M : ℤ) * (z : ℤ) = 0 at hz
+    change (z : ℤ) = 0
+    exact (mul_eq_zero.mp hz).resolve_left (by exact_mod_cast hM)
   subst z
-  exact ⟨0, by simp [resolutionAtOne]⟩
+  refine ⟨0, ?_⟩
+  rfl
 
 /-- Objects of the standard two-term free resolution, in homological degrees
 `0`, `1`, and `≥ 2`. -/
 def freeResolutionX : ℕ → ModuleCat ℤ
   | 0 => integerModule
   | 1 => integerModule
-  | _ + 2 => 0
+  | _ + 2 => zeroIntegerModule
 
 /-- Differentials of the standard two-term free resolution. -/
 def freeResolutionD (M : ℕ) :
@@ -4438,7 +4651,9 @@ def freeResolutionD (M : ℕ) :
 
 theorem freeResolutionD_comp (M : ℕ) (n : ℕ) :
     freeResolutionD M (n + 1) ≫ freeResolutionD M n = 0 := by
-  cases n <;> simp [freeResolutionD]
+  cases n with
+  | zero => exact zero_comp
+  | succ n => exact zero_comp
 
 /-- The literal chain complex `⋯ → 0 → ℤ --M→ ℤ`. -/
 def freeResolutionComplex (M : ℕ) : ChainComplex (ModuleCat ℤ) ℕ :=
@@ -4454,20 +4669,25 @@ def freeResolutionComplex (M : ℕ) : ChainComplex (ModuleCat ℤ) ℕ :=
   rfl
 
 @[simp] theorem freeResolutionComplex_X_add_two (M n : ℕ) :
-    (freeResolutionComplex M).X (n + 2) = 0 :=
+    (freeResolutionComplex M).X (n + 2) = zeroIntegerModule :=
   rfl
 
 @[simp] theorem freeResolutionComplex_d_one_zero (M : ℕ) :
     (freeResolutionComplex M).d 1 0 = integerMul M := by
-  simp [freeResolutionComplex, freeResolutionD]
+  change freeResolutionD M 0 = integerMul M
+  rfl
 
 @[simp] theorem freeResolutionComplex_d_two_one (M : ℕ) :
     (freeResolutionComplex M).d 2 1 = 0 := by
-  simp [freeResolutionComplex, freeResolutionD]
+  change freeResolutionD M 1 = 0
+  rfl
 
 @[simp] theorem freeResolutionComplex_d_succ_two_succ (M n : ℕ) :
     (freeResolutionComplex M).d (n + 3) (n + 2) = 0 := by
-  simp [freeResolutionComplex, freeResolutionD]
+  change ChainComplex.of.d freeResolutionX (freeResolutionD M)
+    ((n + 2) + 1) (n + 2) = 0
+  rw [ChainComplex.of_d]
+  rfl
 
 /-- Every term is a free `ℤ`-module, including the zero terms in degree `≥ 2`. -/
 theorem freeResolutionX_free (n : ℕ) : Module.Free ℤ (freeResolutionX n) := by
@@ -4476,33 +4696,30 @@ theorem freeResolutionX_free (n : ℕ) : Module.Free ℤ (freeResolutionX n) := 
     infer_instance
   · change Module.Free ℤ ℤ
     infer_instance
-  · change Module.Free ℤ (0 : ModuleCat ℤ)
+  · change Module.Free ℤ zeroIntegerModule
     infer_instance
 
 /-- Every term of the explicit free resolution is categorically projective. -/
 theorem freeResolutionX_projective (n : ℕ) :
     CategoryTheory.Projective (freeResolutionX n) := by
   rcases n with (_ | _ | n)
-  · exact ModuleCat.projective_of_free (Basis.singleton Unit ℤ)
-  · exact ModuleCat.projective_of_free (Basis.singleton Unit ℤ)
+  · exact ModuleCat.projective_of_free (Module.Basis.singleton Unit ℤ)
+  · exact ModuleCat.projective_of_free (Module.Basis.singleton Unit ℤ)
   · apply CategoryTheory.Limits.IsZero.projective
-    exact (CategoryTheory.Limits.isZero_zero :
-      CategoryTheory.Limits.IsZero (0 : ModuleCat ℤ))
+    exact ModuleCat.isZero_of_subsingleton zeroIntegerModule
 
 /-- Exactness of the chain complex in homological degree one. -/
 theorem freeResolutionComplex_exactAt_one
     (M : ℕ) (hM : M ≠ 0) :
     (freeResolutionComplex M).ExactAt 1 := by
   rw [HomologicalComplex.exactAt_iff' _ 2 1 0 (by simp) (by simp)]
-  simpa [resolutionAtOne] using resolutionAtOne_exact M hM
+  convert resolutionAtOne_exact M hM using 1 <;> rfl
 
 /-- Exactness in every degree at least two, because the middle term is zero. -/
 theorem freeResolutionComplex_exactAt_add_two (M n : ℕ) :
     (freeResolutionComplex M).ExactAt (n + 2) := by
   apply HomologicalComplex.ExactAt.of_isZero
-  simpa using
-    (CategoryTheory.Limits.isZero_zero :
-      CategoryTheory.Limits.IsZero (0 : ModuleCat ℤ))
+  exact ModuleCat.isZero_of_subsingleton zeroIntegerModule
 
 theorem freeResolutionComplex_exactAt_succ
     (M : ℕ) (hM : M ≠ 0) (n : ℕ) :
@@ -4519,11 +4736,12 @@ noncomputable def freeResolutionAugmentation (M : ℕ) :
   (ChainComplex.toSingle₀Equiv (freeResolutionComplex M)
     (residueModule M)).symm
     ⟨residueProjection M, by
-      simpa using integerMul_comp_residueProjection M⟩
+      convert integerMul_comp_residueProjection M using 1 <;> rfl⟩
 
 @[simp] theorem freeResolutionAugmentation_f_zero (M : ℕ) :
     (freeResolutionAugmentation M).f 0 = residueProjection M := by
-  simp [freeResolutionAugmentation]
+  change residueProjection M = residueProjection M
+  rfl
 
 @[simp] theorem freeResolutionAugmentation_f_succ (M n : ℕ) :
     (freeResolutionAugmentation M).f (n + 1) = 0 := by
@@ -4533,18 +4751,18 @@ noncomputable def freeResolutionAugmentation (M : ℕ) :
 is injective on `ℤ`, hence under the displayed `M ≠ 0` hypothesis. -/
 theorem freeResolutionAugmentation_quasiIso
     (M : ℕ) (hM : M ≠ 0) :
-    HomologicalComplex.QuasiIso (freeResolutionAugmentation M) where
+    QuasiIso (freeResolutionAugmentation M) where
   quasiIsoAt n := by
     cases n with
     | zero =>
         rw [ChainComplex.quasiIsoAt₀_iff,
           ShortComplex.quasiIso_iff_of_zeros' _ rfl rfl rfl]
         constructor
-        · simpa [resolutionAtZero] using resolutionAtZero_exact M
+        · convert resolutionAtZero_exact M using 1 <;> rfl
         · rw [ModuleCat.epi_iff_surjective]
-          simpa using residueProjection_surjective M
+          convert residueProjection_surjective M using 1 <;> rfl
     | succ n =>
-        rw [HomologicalComplex.quasiIsoAt_iff_exactAt'
+        rw [quasiIsoAt_iff_exactAt'
           (hL := ChainComplex.exactAt_succ_single_obj ..)]
         exact freeResolutionComplex_exactAt_succ M hM n
 
@@ -4599,10 +4817,9 @@ theorem tensorResolutionComplex_X_add_two_isZero (M N n : ℕ) :
     CategoryTheory.Limits.IsZero
       ((tensorResolutionComplex M N).X (n + 2)) := by
   change CategoryTheory.Limits.IsZero
-    ((tensorRightFunctor N).obj (0 : ModuleCat ℤ))
+    ((tensorRightFunctor N).obj zeroIntegerModule)
   exact (tensorRightFunctor N).map_isZero
-    (CategoryTheory.Limits.isZero_zero :
-      CategoryTheory.Limits.IsZero (0 : ModuleCat ℤ))
+    (ModuleCat.isZero_of_subsingleton zeroIntegerModule)
 
 /-- The degree `1 → 0` differential is the image of integer multiplication. -/
 @[simp] theorem tensorResolutionComplex_d_one_zero (M N : ℕ) :
@@ -4610,12 +4827,14 @@ theorem tensorResolutionComplex_X_add_two_isZero (M N n : ℕ) :
       (tensorRightFunctor N).map (integerMul M) := by
   change (tensorRightFunctor N).map ((freeResolutionComplex M).d 1 0) = _
   rw [freeResolutionComplex_d_one_zero]
+  rfl
 
 /-- There is no incoming degree-two boundary after tensoring. -/
 @[simp] theorem tensorResolutionComplex_d_two_one (M N : ℕ) :
     (tensorResolutionComplex M N).d 2 1 = 0 := by
   change (tensorRightFunctor N).map ((freeResolutionComplex M).d 2 1) = 0
-  simp
+  rw [freeResolutionComplex_d_two_one]
+  simpa only [Functor.map_zero]
 
 /-- Multiplication by `M` on `ZMod N`, expressed as an `ℤ`-linear map. -/
 def residueMulLinear (M N : ℕ) : ZMod N →ₗ[ℤ] ZMod N :=
@@ -4649,18 +4868,16 @@ theorem tensor_integerMul_leftUnitor (M N : ℕ) :
         (λ_ (residueModule N)).hom := by
   apply ModuleCat.MonoidalCategory.tensor_ext
   intro z x
-  change residueMulLinear M N
-      ((λ_ (residueModule N)).hom (z ⊗ₜ[ℤ] x)) =
-    (λ_ (residueModule N)).hom
-      ((integerMul M ▷ residueModule N) (z ⊗ₜ[ℤ] x))
-  simp [residueMulLinear_apply_zsmul, integerMul_apply, smul_smul]
+  let z' : ℤ := z
+  change (M : ℤ) • (z' • x) = ((M : ℤ) * z') • x
+  rw [smul_smul]
 
 /-- The normalized three-term short complex computing degree-one homology:
 `0 → ZMod N --M→ ZMod N`. -/
 def normalizedTensorShortComplex (M N : ℕ) :
     ShortComplex (ModuleCat ℤ) :=
   ShortComplex.mk
-    (0 : (0 : ModuleCat ℤ) ⟶ residueModule N)
+    (0 : zeroIntegerModule ⟶ residueModule N)
     (ModuleCat.ofHom (residueMulLinear M N)) (by simp)
 
 @[simp] theorem normalizedTensorShortComplex_f (M N : ℕ) :
@@ -4675,8 +4892,9 @@ def normalizedTensorShortComplex (M N : ℕ) :
 /-- The degree-two tensor term is canonically zero because additive functors
 preserve zero objects. -/
 noncomputable def tensorResolutionXTwoIsoZero (M N : ℕ) :
-    (tensorResolutionComplex M N).X 2 ≅ 0 := by
-  exact (tensorResolutionComplex_X_add_two_isZero M N 0).isoZero
+    (tensorResolutionComplex M N).X 2 ≅ zeroIntegerModule := by
+  exact (tensorResolutionComplex_X_add_two_isZero M N 0).iso
+    (ModuleCat.isZero_of_subsingleton zeroIntegerModule)
 
 /-- The left unitor identifies the tensor term in degree one with `ZMod N`. -/
 noncomputable def tensorResolutionXOneIso (M N : ℕ) :
@@ -4705,7 +4923,7 @@ noncomputable def tensorDegreeOneShortComplexIso (M N : ℕ) :
         (tensorResolutionComplex M N).d 2 1 ≫
           (tensorResolutionXOneIso M N).hom
       rw [tensorResolutionComplex_d_two_one]
-      simp)
+      rw [comp_zero, zero_comp])
     (by
       change (λ_ (residueModule N)).hom ≫
           ModuleCat.ofHom (residueMulLinear M N) =
@@ -4742,7 +4960,9 @@ the earlier additive-subgroup kernel.  Membership is transported only through
 def residueMulKernelLinearEquiv (M N : ℕ) :
     residueMulKernel M N ≃ₗ[ℤ] Tor1CyclicModel M N where
   toFun x :=
-    ⟨x.1, (Tor1CyclicModel_mem_iff M N x.1).2 (by simpa using x.2)⟩
+    ⟨x.1, (Tor1CyclicModel_mem_iff M N x.1).2 (by
+      rw [← residueMulLinear_apply]
+      exact x.2)⟩
   invFun x :=
     ⟨x.1, by
       change residueMulLinear M N x.1 = 0
@@ -4904,7 +5124,8 @@ theorem mathlibTor1ZPrimePowerCanonical_triangle
     Tor1PrimePowerCanonical.powerShiftEquiv M p k hM hp
         (mathlibTor1ZPrimePowerCanonicalEquiv M p k hM hp x) =
       mathlibTor1ZEquivCyclicModel M (Pk p k) (Nat.ne_of_gt hM) x := by
-  simp [mathlibTor1ZPrimePowerCanonicalEquiv]
+  exact (Tor1PrimePowerCanonical.powerShiftEquiv M p k hM hp).apply_symm_apply
+    (mathlibTor1ZEquivCyclicModel M (Pk p k) (Nat.ne_of_gt hM) x)
 
 /-- Prime-power specialization with the target written in the paper's
 `p ^ min (v_p(M)) k` form, using the explicit canonical power-shift map. -/
@@ -4929,7 +5150,7 @@ structure Tor1ZComparisonCertificate (M N : ℕ) : Prop where
   exact_positive_degrees :
     ∀ n : ℕ, (freeResolutionComplex M).ExactAt (n + 1)
   augmentation_quasiIso :
-    HomologicalComplex.QuasiIso (freeResolutionAugmentation M)
+    QuasiIso (freeResolutionAugmentation M)
   chosen_projective_resolution :
     Nonempty (CategoryTheory.ProjectiveResolution (residueModule M))
   tensor_differential :
@@ -5139,7 +5360,7 @@ variable {X : Type u} [TopologicalSpace X]
 variable {F : PresheafLike X} {Covariant : CovariancePredicate F}
 
 /-- Restriction on q-gauge sections. -/
-def restrict (hCov : IsRestrictionStableCovariance F Covariant)
+noncomputable def restrict (hCov : IsRestrictionStableCovariance F Covariant)
     {V U : TopologicalSpace.Opens X} (hVU : V ≤ U)
     (A : Aq F Covariant U) : Aq F Covariant V :=
   ⟨F.res hVU A.1, hCov.restrict_stable hVU A.2⟩
@@ -5204,7 +5425,7 @@ variable {X : Type u} [TopologicalSpace X]
 variable {F : PresheafLike X} {Covariant : CovariancePredicate F}
 
 /-- Restriction-stable covariant sections form a genuine subpresheaf. -/
-def covariantSubpresheaf
+noncomputable def covariantSubpresheaf
     (hCov : IsRestrictionStableCovariance F Covariant) : PresheafLike X where
   Section := Aq F Covariant
   res := Aq.restrict hCov
@@ -5230,7 +5451,7 @@ end IsRestrictionStableCovariance
 
 /-- The q-gauge presheaf assembled from `Aq`, its restriction map, and the two
 presheaf laws. -/
-def AqPresheaf
+noncomputable def AqPresheaf
     {X : Type u} [TopologicalSpace X] (F : PresheafLike X)
     (Covariant : CovariancePredicate F)
     (hCov : IsRestrictionStableCovariance F Covariant) : PresheafLike X :=
@@ -5273,8 +5494,9 @@ theorem lemma6_1_covariance_certificate
     (hCov : IsRestrictionStableCovariance F Covariant) :
     Lemma61CovarianceCertificate F Covariant hCov := by
   exact
-    { predicate_restriction_stable := fun hUV hA =>
-        lemma6_1_covariance_restrict F Covariant hCov hUV hA
+    { predicate_restriction_stable := by
+        intro U V hUV A hA
+        exact lemma6_1_covariance_restrict F Covariant hCov hUV hA
       covariant_restriction_val :=
         hCov.covariantSubpresheaf_res_val }
 
@@ -5311,8 +5533,9 @@ theorem AqPresheaf_certificate
   exact
     { carrier_covariant := fun _ A => A.2
       restriction_value := Aq.restrict_val hCov
-      lemma6_1 := fun hVU hA =>
-        lemma6_1_restriction_stability F Covariant hCov hVU hA
+      lemma6_1 := by
+        intro V U hVU A hA
+        exact lemma6_1_restriction_stability F Covariant hCov hVU hA
       restriction_identity := Aq.restrict_id hCov
       restriction_composition := Aq.restrict_comp hCov }
 
@@ -5634,26 +5857,29 @@ variable {X : Type u} [TopologicalSpace X]
 variable {F : PresheafLike X} (hF : IsSheafLike F)
 
 /-- Compatible local data admit exactly one gluing. -/
-theorem existsUnique_gluing {ι : Type u} (C : OpenCoverData X ι)
+theorem existsUnique_gluing (hF : IsSheafLike F)
+    {ι : Type u} (C : OpenCoverData X ι)
     (s : F.CoverSectionProduct C) (hs : F.CompatibleFamily C s) :
     ∃! x : F.Section C.target, F.IsGluing C s x := by
-  obtain ⟨x, hx⟩ := hF.gluing_exists C s hs
+  obtain ⟨x, hx⟩ := IsSheafLike.gluing_exists hF C s hs
   refine ⟨x, hx, ?_⟩
   intro y hy
-  exact hF.gluing_unique C s hs hy hx
+  exact IsSheafLike.gluing_unique hF C s hs hy hx
 
 /-- The unique global gluing selected from a cover equalizer point. -/
 noncomputable def glue {ι : Type u} (C : OpenCoverData X ι)
     (e : F.CoverEqualizer C) : F.Section C.target :=
   Classical.choose
-    (hF.gluing_exists C e.1 (F.coverEqualizer_compatible C e))
+    (IsSheafLike.gluing_exists hF C e.1
+      (F.coverEqualizer_compatible C e))
 
 /-- The selected global section restricts to the prescribed local family. -/
 theorem glue_isGluing {ι : Type u} (C : OpenCoverData X ι)
     (e : F.CoverEqualizer C) :
     F.IsGluing C e.1 (hF.glue C e) :=
   Classical.choose_spec
-    (hF.gluing_exists C e.1 (F.coverEqualizer_compatible C e))
+    (IsSheafLike.gluing_exists hF C e.1
+      (F.coverEqualizer_compatible C e))
 
 /-- The selected gluing for a whole-space equalizer family. -/
 noncomputable def global_glue {ι : Type u}
@@ -5673,7 +5899,7 @@ theorem global_glue_isGluing {ι : Type u}
   hF.glue_isGluing (OpenCoverData.wholeSpace U hcover) e
 
 /-- Any two global sections gluing the same compatible family are equal. -/
-theorem global_gluing_unique {ι : Type u}
+theorem global_gluing_unique (hF : IsSheafLike F) {ι : Type u}
     (U : ι → TopologicalSpace.Opens X)
     (hcover : ∀ x : X, ∃ i : ι, x ∈ U i)
     (s : F.GlobalCoverSectionProduct U hcover)
@@ -5682,17 +5908,19 @@ theorem global_gluing_unique {ι : Type u}
     (hx : F.IsGluing (OpenCoverData.wholeSpace U hcover) s x)
     (hy : F.IsGluing (OpenCoverData.wholeSpace U hcover) s y) :
     x = y :=
-  hF.gluing_unique (OpenCoverData.wholeSpace U hcover) s hs hx hy
+  IsSheafLike.gluing_unique hF
+    (OpenCoverData.wholeSpace U hcover) s hs hx hy
 
 /-- Compatible local data on a whole-space cover have a unique global gluing. -/
-theorem global_existsUnique_gluing {ι : Type u}
+theorem global_existsUnique_gluing (hF : IsSheafLike F) {ι : Type u}
     (U : ι → TopologicalSpace.Opens X)
     (hcover : ∀ x : X, ∃ i : ι, x ∈ U i)
     (s : F.GlobalCoverSectionProduct U hcover)
     (hs : F.CompatibleFamily (OpenCoverData.wholeSpace U hcover) s) :
     ∃! x : F.Section (⊤ : TopologicalSpace.Opens X),
       F.IsGluing (OpenCoverData.wholeSpace U hcover) s x :=
-  hF.existsUnique_gluing (OpenCoverData.wholeSpace U hcover) s hs
+  IsSheafLike.existsUnique_gluing hF
+    (OpenCoverData.wholeSpace U hcover) s hs
 
 /-- The chosen gluing is the only global section with the required restrictions. -/
 theorem global_glued_section_unique {ι : Type u}
@@ -5702,7 +5930,7 @@ theorem global_glued_section_unique {ι : Type u}
     {x : F.Section (⊤ : TopologicalSpace.Opens X)}
     (hx : F.IsGluing (OpenCoverData.wholeSpace U hcover) e.1 x) :
     x = hF.global_glue U hcover e :=
-  hF.global_gluing_unique U hcover e.1
+  IsSheafLike.global_gluing_unique hF U hcover e.1
     (F.coverEqualizer_compatible (OpenCoverData.wholeSpace U hcover) e)
     hx (hF.global_glue_isGluing U hcover e)
 
@@ -5974,7 +6202,7 @@ def formPresheaf (n : ℕ) : PresheafLike X where
   res_comp := C.res_comp n
 
 /-- Curvature `F = dA + A ∧ A`. -/
-def curvature {U : TopologicalSpace.Opens X} (A : C.Form 1 U) : C.Form 2 U :=
+noncomputable def curvature {U : TopologicalSpace.Opens X} (A : C.Form 1 U) : C.Form 2 U :=
   C.add₂ U (C.d U A) (C.wedge U A A)
 
 @[simp] theorem curvature_def {U : TopologicalSpace.Opens X}
@@ -6000,7 +6228,7 @@ theorem curvature_restrict {U V : TopologicalSpace.Opens X}
       rw [C.res_d hUV A, C.res_wedge hUV A A]
 
 /-- Apply curvature chartwise to a family of local one-forms. -/
-def curvatureFamily {ι : Type u} (K : OpenCoverData X ι)
+noncomputable def curvatureFamily {ι : Type u} (K : OpenCoverData X ι)
     (A : (C.formPresheaf 1).CoverSectionProduct K) :
     (C.formPresheaf 2).CoverSectionProduct K :=
   fun i => C.curvature (A i)
@@ -6037,13 +6265,14 @@ theorem curvatureFamily_isGluing {ι : Type u} (K : OpenCoverData X ι)
     (C.formPresheaf 2).IsGluing K (C.curvatureFamily K A)
       (C.curvature Aglobal) := by
   intro i
+  change C.res 2 (K.piece_le_target i) (C.curvature Aglobal) =
+    C.curvature (A i)
   calc
     C.res 2 (K.piece_le_target i) (C.curvature Aglobal) =
         C.curvature (C.res 1 (K.piece_le_target i) Aglobal) :=
       C.curvature_restrict (K.piece_le_target i) Aglobal
     _ = C.curvature (A i) :=
       congrArg (fun a : C.Form 1 (K.piece i) => C.curvature a) (hA i)
-    _ = C.curvatureFamily K A i := rfl
 
 /-- Paper-facing alias for curvature gluing compatibility, conditional on the
 supplied global connection and its `IsGluing` witness. -/
@@ -6198,7 +6427,7 @@ variable (G : TruncatedGaugeCovariantDGA X Ω)
 §F.1.2.  `Form := fun _ U => Ω U`, so this adapter is intentionally not a
 fully graded family `ℕ → Opens X → Type`; degree is tracked by the operations
 and laws selected from `G`. -/
-def toCurvatureAlgebra : CurvatureAlgebra X where
+@[reducible] def toCurvatureAlgebra : CurvatureAlgebra X where
   Form := fun _ U => Ω U
   res := by
     intro n U V hUV A
@@ -6274,7 +6503,7 @@ structure AdmissibleGaugeTransformation
 namespace AdmissibleGaugeTransformation
 
 /-- The identity gauge transformation is admissible. -/
-def identity (U : TopologicalSpace.Opens X) :
+noncomputable def identity (U : TopologicalSpace.Opens X) :
     AdmissibleGaugeTransformation G U where
   unit := 1
   admissible := by
@@ -6299,13 +6528,13 @@ def inverse {U : TopologicalSpace.Opens X}
 
 /-- Restriction preserves admissibility and maps the underlying unit through
 the restriction ring homomorphism. -/
-def restrict {U V : TopologicalSpace.Opens X} (hUV : U ≤ V)
+noncomputable def restrict {U V : TopologicalSpace.Opens X} (hUV : U ≤ V)
     (g : AdmissibleGaugeTransformation G V) :
     AdmissibleGaugeTransformation G U where
   unit := (Units.map (G.res hUV).toMonoidHom) g.unit
   admissible := by
-    simpa only [Units.coe_map] using
-      G.gaugeAdmissible_restrict hUV (g.unit : Ω V) g.admissible
+    change G.gaugeAdmissible U (G.res hUV (g.unit : Ω V))
+    exact G.gaugeAdmissible_restrict hUV (g.unit : Ω V) g.admissible
 
 @[simp] theorem identity_value (U : TopologicalSpace.Opens X) :
     ((identity G U).unit : Ω U) = 1 :=
@@ -6335,12 +6564,12 @@ def conjugate {U : TopologicalSpace.Opens X}
   (↑(g.unit⁻¹) : Ω U) * ω * (g.unit : Ω U)
 
 /-- The Maurer–Cartan one-form `g⁻¹ dg`. -/
-def pureGauge {U : TopologicalSpace.Opens X}
+noncomputable def pureGauge {U : TopologicalSpace.Opens X}
     (g : AdmissibleGaugeTransformation G U) : Ω U :=
   (↑(g.unit⁻¹) : Ω U) * G.dZero U (g.unit : Ω U)
 
 /-- The paper's gauge action `Aᵍ = g⁻¹ A g + g⁻¹ dg`. -/
-def gaugeTransform {U : TopologicalSpace.Opens X}
+noncomputable def gaugeTransform {U : TopologicalSpace.Opens X}
     (g : AdmissibleGaugeTransformation G U) (A : Ω U) : Ω U :=
   G.conjugate g A + G.pureGauge g
 
@@ -6408,15 +6637,15 @@ theorem multiplication_right_distributive (U : TopologicalSpace.Opens X)
 
 /-- Wedge and left matrix multiplication are compatible by associativity. -/
 theorem wedge_left_matrix (U : TopologicalSpace.Opens X) (g A B : Ω U) :
-    (G.toCurvatureAlgebra).wedge U (g * A) B =
-      g * (G.toCurvatureAlgebra).wedge U A B := by
+    (show Ω U from (G.toCurvatureAlgebra).wedge U (g * A) B) =
+      g * (show Ω U from (G.toCurvatureAlgebra).wedge U A B) := by
   change (g * A) * B = g * (A * B)
   exact mul_assoc g A B
 
 /-- Wedge and right matrix multiplication are compatible by associativity. -/
 theorem wedge_right_matrix (U : TopologicalSpace.Opens X) (A B g : Ω U) :
-    (G.toCurvatureAlgebra).wedge U A (B * g) =
-      (G.toCurvatureAlgebra).wedge U A B * g := by
+    (show Ω U from (G.toCurvatureAlgebra).wedge U A (B * g)) =
+      (show Ω U from (G.toCurvatureAlgebra).wedge U A B) * g := by
   change A * (B * g) = (A * B) * g
   exact (mul_assoc A B g).symm
 
@@ -6769,9 +6998,12 @@ theorem propositions17And18_gaugeCovariance_certificate
       oneForm_leibniz_right := G.oneForm_leibniz_right
       differential_squared_on_gauge := G.differential_squared_on_gauge
       derivative_inverse := G.derivative_inverse
-      multiplication_associative := G.multiplication_associative
-      multiplication_left_distributive := G.multiplication_left_distributive
-      multiplication_right_distributive := G.multiplication_right_distributive
+      multiplication_associative :=
+        TruncatedGaugeCovariantDGA.multiplication_associative
+      multiplication_left_distributive :=
+        TruncatedGaugeCovariantDGA.multiplication_left_distributive
+      multiplication_right_distributive :=
+        TruncatedGaugeCovariantDGA.multiplication_right_distributive
       wedge_matrix_compatible := G.toCurvatureAlgebra_wedge
       curvature_covariant := G.curvature_gaugeTransform
       restriction_compatible := (G.toCurvatureAlgebra).curvature_restrict
@@ -7100,7 +7332,7 @@ the wrong degree to vanish, so the index is mathematically effective. -/
   cy_zero : n ≠ 1 → cy = 0
   cxy_zero : n ≠ 2 → cxy = 0
 
-private def chartFormZero (n : ℕ) : ChartForm n :=
+private noncomputable def chartFormZero (n : ℕ) : ChartForm n :=
   { c0 := 0
     cx := 0
     cy := 0
@@ -7110,7 +7342,7 @@ private def chartFormZero (n : ℕ) : ChartForm n :=
     cy_zero := fun _ => rfl
     cxy_zero := fun _ => rfl }
 
-private def chartFormAdd {n : ℕ} (a b : ChartForm n) : ChartForm n :=
+private noncomputable def chartFormAdd {n : ℕ} (a b : ChartForm n) : ChartForm n :=
   { c0 := a.c0 + b.c0
     cx := a.cx + b.cx
     cy := a.cy + b.cy
@@ -7120,7 +7352,7 @@ private def chartFormAdd {n : ℕ} (a b : ChartForm n) : ChartForm n :=
     cy_zero := by intro h; simp [a.cy_zero h, b.cy_zero h]
     cxy_zero := by intro h; simp [a.cxy_zero h, b.cxy_zero h] }
 
-private def chartFormNeg {n : ℕ} (a : ChartForm n) : ChartForm n :=
+private noncomputable def chartFormNeg {n : ℕ} (a : ChartForm n) : ChartForm n :=
   { c0 := -a.c0
     cx := -a.cx
     cy := -a.cy
@@ -7130,7 +7362,7 @@ private def chartFormNeg {n : ℕ} (a : ChartForm n) : ChartForm n :=
     cy_zero := by intro h; simp [a.cy_zero h]
     cxy_zero := by intro h; simp [a.cxy_zero h] }
 
-instance chartFormAddCommGroup (n : ℕ) : AddCommGroup (ChartForm n) where
+noncomputable instance chartFormAddCommGroup (n : ℕ) : AddCommGroup (ChartForm n) where
   zero := chartFormZero n
   add := chartFormAdd
   neg := chartFormNeg
@@ -7139,11 +7371,36 @@ instance chartFormAddCommGroup (n : ℕ) : AddCommGroup (ChartForm n) where
   zsmul := @zsmulRec (ChartForm n)
     ⟨chartFormZero n⟩ ⟨chartFormAdd⟩ ⟨chartFormNeg⟩
     (@nsmulRec (ChartForm n) ⟨chartFormZero n⟩ ⟨chartFormAdd⟩)
-  add_zero a := by ext <;> simp [chartFormAdd, chartFormZero]
-  zero_add a := by ext <;> simp [chartFormAdd, chartFormZero]
-  add_comm a b := by ext <;> simp [chartFormAdd, add_comm]
-  add_assoc a b c := by ext <;> simp [chartFormAdd, add_assoc]
-  neg_add_cancel a := by ext <;> simp [chartFormAdd, chartFormNeg, chartFormZero]
+  add_zero a := by
+    apply ChartForm.ext
+    · change a.c0 + 0 = a.c0; exact add_zero _
+    · change a.cx + 0 = a.cx; exact add_zero _
+    · change a.cy + 0 = a.cy; exact add_zero _
+    · change a.cxy + 0 = a.cxy; exact add_zero _
+  zero_add a := by
+    apply ChartForm.ext
+    · change 0 + a.c0 = a.c0; exact zero_add _
+    · change 0 + a.cx = a.cx; exact zero_add _
+    · change 0 + a.cy = a.cy; exact zero_add _
+    · change 0 + a.cxy = a.cxy; exact zero_add _
+  add_comm a b := by
+    apply ChartForm.ext
+    · change a.c0 + b.c0 = b.c0 + a.c0; exact add_comm _ _
+    · change a.cx + b.cx = b.cx + a.cx; exact add_comm _ _
+    · change a.cy + b.cy = b.cy + a.cy; exact add_comm _ _
+    · change a.cxy + b.cxy = b.cxy + a.cxy; exact add_comm _ _
+  add_assoc a b c := by
+    apply ChartForm.ext
+    · change (a.c0 + b.c0) + c.c0 = a.c0 + (b.c0 + c.c0); exact add_assoc _ _ _
+    · change (a.cx + b.cx) + c.cx = a.cx + (b.cx + c.cx); exact add_assoc _ _ _
+    · change (a.cy + b.cy) + c.cy = a.cy + (b.cy + c.cy); exact add_assoc _ _ _
+    · change (a.cxy + b.cxy) + c.cxy = a.cxy + (b.cxy + c.cxy); exact add_assoc _ _ _
+  neg_add_cancel a := by
+    apply ChartForm.ext
+    · change -a.c0 + a.c0 = 0; exact neg_add_cancel _
+    · change -a.cx + a.cx = 0; exact neg_add_cancel _
+    · change -a.cy + a.cy = 0; exact neg_add_cancel _
+    · change -a.cxy + a.cxy = 0; exact neg_add_cancel _
 
 @[simp] theorem zero_c0 (n : ℕ) : (0 : ChartForm n).c0 = 0 := rfl
 @[simp] theorem zero_cx (n : ℕ) : (0 : ChartForm n).cx = 0 := rfl
@@ -7188,7 +7445,7 @@ private theorem coefficient_mul_eq_zero_of_degree_mismatch
   · simp [ha hp]
 
 /-- Exterior wedge in the ordered basis `1, dx, dy, dx ∧ dy`. -/
-def wedge {p q : ℕ} (a : ChartForm p) (b : ChartForm q) :
+noncomputable def wedge {p q : ℕ} (a : ChartForm p) (b : ChartForm q) :
     ChartForm (p + q) where
   c0 := a.c0 * b.c0
   cx := a.c0 * b.cx + a.cx * b.c0
@@ -7254,11 +7511,11 @@ def wedge {p q : ℕ} (a : ChartForm p) (b : ChartForm q) :
 
 theorem wedge_add_left {p q : ℕ} (a b : ChartForm p) (c : ChartForm q) :
     wedge (a + b) c = wedge a c + wedge b c := by
-  ext <;> simp [wedge] <;> ring
+  apply ChartForm.ext <;> simp [wedge, chartFormAdd] <;> ring
 
 theorem wedge_add_right {p q : ℕ} (a : ChartForm p) (b c : ChartForm q) :
     wedge a (b + c) = wedge a b + wedge a c := by
-  ext <;> simp [wedge] <;> ring
+  apply ChartForm.ext <;> simp [wedge, chartFormAdd] <;> ring
 
 @[simp] theorem wedge_zero_left {p q : ℕ} (b : ChartForm q) :
     wedge (0 : ChartForm p) b = 0 := by
@@ -7272,11 +7529,11 @@ theorem wedge_assoc {p q r : ℕ}
     (a : ChartForm p) (b : ChartForm q) (c : ChartForm r) :
     GradedForm.cast ChartForm (Nat.add_assoc p q r) (wedge (wedge a b) c) =
       wedge a (wedge b c) := by
-  ext <;> simp [wedge] <;> ring
+  apply ChartForm.ext <;> simp [wedge] <;> ring
 
 /-- Exterior derivative on the `y`-invariant polynomial subcomplex:
 `d(f + a dx + b dy + c dxdy) = f' dx + b' dxdy`. -/
-def differential {n : ℕ} (a : ChartForm n) : ChartForm (n + 1) where
+noncomputable def differential {n : ℕ} (a : ChartForm n) : ChartForm (n + 1) where
   c0 := 0
   cx := Polynomial.derivative a.c0
   cy := 0
@@ -7309,20 +7566,21 @@ def differential {n : ℕ} (a : ChartForm n) : ChartForm (n + 1) where
 
 @[simp] theorem differential_zero (n : ℕ) :
     differential (0 : ChartForm n) = 0 := by
-  ext <;> simp [differential]
+  apply ChartForm.ext <;> simp [differential]
 
 theorem differential_add {n : ℕ} (a b : ChartForm n) :
     differential (a + b) = differential a + differential b := by
-  ext <;> simp [differential, Polynomial.derivative_add]
+  apply ChartForm.ext <;>
+    simp [differential, chartFormAdd, Polynomial.derivative_add]
 
-def differentialHom (n : ℕ) : ChartForm n →+ ChartForm (n + 1) where
+noncomputable def differentialHom (n : ℕ) : ChartForm n →+ ChartForm (n + 1) where
   toFun := differential
   map_zero' := differential_zero n
   map_add' := differential_add
 
 @[simp] theorem differential_squared {n : ℕ} (a : ChartForm n) :
     differential (differential a) = 0 := by
-  ext <;> simp [differential]
+  apply ChartForm.ext <;> simp [differential]
 
 /-- Graded Leibniz rule for scalar homogeneous chart forms.  The four cases
 below are exhaustive because every component vanishes outside degrees 0, 1,
@@ -7374,7 +7632,7 @@ abbrev Omega (X : Type u) [TopologicalSpace X]
     (n : ℕ) (_U : TopologicalSpace.Opens X) : Type :=
   Matrix (Fin 2) (Fin 2) (ChartForm n)
 
-def restrictHom {X : Type u} [TopologicalSpace X] {n : ℕ}
+noncomputable def restrictHom {X : Type u} [TopologicalSpace X] {n : ℕ}
     {U V : TopologicalSpace.Opens X} (_hUV : U ≤ V) :
     Omega X n V →+ Omega X n U :=
   AddMonoidHom.id _
@@ -7393,7 +7651,7 @@ theorem restrict_comp {X : Type u} [TopologicalSpace X]
 
 /-- Matrix multiplication with scalar multiplication replaced by exterior
 wedge.  This is the standard product on matrix/Lie-algebra-valued forms. -/
-def matrixWedge {X : Type u} [TopologicalSpace X]
+noncomputable def matrixWedge {X : Type u} [TopologicalSpace X]
     {p q : ℕ} {U : TopologicalSpace.Opens X}
     (A : Omega X p U) (B : Omega X q U) : Omega X (p + q) U :=
   fun i k => ∑ j : Fin 2, wedge (A i j) (B j k)
@@ -7404,7 +7662,7 @@ def matrixWedge {X : Type u} [TopologicalSpace X]
     matrixWedge A B i k = ∑ j : Fin 2, wedge (A i j) (B j k) :=
   rfl
 
-def matrixDifferential {X : Type u} [TopologicalSpace X]
+noncomputable def matrixDifferential {X : Type u} [TopologicalSpace X]
     {n : ℕ} {U : TopologicalSpace.Opens X}
     (A : Omega X n U) : Omega X (n + 1) U :=
   fun i k => differential (A i k)
@@ -7428,7 +7686,7 @@ theorem matrixDifferential_add {X : Type u} [TopologicalSpace X]
   refine Matrix.ext fun i k => ?_
   exact differential_add (A i k) (B i k)
 
-def matrixDifferentialHom {X : Type u} [TopologicalSpace X]
+noncomputable def matrixDifferentialHom {X : Type u} [TopologicalSpace X]
     (n : ℕ) (U : TopologicalSpace.Opens X) :
     Omega X n U →+ Omega X (n + 1) U where
   toFun := matrixDifferential
@@ -7501,7 +7759,7 @@ theorem restrict_matrixDifferential {X : Type u} [TopologicalSpace X]
   rfl
 
 /-- Embed a polynomial as a scalar zero-form. -/
-def zeroFormCoefficient (f : Coeff) : ChartForm 0 where
+noncomputable def zeroFormCoefficient (f : Coeff) : ChartForm 0 where
   c0 := f
   cx := 0
   cy := 0
@@ -7516,7 +7774,7 @@ def zeroFormCoefficient (f : Coeff) : ChartForm 0 where
       zeroFormCoefficient (f * g) := by
   ext <;> simp [wedge, zeroFormCoefficient]
 
-def zeroFormMatrix {X : Type u} [TopologicalSpace X]
+noncomputable def zeroFormMatrix {X : Type u} [TopologicalSpace X]
     {U : TopologicalSpace.Opens X} (A : Matrix (Fin 2) (Fin 2) Coeff) :
     Omega X 0 U :=
   fun i k => zeroFormCoefficient (A i k)
@@ -7535,9 +7793,9 @@ theorem matrixWedge_zeroFormMatrix {X : Type u} [TopologicalSpace X]
       zeroFormCoefficient, Matrix.mul_apply]
 
 /-- Coordinate polynomial and its nonzero exterior differential. -/
-def coordinateX : ChartForm 0 := zeroFormCoefficient Polynomial.X
+noncomputable def coordinateX : ChartForm 0 := zeroFormCoefficient Polynomial.X
 
-def dx : ChartForm 1 where
+noncomputable def dx : ChartForm 1 where
   c0 := 0
   cx := 1
   cy := 0
@@ -7555,7 +7813,7 @@ theorem dx_ne_zero : dx ≠ 0 := by
   have hc := congrArg (fun a : ChartForm 1 => a.cx) h
   simpa [dx] using hc
 
-instance gradedDGA (X : Type u) [TopologicalSpace X] :
+noncomputable instance gradedDGA (X : Type u) [TopologicalSpace X] :
     GaugeCovariantDGA X (Omega X) where
   res := fun hUV => restrictHom hUV
   res_id := by intro n U A; exact restrict_id U A
@@ -7572,7 +7830,7 @@ instance gradedDGA (X : Type u) [TopologicalSpace X] :
 
 /-- The current `CurvatureAlgebra` is obtained by forgetting higher graded
 laws while retaining the genuinely degree-indexed concrete carrier. -/
-instance curvatureAlgebra (X : Type u) [TopologicalSpace X] : CurvatureAlgebra X :=
+noncomputable instance curvatureAlgebra (X : Type u) [TopologicalSpace X] : CurvatureAlgebra X :=
   GaugeCovariantDGA.toCurvatureAlgebra
     (inferInstance : GaugeCovariantDGA X (Omega X))
 
@@ -7840,7 +8098,7 @@ namespace PolynomialBundleSection
 /-- Canonical actual section represented by supplied polynomial coordinates. -/
 def ofCoordinates {X : Type u} [TopologicalSpace X]
     {U : TopologicalSpace.Opens X} (coordinate : X → ℂ)
-    (s : LocalFramedSection U) : PolynomialBundleSection coordinate where
+    (s : LocalFramedSection U) : PolynomialBundleSection (U := U) coordinate where
   geometric := toGeometricSection coordinate s
   coordinates := s
   geometric_eq_coordinates := rfl
@@ -7860,13 +8118,13 @@ def ofCoordinates {X : Type u} [TopologicalSpace X]
 end PolynomialBundleSection
 
 /-- Exterior derivative of a bundle-valued form, component by component. -/
-def vectorDifferential {X : Type u} [TopologicalSpace X]
+noncomputable def vectorDifferential {X : Type u} [TopologicalSpace X]
     {n : ℕ} {U : TopologicalSpace.Opens X}
     (s : BundleForm n U) : BundleForm (n + 1) U :=
   fun i => differential (s i)
 
 /-- Matrix/exterior action on a bundle-valued form. -/
-def matrixVectorWedge {X : Type u} [TopologicalSpace X]
+noncomputable def matrixVectorWedge {X : Type u} [TopologicalSpace X]
     {p q : ℕ} {U : TopologicalSpace.Opens X}
     (A : Omega X p U) (s : BundleForm q U) : BundleForm (p + q) U :=
   fun i => ∑ j : Fin 2, wedge (A i j) (s j)
@@ -7985,11 +8243,11 @@ variable {U : TopologicalSpace.Opens X}
 abbrev GValuedForm (n : ℕ) : Type := GValuedPolynomialForm X n U
 
 /-- The paper's local connection operator `∇ = d + A` on bundle sections. -/
-def nabla (C : Core U) (s : LocalFramedSection U) : BundleForm 1 U :=
+noncomputable def nabla (C : Core U) (s : LocalFramedSection U) : BundleForm 1 U :=
   vectorDifferential s + matrixVectorWedge C.potential s
 
 /-- Additive-operator packaging of `∇`. -/
-def nablaHom (C : Core U) : LocalFramedSection U →+ BundleForm 1 U where
+noncomputable def nablaHom (C : Core U) : LocalFramedSection U →+ BundleForm 1 U where
   toFun := C.nabla
   map_zero' := by
     simp [nabla]
@@ -8002,7 +8260,7 @@ def nablaHom (C : Core U) : LocalFramedSection U →+ BundleForm 1 U where
 /-- The same connection operator with an actual geometric bundle section as
 input; computation proceeds through the section's certified local frame
 coordinates. -/
-def nablaBundleSection (C : Core U) (coordinate : X → ℂ)
+noncomputable def nablaBundleSection (C : Core U) (coordinate : X → ℂ)
     (s : PolynomialBundleSection (U := U) coordinate) : BundleForm 1 U :=
   C.nabla s.coordinates
 
@@ -8015,20 +8273,20 @@ def nablaBundleSection (C : Core U) (coordinate : X → ℂ)
   rfl
 
 /-- Extension of `∇` to bundle-valued one-forms, needed to define `∇²`. -/
-def nablaOne (C : Core U) (s : BundleForm 1 U) : BundleForm 2 U :=
+noncomputable def nablaOne (C : Core U) (s : BundleForm 1 U) : BundleForm 2 U :=
   vectorDifferential s + matrixVectorWedge C.potential s
 
 /-- Core curvature formula, with codomain definitionally the actual
 `gl₂(ℂ)`-valued degree-two form carrier. -/
-def curvature (C : Core U) : GValuedForm (X := X) (U := U) 2 :=
+noncomputable def curvature (C : Core U) : GValuedForm (X := X) (U := U) 2 :=
   matrixDifferential C.potential + matrixWedge C.potential C.potential
 
 /-- Curvature acts on a local section by matrix/exterior multiplication. -/
-def curvatureAction (C : Core U) (s : LocalFramedSection U) : BundleForm 2 U :=
+noncomputable def curvatureAction (C : Core U) (s : LocalFramedSection U) : BundleForm 2 U :=
   matrixVectorWedge C.curvature s
 
 /-- The square of the connection on a bundle section. -/
-def nablaSquared (C : Core U) (s : LocalFramedSection U) : BundleForm 2 U :=
+noncomputable def nablaSquared (C : Core U) (s : LocalFramedSection U) : BundleForm 2 U :=
   C.nablaOne (C.nabla s)
 
 @[simp] theorem nabla_apply (C : Core U) (s : LocalFramedSection U) :
@@ -8045,13 +8303,14 @@ def nablaSquared (C : Core U) (s : LocalFramedSection U) : BundleForm 2 U :=
       matrixDifferential C.potential + matrixWedge C.potential C.potential :=
   rfl
 
+set_option maxHeartbeats 800000 in
 theorem potential_action_assoc (C : Core U) (s : LocalFramedSection U) :
     matrixVectorWedge C.potential (matrixVectorWedge C.potential s) =
       matrixVectorWedge (matrixWedge C.potential C.potential) s := by
   funext i
   apply ChartForm.ext <;>
     simp [matrixVectorWedge, matrixWedge, Fin.sum_univ_two,
-      wedge_add_left, wedge_add_right, wedge_assoc] <;> abel
+      wedge_add_left, wedge_add_right] <;> ring
 
 /-- Paper equation `(∇^(q))² = dA_q + A_q ∧ A_q`, stated as equality
 of operators acting on an arbitrary local bundle section. -/
@@ -8077,7 +8336,7 @@ theorem nablaSquared_operator_eq_curvatureAction (C : Core U) :
   exact C.nablaSquared_eq_curvatureAction s
 
 /-- Restriction of the core connection. -/
-def restrict (C : Core U) {V : TopologicalSpace.Opens X} (hVU : V ≤ U) :
+noncomputable def restrict (C : Core U) {V : TopologicalSpace.Opens X} (hVU : V ≤ U) :
     Core V where
   potential := restrictHom hVU C.potential
 
@@ -8090,7 +8349,10 @@ theorem curvature_restrict (C : Core U)
     {V : TopologicalSpace.Opens X} (hVU : V ≤ U) :
     (C.restrict hVU).curvature = restrictHom hVU C.curvature := by
   rw [curvature_formula, curvature_formula, restrict_potential,
-    restrict_add, restrict_matrixDifferential, restrict_matrixWedge]
+    restrict_add, restrict_matrixDifferential]
+  exact congrArg
+    (fun T => matrixDifferential (restrictHom hVU C.potential) + T)
+    (restrict_matrixWedge hVU C.potential C.potential).symm
 
 /-- The result is not merely an untyped matrix expression: every entry is an
 actual homogeneous degree-two scalar differential form. -/
@@ -8106,7 +8368,7 @@ variable {X : Type u} [TopologicalSpace X]
 variable {U : TopologicalSpace.Opens X}
 
 /-- Identity endomorphism as a degree-zero matrix-valued form. -/
-def identityZeroForm : Omega X 0 U :=
+noncomputable def identityZeroForm : Omega X 0 U :=
   zeroFormMatrix (1 : Matrix (Fin 2) (Fin 2) Coeff)
 
 @[simp] theorem matrixWedge_identity_right {n : ℕ} (A : Omega X n U) :
@@ -8115,7 +8377,7 @@ def identityZeroForm : Omega X 0 U :=
   apply ChartForm.ext <;>
     fin_cases i <;> fin_cases k <;>
       simp [identityZeroForm, zeroFormMatrix, matrixWedge,
-        Fin.sum_univ_two, zeroFormCoefficient, wedge]
+        Fin.sum_univ_two, zeroFormCoefficient, wedge, Matrix.one_apply]
 
 theorem matrixWedge_identity_left_cast {n : ℕ} (A : Omega X n U) :
     GradedForm.cast (fun d => Omega X d U) (Nat.zero_add n)
@@ -8124,7 +8386,7 @@ theorem matrixWedge_identity_left_cast {n : ℕ} (A : Omega X n U) :
   apply ChartForm.ext <;>
     fin_cases i <;> fin_cases k <;>
       simp [identityZeroForm, zeroFormMatrix, matrixWedge,
-        Fin.sum_univ_two, zeroFormCoefficient, wedge]
+        Fin.sum_univ_two, zeroFormCoefficient, wedge, Matrix.one_apply]
 
 @[simp] theorem matrixWedge_identity_left_zero (A : Omega X 0 U) :
     matrixWedge (identityZeroForm (X := X) (U := U)) A = A := by
@@ -8185,28 +8447,28 @@ structure LocalFrameChange where
 namespace LocalFrameChange
 
 /-- Identity local frame change. -/
-def identity : LocalFrameChange (X := X) (U := U) where
+noncomputable def identity : LocalFrameChange (X := X) (U := U) where
   forward := identityZeroForm
   inverse := identityZeroForm
   inverse_forward := matrixWedge_identity_right _
   forward_inverse := matrixWedge_identity_right _
 
 /-- Matrix conjugation of a connection one-form. -/
-def conjugateOne (g : LocalFrameChange (X := X) (U := U))
+noncomputable def conjugateOne (g : LocalFrameChange (X := X) (U := U))
     (A : Omega X 1 U) : Omega X 1 U :=
   matrixWedge (matrixWedge g.inverse A) g.forward
 
 /-- Matrix conjugation of a curvature two-form. -/
-def conjugateTwo (g : LocalFrameChange (X := X) (U := U))
+noncomputable def conjugateTwo (g : LocalFrameChange (X := X) (U := U))
     (F : Omega X 2 U) : Omega X 2 U :=
   matrixWedge (matrixWedge g.inverse F) g.forward
 
 /-- Maurer-Cartan one-form `g⁻¹ dg`. -/
-def pureGauge (g : LocalFrameChange (X := X) (U := U)) : Omega X 1 U :=
+noncomputable def pureGauge (g : LocalFrameChange (X := X) (U := U)) : Omega X 1 U :=
   matrixWedge g.inverse (matrixDifferential g.forward)
 
 /-- Paper local-frame transformation `A ↦ g⁻¹Ag + g⁻¹dg`. -/
-def transformPotential (g : LocalFrameChange (X := X) (U := U))
+noncomputable def transformPotential (g : LocalFrameChange (X := X) (U := U))
     (A : Omega X 1 U) : Omega X 1 U :=
   g.conjugateOne A + g.pureGauge
 
@@ -8281,7 +8543,15 @@ theorem differential_inverse
   have hfirst :
       matrixWedge (matrixDifferential g.inverse) g.forward =
         -matrixWedge g.inverse (matrixDifferential g.forward) := by
-    abel
+    calc
+      matrixWedge (matrixDifferential g.inverse) g.forward =
+          (matrixWedge (matrixDifferential g.inverse) g.forward +
+            matrixWedge g.inverse (matrixDifferential g.forward)) -
+              matrixWedge g.inverse (matrixDifferential g.forward) := by
+        abel
+      _ = -matrixWedge g.inverse (matrixDifferential g.forward) := by
+        rw [hsum]
+        abel
   calc
     matrixDifferential g.inverse =
         matrixWedge (matrixDifferential g.inverse) identityZeroForm :=
@@ -8343,7 +8613,6 @@ theorem inverseDerivative_conjugate_term
     (g : LocalFrameChange (X := X) (U := U)) (A : Omega X 1 U) :
     matrixWedge (matrixWedge (matrixDifferential g.inverse) A) g.forward =
       -matrixWedge g.pureGauge (g.conjugateOne A) := by
-  rw [g.differential_inverse]
   have hnormalize :
       matrixWedge
           (matrixWedge
@@ -8362,7 +8631,18 @@ theorem inverseDerivative_conjugate_term
             (matrixWedge (matrixWedge g.inverse A) g.forward) := by
         simpa using
           matrixWedge_assoc g.pureGauge (matrixWedge g.inverse A) g.forward
-  rw [matrixWedge_neg_left, matrixWedge_neg_left, hnormalize]
+  calc
+    matrixWedge (matrixWedge (matrixDifferential g.inverse) A) g.forward =
+        matrixWedge
+          (matrixWedge (-matrixWedge g.pureGauge g.inverse) A) g.forward := by
+      rw [g.differential_inverse]
+      unfold pureGauge
+      rfl
+    _ = -matrixWedge
+          (matrixWedge (matrixWedge g.pureGauge g.inverse) A) g.forward := by
+      rw [matrixWedge_neg_left, matrixWedge_neg_left]
+    _ = -matrixWedge g.pureGauge (g.conjugateOne A) := by
+      rw [hnormalize]
 
 /-- The inverse-derivative term in the Maurer-Cartan calculation. -/
 theorem inverseDerivative_differential_term
@@ -8370,7 +8650,6 @@ theorem inverseDerivative_differential_term
     matrixWedge (matrixDifferential g.inverse)
         (matrixDifferential g.forward) =
       -matrixWedge g.pureGauge g.pureGauge := by
-  rw [g.differential_inverse]
   have hnormalize :
       matrixWedge
           (matrixWedge g.pureGauge g.inverse)
@@ -8379,7 +8658,19 @@ theorem inverseDerivative_differential_term
     unfold pureGauge
     simpa using matrixWedge_assoc g.pureGauge g.inverse
       (matrixDifferential g.forward)
-  rw [matrixWedge_neg_left, hnormalize]
+  calc
+    matrixWedge (matrixDifferential g.inverse)
+        (matrixDifferential g.forward) =
+      matrixWedge (-matrixWedge g.pureGauge g.inverse)
+        (matrixDifferential g.forward) := by
+      rw [g.differential_inverse]
+      unfold pureGauge
+      rfl
+    _ = -matrixWedge (matrixWedge g.pureGauge g.inverse)
+        (matrixDifferential g.forward) := by
+      rw [matrixWedge_neg_left]
+    _ = -matrixWedge g.pureGauge g.pureGauge := by
+      rw [hnormalize]
 
 /-- Exterior derivative of the conjugated connection term. -/
 theorem differential_conjugateOne
@@ -8436,7 +8727,7 @@ theorem differential_pureGauge
             (matrixDifferential (matrixDifferential g.forward)) :=
       matrixLeibniz_zero_one g.inverse (matrixDifferential g.forward)
     _ = -matrixWedge g.pureGauge g.pureGauge +
-          matrixWedge g.inverse 0 := by
+          matrixWedge g.inverse (0 : Omega X 2 U) := by
       rw [g.inverseDerivative_differential_term,
         matrixDifferential_squared]
     _ = -matrixWedge g.pureGauge g.pureGauge := by
@@ -8470,7 +8761,7 @@ theorem transformPotential_wedge_self
   abel
 
 /-- The connection represented in the changed local frame. -/
-def transformConnection
+noncomputable def transformConnection
     (g : LocalFrameChange (X := X) (U := U)) (C : Core U) : Core U where
   potential := g.transformPotential C.potential
 
@@ -8498,13 +8789,13 @@ theorem curvature_transformConnection
   abel
 
 /-- Changed frame coordinates of a local bundle section. -/
-def transformSection
+noncomputable def transformSection
     (g : LocalFrameChange (X := X) (U := U))
     (s : LocalFramedSection U) : LocalFramedSection U :=
   matrixVectorWedge g.inverse s
 
 /-- Forward frame action on section coordinates. -/
-def forwardSection
+noncomputable def forwardSection
     (g : LocalFrameChange (X := X) (U := U))
     (s : LocalFramedSection U) : LocalFramedSection U :=
   matrixVectorWedge g.forward s
@@ -8516,7 +8807,7 @@ def forwardSection
   apply ChartForm.ext <;>
     fin_cases i <;>
       simp [identityZeroForm, zeroFormMatrix, matrixVectorWedge,
-        Fin.sum_univ_two, zeroFormCoefficient, wedge]
+        Fin.sum_univ_two, zeroFormCoefficient, wedge, Matrix.one_apply]
 
 theorem forwardSection_transformSection
     (g : LocalFrameChange (X := X) (U := U))
@@ -8605,13 +8896,13 @@ abbrev Connection {X : Type u} [TopologicalSpace X]
     (U : TopologicalSpace.Opens X) : Type :=
   PaperFaithfulConnection.Core U
 
-def nabla {X : Type u} [TopologicalSpace X]
+noncomputable def nabla {X : Type u} [TopologicalSpace X]
     {U : TopologicalSpace.Opens X} (C : Connection U) :
     PaperFaithfulConnection.LocalFramedSection U →+
       PaperFaithfulConnection.BundleForm 1 U :=
   C.nablaHom
 
-def curvature {X : Type u} [TopologicalSpace X]
+noncomputable def curvature {X : Type u} [TopologicalSpace X]
     {U : TopologicalSpace.Opens X} (C : Connection U) :
     PolynomialMatrixDifferentialForms.Omega X 2 U :=
   C.curvature
@@ -8630,13 +8921,13 @@ abbrev Connection {X : Type u} [TopologicalSpace X]
     (U : TopologicalSpace.Opens X) : Type :=
   PaperFaithfulConnection.Core U
 
-def nabla {X : Type u} [TopologicalSpace X]
+noncomputable def nabla {X : Type u} [TopologicalSpace X]
     {U : TopologicalSpace.Opens X} (C : Connection U) :
     PaperFaithfulConnection.LocalFramedSection U →+
       PaperFaithfulConnection.BundleForm 1 U :=
   C.nablaHom
 
-def curvature {X : Type u} [TopologicalSpace X]
+noncomputable def curvature {X : Type u} [TopologicalSpace X]
     {U : TopologicalSpace.Opens X} (C : Connection U) :
     PolynomialMatrixDifferentialForms.Omega X 2 U :=
   C.curvature
@@ -8668,7 +8959,7 @@ theorem definitions16And17_curvature_same
 namespace PaperFaithfulConnection.Core
 
 /-- Zero potential, used only for the empty-context certification witness. -/
-def zero {X : Type u} [TopologicalSpace X]
+noncomputable def zero {X : Type u} [TopologicalSpace X]
     (U : TopologicalSpace.Opens X) : PaperFaithfulConnection.Core U where
   potential := 0
 
@@ -8875,7 +9166,7 @@ def IsGlobalMinimizer
 its global-minimality proof are inputs, not outputs of an existence theorem. -/
 structure Proposition19Hypotheses
     {Aq : Type u} {Curvature : Type v} {Energy : Type w}
-    [Zero Curvature] [LinearOrderedAddCommGroup Energy]
+    [Zero Curvature] [AddCommGroup Energy] [LinearOrder Energy] [IsOrderedAddMonoid Energy]
     (D : AbstractActionDecomposition Aq Curvature Energy)
     (Astar : Aq) : Prop where
   M_nonnegative : ∀ A : Aq, 0 ≤ D.M A
@@ -8888,25 +9179,25 @@ structure Proposition19Hypotheses
 /-- Two nonnegative terms with zero sum vanish separately.  This is the sole
 order-theoretic cancellation principle used in Proposition 19. -/
 theorem two_nonnegative_terms_eq_zero
-    {Energy : Type w} [LinearOrderedAddCommGroup Energy]
+    {Energy : Type w} [AddCommGroup Energy] [LinearOrder Energy] [IsOrderedAddMonoid Energy]
     {a b : Energy} (ha : 0 ≤ a) (hb : 0 ≤ b) (hab : a + b = 0) :
     a = 0 ∧ b = 0 := by
   have ha_le_zero : a ≤ 0 := by
     calc
       a = a + 0 := (add_zero a).symm
-      _ ≤ a + b := add_le_add_left hb a
+      _ ≤ a + b := add_le_add_right hb a
       _ = 0 := hab
   have hb_le_zero : b ≤ 0 := by
     calc
       b = 0 + b := (zero_add b).symm
-      _ ≤ a + b := add_le_add_right ha b
+      _ ≤ a + b := add_le_add_left ha b
       _ = 0 := hab
   exact ⟨le_antisymm ha_le_zero ha, le_antisymm hb_le_zero hb⟩
 
 namespace Proposition19Hypotheses
 
 variable {Aq : Type u} {Curvature : Type v} {Energy : Type w}
-variable [Zero Curvature] [LinearOrderedAddCommGroup Energy]
+variable [Zero Curvature] [AddCommGroup Energy] [LinearOrder Energy] [IsOrderedAddMonoid Energy]
 variable {D : AbstractActionDecomposition Aq Curvature Energy}
 variable {Astar : Aq}
 
@@ -8943,7 +9234,7 @@ vanishing effective mass and remainder.  The proof is purely order-theoretic
 and does not assert analytic existence of minimizers. -/
 theorem proposition19_M_and_R_vanish
     {Aq : Type u} {Curvature : Type v} {Energy : Type w}
-    [Zero Curvature] [LinearOrderedAddCommGroup Energy]
+    [Zero Curvature] [AddCommGroup Energy] [LinearOrder Energy] [IsOrderedAddMonoid Energy]
     {D : AbstractActionDecomposition Aq Curvature Energy}
     {Astar : Aq} (H : Proposition19Hypotheses D Astar) :
     D.M Astar = 0 ∧ D.R Astar = 0 :=
@@ -8954,7 +9245,7 @@ theorem proposition19_M_and_R_vanish
 /-- Paper-facing alias for the massless-phase conclusion. -/
 theorem proposition19_massless_phase
     {Aq : Type u} {Curvature : Type v} {Energy : Type w}
-    [Zero Curvature] [LinearOrderedAddCommGroup Energy]
+    [Zero Curvature] [AddCommGroup Energy] [LinearOrder Energy] [IsOrderedAddMonoid Energy]
     {D : AbstractActionDecomposition Aq Curvature Energy}
     {Astar : Aq} (H : Proposition19Hypotheses D Astar) :
     D.M Astar = 0 ∧ D.R Astar = 0 :=
@@ -8963,7 +9254,7 @@ theorem proposition19_massless_phase
 /-- PR-facing certificate for every Definition 18 and Proposition 19 clause. -/
 structure Definition18AndProposition19Certificate
     {Aq : Type u} {Curvature : Type v} {Energy : Type w}
-    [Zero Curvature] [LinearOrderedAddCommGroup Energy]
+    [Zero Curvature] [AddCommGroup Energy] [LinearOrder Energy] [IsOrderedAddMonoid Energy]
     (D : AbstractActionDecomposition Aq Curvature Energy)
     (Astar : Aq) : Prop where
   flat_sector_characterization :
@@ -8986,7 +9277,7 @@ structure Definition18AndProposition19Certificate
 
 theorem definition18AndProposition19_certificate
     {Aq : Type u} {Curvature : Type v} {Energy : Type w}
-    [Zero Curvature] [LinearOrderedAddCommGroup Energy]
+    [Zero Curvature] [AddCommGroup Energy] [LinearOrder Energy] [IsOrderedAddMonoid Energy]
     (D : AbstractActionDecomposition Aq Curvature Energy)
     (Astar : Aq) (H : Proposition19Hypotheses D Astar) :
     Definition18AndProposition19Certificate D Astar := by
@@ -9243,7 +9534,11 @@ def gammaLower : SL(2, ℤ) :=
 
 theorem gammaLower_mem_Gamma2 : gammaLower ∈ Gamma2 := by
   rw [CongruenceSubgroup.Gamma_mem]
-  norm_num [gammaLower]
+  change (1 : ZMod 2) = 1 /\
+    (0 : ZMod 2) = 0 /\
+    (2 : ZMod 2) = 0 /\
+    (1 : ZMod 2) = 1
+  decide
 
 /-- The same matrix bundled as an element of `Γ(2)`. -/
 def gammaLowerInGamma2 : Gamma2 :=
@@ -9253,7 +9548,15 @@ def gammaLowerInGamma2 : Gamma2 :=
 theorem gammaLower_smul_I_im :
     (gammaLower • UpperHalfPlane.I).im = (1 / 5 : ℝ) := by
   rw [ModularGroup.im_smul_eq_div_normSq]
-  norm_num [ModularGroup.denom_apply, gammaLower, Complex.normSq]
+  have hdenom :
+      UpperHalfPlane.denom
+          (SpecialLinearGroup.toGL
+            ((SpecialLinearGroup.map (Int.castRingHom ℝ)) gammaLower))
+          (UpperHalfPlane.I : ℂ) = 2 * Complex.I + 1 := by
+    rw [ModularGroup.denom_apply]
+    norm_num [gammaLower]
+  rw [hdenom, UpperHalfPlane.I_im]
+  norm_num [Complex.normSq]
 
 theorem gammaLowerInGamma2_smul_I_im :
     (gammaLowerInGamma2 • UpperHalfPlane.I).im = (1 / 5 : ℝ) := by
@@ -9343,7 +9646,8 @@ def presheaf : PresheafLike X where
 @[simp] theorem presheaf_res_apply
     {U V : TopologicalSpace.Opens X} (hUV : U ≤ V)
     (s : (presheaf F).Section V) (x : U) :
-    (presheaf F).res hUV s x = s ⟨x.1, hUV x.2⟩ :=
+    ((presheaf F).res hUV s).toFun x =
+      s.toFun ⟨x.1, hUV x.2⟩ :=
   rfl
 
 variable {F}
@@ -9361,7 +9665,7 @@ theorem coverIndex_mem {ι : Type u} (C : OpenCoverData X ι)
 /-- Pointwise gluing candidate selected from a covering chart. -/
 noncomputable def glueFunction {ι : Type u} (C : OpenCoverData X ι)
     (s : (presheaf F).CoverSectionProduct C) (x : C.target) : F :=
-  s (coverIndex C x) ⟨x.1, coverIndex_mem C x⟩
+  (s (coverIndex C x)).toFun ⟨x.1, coverIndex_mem C x⟩
 
 /-- Cover compatibility makes the pointwise gluing candidate independent of
 the selected chart. -/
@@ -9369,14 +9673,13 @@ theorem glueFunction_eq_section {ι : Type u} (C : OpenCoverData X ι)
     (s : (presheaf F).CoverSectionProduct C)
     (hs : (presheaf F).CompatibleFamily C s)
     (i : ι) (x : C.target) (hxi : x.1 ∈ C.piece i) :
-    glueFunction C s x = s i ⟨x.1, hxi⟩ := by
+    glueFunction C s x = (s i).toFun ⟨x.1, hxi⟩ := by
   let j := coverIndex C x
   have hxj : x.1 ∈ C.piece j := coverIndex_mem C x
   let z : ↥(C.piece j ⊓ C.piece i) := ⟨x.1, ⟨hxj, hxi⟩⟩
-  have heq := congrArg
-    (fun f : LocallyConstant (C.piece j ⊓ C.piece i) F => f z)
-    (hs j i)
-  simpa [glueFunction, j, z, presheaf, openInclusion] using heq
+  have heq := congrArg (fun f => f.toFun z) (hs j i)
+  change (s j).toFun ⟨x.1, hxj⟩ = (s i).toFun ⟨x.1, hxi⟩ at heq
+  simpa [glueFunction, j] using heq
 
 /-- Compatible locally constant maps glue to a locally constant map on the
 target open.  Local constancy is proved using an open fibre of one chart and
@@ -9392,7 +9695,7 @@ noncomputable def glueSection {ι : Type u} (C : OpenCoverData X ι)
     let i := coverIndex C x
     have hxi : x.1 ∈ C.piece i := coverIndex_mem C x
     let xi : C.piece i := ⟨x.1, hxi⟩
-    let A : Set (C.piece i) := (s i : C.piece i → F) ⁻¹' {s i xi}
+    let A : Set (C.piece i) := (s i).toFun ⁻¹' {(s i).toFun xi}
     have hA : IsOpen A := by
       exact (IsLocallyConstant.iff_isOpen_fiber_apply.mp
         (s i).isLocallyConstant) xi
@@ -9413,13 +9716,13 @@ noncomputable def glueSection {ι : Type u} (C : OpenCoverData X ι)
       exact z.2
     have hz_eq : z = (⟨y.1, hyi⟩ : C.piece i) :=
       Subtype.ext hzy
-    have hz_value : s i z = s i xi := by
+    have hz_value : (s i).toFun z = (s i).toFun xi := by
       simpa [A] using hzA
     calc
-      glueFunction C s y = s i ⟨y.1, hyi⟩ :=
+      glueFunction C s y = (s i).toFun ⟨y.1, hyi⟩ :=
         glueFunction_eq_section C s hs i y hyi
-      _ = s i z := by rw [← hz_eq]
-      _ = s i xi := hz_value
+      _ = (s i).toFun z := by rw [← hz_eq]
+      _ = (s i).toFun xi := hz_value
       _ = glueFunction C s x :=
         (glueFunction_eq_section C s hs i x hxi).symm
 
@@ -9435,8 +9738,9 @@ theorem locality {ι : Type u} (C : OpenCoverData X ι)
   let i := coverIndex C z
   have hzi : z.1 ∈ C.piece i := coverIndex_mem C z
   let zi : C.piece i := ⟨z.1, hzi⟩
-  have heq := congrArg (fun f : LocallyConstant (C.piece i) F => f zi) (hxy i)
-  simpa [presheaf, openInclusion, zi] using heq
+  have heq := congrArg (fun f => f.toFun zi) (hxy i)
+  change x.toFun z = y.toFun z at heq
+  exact heq
 
 /-- Existence of a gluing for every compatible family. -/
 theorem gluing_exists {ι : Type u} (C : OpenCoverData X ι)
@@ -9449,7 +9753,7 @@ theorem gluing_exists {ι : Type u} (C : OpenCoverData X ι)
   apply LocallyConstant.ext
   intro x
   change glueFunction C s
-      (⟨x.1, C.piece_le_target i x.2⟩ : C.target) = s i x
+      (⟨x.1, C.piece_le_target i x.2⟩ : C.target) = (s i).toFun x
   exact glueFunction_eq_section C s hs i
     ⟨x.1, C.piece_le_target i x.2⟩ x.2
 
@@ -9467,10 +9771,10 @@ theorem gluing_unique {ι : Type u} (C : OpenCoverData X ι)
 
 /-- Locally constant maps form a genuine sheaf for arbitrary indexed open
 covers in the lightweight `PresheafLike` API. -/
-theorem isSheaf : IsSheafLike (presheaf F) :=
-  { locality := locality
-    gluing_exists := gluing_exists
-    gluing_unique := gluing_unique }
+theorem isSheaf : IsSheafLike (presheaf (X := X) F) :=
+  { locality := locality (X := X) (F := F)
+    gluing_exists := gluing_exists (X := X) (F := F)
+    gluing_unique := gluing_unique (X := X) (F := F) }
 
 end LocallyConstantValueSheaf
 
@@ -9565,7 +9869,7 @@ theorem localSectionPresheaf_isSheaf (D : AnalyticData V) :
 theorem section_isLocallyConstant (D : AnalyticData V)
     (U : TopologicalSpace.Opens RadiusBase)
     (s : (localSectionPresheaf D).Section U) :
-    IsLocallyConstant s :=
+    IsLocallyConstant s.toFun :=
   s.isLocallyConstant
 
 end
@@ -9609,7 +9913,7 @@ def Lq (D : AnalyticData V) :
 @[simp] theorem Lq_res_apply (D : AnalyticData V)
     {U W : TopologicalSpace.Opens RadiusBase} (hUW : U ≤ W)
     (s : (Lq D).Fiber W) (x : U) :
-    (Lq D).res hUW s x = s ⟨x.1, hUW x.2⟩ :=
+    ((Lq D).res hUW s).toFun x = s.toFun ⟨x.1, hUW x.2⟩ :=
   rfl
 
 theorem Lq_res_id (D : AnalyticData V)
@@ -9665,7 +9969,7 @@ structure Certificate (D : AnalyticData V) : Prop where
   every_section_locally_constant :
     ∀ (U : TopologicalSpace.Opens RadiusBase)
       (s : (localSectionPresheaf D).Section U),
-      IsLocallyConstant s
+      IsLocallyConstant s.toFun
   locally_constant_sheaf : IsSheafLike (localSectionPresheaf D)
 
 /-- Unconditional Definition 11 certificate relative only to the explicit
@@ -9717,8 +10021,9 @@ end MockBundle
 
 /-- A mock bundle together with proved locality and unique gluing. -/
 structure MockSheaf (X : Type u) [TopologicalSpace X] where
-  toMockBundle : MockBundle (TopologicalSpace.Opens X)
-  isSheaf : IsSheafLike (MockBundle.toPresheafLike toMockBundle)
+  toMockBundle : MockBundle.{u, u} (TopologicalSpace.Opens X)
+  isSheaf : IsSheafLike
+    (MockBundle.toPresheafLike (X := X) toMockBundle)
 
 /-!
 ### The actual q-series sheaf `Mmock`
@@ -9773,7 +10078,9 @@ def inverseConvergenceRegion (a : QSeries) : Set ℂ :=
 
 theorem zero_convergesAt (q : ℂ) :
     (0 : QSeries).ConvergesAt q := by
-  simp [ConvergesAt, term]
+  change Summable (fun n : ℕ => (0 : ℂ) * q ^ n)
+  simpa only [zero_mul] using
+    (summable_zero : Summable (fun _ : ℕ => (0 : ℂ)))
 
 @[simp] theorem zero_sumAt (q : ℂ) :
     (0 : QSeries).sumAt q = 0 := by
@@ -9906,7 +10213,7 @@ structure CertifiedGerm (K : KernelData) where
   annulus : CommonAnnulus
   annulus_converges :
     annulus.carrier ⊆ commonConvergenceRegion K series
-  matches : MatchesOn K series annulus
+  «matches» : MatchesOn K series annulus
 
 namespace CertifiedGerm
 
@@ -9945,7 +10252,7 @@ theorem matching_identity (g : CertifiedGerm K) {q : ℂ}
     (hq : q ∈ g.annulus.carrier) :
     g.series.outside.sumAt q⁻¹ =
       (2 : ℂ) * K.psi.sumAt q - g.series.correction.sumAt q :=
-  g.matches hq
+  g.«matches» hq
 
 /-- The matching equation determines the outside value pointwise once `psi`
 and the correction value are fixed.  Analytic equality of coefficient series
@@ -10001,7 +10308,7 @@ def zeroCertifiedGerm : CertifiedGerm zeroKernel where
         QSeries.zero_convergesAt q,
         ⟨zeroCommonAnnulus.ne_zero hq,
           QSeries.zero_convergesAt q⁻¹⟩⟩
-  matches := by
+  «matches» := by
     intro q _hq
     simp [zeroKernel, zeroSeriesTriple]
 
@@ -10123,7 +10430,7 @@ def presheaf (K : KernelData) : PresheafLike RadiusBase :=
 @[simp] theorem presheaf_res_apply (K : KernelData)
     {U V : TopologicalSpace.Opens RadiusBase} (hUV : U ≤ V)
     (s : (presheaf K).Section V) (r : U) :
-    (presheaf K).res hUV s r = s ⟨r.1, hUV r.2⟩ :=
+    ((presheaf K).res hUV s).toFun r = s.toFun ⟨r.1, hUV r.2⟩ :=
   rfl
 
 /-- Locality and unique gluing for the actual q-series presheaf. -/
@@ -10146,7 +10453,7 @@ def actualBundle (K : KernelData) :
 @[simp] theorem actualBundle_res_apply (K : KernelData)
     {U V : TopologicalSpace.Opens RadiusBase} (hUV : U ≤ V)
     (s : (actualBundle K).Section V) (r : U) :
-    (actualBundle K).res hUV s r = s ⟨r.1, hUV r.2⟩ :=
+    ((actualBundle K).res hUV s).toFun r = s.toFun ⟨r.1, hUV r.2⟩ :=
   rfl
 
 @[simp] theorem actualBundle_toPresheafLike (K : KernelData) :
@@ -10161,56 +10468,56 @@ def actualSheaf (K : KernelData) : MockSheaf RadiusBase where
 @[simp] theorem restriction_series (K : KernelData)
     {U V : TopologicalSpace.Opens RadiusBase} (hUV : U ≤ V)
     (s : (actualBundle K).Section V) (r : U) :
-    ((actualBundle K).res hUV s r).series =
-      (s ⟨r.1, hUV r.2⟩).series :=
+    (((actualBundle K).res hUV s).toFun r).series =
+      (s.toFun ⟨r.1, hUV r.2⟩).series :=
   rfl
 
 @[simp] theorem restriction_annulus (K : KernelData)
     {U V : TopologicalSpace.Opens RadiusBase} (hUV : U ≤ V)
     (s : (actualBundle K).Section V) (r : U) :
-    ((actualBundle K).res hUV s r).annulus =
-      (s ⟨r.1, hUV r.2⟩).annulus :=
+    (((actualBundle K).res hUV s).toFun r).annulus =
+      (s.toFun ⟨r.1, hUV r.2⟩).annulus :=
   rfl
 
 theorem restriction_preserves_inside_convergence (K : KernelData)
     {U V : TopologicalSpace.Opens RadiusBase} (hUV : U ≤ V)
     (s : (actualBundle K).Section V) (r : U) {q : ℂ}
-    (hq : q ∈ ((actualBundle K).res hUV s r).annulus.carrier) :
-    ((actualBundle K).res hUV s r).series.inside.ConvergesAt q :=
-  ((actualBundle K).res hUV s r).inside_converges hq
+    (hq : q ∈ (((actualBundle K).res hUV s).toFun r).annulus.carrier) :
+    (((actualBundle K).res hUV s).toFun r).series.inside.ConvergesAt q :=
+  (((actualBundle K).res hUV s).toFun r).inside_converges hq
 
 theorem restriction_preserves_psi_convergence (K : KernelData)
     {U V : TopologicalSpace.Opens RadiusBase} (hUV : U ≤ V)
     (s : (actualBundle K).Section V) (r : U) {q : ℂ}
-    (hq : q ∈ ((actualBundle K).res hUV s r).annulus.carrier) :
+    (hq : q ∈ (((actualBundle K).res hUV s).toFun r).annulus.carrier) :
     K.psi.ConvergesAt q :=
-  ((actualBundle K).res hUV s r).psi_converges hq
+  (((actualBundle K).res hUV s).toFun r).psi_converges hq
 
 theorem restriction_preserves_correction_convergence (K : KernelData)
     {U V : TopologicalSpace.Opens RadiusBase} (hUV : U ≤ V)
     (s : (actualBundle K).Section V) (r : U) {q : ℂ}
-    (hq : q ∈ ((actualBundle K).res hUV s r).annulus.carrier) :
-    ((actualBundle K).res hUV s r).series.correction.ConvergesAt q :=
-  ((actualBundle K).res hUV s r).correction_converges hq
+    (hq : q ∈ (((actualBundle K).res hUV s).toFun r).annulus.carrier) :
+    (((actualBundle K).res hUV s).toFun r).series.correction.ConvergesAt q :=
+  (((actualBundle K).res hUV s).toFun r).correction_converges hq
 
 theorem restriction_preserves_outside_convergence (K : KernelData)
     {U V : TopologicalSpace.Opens RadiusBase} (hUV : U ≤ V)
     (s : (actualBundle K).Section V) (r : U) {q : ℂ}
-    (hq : q ∈ ((actualBundle K).res hUV s r).annulus.carrier) :
-    ((actualBundle K).res hUV s r).series.outside.ConvergesAt q⁻¹ :=
-  ((actualBundle K).res hUV s r).outside_converges hq
+    (hq : q ∈ (((actualBundle K).res hUV s).toFun r).annulus.carrier) :
+    (((actualBundle K).res hUV s).toFun r).series.outside.ConvergesAt q⁻¹ :=
+  (((actualBundle K).res hUV s).toFun r).outside_converges hq
 
 theorem restriction_preserves_matching (K : KernelData)
     {U V : TopologicalSpace.Opens RadiusBase} (hUV : U ≤ V)
     (s : (actualBundle K).Section V) (r : U) {q : ℂ}
-    (hq : q ∈ ((actualBundle K).res hUV s r).annulus.carrier) :
-    ((actualBundle K).res hUV s r).series.outside.sumAt q⁻¹ =
+    (hq : q ∈ (((actualBundle K).res hUV s).toFun r).annulus.carrier) :
+    (((actualBundle K).res hUV s).toFun r).series.outside.sumAt q⁻¹ =
       (2 : ℂ) * K.psi.sumAt q -
-        ((actualBundle K).res hUV s r).series.correction.sumAt q :=
-  ((actualBundle K).res hUV s r).matching_identity hq
+        (((actualBundle K).res hUV s).toFun r).series.correction.sumAt q :=
+  (((actualBundle K).res hUV s).toFun r).matching_identity hq
 
 /-- Locality stated directly for actual q-series sections. -/
-theorem locality (K : KernelData) {ι : Type u}
+theorem locality (K : KernelData) {ι : Type}
     (C : OpenCoverData RadiusBase ι)
     {x y : (presheaf K).Section C.target}
     (hxy : ∀ i : ι,
@@ -10220,7 +10527,7 @@ theorem locality (K : KernelData) {ι : Type u}
   (isSheaf K).locality C hxy
 
 /-- Every compatible local q-series family admits a gluing. -/
-theorem gluing_exists (K : KernelData) {ι : Type u}
+theorem gluing_exists (K : KernelData) {ι : Type}
     (C : OpenCoverData RadiusBase ι)
     (s : (presheaf K).CoverSectionProduct C)
     (hs : (presheaf K).CompatibleFamily C s) :
@@ -10229,7 +10536,7 @@ theorem gluing_exists (K : KernelData) {ι : Type u}
   (isSheaf K).gluing_exists C s hs
 
 /-- A compatible q-series family has at most one gluing. -/
-theorem gluing_unique (K : KernelData) {ι : Type u}
+theorem gluing_unique (K : KernelData) {ι : Type}
     (C : OpenCoverData RadiusBase ι)
     (s : (presheaf K).CoverSectionProduct C)
     (hs : (presheaf K).CompatibleFamily C s)
@@ -10240,7 +10547,7 @@ theorem gluing_unique (K : KernelData) {ι : Type u}
   (isSheaf K).gluing_unique C s hs hx hy
 
 /-- Compatible local q-series data have exactly one gluing. -/
-theorem existsUnique_gluing (K : KernelData) {ι : Type u}
+theorem existsUnique_gluing (K : KernelData) {ι : Type}
     (C : OpenCoverData RadiusBase ι)
     (s : (presheaf K).CoverSectionProduct C)
     (hs : (presheaf K).CompatibleFamily C s) :
@@ -10378,20 +10685,20 @@ structure Certificate (K : KernelData) : Prop where
   restriction_preserves_germ :
     ∀ {U V : TopologicalSpace.Opens RadiusBase} (hUV : U ≤ V)
       (s : (actualBundle K).Section V) (r : U),
-      (actualBundle K).res hUV s r = s ⟨r.1, hUV r.2⟩
+      ((actualBundle K).res hUV s).toFun r = s.toFun ⟨r.1, hUV r.2⟩
   restriction_preserves_convergence :
     ∀ {U V : TopologicalSpace.Opens RadiusBase} (hUV : U ≤ V)
       (s : (actualBundle K).Section V) (r : U) {q : ℂ},
-      q ∈ ((actualBundle K).res hUV s r).annulus.carrier →
+      q ∈ (((actualBundle K).res hUV s).toFun r).annulus.carrier →
         q ∈ commonConvergenceRegion K
-          ((actualBundle K).res hUV s r).series
+          (((actualBundle K).res hUV s).toFun r).series
   restriction_preserves_identity :
     ∀ {U V : TopologicalSpace.Opens RadiusBase} (hUV : U ≤ V)
       (s : (actualBundle K).Section V) (r : U) {q : ℂ},
-      q ∈ ((actualBundle K).res hUV s r).annulus.carrier →
-        ((actualBundle K).res hUV s r).series.outside.sumAt q⁻¹ =
+      q ∈ (((actualBundle K).res hUV s).toFun r).annulus.carrier →
+        (((actualBundle K).res hUV s).toFun r).series.outside.sumAt q⁻¹ =
           (2 : ℂ) * K.psi.sumAt q -
-            ((actualBundle K).res hUV s r).series.correction.sumAt q
+            (((actualBundle K).res hUV s).toFun r).series.correction.sumAt q
   actual_is_sheaf : IsSheafLike (presheaf K)
   legacy_bundle_bridge :
     MockBundle.toPresheafLike (actualBundle K) = presheaf K
@@ -10436,13 +10743,18 @@ namespace QSeries
 theorem add_convergesAt {a b : QSeries} {q : ℂ}
     (ha : a.ConvergesAt q) (hb : b.ConvergesAt q) :
     (a + b).ConvergesAt q := by
-  simpa [ConvergesAt, term, add_mul] using ha.add hb
+  change Summable (fun n : ℕ => (a n + b n) * q ^ n)
+  change Summable (fun n : ℕ => a n * q ^ n) at ha
+  change Summable (fun n : ℕ => b n * q ^ n) at hb
+  simpa only [add_mul] using ha.add hb
 
 /-- Convergence is closed under complex scalar multiplication. -/
 theorem smul_convergesAt (c : ℂ) {a : QSeries} {q : ℂ}
     (ha : a.ConvergesAt q) :
     (c • a).ConvergesAt q := by
-  simpa [ConvergesAt, term, smul_eq_mul, mul_assoc] using
+  change Summable (fun n : ℕ => (c * a n) * q ^ n)
+  change Summable (fun n : ℕ => a n * q ^ n) at ha
+  simpa only [smul_eq_mul, mul_assoc] using
     (Summable.const_smul c ha)
 
 /-- Evaluation is additive whenever both series converge. -/
@@ -10479,16 +10791,17 @@ open CategoryTheory
 
 /-- A contravariant presheaf of complex modules on the open-set poset. -/
 structure LinearPresheaf (X : Type u) [TopologicalSpace X] where
-  obj : TopologicalSpace.Opens X → ModuleCat ℂ
+  obj : TopologicalSpace.Opens X → ModuleCat.{max u v} ℂ
   res :
-    ∀ {U V : TopologicalSpace.Opens X}, U ≤ V → obj V ⟶ obj U
+    ∀ {U V : TopologicalSpace.Opens X}, U ≤ V → (obj V ⟶ obj U)
   res_id :
-    ∀ U : TopologicalSpace.Opens X,
-      res (le_refl U) = 𝟙 (obj U)
+    ∀ (U : TopologicalSpace.Opens X) (s : obj U),
+      (@res U U (le_refl U)) s = s
   res_comp :
     ∀ {U V W : TopologicalSpace.Opens X}
-      (hUV : U ≤ V) (hVW : V ≤ W),
-      res hVW ≫ res hUV = res (le_trans hUV hVW)
+      (hUV : U ≤ V) (hVW : V ≤ W) (s : obj W),
+      (@res U V hUV) ((@res V W hVW) s) =
+        (@res U W (le_trans hUV hVW)) s
 
 namespace LinearPresheaf
 
@@ -10496,18 +10809,15 @@ variable {X : Type u} [TopologicalSpace X]
 
 /-- Forget linear structure while retaining the same sections and restriction
 functions. -/
-def toPresheafLike (F : LinearPresheaf X) : PresheafLike X where
+@[reducible] def toPresheafLike (F : LinearPresheaf X) : PresheafLike X where
   Section U := F.obj U
   res hUV s := F.res hUV s
   res_id := by
     intro U s
-    have h := congrArg (fun f : F.obj U ⟶ F.obj U => f s) (F.res_id U)
-    simpa using h
+    exact F.res_id U s
   res_comp := by
     intro U V W hUV hVW s
-    have h := congrArg (fun f : F.obj W ⟶ F.obj U => f s)
-      (F.res_comp hUV hVW)
-    simpa using h
+    exact F.res_comp hUV hVW s
 
 /-- Every restriction in a linear presheaf is an actual complex-linear map. -/
 def restrictionLinear (F : LinearPresheaf X)
@@ -10526,7 +10836,7 @@ end LinearPresheaf
 variable {X : Type u} [TopologicalSpace X]
 
 /-- Linear restriction of locally constant module-valued functions. -/
-def locallyConstantRestriction (E : ModuleCat ℂ)
+def locallyConstantRestriction (E : ModuleCat.{v} ℂ)
     {U V : TopologicalSpace.Opens X} (hUV : U ≤ V) :
     LocallyConstant V E →ₗ[ℂ] LocallyConstant U E where
   toFun s := LocallyConstant.comap
@@ -10540,13 +10850,13 @@ def locallyConstantRestriction (E : ModuleCat ℂ)
     intro z
     rfl
 
-@[simp] theorem locallyConstantRestriction_apply (E : ModuleCat ℂ)
+@[simp] theorem locallyConstantRestriction_apply (E : ModuleCat.{v} ℂ)
     {U V : TopologicalSpace.Opens X} (hUV : U ≤ V)
     (s : LocallyConstant V E) (x : U) :
     locallyConstantRestriction E hUV s x = s ⟨x.1, hUV x.2⟩ :=
   rfl
 
-theorem locallyConstantRestriction_id (E : ModuleCat ℂ)
+theorem locallyConstantRestriction_id (E : ModuleCat.{v} ℂ)
     (U : TopologicalSpace.Opens X) :
     ModuleCat.ofHom (locallyConstantRestriction E (le_refl U)) =
       𝟙 (ModuleCat.of ℂ (LocallyConstant U E)) := by
@@ -10557,7 +10867,7 @@ theorem locallyConstantRestriction_id (E : ModuleCat ℂ)
   intro x
   rfl
 
-theorem locallyConstantRestriction_comp (E : ModuleCat ℂ)
+theorem locallyConstantRestriction_comp (E : ModuleCat.{v} ℂ)
     {U V W : TopologicalSpace.Opens X}
     (hUV : U ≤ V) (hVW : V ≤ W) :
     ModuleCat.ofHom (locallyConstantRestriction E hVW) ≫
@@ -10573,23 +10883,24 @@ theorem locallyConstantRestriction_comp (E : ModuleCat ℂ)
 
 /-- The genuine linear presheaf of locally constant maps into a fixed complex
 module. -/
-def locallyConstantLinearPresheaf (E : ModuleCat ℂ) :
+def locallyConstantLinearPresheaf (E : ModuleCat.{v} ℂ) :
     LinearPresheaf X where
   obj U := ModuleCat.of ℂ (LocallyConstant U E)
   res hUV := ModuleCat.ofHom (locallyConstantRestriction E hUV)
-  res_id := locallyConstantRestriction_id E
-  res_comp := locallyConstantRestriction_comp E
+  res_id U s := by rfl
+  res_comp hUV hVW s := by rfl
 
-@[simp] theorem locallyConstantLinearPresheaf_obj (E : ModuleCat ℂ)
+@[simp] theorem locallyConstantLinearPresheaf_obj (E : ModuleCat.{v} ℂ)
     (U : TopologicalSpace.Opens X) :
     (locallyConstantLinearPresheaf E).obj U =
       ModuleCat.of ℂ (LocallyConstant U E) :=
   rfl
 
 /-- The locally constant linear presheaf is a sheaf in the existing cover API. -/
-theorem locallyConstantLinearPresheaf_isSheaf (E : ModuleCat ℂ) :
-    IsSheafLike (locallyConstantLinearPresheaf E).toPresheafLike := by
-  change IsSheafLike (LocallyConstantValueSheaf.presheaf E)
+theorem locallyConstantLinearPresheaf_isSheaf (E : ModuleCat.{v} ℂ) :
+    IsSheafLike
+      ((locallyConstantLinearPresheaf (X := X) E).toPresheafLike) := by
+  change IsSheafLike (LocallyConstantValueSheaf.presheaf (X := X) E)
   exact LocallyConstantValueSheaf.isSheaf
 
 section Lq
@@ -10614,10 +10925,12 @@ def lqLinearPresheaf (D : Definition11.AnalyticData V) :
     (D : Definition11.AnalyticData V)
     {U W : TopologicalSpace.Opens Definition11.RadiusBase}
     (hUW : U ≤ W) (s : (lqLinearPresheaf D).obj W) (x : U) :
-    (lqLinearPresheaf D).res hUW s x = s ⟨x.1, hUW x.2⟩ :=
+    (((lqLinearPresheaf D).res hUW s :
+        LocallyConstant U D.solutionSpace).toFun x) =
+      (s : LocallyConstant W D.solutionSpace).toFun ⟨x.1, hUW x.2⟩ :=
   rfl
 
-theorem lq_fibre_has_module (D : Definition11.AnalyticData V)
+noncomputable def lq_fibre_has_module (D : Definition11.AnalyticData V)
     (U : TopologicalSpace.Opens Definition11.RadiusBase) :
     Module ℂ ((lqLinearPresheaf D).obj U) :=
   inferInstance
@@ -10732,7 +11045,13 @@ def homogeneousFunctional (A : Set ℂ) (q : A) : VariationRaw A →ₗ[ℂ] ℂ
   map_add' x y := by
     simp [add_assoc, add_left_comm, add_comm]
   map_smul' c x := by
-    simp [smul_add]
+    change
+      (inverseEvalLinear A q) (c • x.2.2) +
+          (evalLinear A q) (c • x.2.1) =
+        c • ((inverseEvalLinear A q) x.2.2 +
+          (evalLinear A q) x.2.1)
+    rw [map_smul, map_smul]
+    ring
 
 /-- The complex module of convergent homogeneous variations.  This is the
 linear tangent model to the affine equation `G = 2 psi - S`. -/
@@ -10827,7 +11146,7 @@ def translate (B : AffineBase K)
           QSeries.add_convergesAt
             (B.germ.outside_converges hqBase)
             (homogeneousOutside_converges v hq)⟩⟩
-  matches := by
+  «matches» := by
     intro q hq
     have hqBase : q ∈ B.germ.annulus.carrier := by
       rw [B.germ_annulus]
@@ -10875,10 +11194,12 @@ def linearMmockPresheaf (A : Set ℂ) :
 @[simp] theorem linearMmockPresheaf_res_apply (A : Set ℂ)
     {U V : TopologicalSpace.Opens Mmock.RadiusBase} (hUV : U ≤ V)
     (s : (linearMmockPresheaf A).obj V) (x : U) :
-    (linearMmockPresheaf A).res hUV s x = s ⟨x.1, hUV x.2⟩ :=
+    (((linearMmockPresheaf A).res hUV s :
+        LocallyConstant U (variationModule A)).toFun x) =
+      (s : LocallyConstant V (variationModule A)).toFun ⟨x.1, hUV x.2⟩ :=
   rfl
 
-theorem mmock_fibre_has_module (A : Set ℂ)
+noncomputable def mmock_fibre_has_module (A : Set ℂ)
     (U : TopologicalSpace.Opens Mmock.RadiusBase) :
     Module ℂ ((linearMmockPresheaf A).obj U) :=
   inferInstance
@@ -10892,7 +11213,8 @@ theorem mmock_restriction_isLinear (A : Set ℂ)
 
 theorem linearMmockPresheaf_isSheaf (A : Set ℂ) :
     IsSheafLike (linearMmockPresheaf A).toPresheafLike :=
-  locallyConstantLinearPresheaf_isSheaf (variationModule A)
+  Definition12Tensor.locallyConstantLinearPresheaf_isSheaf
+    (X := Mmock.RadiusBase) (variationModule A)
 
 end MmockLinear
 
@@ -10972,9 +11294,12 @@ theorem isSheaf_of_equiv (e : LinearPresheafEquiv F G)
     apply (e.app C.target).injective
     apply hG.locality C
     intro i
+    change
+      G.res (C.piece_le_target i) (e.app C.target x) =
+        G.res (C.piece_le_target i) (e.app C.target y)
     rw [← e.naturality (C.piece_le_target i) x]
     rw [← e.naturality (C.piece_le_target i) y]
-    rw [hxy i]
+    exact congrArg (e.app (C.piece i)) (hxy i)
   gluing_exists := by
     intro ι C s hs
     let t : G.toPresheafLike.CoverSectionProduct C :=
@@ -10984,7 +11309,8 @@ theorem isSheaf_of_equiv (e : LinearPresheafEquiv F G)
       change
         G.res (C.overlap_le_left i j) (e.app (C.piece i) (s i)) =
           G.res (C.overlap_le_right i j) (e.app (C.piece j) (s j))
-      rw [← e.naturality, ← e.naturality, hs i j]
+      rw [← e.naturality, ← e.naturality]
+      exact congrArg (e.app (C.piece i ⊓ C.piece j)) (hs i j)
     obtain ⟨y, hy⟩ := hG.gluing_exists C t ht
     refine ⟨(e.app C.target).symm y, ?_⟩
     intro i
@@ -11024,19 +11350,22 @@ end LinearPresheafEquiv
 
 /-- Definition 12's section module on an open set: the actual algebraic tensor
 product, not the legacy Cartesian pair. -/
-abbrev TensorSection (L M : LinearPresheaf X)
+abbrev TensorSection
+    (L : LinearPresheaf.{u, v} X) (M : LinearPresheaf.{u, w} X)
     (U : TopologicalSpace.Opens X) :=
   TensorProduct ℂ (L.obj U) (M.obj U)
 
 /-- Restriction of tensor sections is the tensor product of the two linear
 restriction maps. -/
-def tensorRestriction (L M : LinearPresheaf X)
+def tensorRestriction
+    (L : LinearPresheaf.{u, v} X) (M : LinearPresheaf.{u, w} X)
     {U V : TopologicalSpace.Opens X} (hUV : U ≤ V) :
     TensorSection L M V →ₗ[ℂ] TensorSection L M U :=
   TensorProduct.map (L.restrictionLinear hUV) (M.restrictionLinear hUV)
 
 /-- `TensorProduct.map` restricts a pure tensor componentwise. -/
-@[simp] theorem tensorRestriction_tmul (L M : LinearPresheaf X)
+@[simp] theorem tensorRestriction_tmul
+    (L : LinearPresheaf.{u, v} X) (M : LinearPresheaf.{u, w} X)
     {U V : TopologicalSpace.Opens X} (hUV : U ≤ V)
     (l : L.obj V) (m : M.obj V) :
     tensorRestriction L M hUV (l ⊗ₜ[ℂ] m) =
@@ -11044,7 +11373,8 @@ def tensorRestriction (L M : LinearPresheaf X)
   rfl
 
 /-- Identity restriction for the tensor product, at the linear-map level. -/
-theorem tensorRestriction_id (L M : LinearPresheaf X)
+theorem tensorRestriction_id
+    (L : LinearPresheaf.{u, v} X) (M : LinearPresheaf.{u, w} X)
     (U : TopologicalSpace.Opens X) :
     tensorRestriction L M (le_refl U) = LinearMap.id := by
   change
@@ -11056,7 +11386,8 @@ theorem tensorRestriction_id (L M : LinearPresheaf X)
 
 /-- Contravariant composition for tensor restrictions, proved from
 `TensorProduct.map_comp` and the two factor presheaf laws. -/
-theorem tensorRestriction_comp (L M : LinearPresheaf X)
+theorem tensorRestriction_comp
+    (L : LinearPresheaf.{u, v} X) (M : LinearPresheaf.{u, w} X)
     {U V W : TopologicalSpace.Opens X}
     (hUV : U ≤ V) (hVW : V ≤ W) :
     (tensorRestriction L M hUV).comp (tensorRestriction L M hVW) =
@@ -11073,27 +11404,30 @@ theorem tensorRestriction_comp (L M : LinearPresheaf X)
   rw [M.restrictionLinear_comp hUV hVW]
 
 /-- The genuine pointwise tensor presheaf of two complex-linear presheaves. -/
-def tensorPresheaf (L M : LinearPresheaf X) : LinearPresheaf X where
-  obj U := ModuleCat.of ℂ (TensorSection L M U)
+def tensorPresheaf
+    (L : LinearPresheaf.{u, v} X) (M : LinearPresheaf.{u, w} X) :
+    LinearPresheaf.{u, max v w} X where
+  obj U := ModuleCat.of.{max u (max v w), 0} ℂ (TensorSection L M U)
   res hUV := ModuleCat.ofHom (tensorRestriction L M hUV)
-  res_id U := by
-    apply ModuleCat.hom_ext
-    simpa using tensorRestriction_id L M U
-  res_comp hUV hVW := by
-    apply ModuleCat.hom_ext
-    simpa using tensorRestriction_comp L M hUV hVW
+  res_id U s := by
+    exact DFunLike.congr_fun (tensorRestriction_id L M U) s
+  res_comp hUV hVW s := by
+    exact DFunLike.congr_fun (tensorRestriction_comp L M hUV hVW) s
 
-@[simp] theorem tensorPresheaf_obj (L M : LinearPresheaf X)
+@[simp] theorem tensorPresheaf_obj
+    (L : LinearPresheaf.{u, v} X) (M : LinearPresheaf.{u, w} X)
     (U : TopologicalSpace.Opens X) :
     (tensorPresheaf L M).obj U = ModuleCat.of ℂ (TensorSection L M U) :=
   rfl
 
-@[simp] theorem tensorPresheaf_res_hom (L M : LinearPresheaf X)
+@[simp] theorem tensorPresheaf_res_hom
+    (L : LinearPresheaf.{u, v} X) (M : LinearPresheaf.{u, w} X)
     {U V : TopologicalSpace.Opens X} (hUV : U ≤ V) :
     ((tensorPresheaf L M).res hUV).hom = tensorRestriction L M hUV :=
   rfl
 
-@[simp] theorem tensorPresheaf_res_tmul (L M : LinearPresheaf X)
+@[simp] theorem tensorPresheaf_res_tmul
+    (L : LinearPresheaf.{u, v} X) (M : LinearPresheaf.{u, w} X)
     {U V : TopologicalSpace.Opens X} (hUV : U ≤ V)
     (l : L.obj V) (m : M.obj V) :
     (tensorPresheaf L M).res hUV (l ⊗ₜ[ℂ] m) =
@@ -11101,13 +11435,15 @@ def tensorPresheaf (L M : LinearPresheaf X) : LinearPresheaf X where
   rfl
 
 /-- Every genuine tensor fibre carries its inferred complex-module structure. -/
-theorem tensor_fibre_has_module (L M : LinearPresheaf X)
+noncomputable def tensor_fibre_has_module
+    (L : LinearPresheaf.{u, v} X) (M : LinearPresheaf.{u, w} X)
     (U : TopologicalSpace.Opens X) :
     Module ℂ ((tensorPresheaf L M).obj U) :=
   inferInstance
 
 /-- Every genuine tensor restriction is represented by a complex-linear map. -/
-theorem tensor_restriction_isLinear (L M : LinearPresheaf X)
+theorem tensor_restriction_isLinear
+    (L : LinearPresheaf.{u, v} X) (M : LinearPresheaf.{u, w} X)
     {U V : TopologicalSpace.Opens X} (hUV : U ≤ V) :
     Nonempty
       ((tensorPresheaf L M).obj V →ₗ[ℂ]
@@ -11115,7 +11451,8 @@ theorem tensor_restriction_isLinear (L M : LinearPresheaf X)
   ⟨(tensorPresheaf L M).restrictionLinear hUV⟩
 
 /-- PR-facing certificate for the algebraic part of Definition 12. -/
-structure GenuineTensorCertificate (L M : LinearPresheaf X) : Prop where
+structure GenuineTensorCertificate
+    (L : LinearPresheaf.{u, v} X) (M : LinearPresheaf.{u, w} X) : Prop where
   fibre_module :
     ∀ U : TopologicalSpace.Opens X,
       Nonempty (Module ℂ ((tensorPresheaf L M).obj U))
@@ -11142,14 +11479,21 @@ structure GenuineTensorCertificate (L M : LinearPresheaf X) : Prop where
 
 /-- The generic genuine tensor presheaf satisfies every algebraic field of the
 Definition 12 certificate without additional hypotheses. -/
-theorem genuineTensor_certificate (L M : LinearPresheaf X) :
+theorem genuineTensor_certificate
+    (L : LinearPresheaf.{u, v} X) (M : LinearPresheaf.{u, w} X) :
     GenuineTensorCertificate L M := by
   exact
     { fibre_module := fun U => ⟨tensor_fibre_has_module L M U⟩
       restriction_linear := tensor_restriction_isLinear L M
       restriction_pure_tensor := tensorPresheaf_res_tmul L M
-      restriction_identity := (tensorPresheaf L M).res_id
-      restriction_composition := (tensorPresheaf L M).res_comp }
+      restriction_identity := by
+        intro U
+        ext s
+        exact (tensorPresheaf L M).res_id U s
+      restriction_composition := by
+        intro U V W hUV hVW
+        ext s
+        exact (tensorPresheaf L M).res_comp hUV hVW s }
 
 /-! #### The sheaf boundary for pointwise tensor products
 
@@ -11236,9 +11580,10 @@ def locallyConstantTensorSheaf (E F : ModuleCat ℂ) : LinearPresheaf X :=
 
 /-- The locally constant tensor target is unconditionally a sheaf. -/
 theorem locallyConstantTensorSheaf_isSheaf (E F : ModuleCat ℂ) :
-    IsSheafLike (locallyConstantTensorSheaf E F).toPresheafLike :=
-  locallyConstantLinearPresheaf_isSheaf
-    (ModuleCat.of ℂ (TensorProduct ℂ E F))
+    IsSheafLike
+      ((locallyConstantTensorSheaf (X := X) E F).toPresheafLike) :=
+  Definition12Tensor.locallyConstantLinearPresheaf_isSheaf
+    (X := X) (ModuleCat.of ℂ (TensorProduct ℂ E F))
 
 /-- Naturality of the canonical comparison with respect to restriction. -/
 theorem pointwiseTensorComparison_naturality
@@ -11273,12 +11618,14 @@ for arbitrary pointwise tensor presheaves. -/
 structure LocalTrivializationComparison (E F : ModuleCat ℂ) where
   app :
     ∀ U : TopologicalSpace.Opens X,
-      (locallyConstantPointwiseTensor E F).obj U ≃ₗ[ℂ]
-        (locallyConstantTensorSheaf E F).obj U
+      (locallyConstantPointwiseTensor (X := X) E F).obj U ≃ₗ[ℂ]
+        (locallyConstantTensorSheaf (X := X) E F).obj U
   app_tmul :
     ∀ (U : TopologicalSpace.Opens X)
       (s : LocallyConstant U E) (t : LocallyConstant U F) (x : U),
-      app U (s ⊗ₜ[ℂ] t) x = s x ⊗ₜ[ℂ] t x
+      ((app U (s ⊗ₜ[ℂ] t) :
+          LocallyConstant U (TensorProduct ℂ E F)).toFun x) =
+        s x ⊗ₜ[ℂ] t x
 
 namespace LocalTrivializationComparison
 
@@ -11315,18 +11662,22 @@ theorem naturality (H : LocalTrivializationComparison E F)
 
 /-- A local-trivialization comparison packages as an actual natural
 linear-presheaf equivalence. -/
-def toLinearPresheafEquiv (H : LocalTrivializationComparison E F) :
-    LinearPresheafEquiv (locallyConstantPointwiseTensor E F)
-      (locallyConstantTensorSheaf E F) where
+def toLinearPresheafEquiv
+    (H : LocalTrivializationComparison (X := X) E F) :
+    LinearPresheafEquiv
+      (locallyConstantPointwiseTensor (X := X) E F)
+      (locallyConstantTensorSheaf (X := X) E F) where
   app := H.app
   naturality := H.naturality
 
 /-- Under the explicit local-trivialization comparison hypothesis, the
 pointwise tensor presheaf is a sheaf. -/
-theorem pointwiseTensor_isSheaf (H : LocalTrivializationComparison E F) :
-    IsSheafLike (locallyConstantPointwiseTensor E F).toPresheafLike :=
+theorem pointwiseTensor_isSheaf
+    (H : LocalTrivializationComparison (X := X) E F) :
+    IsSheafLike
+      ((locallyConstantPointwiseTensor (X := X) E F).toPresheafLike) :=
   H.toLinearPresheafEquiv.isSheaf_of_equiv
-    (locallyConstantTensorSheaf_isSheaf E F)
+    (locallyConstantTensorSheaf_isSheaf (X := X) E F)
 
 end LocalTrivializationComparison
 
@@ -11335,32 +11686,35 @@ together with the precise additional hypothesis that upgrades the pointwise
 tensor presheaf itself to a sheaf. -/
 structure TensorSheafBoundaryCertificate (E F : ModuleCat ℂ) : Prop where
   tensor_target_isSheaf :
-    IsSheafLike (locallyConstantTensorSheaf E F).toPresheafLike
+    IsSheafLike
+      ((locallyConstantTensorSheaf (X := X) E F).toPresheafLike)
   comparison_on_pure_tensors :
     ∀ (U : TopologicalSpace.Opens X)
       (s : LocallyConstant U E) (t : LocallyConstant U F) (x : U),
-      pointwiseTensorComparison E F U (s ⊗ₜ[ℂ] t) x =
+      pointwiseTensorComparison (X := X) E F U (s ⊗ₜ[ℂ] t) x =
         s x ⊗ₜ[ℂ] t x
   comparison_natural :
     ∀ {U V : TopologicalSpace.Opens X} (hUV : U ≤ V)
-      (z : (locallyConstantPointwiseTensor E F).obj V),
-      pointwiseTensorComparison E F U
-          ((locallyConstantPointwiseTensor E F).res hUV z) =
-        (locallyConstantTensorSheaf E F).res hUV
-          (pointwiseTensorComparison E F V z)
+      (z : (locallyConstantPointwiseTensor (X := X) E F).obj V),
+      pointwiseTensorComparison (X := X) E F U
+          ((locallyConstantPointwiseTensor (X := X) E F).res hUV z) =
+        (locallyConstantTensorSheaf (X := X) E F).res hUV
+          (pointwiseTensorComparison (X := X) E F V z)
   pointwise_isSheaf_under_local_trivialization :
-    ∀ H : LocalTrivializationComparison E F,
-      IsSheafLike (locallyConstantPointwiseTensor E F).toPresheafLike
+    ∀ H : LocalTrivializationComparison (X := X) E F,
+      IsSheafLike
+        ((locallyConstantPointwiseTensor (X := X) E F).toPresheafLike)
 
 /-- The pointwise/sheaf boundary is fully certified without asserting the
 generally false unconditional sheafness of sectionwise tensor products. -/
 theorem tensorSheafBoundary_certificate (E F : ModuleCat ℂ) :
-    TensorSheafBoundaryCertificate E F := by
+    TensorSheafBoundaryCertificate (X := X) E F := by
   exact
-    { tensor_target_isSheaf := locallyConstantTensorSheaf_isSheaf E F
+    { tensor_target_isSheaf := locallyConstantTensorSheaf_isSheaf (X := X) E F
       comparison_on_pure_tensors :=
-        pointwiseTensorComparison_tmul_apply E F
-      comparison_natural := pointwiseTensorComparison_naturality_apply E F
+        pointwiseTensorComparison_tmul_apply (X := X) E F
+      comparison_natural :=
+        pointwiseTensorComparison_naturality_apply (X := X) E F
       pointwise_isSheaf_under_local_trivialization :=
         fun H => H.pointwiseTensor_isSheaf }
 
@@ -11426,12 +11780,14 @@ end ActualTensor
 /-! #### The legacy pair and its conditional equivalence to tensor -/
 
 /-- The Cartesian pair retained solely for compatibility with the older API. -/
-abbrev PairSection (L M : LinearPresheaf X)
+abbrev PairSection
+    (L : LinearPresheaf.{u, v} X) (M : LinearPresheaf.{u, w} X)
     (U : TopologicalSpace.Opens X) :=
   L.obj U × M.obj U
 
 /-- Componentwise complex-linear restriction on the legacy pair. -/
-def pairRestriction (L M : LinearPresheaf X)
+def pairRestriction
+    (L : LinearPresheaf.{u, v} X) (M : LinearPresheaf.{u, w} X)
     {U V : TopologicalSpace.Opens X} (hUV : U ≤ V) :
     PairSection L M V →ₗ[ℂ] PairSection L M U where
   toFun s := (L.res hUV s.1, M.res hUV s.2)
@@ -11444,20 +11800,23 @@ def pairRestriction (L M : LinearPresheaf X)
     · exact (L.restrictionLinear hUV).map_smul c x.1
     · exact (M.restrictionLinear hUV).map_smul c x.2
 
-@[simp] theorem pairRestriction_fst (L M : LinearPresheaf X)
+@[simp] theorem pairRestriction_fst
+    (L : LinearPresheaf.{u, v} X) (M : LinearPresheaf.{u, w} X)
     {U V : TopologicalSpace.Opens X} (hUV : U ≤ V)
     (s : PairSection L M V) :
     (pairRestriction L M hUV s).1 = L.res hUV s.1 :=
   rfl
 
-@[simp] theorem pairRestriction_snd (L M : LinearPresheaf X)
+@[simp] theorem pairRestriction_snd
+    (L : LinearPresheaf.{u, v} X) (M : LinearPresheaf.{u, w} X)
     {U V : TopologicalSpace.Opens X} (hUV : U ≤ V)
     (s : PairSection L M V) :
     (pairRestriction L M hUV s).2 = M.res hUV s.2 :=
   rfl
 
 /-- Identity restriction for the legacy pair. -/
-theorem pairRestriction_id (L M : LinearPresheaf X)
+theorem pairRestriction_id
+    (L : LinearPresheaf.{u, v} X) (M : LinearPresheaf.{u, w} X)
     (U : TopologicalSpace.Opens X) :
     pairRestriction L M (le_refl U) = LinearMap.id := by
   apply LinearMap.ext
@@ -11467,7 +11826,8 @@ theorem pairRestriction_id (L M : LinearPresheaf X)
   · exact M.toPresheafLike.res_id U s.2
 
 /-- Contravariant composition for componentwise pair restriction. -/
-theorem pairRestriction_comp (L M : LinearPresheaf X)
+theorem pairRestriction_comp
+    (L : LinearPresheaf.{u, v} X) (M : LinearPresheaf.{u, w} X)
     {U V W : TopologicalSpace.Opens X}
     (hUV : U ≤ V) (hVW : V ≤ W) :
     (pairRestriction L M hUV).comp (pairRestriction L M hVW) =
@@ -11480,33 +11840,37 @@ theorem pairRestriction_comp (L M : LinearPresheaf X)
 
 /-- The legacy Cartesian-pair presheaf, now honestly named and linearly
 structured. -/
-def pairPresheaf (L M : LinearPresheaf X) : LinearPresheaf X where
-  obj U := ModuleCat.of ℂ (PairSection L M U)
+def pairPresheaf
+    (L : LinearPresheaf.{u, v} X) (M : LinearPresheaf.{u, w} X) :
+    LinearPresheaf.{u, max v w} X where
+  obj U := ModuleCat.of.{max u (max v w), 0} ℂ (PairSection L M U)
   res hUV := ModuleCat.ofHom (pairRestriction L M hUV)
-  res_id U := by
-    apply ModuleCat.hom_ext
-    simpa using pairRestriction_id L M U
-  res_comp hUV hVW := by
-    apply ModuleCat.hom_ext
-    simpa using pairRestriction_comp L M hUV hVW
+  res_id U s := by
+    exact DFunLike.congr_fun (pairRestriction_id L M U) s
+  res_comp hUV hVW s := by
+    exact DFunLike.congr_fun (pairRestriction_comp L M hUV hVW) s
 
-@[simp] theorem pairPresheaf_obj (L M : LinearPresheaf X)
+@[simp] theorem pairPresheaf_obj
+    (L : LinearPresheaf.{u, v} X) (M : LinearPresheaf.{u, w} X)
     (U : TopologicalSpace.Opens X) :
     (pairPresheaf L M).obj U = ModuleCat.of ℂ (PairSection L M U) :=
   rfl
 
-@[simp] theorem pairPresheaf_res_apply (L M : LinearPresheaf X)
+@[simp] theorem pairPresheaf_res_apply
+    (L : LinearPresheaf.{u, v} X) (M : LinearPresheaf.{u, w} X)
     {U V : TopologicalSpace.Opens X} (hUV : U ≤ V)
     (s : (pairPresheaf L M).obj V) :
     (pairPresheaf L M).res hUV s =
-      (L.res hUV s.1, M.res hUV s.2) :=
+      (L.res hUV (show L.obj V from s.1),
+        M.res hUV (show M.obj V from s.2)) :=
   rfl
 
 /-- Additional hypotheses sufficient to identify the legacy pair with the
 genuine tensor presheaf.  The data consist of forward and backward linear maps,
 both inverse laws, and forward restriction naturality.  The actual
 `LinearEquiv` is constructed below rather than assumed as a renamed field. -/
-structure PairTensorEquivalenceData (L M : LinearPresheaf X) where
+structure PairTensorEquivalenceData
+    (L : LinearPresheaf.{u, v} X) (M : LinearPresheaf.{u, w} X) where
   pairToTensor :
     ∀ U : TopologicalSpace.Opens X,
       PairSection L M U →ₗ[ℂ] TensorSection L M U
@@ -11527,7 +11891,8 @@ structure PairTensorEquivalenceData (L M : LinearPresheaf X) where
 
 namespace PairTensorEquivalenceData
 
-variable {L M : LinearPresheaf X}
+variable {L : LinearPresheaf.{u, v} X}
+  {M : LinearPresheaf.{u, w} X}
 
 /-- The two mutually inverse linear maps construct an actual fibrewise linear
 equivalence. -/
@@ -11584,7 +11949,7 @@ def toLinearPresheafEquiv (H : PairTensorEquivalenceData L M) :
   naturality := H.forward_naturality
 
 /-- Fibrewise statement of the actual pair/tensor linear equivalence. -/
-theorem fibre_equiv (H : PairTensorEquivalenceData L M)
+def fibre_equiv (H : PairTensorEquivalenceData L M)
     (U : TopologicalSpace.Opens X) :
     PairSection L M U ≃ₗ[ℂ] TensorSection L M U :=
   H.linearEquiv U
@@ -11602,7 +11967,8 @@ end PairTensorEquivalenceData
 /-- PR-facing audit certificate for a supplied, genuine pair/tensor
 equivalence. -/
 structure PairTensorEquivalenceCertificate
-    {L M : LinearPresheaf X} (H : PairTensorEquivalenceData L M) : Prop where
+    {L : LinearPresheaf.{u, v} X} {M : LinearPresheaf.{u, w} X}
+    (H : PairTensorEquivalenceData L M) : Prop where
   forward_inverse :
     ∀ (U : TopologicalSpace.Opens X) (s : PairSection L M U),
       H.tensorToPair U (H.pairToTensor U s) = s
@@ -11623,7 +11989,8 @@ structure PairTensorEquivalenceCertificate
 /-- Every supplied `PairTensorEquivalenceData` satisfies both inverse laws and
 both naturality laws. -/
 theorem pairTensorEquivalence_certificate
-    {L M : LinearPresheaf X} (H : PairTensorEquivalenceData L M) :
+    {L : LinearPresheaf.{u, v} X} {M : LinearPresheaf.{u, w} X}
+    (H : PairTensorEquivalenceData L M) :
     PairTensorEquivalenceCertificate H := by
   exact
     { forward_inverse := H.tensorToPair_pairToTensor
@@ -11736,8 +12103,9 @@ theorem omega1Presheaf_isSheaf :
 @[simp] theorem omega1Presheaf_res_apply
     {U V : TopologicalSpace.Opens X} (hUV : U ≤ V)
     (ω : (omega1Presheaf (X := X)).obj V) (x : U) :
-    (omega1Presheaf (X := X)).res hUV ω x =
-      ω ⟨x.1, hUV x.2⟩ :=
+    ((((omega1Presheaf (X := X)).res hUV ω :
+        LocallyConstant U ℂ).toFun x)) =
+      (ω : LocallyConstant V ℂ).toFun ⟨x.1, hUV x.2⟩ :=
   rfl
 
 /-- The distinguished logarithmic frame `d(log r)`. -/
@@ -11887,7 +12255,8 @@ def tensorWithForm {A : Type v} {B : Type w}
 def framedOperator {E : ModuleCat ℂ} (T : E →ₗ[ℂ] E)
     (U : TopologicalSpace.Opens X) :
     LocallyConstant U E →ₗ[ℂ]
-      TensorProduct ℂ (LocallyConstant U E) (Omega1Section U) :=
+      TensorSection (locallyConstantLinearPresheaf E)
+        (omega1Presheaf (X := X)) U :=
   (tensorWithForm (dlogFrame U)).comp (pointwiseOperator T U)
 
 @[simp] theorem framedOperator_apply {E : ModuleCat ℂ}
@@ -11905,9 +12274,24 @@ theorem framedOperator_restrict {E : ModuleCat ℂ}
     tensorRestriction (locallyConstantLinearPresheaf E)
         (omega1Presheaf (X := X)) hUV (framedOperator T V s) =
       framedOperator T U ((locallyConstantLinearPresheaf E).res hUV s) := by
-  rw [framedOperator_apply, tensorRestriction_tmul]
-  rw [pointwiseOperator_restrict, dlogFrame_restrict]
-  rfl
+  change
+    (locallyConstantRestriction E hUV (pointwiseOperator T V s)) ⊗ₜ[ℂ]
+        (locallyConstantRestriction (ModuleCat.of ℂ ℂ) hUV (dlogFrame V)) =
+      pointwiseOperator T U (locallyConstantRestriction E hUV s) ⊗ₜ[ℂ]
+        dlogFrame U
+  have hpoint :
+      locallyConstantRestriction E hUV (pointwiseOperator T V s) =
+        pointwiseOperator T U (locallyConstantRestriction E hUV s) := by
+    apply LocallyConstant.ext
+    intro x
+    rfl
+  have hframe :
+      locallyConstantRestriction (ModuleCat.of ℂ ℂ) hUV (dlogFrame V) =
+        dlogFrame U := by
+    apply LocallyConstant.ext
+    intro x
+    rfl
+  rw [hpoint, hframe]
 
 /-- The paper-level fibre operators: the q-connection potential on `Lq` and
 the logarithmic q-derivative on `Mmock`.  Supplying the second map directly on
@@ -11926,14 +12310,16 @@ def zeroFibreOperators (E F : ModuleCat ℂ) : FibreOperators E F where
 def nablaQFactor {E F : ModuleCat ℂ} (P : FibreOperators E F)
     (U : TopologicalSpace.Opens X) :
     LocallyConstant U E →ₗ[ℂ]
-      TensorProduct ℂ (LocallyConstant U E) (Omega1Section U) :=
+      TensorSection (locallyConstantLinearPresheaf E)
+        (omega1Presheaf (X := X)) U :=
   framedOperator P.qPotential U
 
 /-- The one-form-valued logarithmic derivative on the `Mmock` factor. -/
 def dQFactor {E F : ModuleCat ℂ} (P : FibreOperators E F)
     (U : TopologicalSpace.Opens X) :
     LocallyConstant U F →ₗ[ℂ]
-      TensorProduct ℂ (LocallyConstant U F) (Omega1Section U) :=
+      TensorSection (locallyConstantLinearPresheaf F)
+        (omega1Presheaf (X := X)) U :=
   framedOperator P.logDerivative U
 
 @[simp] theorem nablaQFactor_apply {E F : ModuleCat ℂ}
@@ -12055,7 +12441,13 @@ def idTensorDq {E F : ModuleCat ℂ} (P : FibreOperators E F)
     nablaTensorId P U (l ⊗ₜ[ℂ] m) =
       (pointwiseOperator P.qPotential U l ⊗ₜ[ℂ] m) ⊗ₜ[ℂ]
         dlogFrame U := by
-  simp [nablaTensorId]
+  change
+    leftTensorReassociate
+        (ModuleCat.of ℂ (LocallyConstant U E))
+        (ModuleCat.of ℂ (LocallyConstant U F))
+        (ModuleCat.of ℂ (Omega1Section U))
+      ((nablaQFactor P U l) ⊗ₜ[ℂ] m) = _
+  rw [nablaQFactor_apply, leftTensorReassociate_tmul]
 
 @[simp] theorem idTensorDq_tmul {E F : ModuleCat ℂ}
     (P : FibreOperators E F) (U : TopologicalSpace.Opens X)
@@ -12063,7 +12455,13 @@ def idTensorDq {E F : ModuleCat ℂ} (P : FibreOperators E F)
     idTensorDq P U (l ⊗ₜ[ℂ] m) =
       (l ⊗ₜ[ℂ] pointwiseOperator P.logDerivative U m) ⊗ₜ[ℂ]
         dlogFrame U := by
-  simp [idTensorDq]
+  change
+    rightTensorReassociate
+        (ModuleCat.of ℂ (LocallyConstant U E))
+        (ModuleCat.of ℂ (LocallyConstant U F))
+        (ModuleCat.of ℂ (Omega1Section U))
+      (l ⊗ₜ[ℂ] dQFactor P U m) = _
+  rw [dQFactor_apply, rightTensorReassociate_tmul]
 
 /-- Definition 13: the sum `∇⁽q⁾ ⊗ id + id ⊗ d_q`, as an actual
 complex-linear map with one-form codomain. -/
@@ -12232,9 +12630,23 @@ theorem potentialCoefficient_restrict {E F : ModuleCat ℂ}
             (locallyConstantLinearPresheaf F) hUV) := by
     apply TensorProduct.ext'
     intro l m
-    simp only [LinearMap.comp_apply, potentialCoefficient_tmul,
-      tensorRestriction_tmul]
-    rw [pointwiseOperator_restrict]
+    change
+      TensorProduct.map
+          (locallyConstantRestriction E hUV)
+          (locallyConstantRestriction F hUV)
+          (pointwiseOperator P.qPotential V l ⊗ₜ[ℂ] m) =
+        pointwiseOperator P.qPotential U
+            (locallyConstantRestriction E hUV l) ⊗ₜ[ℂ]
+          (locallyConstantRestriction F hUV m)
+    rw [TensorProduct.map_tmul]
+    have hop := pointwiseOperator_restrict
+      (X := X) P.qPotential hUV l
+    change
+      locallyConstantRestriction E hUV
+          (pointwiseOperator P.qPotential V l) =
+        pointwiseOperator P.qPotential U
+          (locallyConstantRestriction E hUV l) at hop
+    rw [hop]
   exact LinearMap.congr_fun hmap z
 
 /-- The logarithmic radial coefficient commutes with restriction. -/
@@ -12252,9 +12664,23 @@ theorem logRadialCoefficient_restrict {E F : ModuleCat ℂ}
             (locallyConstantLinearPresheaf F) hUV) := by
     apply TensorProduct.ext'
     intro l m
-    simp only [LinearMap.comp_apply, logRadialCoefficient_tmul,
-      tensorRestriction_tmul]
-    rw [pointwiseOperator_restrict]
+    change
+      TensorProduct.map
+          (locallyConstantRestriction E hUV)
+          (locallyConstantRestriction F hUV)
+          (l ⊗ₜ[ℂ] pointwiseOperator P.logDerivative V m) =
+        locallyConstantRestriction E hUV l ⊗ₜ[ℂ]
+          pointwiseOperator P.logDerivative U
+            (locallyConstantRestriction F hUV m)
+    rw [TensorProduct.map_tmul]
+    have hop := pointwiseOperator_restrict
+      (X := X) P.logDerivative hUV m
+    change
+      locallyConstantRestriction F hUV
+          (pointwiseOperator P.logDerivative V m) =
+        pointwiseOperator P.logDerivative U
+          (locallyConstantRestriction F hUV m) at hop
+    rw [hop]
   exact LinearMap.congr_fun hmap z
 
 /-- The complete local coefficient `d/d(log r) + A_q(t)` commutes with
@@ -12264,38 +12690,45 @@ theorem localCoefficient_restrict {E F : ModuleCat ℂ}
     (z : AqSection E F V) :
     (aqPresheaf E F).res hUV (localCoefficient P V z) =
       localCoefficient P U ((aqPresheaf E F).res hUV z) := by
-  change
-    tensorRestriction (locallyConstantLinearPresheaf E)
-        (locallyConstantLinearPresheaf F) hUV (localCoefficient P V z) =
-      localCoefficient P U
-        (tensorRestriction (locallyConstantLinearPresheaf E)
-          (locallyConstantLinearPresheaf F) hUV z)
-  calc
-    tensorRestriction (locallyConstantLinearPresheaf E)
-        (locallyConstantLinearPresheaf F) hUV (localCoefficient P V z) =
-        tensorRestriction (locallyConstantLinearPresheaf E)
-          (locallyConstantLinearPresheaf F) hUV
-            (logRadialCoefficient P V z + potentialCoefficient P V z) := by
-      rw [localCoefficient_apply]
-    _ = tensorRestriction (locallyConstantLinearPresheaf E)
-          (locallyConstantLinearPresheaf F) hUV
-            (logRadialCoefficient P V z) +
-        tensorRestriction (locallyConstantLinearPresheaf E)
-          (locallyConstantLinearPresheaf F) hUV
-            (potentialCoefficient P V z) :=
+  have hmap :
       (tensorRestriction (locallyConstantLinearPresheaf E)
-        (locallyConstantLinearPresheaf F) hUV).map_add _ _
-    _ = logRadialCoefficient P U
+          (locallyConstantLinearPresheaf F) hUV).comp
+          (localCoefficient P V) =
+        (localCoefficient P U).comp
           (tensorRestriction (locallyConstantLinearPresheaf E)
-            (locallyConstantLinearPresheaf F) hUV z) +
-        potentialCoefficient P U
-          (tensorRestriction (locallyConstantLinearPresheaf E)
-            (locallyConstantLinearPresheaf F) hUV z) := by
-      rw [logRadialCoefficient_restrict, potentialCoefficient_restrict]
-    _ = localCoefficient P U
-          (tensorRestriction (locallyConstantLinearPresheaf E)
-            (locallyConstantLinearPresheaf F) hUV z) :=
-      (localCoefficient_apply P U _).symm
+            (locallyConstantLinearPresheaf F) hUV) := by
+    apply TensorProduct.ext'
+    intro l m
+    change
+      TensorProduct.map
+          (locallyConstantRestriction E hUV)
+          (locallyConstantRestriction F hUV)
+          ((l ⊗ₜ[ℂ] pointwiseOperator P.logDerivative V m) +
+            (pointwiseOperator P.qPotential V l ⊗ₜ[ℂ] m)) =
+        (locallyConstantRestriction E hUV l ⊗ₜ[ℂ]
+            pointwiseOperator P.logDerivative U
+              (locallyConstantRestriction F hUV m)) +
+          (pointwiseOperator P.qPotential U
+              (locallyConstantRestriction E hUV l) ⊗ₜ[ℂ]
+            locallyConstantRestriction F hUV m)
+    rw [LinearMap.map_add, TensorProduct.map_tmul,
+      TensorProduct.map_tmul]
+    have hlog := pointwiseOperator_restrict
+      (X := X) P.logDerivative hUV m
+    change
+      locallyConstantRestriction F hUV
+          (pointwiseOperator P.logDerivative V m) =
+        pointwiseOperator P.logDerivative U
+          (locallyConstantRestriction F hUV m) at hlog
+    have hpot := pointwiseOperator_restrict
+      (X := X) P.qPotential hUV l
+    change
+      locallyConstantRestriction E hUV
+          (pointwiseOperator P.qPotential V l) =
+        pointwiseOperator P.qPotential U
+          (locallyConstantRestriction E hUV l) at hpot
+    rw [hlog, hpot]
+  exact LinearMap.congr_fun hmap z
 
 /-- Restriction naturality of `∇⁽q⁾ ⊗ id`, derived termwise. -/
 theorem nablaTensorId_restrict {E F : ModuleCat ℂ}
@@ -12303,15 +12736,47 @@ theorem nablaTensorId_restrict {E F : ModuleCat ℂ}
     (z : AqSection E F V) :
     (aqOmega1Presheaf E F).res hUV (nablaTensorId P V z) =
       nablaTensorId P U ((aqPresheaf E F).res hUV z) := by
-  rw [nablaTensorId_localTrivialization,
-    nablaTensorId_localTrivialization]
-  change
-    tensorRestriction (aqPresheaf E F) (omega1Presheaf (X := X)) hUV
-        (potentialCoefficient P V z ⊗ₜ[ℂ] dlogFrame V) =
-      potentialCoefficient P U ((aqPresheaf E F).res hUV z) ⊗ₜ[ℂ]
-        dlogFrame U
-  rw [tensorRestriction_tmul, potentialCoefficient_restrict,
-    dlogFrame_restrict]
+  have hmap :
+      (tensorRestriction (aqPresheaf E F)
+          (omega1Presheaf (X := X)) hUV).comp
+          (nablaTensorId P V) =
+        (nablaTensorId P U).comp
+          (tensorRestriction (locallyConstantLinearPresheaf E)
+            (locallyConstantLinearPresheaf F) hUV) := by
+    apply TensorProduct.ext'
+    intro l m
+    change
+      TensorProduct.map
+          (tensorRestriction (locallyConstantLinearPresheaf E)
+            (locallyConstantLinearPresheaf F) hUV)
+          (locallyConstantRestriction (ModuleCat.of ℂ ℂ) hUV)
+          ((pointwiseOperator P.qPotential V l ⊗ₜ[ℂ] m) ⊗ₜ[ℂ]
+            dlogFrame V) =
+        ((pointwiseOperator P.qPotential U
+              (locallyConstantRestriction E hUV l) ⊗ₜ[ℂ]
+            locallyConstantRestriction F hUV m) ⊗ₜ[ℂ]
+          dlogFrame U)
+    have hpot := pointwiseOperator_restrict
+      (X := X) P.qPotential hUV l
+    change
+      locallyConstantRestriction E hUV
+          (pointwiseOperator P.qPotential V l) =
+        pointwiseOperator P.qPotential U
+          (locallyConstantRestriction E hUV l) at hpot
+    have hframe := dlogFrame_restrict (X := X) hUV
+    change
+      locallyConstantRestriction (ModuleCat.of ℂ ℂ) hUV (dlogFrame V) =
+        dlogFrame U at hframe
+    change
+      ((locallyConstantRestriction E hUV
+          (pointwiseOperator P.qPotential V l) ⊗ₜ[ℂ]
+        locallyConstantRestriction F hUV m) ⊗ₜ[ℂ]
+          locallyConstantRestriction (ModuleCat.of ℂ ℂ) hUV (dlogFrame V)) =
+        ((pointwiseOperator P.qPotential U
+            (locallyConstantRestriction E hUV l) ⊗ₜ[ℂ]
+          locallyConstantRestriction F hUV m) ⊗ₜ[ℂ] dlogFrame U)
+    rw [hpot, hframe]
+  exact LinearMap.congr_fun hmap z
 
 /-- Restriction naturality of `id ⊗ d_q`, derived termwise. -/
 theorem idTensorDq_restrict {E F : ModuleCat ℂ}
@@ -12319,14 +12784,47 @@ theorem idTensorDq_restrict {E F : ModuleCat ℂ}
     (z : AqSection E F V) :
     (aqOmega1Presheaf E F).res hUV (idTensorDq P V z) =
       idTensorDq P U ((aqPresheaf E F).res hUV z) := by
-  rw [idTensorDq_localTrivialization, idTensorDq_localTrivialization]
-  change
-    tensorRestriction (aqPresheaf E F) (omega1Presheaf (X := X)) hUV
-        (logRadialCoefficient P V z ⊗ₜ[ℂ] dlogFrame V) =
-      logRadialCoefficient P U ((aqPresheaf E F).res hUV z) ⊗ₜ[ℂ]
-        dlogFrame U
-  rw [tensorRestriction_tmul, logRadialCoefficient_restrict,
-    dlogFrame_restrict]
+  have hmap :
+      (tensorRestriction (aqPresheaf E F)
+          (omega1Presheaf (X := X)) hUV).comp
+          (idTensorDq P V) =
+        (idTensorDq P U).comp
+          (tensorRestriction (locallyConstantLinearPresheaf E)
+            (locallyConstantLinearPresheaf F) hUV) := by
+    apply TensorProduct.ext'
+    intro l m
+    change
+      TensorProduct.map
+          (tensorRestriction (locallyConstantLinearPresheaf E)
+            (locallyConstantLinearPresheaf F) hUV)
+          (locallyConstantRestriction (ModuleCat.of ℂ ℂ) hUV)
+          ((l ⊗ₜ[ℂ] pointwiseOperator P.logDerivative V m) ⊗ₜ[ℂ]
+            dlogFrame V) =
+        ((locallyConstantRestriction E hUV l ⊗ₜ[ℂ]
+            pointwiseOperator P.logDerivative U
+              (locallyConstantRestriction F hUV m)) ⊗ₜ[ℂ]
+          dlogFrame U)
+    have hlog := pointwiseOperator_restrict
+      (X := X) P.logDerivative hUV m
+    change
+      locallyConstantRestriction F hUV
+          (pointwiseOperator P.logDerivative V m) =
+        pointwiseOperator P.logDerivative U
+          (locallyConstantRestriction F hUV m) at hlog
+    have hframe := dlogFrame_restrict (X := X) hUV
+    change
+      locallyConstantRestriction (ModuleCat.of ℂ ℂ) hUV (dlogFrame V) =
+        dlogFrame U at hframe
+    change
+      ((locallyConstantRestriction E hUV l ⊗ₜ[ℂ]
+        locallyConstantRestriction F hUV
+          (pointwiseOperator P.logDerivative V m)) ⊗ₜ[ℂ]
+          locallyConstantRestriction (ModuleCat.of ℂ ℂ) hUV (dlogFrame V)) =
+        ((locallyConstantRestriction E hUV l ⊗ₜ[ℂ]
+          pointwiseOperator P.logDerivative U
+            (locallyConstantRestriction F hUV m)) ⊗ₜ[ℂ] dlogFrame U)
+    rw [hlog, hframe]
+  exact LinearMap.congr_fun hmap z
 
 /-- The constructed Definition 13 derivative commutes with restriction.  This
 is a theorem derived from the two pointwise fibre operators and the logarithmic
@@ -12336,13 +12834,37 @@ theorem Dq_restrict {E F : ModuleCat ℂ}
     (z : AqSection E F V) :
     (aqOmega1Presheaf E F).res hUV (Dq P V z) =
       Dq P U ((aqPresheaf E F).res hUV z) := by
-  rw [Dq_localTrivialization, Dq_localTrivialization]
+  have hn := nablaTensorId_restrict (X := X) P hUV z
+  have hi := idTensorDq_restrict (X := X) P hUV z
   change
     tensorRestriction (aqPresheaf E F) (omega1Presheaf (X := X)) hUV
-        (localCoefficient P V z ⊗ₜ[ℂ] dlogFrame V) =
-      localCoefficient P U ((aqPresheaf E F).res hUV z) ⊗ₜ[ℂ]
-        dlogFrame U
-  rw [tensorRestriction_tmul, localCoefficient_restrict, dlogFrame_restrict]
+        (nablaTensorId P V z + idTensorDq P V z) =
+      nablaTensorId P U
+          (tensorRestriction (locallyConstantLinearPresheaf E)
+            (locallyConstantLinearPresheaf F) hUV z) +
+        idTensorDq P U
+          (tensorRestriction (locallyConstantLinearPresheaf E)
+            (locallyConstantLinearPresheaf F) hUV z)
+  change
+    tensorRestriction (aqPresheaf E F) (omega1Presheaf (X := X)) hUV
+        (nablaTensorId P V z) =
+      nablaTensorId P U
+        (tensorRestriction (locallyConstantLinearPresheaf E)
+          (locallyConstantLinearPresheaf F) hUV z) at hn
+  change
+    tensorRestriction (aqPresheaf E F) (omega1Presheaf (X := X)) hUV
+        (idTensorDq P V z) =
+      idTensorDq P U
+        (tensorRestriction (locallyConstantLinearPresheaf E)
+          (locallyConstantLinearPresheaf F) hUV z) at hi
+  calc
+    _ = tensorRestriction (aqPresheaf E F) (omega1Presheaf (X := X)) hUV
+          (nablaTensorId P V z) +
+        tensorRestriction (aqPresheaf E F) (omega1Presheaf (X := X)) hUV
+          (idTensorDq P V z) :=
+      (tensorRestriction (aqPresheaf E F)
+        (omega1Presheaf (X := X)) hUV).map_add _ _
+    _ = _ := congrArg₂ (· + ·) hn hi
 
 /-! ### Complex linearity and the full scalar Leibniz rule -/
 
@@ -12520,7 +13042,7 @@ structure Certificate (E F : ModuleCat ℂ) (P : FibreOperators E F) : Prop wher
 /-- Every field of the Definition 13 certificate is proved from the two fibre
 linear maps; restriction and the local formula are not additional inputs. -/
 theorem certificate (E F : ModuleCat ℂ) (P : FibreOperators E F) :
-    Certificate E F P := by
+    Certificate (X := X) E F P := by
   exact
     { omega1_fibre_module := fun _ => ⟨inferInstance⟩
       omega1_restriction_linear := fun hUV =>
@@ -12645,8 +13167,10 @@ theorem actualDq_leibniz
 theorem actual_certificate
     (D : Definition11.AnalyticData V) (A : Set ℂ)
     (P : ActualFibreOperators D A) :
-    Certificate (ActualLqFibre D) (ActualMmockFibre A) P :=
-  certificate (ActualLqFibre D) (ActualMmockFibre A) P
+    Certificate (X := Definition11.RadiusBase)
+      (ActualLqFibre D) (ActualMmockFibre A) P :=
+  certificate (X := Definition11.RadiusBase)
+    (ActualLqFibre D) (ActualMmockFibre A) P
 
 /-- Unconditional corrected flat/constant operator data. -/
 def zeroActualFibreOperators
@@ -12664,7 +13188,8 @@ def correctedDq (D : Definition11.AnalyticData V) (A : Set ℂ)
 /-- The corrected flat/constant instance satisfies the complete certificate. -/
 theorem corrected_certificate
     (D : Definition11.AnalyticData V) (A : Set ℂ) :
-    Certificate (ActualLqFibre D) (ActualMmockFibre A)
+    Certificate (X := Definition11.RadiusBase)
+      (ActualLqFibre D) (ActualMmockFibre A)
       (zeroActualFibreOperators D A) :=
   actual_certificate D A (zeroActualFibreOperators D A)
 
@@ -12705,7 +13230,7 @@ theorem ext {U : Open} {x y : qGaugeVariables Lq Mmock U}
   rfl
 
 /-- Componentwise restriction of q-gauge variables. -/
-def restrict {U V : Open} (hUV : U ≤ V)
+noncomputable def restrict {U V : Open} (hUV : U ≤ V)
     (x : qGaugeVariables Lq Mmock V) : qGaugeVariables Lq Mmock U where
   localSystemPart := Lq.res hUV x.localSystemPart
   mockPart := Mmock.res hUV x.mockPart
@@ -12736,7 +13261,7 @@ theorem restrict_comp {U V W : Open}
 end QGaugeVariable
 
 /-- The legacy Cartesian-pair q-gauge variables as a presheaf. -/
-def qGaugeVariablesPresheaf {Open : Type u} [Preorder Open]
+noncomputable def qGaugeVariablesPresheaf {Open : Type u} [Preorder Open]
     (Lq : QLocalSystem Open) (Mmock : MockBundle Open) :
     QGaugePresheaf Open where
   Field := qGaugeVariables Lq Mmock
@@ -12753,7 +13278,7 @@ def actualQGaugeVariables
 
 /-- The existing pair-presheaf compatibility API with the actual `Mmock` sheaf
 as its mock component. -/
-def actualQGaugeVariablesPresheaf
+noncomputable def actualQGaugeVariablesPresheaf
     (Lq : QLocalSystem (TopologicalSpace.Opens Mmock.RadiusBase))
     (K : Mmock.KernelData) :
     QGaugePresheaf (TopologicalSpace.Opens Mmock.RadiusBase) :=
@@ -12771,7 +13296,8 @@ def actualQGaugeVariablesPresheaf
     {K : Mmock.KernelData}
     {U V : TopologicalSpace.Opens Mmock.RadiusBase} (hUV : U ≤ V)
     (x : actualQGaugeVariables Lq K V) :
-    (QGaugeVariable.restrict hUV x).mockPart =
+    (QGaugeVariable.restrict
+        (Lq := Lq) (Mmock := Mmock.actualBundle K) hUV x).mockPart =
       (Mmock.actualBundle K).res hUV x.mockPart :=
   rfl
 
@@ -13103,8 +13629,8 @@ theorem lemma6_1_qGauge_certificate (MC : Aq.ModularCovarianceData)
     (hMC : Aq.ModularCovarianceRestrictionStable MC) :
     Lemma61QGaugeCertificate Aq MC hMC := by
   exact
-    { predicate_restriction_stable := fun hUV hA =>
-        modularCovariance_restrict Aq MC hMC hUV hA
+    { predicate_restriction_stable := fun {U V} hUV {A} hA =>
+        hMC hUV hA
       covariant_subpresheaf_res_val :=
         covariantQGaugePresheaf_res_val Aq MC hMC }
 
@@ -13173,7 +13699,7 @@ abbrev IsLocalModularCovariance (MC : AqTop.ModularCovarianceData) :=
   IsLocalCovariance (toPresheafLike AqTop) MC.Covariant
 
 /-- The topological q-gauge presheaf whose sections satisfy `MC.Covariant`. -/
-def modularCovariantAqPresheaf (MC : AqTop.ModularCovarianceData)
+noncomputable def modularCovariantAqPresheaf (MC : AqTop.ModularCovarianceData)
     (hMC : AqTop.ModularCovarianceRestrictionStable MC) :
     PresheafLike X :=
   AqPresheaf (toPresheafLike AqTop) MC.Covariant
@@ -13355,17 +13881,19 @@ def QCovariantDerivative.toQConnection (Dq : Aq.QCovariantDerivative) :
   rfl
 
 /-- Curvature is the second covariant derivative in this elementary model. -/
-def QCurvature (∇ : Aq.QConnection) (U : Open) (x : Aq.Field U) : Aq.Field U :=
-  ∇.D U (∇.D U x)
+def QCurvature (nabla : Aq.QConnection) (U : Open) (x : Aq.Field U) : Aq.Field U :=
+  nabla.D U (nabla.D U x)
 
-theorem curvature_restrict (∇ : Aq.QConnection) {U V : Open} (hUV : U ≤ V)
+theorem curvature_restrict (nabla : Aq.QConnection) {U V : Open} (hUV : U ≤ V)
     (x : Aq.Field V) :
-    Aq.res hUV (Aq.QCurvature ∇ V x) =
-      Aq.QCurvature ∇ U (Aq.res hUV x) := by
+    Aq.res hUV (Aq.QCurvature nabla V x) =
+      Aq.QCurvature nabla U (Aq.res hUV x) := by
   calc
-    Aq.res hUV (∇.D V (∇.D V x))
-        = ∇.D U (Aq.res hUV (∇.D V x)) := ∇.restrict_D hUV (∇.D V x)
-    _ = ∇.D U (∇.D U (Aq.res hUV x)) := by rw [∇.restrict_D hUV x]
+    Aq.res hUV (nabla.D V (nabla.D V x))
+        = nabla.D U (Aq.res hUV (nabla.D V x)) :=
+          nabla.restrict_D hUV (nabla.D V x)
+    _ = nabla.D U (nabla.D U (Aq.res hUV x)) := by
+      rw [nabla.restrict_D hUV x]
 
 /-- A gauge transformation compatible with restriction. -/
 structure GaugeTransform where
@@ -13374,39 +13902,40 @@ structure GaugeTransform where
     ∀ {U V : Open} (hUV : U ≤ V) (x : Aq.Field V),
       Aq.res hUV (act V x) = act U (Aq.res hUV x)
 
-def GaugeCovariant (∇ : Aq.QConnection) (g : Aq.GaugeTransform) : Prop :=
-  ∀ (U : Open) (x : Aq.Field U), ∇.D U (g.act U x) = g.act U (∇.D U x)
+def GaugeCovariant (nabla : Aq.QConnection) (g : Aq.GaugeTransform) : Prop :=
+  ∀ (U : Open) (x : Aq.Field U),
+    nabla.D U (g.act U x) = g.act U (nabla.D U x)
 
-theorem gauge_covariance_formula {∇ : Aq.QConnection} {g : Aq.GaugeTransform}
-    (hg : Aq.GaugeCovariant ∇ g) (U : Open) (x : Aq.Field U) :
-    ∇.D U (g.act U x) = g.act U (∇.D U x) := hg U x
+theorem gauge_covariance_formula {nabla : Aq.QConnection} {g : Aq.GaugeTransform}
+    (hg : Aq.GaugeCovariant nabla g) (U : Open) (x : Aq.Field U) :
+    nabla.D U (g.act U x) = g.act U (nabla.D U x) := hg U x
 
 /-- Legacy fixed-point sector for the elementary second-derivative model.
 This predicate is `QCurvature x = x`, not Definition 18's zero-curvature
 sector.  The paper-faithful subtype is `Mock2.FlatSector` in §F.1.5. -/
-def FlatSector (∇ : Aq.QConnection) (U : Open) (x : Aq.Field U) : Prop :=
-  Aq.QCurvature ∇ U x = x
+def FlatSector (nabla : Aq.QConnection) (U : Open) (x : Aq.Field U) : Prop :=
+  Aq.QCurvature nabla U x = x
 
 /-- Legacy assumption-packaging for the fixed-point sector above.  Its
 vanishing fields assume the conclusion directly and are not the order-theoretic
 proof of Proposition 19; use `Proposition19Hypotheses` and
 `proposition19_M_and_R_vanish` for that result. -/
-structure EffectiveMassFunctional (∇ : Aq.QConnection) where
+structure EffectiveMassFunctional (nabla : Aq.QConnection) where
   mass : ∀ U : Open, Aq.Field U → ℕ
   potential : ∀ U : Open, Aq.Field U → ℕ
   mass_vanishes_on_flat :
-    ∀ {U : Open} {x : Aq.Field U}, Aq.FlatSector ∇ U x → mass U x = 0
+    ∀ {U : Open} {x : Aq.Field U}, Aq.FlatSector nabla U x → mass U x = 0
   potential_vanishes_on_flat :
-    ∀ {U : Open} {x : Aq.Field U}, Aq.FlatSector ∇ U x → potential U x = 0
+    ∀ {U : Open} {x : Aq.Field U}, Aq.FlatSector nabla U x → potential U x = 0
 
-theorem flat_sector_mass_vanishes {∇ : Aq.QConnection}
-    (E : Aq.EffectiveMassFunctional ∇) {U : Open} {x : Aq.Field U}
-    (hflat : Aq.FlatSector ∇ U x) :
+theorem flat_sector_mass_vanishes {nabla : Aq.QConnection}
+    (E : Aq.EffectiveMassFunctional nabla) {U : Open} {x : Aq.Field U}
+    (hflat : Aq.FlatSector nabla U x) :
     E.mass U x = 0 := E.mass_vanishes_on_flat hflat
 
-theorem flat_sector_potential_vanishes {∇ : Aq.QConnection}
-    (E : Aq.EffectiveMassFunctional ∇) {U : Open} {x : Aq.Field U}
-    (hflat : Aq.FlatSector ∇ U x) :
+theorem flat_sector_potential_vanishes {nabla : Aq.QConnection}
+    (E : Aq.EffectiveMassFunctional nabla) {U : Open} {x : Aq.Field U}
+    (hflat : Aq.FlatSector nabla U x) :
     E.potential U x = 0 := E.potential_vanishes_on_flat hflat
 
 end QGaugePresheaf
@@ -13648,8 +14177,8 @@ def locallyConstantQGaugePresheaf (F : Type v) : QGaugePresheaf Opens where
 @[simp] theorem locallyConstantQGaugePresheaf_res_apply
     (F : Type v) {U W : Opens} (hUW : U ≤ W)
     (s : (locallyConstantQGaugePresheaf F).Field W) (x : U) :
-    (locallyConstantQGaugePresheaf F).res hUW s x =
-      s ⟨x.1, hUW x.2⟩ :=
+    ((locallyConstantQGaugePresheaf F).res hUW s).toFun x =
+      s.toFun ⟨x.1, hUW x.2⟩ :=
   rfl
 
 theorem locallyConstantQGaugePresheaf_isSheaf (F : Type v) :
@@ -13683,17 +14212,17 @@ theorem Bq_isSheaf :
   locallyConstantQGaugePresheaf_isSheaf (BoundaryDatum A)
 
 /-- Pointwise postcomposition of locally constant sections. -/
-def mapSection {F G : Type v} (f : F → G) (U : Opens) :
+def mapSection {F : Type v} {G : Type w} (f : F → G) (U : Opens) :
     LocallyConstant U F → LocallyConstant U G :=
   LocallyConstant.map f
 
-@[simp] theorem mapSection_apply {F G : Type v} (f : F → G)
+@[simp] theorem mapSection_apply {F : Type v} {G : Type w} (f : F → G)
     (U : Opens) (s : LocallyConstant U F) (x : U) :
     mapSection f U s x = f (s x) :=
   rfl
 
 /-- A fibre map induces a natural morphism of locally constant sheaves. -/
-def mapMorphism {F G : Type v} (f : F → G) :
+def mapMorphism {F : Type v} {G : Type w} (f : F → G) :
     QGaugePresheaf.Morphism
       (locallyConstantQGaugePresheaf F)
       (locallyConstantQGaugePresheaf G) where
@@ -13713,43 +14242,64 @@ def resIn : QGaugePresheaf.Morphism (Aq D K A) (Bq A) :=
 def resOut : QGaugePresheaf.Morphism (Aq D K A) (Bq A) :=
   mapMorphism (outsideBoundaryDatum D K A)
 
+
+/-- Universe-lifted boundary sheaf used only by the Mathlib categorical bridge. -/
+def liftedBq : QGaugePresheaf.{0, v} Opens :=
+  locallyConstantQGaugePresheaf (ULift.{v} (BoundaryDatum A))
+
+theorem liftedBq_isSheaf :
+    IsSheafLike (QGaugePresheaf.toPresheafLike (liftedBq.{v} A)) :=
+  locallyConstantQGaugePresheaf_isSheaf (ULift.{v} (BoundaryDatum A))
+
+def liftedResIn :
+    QGaugePresheaf.Morphism (Aq D K A) (liftedBq.{v} A) :=
+  mapMorphism (fun x =>
+    (ULift.up (insideBoundaryDatum D K A x) : ULift.{v} (BoundaryDatum A)))
+
+def liftedResOut :
+    QGaugePresheaf.Morphism (Aq D K A) (liftedBq.{v} A) :=
+  mapMorphism (fun x =>
+    (ULift.up (outsideBoundaryDatum D K A x) : ULift.{v} (BoundaryDatum A)))
+
 @[simp] theorem resIn_apply (U : Opens) (s : (Aq D K A).Field U)
     (x : U) :
-    (resIn D K A).app U s x = insideBoundaryDatum D K A (s x) :=
+    ((resIn D K A).app U s).toFun x =
+      insideBoundaryDatum D K A (s.toFun x) :=
   rfl
 
 @[simp] theorem resOut_apply (U : Opens) (s : (Aq D K A).Field U)
     (x : U) :
-    (resOut D K A).app U s x = outsideBoundaryDatum D K A (s x) :=
+    ((resOut D K A).app U s).toFun x =
+      outsideBoundaryDatum D K A (s.toFun x) :=
   rfl
 
 @[simp] theorem resIn_inside_apply
     (U : Opens) (s : (Aq D K A).Field U) (x : U)
     (q : BoundaryPoint A) :
-    ((resIn D K A).app U s x).inside q =
-      (s x).mockPart.1.series.inside.sumAt q.1 :=
+    (((resIn D K A).app U s).toFun x).inside q =
+      (s.toFun x).mockPart.1.series.inside.sumAt q.1 :=
   rfl
 
 @[simp] theorem resIn_outside_apply
     (U : Opens) (s : (Aq D K A).Field U) (x : U)
     (q : BoundaryPoint A) :
-    ((resIn D K A).app U s x).outside q =
-      (s x).mockPart.1.series.inside.sumAt q.1 :=
+    (((resIn D K A).app U s).toFun x).outside q =
+      (s.toFun x).mockPart.1.series.inside.sumAt q.1 :=
   rfl
 
 @[simp] theorem resOut_inside_apply
     (U : Opens) (s : (Aq D K A).Field U) (x : U)
     (q : BoundaryPoint A) :
-    ((resOut D K A).app U s x).inside q =
+    (((resOut D K A).app U s).toFun x).inside q =
       (2 : ℂ) * K.psi.sumAt q.1 -
-        (s x).mockPart.1.series.correction.sumAt q.1 :=
+        (s.toFun x).mockPart.1.series.correction.sumAt q.1 :=
   rfl
 
 @[simp] theorem resOut_outside_apply
     (U : Opens) (s : (Aq D K A).Field U) (x : U)
     (q : BoundaryPoint A) :
-    ((resOut D K A).app U s x).outside q =
-      (s x).mockPart.1.series.outside.sumAt q.1⁻¹ :=
+    (((resOut D K A).app U s).toFun x).outside q =
+      (s.toFun x).mockPart.1.series.outside.sumAt q.1⁻¹ :=
   rfl
 
 /-- The actual `resOut` section carries equal predicted and actual outside
@@ -13757,9 +14307,9 @@ traces at every annulus point. -/
 theorem resOut_components_eq
     (U : Opens) (s : (Aq D K A).Field U) (x : U)
     (q : BoundaryPoint A) :
-    ((resOut D K A).app U s x).inside q =
-      ((resOut D K A).app U s x).outside q :=
-  outsideBoundaryDatum_components_eq D K A (s x) q
+    (((resOut D K A).app U s).toFun x).inside q =
+      (((resOut D K A).app U s).toFun x).outside q :=
+  outsideBoundaryDatum_components_eq D K A (s.toFun x) q
 
 theorem resIn_naturality {U W : Opens} (hUW : U ≤ W)
     (s : (Aq D K A).Field W) :
@@ -13791,7 +14341,7 @@ theorem EqSheaf_isSheaf :
 
 /-- Sectionwise global completion compatibility. -/
 def SectionGloballyCompatible {U : Opens} (s : (Aq D K A).Field U) : Prop :=
-  ∀ x : U, GloballyCompatible D K A (s x)
+  ∀ x : U, GloballyCompatible D K A (s.toFun x)
 
 /-- Global mock-completion compatibility is stable under restriction to a
 smaller radius open. -/
@@ -13810,12 +14360,12 @@ theorem mem_EqSheaf_iff_globalCompatible
       SectionGloballyCompatible D K A s := by
   constructor
   · intro hs x
-    apply (insideBoundary_eq_outsideBoundary_iff D K A (s x)).mp
-    exact congrArg (fun t : (Bq A).Field U => t x) hs
+    apply (insideBoundary_eq_outsideBoundary_iff D K A (s.toFun x)).mp
+    exact congrArg (fun t : (Bq A).Field U => t.toFun x) hs
   · intro hs
     apply LocallyConstant.ext
     intro x
-    exact (insideBoundary_eq_outsideBoundary_iff D K A (s x)).mpr (hs x)
+    exact (insideBoundary_eq_outsideBoundary_iff D K A (s.toFun x)).mpr (hs x)
 
 /-!
 ### Mathlib sheaf-category realization
@@ -13839,12 +14389,14 @@ def toMathlibPresheaf
     (P : QGaugePresheaf (TopologicalSpace.Opens X)) :
     TopCat.Presheaf (Type v) (TopCat.of X) where
   obj U := P.Field U.unop
-  map f := P.res f.unop.le
+  map f := TypeCat.ofHom (P.res f.unop.le)
   map_id U := by
-    funext s
+    apply ConcreteCategory.ext_apply
+    intro s
     exact P.res_id U.unop s
   map_comp f g := by
-    funext s
+    apply ConcreteCategory.ext_apply
+    intro s
     exact (P.res_comp g.unop.le f.unop.le s).symm
 
 @[simp] theorem toMathlibPresheaf_obj
@@ -13865,10 +14417,11 @@ def toMathlibNatTrans
     {P Q : QGaugePresheaf (TopologicalSpace.Opens X)}
     (φ : QGaugePresheaf.Morphism P Q) :
     toMathlibPresheaf P ⟶ toMathlibPresheaf Q where
-  app U := φ.app U.unop
+  app U := TypeCat.ofHom (φ.app U.unop)
   naturality := by
     intro U W f
-    funext s
+    apply ConcreteCategory.ext_apply
+    intro s
     exact (φ.naturality f.unop.le s).symm
 
 @[simp] theorem toMathlibNatTrans_app
@@ -13896,6 +14449,9 @@ theorem toMathlibPresheaf_isSheaf
   have hcompat :
       (QGaugePresheaf.toPresheafLike P).CompatibleFamily C sf := by
     intro i j
+    change
+      (toMathlibPresheaf P).map ((U i).infLELeft (U j)).op (sf i) =
+        (toMathlibPresheaf P).map ((U i).infLERight (U j)).op (sf j)
     exact hsf i j
   obtain ⟨s, hs, huniq⟩ := hP.existsUnique_gluing C sf hcompat
   refine ⟨s, ?_, ?_⟩
@@ -13930,8 +14486,9 @@ def toMathlibSheafMorphism
     (hP : IsSheafLike (QGaugePresheaf.toPresheafLike P))
     (hQ : IsSheafLike (QGaugePresheaf.toPresheafLike Q))
     (U : (TopologicalSpace.Opens X)ᵒᵖ) (s : P.Field U.unop) :
-    (toMathlibSheafMorphism φ hP hQ).hom.app U s = φ.app U.unop s :=
-  rfl
+    (toMathlibSheafMorphism φ hP hQ).hom.app U s = φ.app U.unop s := by
+  change (toMathlibNatTrans φ).app U s = _
+  exact toMathlibNatTrans_app φ U s
 
 end Generic
 
@@ -13940,26 +14497,26 @@ abbrev ActualSheafCategory :=
   TopCat.Sheaf (Type v) (TopCat.of RadiusBase)
 
 /-- The actual ambient q-gauge sheaf as a Mathlib sheaf object. -/
-def mathlibAq : ActualSheafCategory :=
+def mathlibAq : ActualSheafCategory.{v} :=
   toMathlibSheaf (Aq D K A) (Aq_isSheaf D K A)
 
 /-- The actual inside/outside boundary sheaf as a Mathlib sheaf object. -/
-def mathlibBq : ActualSheafCategory :=
-  toMathlibSheaf (Bq A) (Bq_isSheaf A)
+def mathlibBq : ActualSheafCategory.{v} :=
+  toMathlibSheaf (liftedBq.{v} A) (liftedBq_isSheaf.{v} A)
 
 /-- The explicit subtype equalizer as a Mathlib sheaf object. -/
-def mathlibEqSheaf : ActualSheafCategory :=
+def mathlibEqSheaf : ActualSheafCategory.{v} :=
   toMathlibSheaf (EqSheaf D K A) (EqSheaf_isSheaf D K A)
 
 /-- The actual inside restriction as a morphism in the Mathlib sheaf category. -/
 def mathlibResIn : mathlibAq D K A ⟶ mathlibBq A :=
-  toMathlibSheafMorphism (resIn D K A)
-    (Aq_isSheaf D K A) (Bq_isSheaf A)
+  toMathlibSheafMorphism (liftedResIn D K A)
+    (Aq_isSheaf D K A) (liftedBq_isSheaf.{v} A)
 
 /-- The actual outside restriction as a morphism in the Mathlib sheaf category. -/
 def mathlibResOut : mathlibAq D K A ⟶ mathlibBq A :=
-  toMathlibSheafMorphism (resOut D K A)
-    (Aq_isSheaf D K A) (Bq_isSheaf A)
+  toMathlibSheafMorphism (liftedResOut D K A)
+    (Aq_isSheaf D K A) (liftedBq_isSheaf.{v} A)
 
 /-- Inclusion of the pointwise subtype equalizer into the ambient sheaf. -/
 def equalizerInclusion :
@@ -13987,8 +14544,14 @@ theorem mathlibEqualizerInclusion_condition :
   apply CategoryTheory.Sheaf.hom_ext
   apply NatTrans.ext
   funext U
-  funext s
-  exact s.2
+  apply CategoryTheory.ConcreteCategory.ext_apply
+  intro s
+  change (liftedResIn D K A).app U.unop s.1 =
+    (liftedResOut D K A).app U.unop s.1
+  apply LocallyConstant.ext
+  intro x
+  exact congrArg ULift.up
+    (congrArg (fun t : (Bq A).Field U.unop => t.toFun x) s.2)
 
 /-- The fork whose point is the explicit subtype equalizer sheaf. -/
 def mathlibSubtypeFork :
@@ -14000,11 +14563,23 @@ def mathlibSubtypeFork :
 theorem fork_condition_apply
     (S : Fork (mathlibResIn D K A) (mathlibResOut D K A))
     (U : Opensᵒᵖ) (s : S.pt.obj.obj U) :
-    (mathlibResIn D K A).hom.app U (S.ι.hom.app U s) =
-      (mathlibResOut D K A).hom.app U (S.ι.hom.app U s) := by
+    (resIn D K A).app U.unop (S.ι.hom.app U s) =
+      (resOut D K A).app U.unop (S.ι.hom.app U s) := by
   have h := congrArg
     (fun k : S.pt ⟶ mathlibBq A => k.hom.app U s) S.condition
-  simpa only [TopCat.Sheaf.comp_app, Function.comp_apply] using h
+  change
+    (liftedResIn D K A).app U.unop (S.ι.hom.app U s) =
+      (liftedResOut D K A).app U.unop (S.ι.hom.app U s) at h
+  apply LocallyConstant.ext
+  intro x
+  have hx := congrArg (fun t => t.toFun x) h
+  change ULift.up
+      (insideBoundaryDatum D K A ((S.ι.hom.app U s).toFun x)) =
+    ULift.up
+      (outsideBoundaryDatum D K A ((S.ι.hom.app U s).toFun x)) at hx
+  change insideBoundaryDatum D K A ((S.ι.hom.app U s).toFun x) =
+    outsideBoundaryDatum D K A ((S.ι.hom.app U s).toFun x)
+  exact congrArg (fun u : ULift.{v} (BoundaryDatum A) => u.down) hx
 
 /-- Every competing fork has a canonical sectionwise lift into the subtype
 equalizer. -/
@@ -14012,14 +14587,17 @@ def mathlibSubtypeLift
     (S : Fork (mathlibResIn D K A) (mathlibResOut D K A)) :
     S.pt ⟶ mathlibEqSheaf D K A :=
   ObjectProperty.homMk
-    { app := fun U s =>
+    { app := fun U => TypeCat.ofHom fun s =>
         ⟨S.ι.hom.app U s, fork_condition_apply D K A S U s⟩
       naturality := by
         intro U W f
-        funext s
+        apply CategoryTheory.ConcreteCategory.ext_apply
+        intro s
         apply Subtype.ext
-        simpa only [Function.comp_apply] using
-          congrFun (S.ι.hom.naturality f) s }
+        change S.ι.hom.app W (S.pt.obj.map f s) =
+          (mathlibAq D K A).obj.map f (S.ι.hom.app U s)
+        exact CategoryTheory.ConcreteCategory.congr_hom
+          (S.ι.hom.naturality f) s }
 
 @[simp] theorem mathlibSubtypeLift_app_val
     (S : Fork (mathlibResIn D K A) (mathlibResOut D K A))
@@ -14036,7 +14614,8 @@ theorem mathlibSubtypeLift_fac
   apply CategoryTheory.Sheaf.hom_ext
   apply NatTrans.ext
   funext U
-  funext s
+  apply CategoryTheory.ConcreteCategory.ext_apply
+  intro s
   rfl
 
 /-- The sectionwise subtype lift is the unique factorization through the
@@ -14049,11 +14628,13 @@ theorem mathlibSubtypeLift_unique
   apply CategoryTheory.Sheaf.hom_ext
   apply NatTrans.ext
   funext U
-  funext s
+  apply CategoryTheory.ConcreteCategory.ext_apply
+  intro s
   apply Subtype.ext
   have h := congrArg
     (fun k : S.pt ⟶ mathlibAq D K A => k.hom.app U s) hm
-  simpa only [TopCat.Sheaf.comp_app, Function.comp_apply] using h
+  change (m.hom.app U s).1 = S.ι.hom.app U s at h
+  simpa only [mathlibSubtypeLift_app_val] using h
 
 /-- The explicit subtype fork satisfies the categorical equalizer universal
 property in Mathlib's category of sheaves. -/
@@ -14064,6 +14645,14 @@ def mathlibSubtypeForkIsLimit :
     mathlibSubtypeLift_fac D K A S, ?_⟩
   intro m hm
   exact mathlibSubtypeLift_unique D K A S m hm
+
+
+/-- The explicit subtype fork installs the required categorical equalizer. -/
+noncomputable instance mathlibHasEqualizer :
+    HasEqualizer (mathlibResIn D K A) (mathlibResOut D K A) :=
+  HasLimit.mk
+    { cone := mathlibSubtypeFork D K A
+      isLimit := mathlibSubtypeForkIsLimit D K A }
 
 /-- The current pointwise subtype equalizer sheaf is canonically isomorphic to
 Mathlib's categorical equalizer in the sheaf category. -/
@@ -14115,15 +14704,17 @@ structure Certificate
           x.mockPart.1.series.correction.sumAt q.1
   inside_component :
     ∀ (U : Opens) (s : (Aq D K A).Field U) (x : U),
-      (resIn D K A).app U s x = insideBoundaryDatum D K A (s x)
+      ((resIn D K A).app U s).toFun x =
+        insideBoundaryDatum D K A (s.toFun x)
   outside_component :
     ∀ (U : Opens) (s : (Aq D K A).Field U) (x : U),
-      (resOut D K A).app U s x = outsideBoundaryDatum D K A (s x)
+      ((resOut D K A).app U s).toFun x =
+        outsideBoundaryDatum D K A (s.toFun x)
   outside_components_agree :
     ∀ (U : Opens) (s : (Aq D K A).Field U) (x : U)
       (q : BoundaryPoint A),
-      ((resOut D K A).app U s x).inside q =
-        ((resOut D K A).app U s x).outside q
+      (((resOut D K A).app U s).toFun x).inside q =
+        (((resOut D K A).app U s).toFun x).outside q
   inside_natural :
     ∀ {U W : Opens} (hUW : U ≤ W) (s : (Aq D K A).Field W),
       (Bq A).res hUW ((resIn D K A).app W s) =
@@ -14151,7 +14742,7 @@ structure Certificate
         SectionGloballyCompatible D K A s
 
 /-- The complete unconditional Definition 14 certificate. -/
-noncomputable def certificate : Certificate D K A where
+noncomputable def certificate : Certificate (D := D) (K := K) (A := A) where
   boundary_sections := Bq_field A
   outside_matching := outside_eq_predicted D K A
   inside_component := resIn_apply D K A
@@ -14320,7 +14911,9 @@ trajectories in the fixed solution kernel. -/
 def correctedEvolution (D : AnalyticData V) : HqEvolutionData D where
   Hq := fun _ => 0
   SolvesHq := fun _ u₀ u => ∀ a, u a = u₀
-  initial_value := fun _ _ h => h 0
+  initial_value := by
+    intro r s γ u₀ u h
+    exact h 0
 
 @[simp] theorem correctedEvolution_Hq_apply (D : AnalyticData V)
     (r : RadiusBase) (u : Fibre D r) :
@@ -14419,13 +15012,11 @@ fibre element. -/
   | mk map₁ refl₁ trans₁ =>
       cases T₂ with
       | mk map₂ refl₂ trans₂ =>
-          have hmap : map₁ = map₂ := by
-            funext r s γ
-            apply LinearEquiv.ext
-            intro u
-            exact h γ u
-          cases hmap
-          rfl
+          congr 1
+          funext r s γ
+          apply LinearEquiv.ext
+          intro u
+          exact h (r := r) (s := s) γ u
 
 /-- A well-posed evolution problem admits at most one realizing flat
 transport. -/
@@ -14480,9 +15071,9 @@ variable [NormedAddCommGroup V] [InnerProductSpace ℂ V] [CompleteSpace V]
 
 /-- The Definition 11 local-system sections, presented in the legacy
 `QGaugePresheaf` interface consumed by `QConnection`. -/
-def sectionGaugePresheaf (D : AnalyticData V) :
+abbrev sectionGaugePresheaf (D : AnalyticData V) :
     QGaugePresheaf (TopologicalSpace.Opens RadiusBase) where
-  Field U := (Definition11.Lq D).Fiber U
+  Field U := LocallyConstant U D.solutionSpace
   res hUW s := (Definition11.Lq D).res hUW s
   res_id := (Definition11.Lq D).res_id
   res_comp := (Definition11.Lq D).res_comp
@@ -14495,7 +15086,8 @@ def sectionGaugePresheaf (D : AnalyticData V) :
 @[simp] theorem sectionGaugePresheaf_res_apply (D : AnalyticData V)
     {U W : TopologicalSpace.Opens RadiusBase} (hUW : U ≤ W)
     (s : (sectionGaugePresheaf D).Field W) (x : U) :
-    (sectionGaugePresheaf D).res hUW s x = s ⟨x.1, hUW x.2⟩ :=
+    ((sectionGaugePresheaf D).res hUW s).toFun x =
+      s.toFun ⟨x.1, hUW x.2⟩ :=
   rfl
 
 theorem sectionGaugePresheaf_res_add (D : AnalyticData V)
@@ -14596,14 +15188,14 @@ end LocalFormulaData
 /-- Extensionality for the legacy `QConnection` interface on the concrete
 Definition 11 section presheaf. -/
 theorem qConnection_ext (D : AnalyticData V)
-    {∇₁ ∇₂ : (sectionGaugePresheaf D).QConnection}
+    {conn₁ conn₂ : (sectionGaugePresheaf D).QConnection}
     (h : ∀ (U : TopologicalSpace.Opens RadiusBase)
       (s : (sectionGaugePresheaf D).Field U),
-      ∇₁.D U s = ∇₂.D U s) :
-    ∇₁ = ∇₂ := by
-  cases ∇₁ with
+      conn₁.D U s = conn₂.D U s) :
+    conn₁ = conn₂ := by
+  cases conn₁ with
   | mk D₁ h₁ =>
-      cases ∇₂ with
+      cases conn₂ with
       | mk D₂ h₂ =>
           have hD : D₁ = D₂ := by
             funext U s
@@ -14615,11 +15207,11 @@ theorem qConnection_ext (D : AnalyticData V)
 connection uniquely. -/
 theorem LocalFormulaData.connection_unique {D : AnalyticData V}
     (L : LocalFormulaData D)
-    (∇ : (sectionGaugePresheaf D).QConnection)
+    (conn : (sectionGaugePresheaf D).QConnection)
     (h : ∀ (U : TopologicalSpace.Opens RadiusBase)
       (s : (sectionGaugePresheaf D).Field U),
-      ∇.D U s = L.logRadialDerivative U s + L.connectionForm U s) :
-    ∇ = L.connection := by
+      conn.D U s = L.logRadialDerivative U s + L.connectionForm U s) :
+    conn = L.connection := by
   apply qConnection_ext D
   intro U s
   simpa using h U s
@@ -14628,16 +15220,16 @@ theorem LocalFormulaData.connection_unique {D : AnalyticData V}
 paper's local formula. -/
 theorem LocalFormulaData.connection_eq_iff_localFormula
     {D : AnalyticData V} (L : LocalFormulaData D)
-    (∇ : (sectionGaugePresheaf D).QConnection) :
-    ∇ = L.connection ↔
+    (conn : (sectionGaugePresheaf D).QConnection) :
+    conn = L.connection ↔
       ∀ (U : TopologicalSpace.Opens RadiusBase)
         (s : (sectionGaugePresheaf D).Field U),
-        ∇.D U s = L.logRadialDerivative U s + L.connectionForm U s := by
+        conn.D U s = L.logRadialDerivative U s + L.connectionForm U s := by
   constructor
   · rintro rfl
     intro U s
     rfl
-  · exact L.connection_unique ∇
+  · exact L.connection_unique conn
 
 /-- The local formula for the corrected constant local system: both the
 logarithmic radial derivative and the connection form vanish. -/
@@ -14675,27 +15267,27 @@ theorem nablaQ_local_formula (D : AnalyticData V)
 /-- In the corrected constant-kernel model, the zero local formula has exactly
 one restriction-compatible connection. -/
 theorem nablaQ_existsUnique (D : AnalyticData V) :
-    ∃! ∇ : (sectionGaugePresheaf D).QConnection,
+    ∃! conn : (sectionGaugePresheaf D).QConnection,
       ∀ (U : TopologicalSpace.Opens RadiusBase)
         (s : (sectionGaugePresheaf D).Field U),
-        ∇.D U s = 0 := by
+        conn.D U s = 0 := by
   refine ⟨nablaQ D, nablaQ_apply D, ?_⟩
-  intro ∇ h∇
+  intro conn hConn
   apply qConnection_ext D
   intro U s
   calc
-    ∇.D U s = 0 := h∇ U s
+    conn.D U s = 0 := hConn U s
     _ = (nablaQ D).D U s := (nablaQ_apply D U s).symm
 
 theorem nablaQ_eq_iff_zeroLocalFormula (D : AnalyticData V)
-    (∇ : (sectionGaugePresheaf D).QConnection) :
-    ∇ = nablaQ D ↔
+    (conn : (sectionGaugePresheaf D).QConnection) :
+    conn = nablaQ D ↔
       ∀ (U : TopologicalSpace.Opens RadiusBase)
         (s : (sectionGaugePresheaf D).Field U),
-        ∇.D U s =
+        conn.D U s =
           (zeroLocalFormula D).logRadialDerivative U s +
             (zeroLocalFormula D).connectionForm U s :=
-  (zeroLocalFormula D).connection_eq_iff_localFormula ∇
+  (zeroLocalFormula D).connection_eq_iff_localFormula conn
 
 /-- Legacy endomorphism-valued derivative instantiated by the corrected
 Proposition 14 local formula. -/
@@ -14768,13 +15360,13 @@ theorem connection_local_formula (A : AnalyticInput D)
   rfl
 
 theorem connection_unique (A : AnalyticInput D)
-    (∇ : (sectionGaugePresheaf D).QConnection)
-    (h∇ : ∀ (U : TopologicalSpace.Opens RadiusBase)
+    (conn : (sectionGaugePresheaf D).QConnection)
+    (hConn : ∀ (U : TopologicalSpace.Opens RadiusBase)
       (s : (sectionGaugePresheaf D).Field U),
-      ∇.D U s = A.localFormula.logRadialDerivative U s +
+      conn.D U s = A.localFormula.logRadialDerivative U s +
         A.localFormula.connectionForm U s) :
-    ∇ = A.connection :=
-  A.localFormula.connection_unique ∇ h∇
+    conn = A.connection :=
+  A.localFormula.connection_unique conn hConn
 
 @[simp] theorem covariantDerivative_toQConnection (A : AnalyticInput D) :
     QGaugePresheaf.QCovariantDerivative.toQConnection
@@ -14837,18 +15429,18 @@ structure Certificate (D : AnalyticData V) : Prop where
         (zeroLocalFormula D).logRadialDerivative U s +
           (zeroLocalFormula D).connectionForm U s
   local_formula_equivalence :
-    ∀ ∇ : (sectionGaugePresheaf D).QConnection,
-      ∇ = nablaQ D ↔
+    ∀ conn : (sectionGaugePresheaf D).QConnection,
+      conn = nablaQ D ↔
         ∀ (U : TopologicalSpace.Opens RadiusBase)
           (s : (sectionGaugePresheaf D).Field U),
-          ∇.D U s =
+          conn.D U s =
             (zeroLocalFormula D).logRadialDerivative U s +
               (zeroLocalFormula D).connectionForm U s
   connection_existsUnique :
-    ∃! ∇ : (sectionGaugePresheaf D).QConnection,
+    ∃! conn : (sectionGaugePresheaf D).QConnection,
       ∀ (U : TopologicalSpace.Opens RadiusBase)
         (s : (sectionGaugePresheaf D).Field U),
-        ∇.D U s = 0
+        conn.D U s = 0
   qConnection_bridge :
     QGaugePresheaf.QCovariantDerivative.toQConnection
         (sectionGaugePresheaf D) (correctedQCovariantDerivative D) =
@@ -14889,8 +15481,8 @@ spectral profile map.  The profile map is data: no analytic construction of
 spectral coefficients is claimed in this categorical layer. -/
 structure BalancedQGaugeSheafCategory
     (Open : Type u) [Preorder Open] where
-  ambient : QGaugePresheaf Open
-  boundary : QGaugePresheaf Open
+  ambient : QGaugePresheaf.{u, v} Open
+  boundary : QGaugePresheaf.{u, v} Open
   resIn : QGaugePresheaf.Morphism ambient boundary
   resOut : QGaugePresheaf.Morphism ambient boundary
   PrimeProfile : PrimeIndex → Type v
@@ -14997,7 +15589,7 @@ profiles indexed by actual natural primes and with the two obstruction indices
 used by the SPT overlap model. -/
 structure PrimalitySheafCategory
     (Open : Type u) [Preorder Open] where
-  sheaf : QGaugePresheaf Open
+  sheaf : QGaugePresheaf.{u, v} Open
   PrimeProfile : PrimeIndex → Type v
   localProfile :
     ∀ U : Open, sheaf.Field U → ∀ p : PrimeIndex, PrimeProfile p
@@ -15283,57 +15875,60 @@ def F_torCompatibility (X : BalancedQGaugeSheafCategory Open) :
 Proposition 15. -/
 structure Proposition15FunctorBridgeCertificate : Prop where
   abstract_prime_index_map_is_input :
-    ∀ (X : BalancedQGaugeSheafCategory Open) (U : Open),
-      X.balancedSheaf.Field U → ∀ p : PrimeIndex, X.PrimeProfile p
+    ∀ (X : BalancedQGaugeSheafCategory.{u, v} Open) (U : Open),
+      ∃ primeIndexMap :
+          X.balancedSheaf.Field U → ∀ p : PrimeIndex, X.PrimeProfile p,
+        primeIndexMap = X.primeIndexMap U
   object_behavior :
-    ∀ (X : BalancedQGaugeSheafCategory Open) (U : Open)
+    ∀ (X : BalancedQGaugeSheafCategory.{u, v} Open) (U : Open)
       (s : X.balancedSheaf.Field U) (p : PrimeIndex),
       (F.obj X).localProfile U s p = X.primeIndexMap U s p
   object_profile_collection :
-    ∀ (X : BalancedQGaugeSheafCategory Open) (U : Open)
+    ∀ (X : BalancedQGaugeSheafCategory.{u, v} Open) (U : Open)
       (s : X.balancedSheaf.Field U),
       (F.obj X).localProfile U s = X.primeIndexMap U s
   object_profiles_restrict :
-    ∀ (X : BalancedQGaugeSheafCategory Open)
+    ∀ (X : BalancedQGaugeSheafCategory.{u, v} Open)
       {U V : Open} (hUV : U ≤ V)
       (s : X.balancedSheaf.Field V) (p : PrimeIndex),
       (F.obj X).localProfile U ((F.obj X).sheaf.res hUV s) p =
         (F.obj X).localProfile V s p
   morphism_behavior :
-    ∀ {X Y : BalancedQGaugeSheafCategory Open} (f : X ⟶ Y)
+    ∀ {X Y : BalancedQGaugeSheafCategory.{u, v} Open} (f : X ⟶ Y)
       (U : Open) (s : X.balancedSheaf.Field U) (p : PrimeIndex),
       (F.map f).profileMap p ((F.obj X).localProfile U s p) =
         (F.obj Y).localProfile U ((F.map f).sheafMap.app U s) p
   functor_identity :
-    ∀ X : BalancedQGaugeSheafCategory Open,
+    ∀ X : BalancedQGaugeSheafCategory.{u, v} Open,
       F.map (𝟙 X) = 𝟙 (F.obj X)
   functor_composition :
-    ∀ {X Y Z : BalancedQGaugeSheafCategory Open}
+    ∀ {X Y Z : BalancedQGaugeSheafCategory.{u, v} Open}
       (f : X ⟶ Y) (g : Y ⟶ Z),
       F.map (f ≫ g) = F.map f ≫ F.map g
   equalizer_compatibility :
-    ∀ (X : BalancedQGaugeSheafCategory Open) (U : Open)
+    ∀ (X : BalancedQGaugeSheafCategory.{u, v} Open) (U : Open)
       (s : X.ambient.Field U),
       s ∈ QGaugePresheaf.Eq X.resIn X.resOut U ↔
         ∃ t : (F.obj X).sheaf.Field U, t.1 = s
   equalizer_object_preserved :
-    ∀ X : BalancedQGaugeSheafCategory Open,
+    ∀ X : BalancedQGaugeSheafCategory.{u, v} Open,
       (F.obj X).sheaf =
         QGaugePresheaf.balancedEqualizerSheaf X.resIn X.resOut
   tor_compatibility :
-    ∀ X : BalancedQGaugeSheafCategory Open,
+    ∀ X : BalancedQGaugeSheafCategory.{u, v} Open,
       Nonempty
         (SourceObstructionGroup X ≃+
           TargetObstructionGroup (F.obj X))
   obstruction_indices_on_morphisms :
-    ∀ {X Y : BalancedQGaugeSheafCategory Open} (f : X ⟶ Y),
+    ∀ {X Y : BalancedQGaugeSheafCategory.{u, v} Open} (f : X ⟶ Y),
       (F.obj X).overlapM = (F.obj Y).overlapM ∧
         (F.obj X).overlapN = (F.obj Y).overlapN
 
 theorem proposition15_functorBridge_certificate :
-    Proposition15FunctorBridgeCertificate (Open := Open) := by
+    Proposition15FunctorBridgeCertificate.{u, v} (Open := Open) := by
   exact
-    { abstract_prime_index_map_is_input := fun X U => X.primeIndexMap U
+    { abstract_prime_index_map_is_input := fun X U =>
+        ⟨X.primeIndexMap U, rfl⟩
       object_behavior := F_obj_localProfile
       object_profile_collection := F_obj_profileCollection
       object_profiles_restrict := F_obj_localProfile_restrict
@@ -15406,18 +16001,19 @@ abbrev X := Definition11.Gamma2Quotient
 abbrev Opens := TopologicalSpace.Opens X
 
 /-- The canonical projection `π : ℍ → Γ(2) \ ℍ`. -/
-def quotientMap (τ : H) : X :=
-  Quotient.mk' τ
+def quotientMap : H → X :=
+  Definition11.quotientMk
 
 @[simp] theorem quotientMap_smul (γ : Gamma2) (τ : H) :
     quotientMap (γ • τ) = quotientMap τ := by
-  change Definition11.quotientMk (γ • τ) = Definition11.quotientMk τ
   exact Definition11.quotientMk_smul γ τ
 
 /-- The quotient projection as a bundled continuous map. -/
 def quotientMapContinuous : C(H, X) where
   toFun := quotientMap
-  continuous_toFun := continuous_quotient_mk'
+  continuous_toFun := by
+    change Continuous (@Quotient.mk' H (MulAction.orbitRel Gamma2 H))
+    exact continuous_quotient_mk'
 
 /-- The invariant open set `π⁻¹(U) ⊆ ℍ`. -/
 def coverOpen (U : Opens) : TopologicalSpace.Opens H :=
@@ -15458,16 +16054,23 @@ def gammaGL (γ : Gamma2) : GL (Fin 2) ℝ :=
     (γ.1 : GL (Fin 2) ℝ) * (δ.1 : GL (Fin 2) ℝ)
   simp
 
+@[simp] theorem gammaGL_smul (γ : Gamma2) (τ : H) :
+    gammaGL γ • τ = γ • τ := by
+  rfl
+
 /-- Every real representative of an element of `Γ(2)` has determinant one. -/
 @[simp] theorem gammaGL_matrix_det (γ : Gamma2) :
     (gammaGL γ).val.det = 1 := by
-  simp [gammaGL]
+  unfold gammaGL
+  rw [← Matrix.GeneralLinearGroup.val_det_apply]
+  norm_num
 
 /-- In particular, the upper-half-plane action uses the holomorphic, rather
 than conjugate-holomorphic, branch of Mathlib's `GL(2,R)` action. -/
 theorem gammaGL_det_pos (γ : Gamma2) :
     0 < (gammaGL γ).det.val := by
-  simp [gammaGL]
+  rw [Matrix.GeneralLinearGroup.val_det_apply, gammaGL_matrix_det]
+  norm_num
 
 /-- The exact `cτ+d` denominator in (6.1) and (6.2). -/
 def denominator (γ : Gamma2) (τ : H) : ℂ :=
@@ -15493,9 +16096,15 @@ theorem denominator_ne_zero (γ : Gamma2) (τ : H) :
 theorem denominator_mul (γ δ : Gamma2) (τ : H) :
     denominator (γ * δ) τ =
       denominator γ (δ • τ) * denominator δ τ := by
-  simpa [denominator, UpperHalfPlane.σ, gammaGL_det_pos] using
-    (UpperHalfPlane.denom_cocycle'
-      (gammaGL γ) (gammaGL δ) τ)
+  unfold denominator
+  rw [gammaGL_mul]
+  have h := UpperHalfPlane.denom_cocycle'
+    (gammaGL γ) (gammaGL δ) τ
+  have hsmul :
+      UpperHalfPlane.smulAux (gammaGL δ) τ = δ • τ := by
+    rfl
+  rw [hsmul] at h
+  simpa [UpperHalfPlane.σ, gammaGL_det_pos] using h
 
 /-- The deck action is smooth; determinant one discharges Mathlib's positivity
 hypothesis without any additional analytic assumption. -/
@@ -15524,6 +16133,12 @@ theorem denominatorUnit_mul (γ δ : Gamma2) (τ : H) :
   apply Units.ext
   simp [denominator_mul]
 
+section DeckCalculusCanonicalNormedSpace
+
+local instance (priority := 100000) canonicalNormedSpaceComplex :
+    NormedSpace ℂ ℂ :=
+  (RCLike.innerProductSpace : InnerProductSpace ℂ ℂ).toNormedSpace
+
 /-- The complex derivative of the deck map, in the standard upper-half-plane
 coordinate: `d(γτ)/dτ = (cτ+d)⁻²`. -/
 def deckDerivative (γ : Gamma2) (τ : H) : ℂ :=
@@ -15539,8 +16154,8 @@ theorem deckDerivative_eq_coordinateDeriv (γ : Gamma2) (τ : H) :
         (τ : ℂ) := by
   symm
   simpa [deckDerivative, denominator, one_div] using
-    (UpperHalfPlane.deriv_smul
-      (by simpa using gammaGL_det_pos γ) τ)
+    (UpperHalfPlane.deriv_smul (g := gammaGL γ)
+      (gammaGL_det_pos γ) τ)
 
 @[simp] theorem deckDerivative_one (τ : H) :
     deckDerivative (1 : Gamma2) τ = 1 := by
@@ -15549,16 +16164,19 @@ theorem deckDerivative_eq_coordinateDeriv (γ : Gamma2) (τ : H) :
 theorem deckDerivative_mul (γ δ : Gamma2) (τ : H) :
     deckDerivative (γ * δ) τ =
       deckDerivative γ (δ • τ) * deckDerivative δ τ := by
-  simp [deckDerivative, denominator_mul, mul_zpow]
+  unfold deckDerivative
+  rw [denominator_mul, mul_zpow]
 
 theorem deckDerivative_contMDiff (γ : Gamma2) :
     ContMDiff 𝓘(ℂ) 𝓘(ℂ) ∞ (deckDerivative γ) := by
-  simpa [deckDerivative, denominator] using
+  change ContMDiff 𝓘(ℂ) 𝓘(ℂ) ∞
+    (fun τ : H => (denominator γ τ ^ 2)⁻¹)
+  simpa [denominator] using
     (UpperHalfPlane.contMDiff_denom_zpow (gammaGL γ) (-2))
 
 /-- The tangent map of a deck transformation in the complex chart. -/
 def deckTangent (γ : Gamma2) (τ : H) : ℂ →L[ℂ] ℂ :=
-  ContinuousLinearMap.lsmul ℂ ℂ (deckDerivative γ τ)
+  deckDerivative γ τ • ContinuousLinearMap.id ℂ ℂ
 
 @[simp] theorem deckTangent_apply
     (γ : Gamma2) (τ : H) (v : ℂ) :
@@ -15567,8 +16185,9 @@ def deckTangent (γ : Gamma2) (τ : H) : ℂ →L[ℂ] ℂ :=
 
 theorem deckTangent_contMDiff (γ : Gamma2) :
     ContMDiff 𝓘(ℂ) 𝓘(ℂ, ℂ →L[ℂ] ℂ) ∞ (deckTangent γ) := by
-  exact (ContinuousLinearMap.lsmul ℂ ℂ).contMDiff.comp
-    (deckDerivative_contMDiff γ)
+  change ContMDiff 𝓘(ℂ) 𝓘(ℂ, ℂ →L[ℂ] ℂ) ∞
+    (fun τ : H => deckDerivative γ τ • ContinuousLinearMap.id ℂ ℂ)
+  exact (deckDerivative_contMDiff γ).smul contMDiff_const
 
 @[simp] theorem deckTangent_one (τ : H) :
     deckTangent (1 : Gamma2) τ = ContinuousLinearMap.id ℂ ℂ := by
@@ -15582,6 +16201,8 @@ theorem deckTangent_mul (γ δ : Gamma2) (τ : H) :
   apply ContinuousLinearMap.ext
   intro v
   simp [deckDerivative_mul, mul_assoc]
+
+end DeckCalculusCanonicalNormedSpace
 
 /-- A globally smooth choice of `(cτ+d)⁻¹ᐟ²`.  The square law records the
 branch, rather than pretending that half-integral powers are ordinary integer
@@ -15681,8 +16302,9 @@ theorem automorphyFactor_ne_zero (γ : Gamma2) (τ : H) :
 theorem automorphyFactor_contMDiff (γ : Gamma2) :
     ContMDiff 𝓘(ℂ) 𝓘(ℂ) ∞
       (fun τ : H => (M.automorphyFactor γ τ : ℂ)) := by
-  simpa [automorphyFactor] using
-    (contMDiff_const.mul (B.smooth γ))
+  change ContMDiff 𝓘(ℂ) 𝓘(ℂ) ∞
+    (fun τ : H => (M.nu γ : ℂ) * (B.value γ τ : ℂ))
+  exact contMDiff_const.mul (B.smooth γ)
 
 end MultiplierSystem
 
@@ -15717,21 +16339,26 @@ theorem etaValue_contMDiff :
   intro τ
   rw [UpperHalfPlane.contMDiffAt_iff]
   have hDifferentiable :
-      DifferentiableOn ℂ ModularForm.eta upperHalfPlaneSet :=
+      DifferentiableOn ℂ ModularForm.eta
+        UpperHalfPlane.upperHalfPlaneSet :=
     fun z hz =>
-      (ModularForm.differentiableAt_eta_of_mem_upperHalfPlaneSet hz).
-        differentiableWithinAt
+      (ModularForm.differentiableAt_eta_of_mem_upperHalfPlaneSet hz).differentiableWithinAt
   have hContDiffOn :
-      ContDiffOn ℂ ∞ ModularForm.eta upperHalfPlaneSet :=
-    hDifferentiable.contDiffOn isOpen_upperHalfPlaneSet
+      ContDiffOn ℂ ∞ ModularForm.eta
+        UpperHalfPlane.upperHalfPlaneSet :=
+    hDifferentiable.contDiffOn
+      UpperHalfPlane.isOpen_upperHalfPlaneSet
   have hContDiffAt :
       ContDiffAt ℂ ∞ ModularForm.eta (τ : ℂ) :=
     (hContDiffOn (τ : ℂ) τ.2).contDiffAt
-      (isOpen_upperHalfPlaneSet.mem_nhds τ.2)
+      (UpperHalfPlane.isOpen_upperHalfPlaneSet.mem_nhds τ.2)
   refine hContDiffAt.congr_of_eventuallyEq ?_
   filter_upwards
       [UpperHalfPlane.eventuallyEq_coe_comp_ofComplex τ.im_pos] with z hz
-  simp [etaValue, Function.comp_def, hz]
+  change ModularForm.eta ((UpperHalfPlane.ofComplex z : H) : ℂ) =
+    ModularForm.eta z
+  simpa only [Function.comp_apply, id_eq] using
+    congrArg ModularForm.eta hz
 
 /-- The weight-twelve discriminant law, rewritten entirely in the denominator
 notation used by equation (6.2). -/
@@ -15739,11 +16366,17 @@ theorem etaValue_pow_twentyFour_smul
     (γ : Gamma2) (τ : H) :
     etaValue (γ • τ) ^ 24 =
       denominator γ τ ^ 12 * etaValue τ ^ 24 := by
+  have hmem :
+      gammaGL γ ∈
+        ((Matrix.SpecialLinearGroup.mapGL ℝ :
+          SL(2, ℤ) →* GL (Fin 2) ℝ).range) := by
+    exact ⟨γ.1, rfl⟩
   have hDelta :=
-    SlashInvariantForm.slash_action_eqn_SL''
-      CuspForm.discriminant
-      (CongruenceSubgroup.mem_Gamma_one γ.1) τ
-  simpa [etaValue, ModularForm.discriminant, denominator, gammaGL] using hDelta
+    SlashInvariantForm.slash_action_eqn''
+      CuspForm.discriminant hmem τ
+  have hact : gammaGL γ • τ = γ • τ := gammaGL_smul γ τ
+  rw [hact] at hDelta
+  simpa [etaValue, ModularForm.discriminant, denominator] using hDelta
 
 /-- The eta quotient with the cocycle orientation used by `lineSmul`. -/
 noncomputable def etaRatio (γ : Gamma2) (τ : H) : ℂ :=
@@ -15819,11 +16452,13 @@ theorem etaResidual_pow_twelve (γ : Gamma2) (τ : H) :
     etaResidual (1 : Gamma2) τ = 1 := by
   simp [etaResidual]
 
-theorem etaResidual_contMDiff (γ : Gamma2) :
-    ContMDiff 𝓘(ℂ) 𝓘(ℂ) ∞ (etaResidual γ) := by
-  simpa [etaResidual, denominator] using
-    ((etaRatio_contMDiff γ).pow 2).mul
-      (UpperHalfPlane.contMDiff_denom (gammaGL γ))
+theorem etaResidual_continuous (γ : Gamma2) :
+    Continuous (etaResidual γ) := by
+  change Continuous (fun τ : H =>
+    etaRatio γ τ ^ 2 *
+      UpperHalfPlane.denom (gammaGL γ) (τ : ℂ))
+  exact ((etaRatio_contMDiff γ).continuous.pow 2).mul
+    (UpperHalfPlane.contMDiff_denom (n := ∞) (gammaGL γ)).continuous
 
 /-- Unit-valued residual, used to enter Mathlib's finite roots-of-unity type. -/
 noncomputable def etaResidualUnit (γ : Gamma2) (τ : H) : ℂˣ :=
@@ -15850,9 +16485,9 @@ theorem etaResidualUnit_continuous (γ : Gamma2) :
   apply Units.continuous_iff.mpr
   constructor
   · change Continuous (etaResidual γ)
-    exact (etaResidual_contMDiff γ).continuous
+    exact etaResidual_continuous γ
   · change Continuous (fun τ => (etaResidual γ τ)⁻¹)
-    exact (etaResidual_contMDiff γ).continuous.inv₀
+    exact (etaResidual_continuous γ).inv₀
       (etaResidual_ne_zero γ)
 
 /-- The residual bundled as an element of the finite type of twelfth roots. -/
@@ -15862,9 +16497,11 @@ noncomputable def etaResidualRoot (γ : Gamma2) (τ : H) :
 
 theorem etaResidualRoot_continuous (γ : Gamma2) :
     Continuous (etaResidualRoot γ) := by
-  simpa [etaResidualRoot] using
-    (etaResidualUnit_continuous γ).subtype_mk
-      (fun τ => etaResidualUnit_pow_twelve γ τ)
+  change Continuous (fun τ : H =>
+    (⟨etaResidualUnit γ τ, etaResidualUnit_pow_twelve γ τ⟩ :
+      rootsOfUnity 12 ℂ))
+  exact (etaResidualUnit_continuous γ).subtype_mk
+    (fun τ => etaResidualUnit_pow_twelve γ τ)
 
 theorem etaResidualRoot_isLocallyConstant (γ : Gamma2) :
     IsLocallyConstant (etaResidualRoot γ) :=
@@ -15881,6 +16518,16 @@ theorem etaResidual_eq_base (γ : Gamma2) (τ : H) :
   have hCoe := congrArg
     (fun z : rootsOfUnity 12 ℂ => (((z : ℂˣ) : ℂ))) hRoot
   simpa [etaResidualRoot, etaResidualUnit] using hCoe
+
+/-- The residual is smooth because connectedness makes it constant. -/
+theorem etaResidual_contMDiff (γ : Gamma2) :
+    ContMDiff 𝓘(ℂ) 𝓘(ℂ) ∞ (etaResidual γ) := by
+  have hfun : etaResidual γ =
+      fun _ : H => etaResidual γ UpperHalfPlane.I := by
+    funext τ
+    exact etaResidual_eq_base γ τ
+  rw [hfun]
+  exact contMDiff_const
 
 theorem etaResidualUnit_eq_base (γ : Gamma2) (τ : H) :
     etaResidualUnit γ τ = etaResidualUnit γ UpperHalfPlane.I := by
@@ -15943,7 +16590,7 @@ theorem etaBranchValue_square (γ : Gamma2) (τ : H) :
       rw [etaResidualUnit_eq_ratio_sq_mul_denominator]
     _ = (denominatorUnit γ τ)⁻¹ *
         (etaRatioUnit γ τ ^ 2 * (etaRatioUnit γ τ ^ 2)⁻¹) := by
-      rw [mul_inv_rev]
+      rw [_root_.mul_inv_rev]
       ac_rfl
     _ = (denominatorUnit γ τ)⁻¹ := by simp
 
@@ -16055,11 +16702,15 @@ def lineSmul {B : HalfWeightBranch} (M : MultiplierSystem B)
 /-- Each automorphic line action map is smooth. -/
 theorem lineSmul_contMDiff {B : HalfWeightBranch}
     (M : MultiplierSystem B) (γ : Gamma2) :
-    CMDiff ∞ (lineSmul M γ) := by
-  simpa [lineSmul] using
-    (((deckAction_contMDiff γ).comp contMDiff_fst).prodMk
-      (((M.automorphyFactor_contMDiff γ).comp contMDiff_fst).mul
-        contMDiff_snd))
+    ContMDiff ((𝓘(ℂ)).prod (𝓘(ℂ))) ((𝓘(ℂ)).prod (𝓘(ℂ))) ∞
+      (lineSmul M γ) := by
+  change ContMDiff ((𝓘(ℂ)).prod (𝓘(ℂ)))
+    ((𝓘(ℂ)).prod (𝓘(ℂ))) ∞
+      (fun p : H × ℂ =>
+        (γ • p.1, (M.automorphyFactor γ p.1 : ℂ) * p.2))
+  exact (((deckAction_contMDiff γ).comp contMDiff_fst).prodMk
+    (((M.automorphyFactor_contMDiff γ).comp contMDiff_fst).mul
+      contMDiff_snd))
 
 @[simp] theorem lineSmul_one {B : HalfWeightBranch}
     (M : MultiplierSystem B) (p : H × ℂ) :
@@ -16094,7 +16745,7 @@ def AutomorphicLineBundleTotal {B : HalfWeightBranch}
 /-- Quotient map into the automorphic line-bundle total space. -/
 def lineBundleMk {B : HalfWeightBranch} (M : MultiplierSystem B)
     (p : H × ℂ) : AutomorphicLineBundleTotal M :=
-  Quotient.mk' p
+  Quotient.mk (lineOrbitRel M) p
 
 /-- The quotient chart identifies exactly the points in one automorphic orbit. -/
 @[simp] theorem lineBundleMk_lineSmul {B : HalfWeightBranch}
@@ -16156,12 +16807,18 @@ def AutomorphicLineBundle.Fibre (L : AutomorphicLineBundle) (x : X) :=
 
 section GaugeForms
 
-variable {E_G H_G G : Type*}
+universe uEG uHG uGG
+
+variable {E_G : Type uEG} {H_G : Type uHG}
 variable [NormedAddCommGroup E_G] [NormedSpace ℂ E_G] [CompleteSpace E_G]
 variable [TopologicalSpace H_G]
 variable (I_G : ModelWithCorners ℂ E_G H_G)
-variable [Group G] [TopologicalSpace G] [ChartedSpace H_G G]
+variable (G : Type uGG) [Group G] [TopologicalSpace G] [ChartedSpace H_G G]
 variable [IsManifold I_G ∞ G] [LieGroup I_G ∞ G]
+
+noncomputable local instance gaugeLieGroupMinSmoothness :
+    LieGroup I_G (minSmoothness ℂ 3) G := by
+  simpa using (inferInstance : LieGroup I_G (3 : ℕ∞ω) G)
 
 /-- The Lie algebra `𝔤 = T₁G` of the selected complex Lie group. -/
 abbrev GaugeLieAlgebra := GroupLieAlgebra I_G G
@@ -16172,8 +16829,24 @@ noncomputable def gaugeLieAlgebraStructure :
     LieAlgebra ℂ (GaugeLieAlgebra I_G G) :=
   inferInstance
 
-/-- Value of a `𝔤`-valued one-form in the complex chart of `ℍ`. -/
-abbrev OneFormValue := ℂ →L[ℂ] GaugeLieAlgebra I_G G
+/- `TangentSpace` hides the model-space norm from typeclass inference.
+Transport the fixed chart-model structures locally without changing the API. -/
+noncomputable local instance gaugeLieAlgebraNormedAddCommGroup :
+    NormedAddCommGroup (GaugeLieAlgebra I_G G) := by
+  change NormedAddCommGroup E_G
+  infer_instance
+
+noncomputable local instance gaugeLieAlgebraNormedSpace :
+    NormedSpace ℂ (GaugeLieAlgebra I_G G) := by
+  change NormedSpace ℂ E_G
+  infer_instance
+
+/-- Value of a `𝔤`-valued one-form in the complex chart of `ℍ`.
+The public parameters are retained, while the representation is exposed as
+its actual chart model so Mathlib can infer the canonical CLM structures. -/
+abbrev OneFormValue
+    (_I_G : ModelWithCorners ℂ E_G H_G) (_G : Type uGG) :=
+  ℂ →L[ℂ] E_G
 
 /-- Smooth `𝔤`-valued one-forms on the actual open submanifold `π⁻¹(U)`. -/
 structure SmoothOneForm (U : Opens) where
@@ -16196,16 +16869,19 @@ instance (U : Opens) : CoeFun (SmoothOneForm I_G G U)
 
 theorem ext_pointwise {U : Opens} {A B : SmoothOneForm I_G G U}
     (h : ∀ τ : coverOpen U, A τ = B τ) : A = B :=
-  ext (funext h)
+  SmoothOneForm.ext (I_G := I_G) (G := G) (funext h)
 
 /-- The smooth zero one-form. -/
-def zero (U : Opens) : SmoothOneForm I_G G U where
+noncomputable def zero (U : Opens) : SmoothOneForm I_G G U where
   toFun := fun _ => 0
-  smooth_toFun := contMDiff_const
+  smooth_toFun := by
+    exact (contMDiff_const :
+      ContMDiff 𝓘(ℂ) 𝓘(ℂ, OneFormValue I_G G) ∞
+        (fun _ : coverOpen U => (0 : OneFormValue I_G G)))
 
 @[simp] theorem zero_apply (U : Opens) (τ : coverOpen U) :
-    zero I_G G U τ = 0 :=
-  rfl
+    zero I_G G U τ = 0 := by
+  simp [zero]
 
 /-- Inclusion `π⁻¹(V) ↪ π⁻¹(U)` for `V ⊆ U`. -/
 def coverInclusion {V U : Opens} (hVU : V ≤ U) :
@@ -16222,7 +16898,7 @@ theorem coverInclusion_contMDiff {V U : Opens} (hVU : V ≤ U) :
   contMDiff_inclusion (I := 𝓘(ℂ)) (coverOpen_mono hVU)
 
 /-- Ordinary restriction of a smooth one-form. -/
-def restrict {V U : Opens} (hVU : V ≤ U)
+noncomputable def restrict {V U : Opens} (hVU : V ≤ U)
     (A : SmoothOneForm I_G G U) : SmoothOneForm I_G G V where
   toFun := A.toFun ∘ coverInclusion hVU
   smooth_toFun := A.smooth_toFun.comp (coverInclusion_contMDiff hVU)
@@ -16484,7 +17160,7 @@ namespace QuotientTwistedOneForm
   rfl
 
 /-- Restriction of quotient descent data. -/
-def restrict {V U : Opens} (hVU : V ≤ U)
+noncomputable def restrict {V U : Opens} (hVU : V ≤ U)
     (A : QuotientTwistedOneForm I_G G M U) :
     QuotientTwistedOneForm I_G G M V where
   lift := SmoothOneForm.restrict I_G G hVU A.lift
@@ -16547,7 +17223,7 @@ def zeroQuotientTwistedOneForm (U : Opens) :
   descent := zero_covariant I_G G M U
 
 /-- Presheaf of all smooth lifted `𝔤`-valued one-forms. -/
-def liftedFormPresheaf : PresheafLike X where
+abbrev liftedFormPresheaf : PresheafLike X where
   Section U := SmoothOneForm I_G G U
   res hVU A := SmoothOneForm.restrict I_G G hVU A
   res_id := SmoothOneForm.restrict_id I_G G
@@ -16757,15 +17433,21 @@ theorem liftedFormPresheaf_res_comp
       (liftedFormPresheaf I_G G).res (le_trans hWV hVU) A :=
   SmoothOneForm.restrict_comp I_G G hWV hVU A
 
-/-- Mathlib's local smoothness predicate, specialized to `𝔤`-valued
-one-form coefficients on the upper half-plane. -/
+/-- Restriction-stable smoothness of one-form-valued functions. -/
+def strictSmoothOneFormPrelocalPredicate :
+    TopCat.PrelocalPredicate.{uEG, 0}
+      (fun _ : TopCat.of H => OneFormValue I_G G) where
+  pred {U} f :=
+    ContMDiff 𝓘(ℂ) 𝓘(ℂ, OneFormValue I_G G) ∞ f
+  res {U V} i f hf :=
+    hf.comp (contMDiff_inclusion i.le)
+
+/-- The universe-polymorphic local smoothness predicate obtained by
+sheafifying restriction-stable `ContMDiff`. -/
 def strictSmoothOneFormLocalPredicate :
-    TopCat.LocalPredicate
+    TopCat.LocalPredicate.{uEG, 0}
       (fun _ : TopCat.of H => OneFormValue I_G G) :=
-  (contDiffWithinAt_localInvariantProp
-    (I := 𝒤(ℂ))
-    (I' := 𝒤(ℂ, OneFormValue I_G G)) ∞).localPredicate
-      H (OneFormValue I_G G)
+  (strictSmoothOneFormPrelocalPredicate I_G G).sheafify
 
 /-- For a point over the target of a quotient-open cover, choose one cover
 member containing its quotient point. -/
@@ -16885,22 +17567,42 @@ theorem strictGluedToFun_contMDiff {iota : Type}
     (C : OpenCoverData X iota)
     (s : (liftedFormPresheaf I_G G).CoverSectionProduct C)
     (hs : (liftedFormPresheaf I_G G).CompatibleFamily C s) :
-    ContMDiff 𝒤(ℂ) 𝒤(ℂ, OneFormValue I_G G) ∞
+    ContMDiff 𝓘(ℂ) 𝓘(ℂ, OneFormValue I_G G) ∞
       (strictGluedToFun I_G G C s) := by
-  change (strictSmoothOneFormLocalPredicate I_G G).pred
-    (strictGluedToFun I_G G C s)
-  apply (strictSmoothOneFormLocalPredicate I_G G).locality
   intro tau
   let i := strictGlueIndex C tau
-  refine ⟨coverOpen (C.piece i), strictGlueIndex_mem C tau,
-    homOfLE (coverOpen_mono (C.piece_le_target i)), ?_⟩
-  change ContMDiff 𝒤(ℂ) 𝒤(ℂ, OneFormValue I_G G) ∞
-    (fun x : coverOpen (C.piece i) =>
-      strictGluedToFun I_G G C s
-        (SmoothOneForm.coverInclusion (C.piece_le_target i) x))
-  apply (s i).smooth_toFun.congr
-  intro x
-  exact strictGluedToFun_eq_on_piece I_G G C s hs i x
+  let tau_i : coverOpen (C.piece i) :=
+    ⟨(tau : H), strictGlueIndex_mem C tau⟩
+  have hlocal :
+      ContMDiff 𝓘(ℂ) 𝓘(ℂ, OneFormValue I_G G) ∞
+        (fun x : coverOpen (C.piece i) =>
+          strictGluedToFun I_G G C s
+            (SmoothOneForm.coverInclusion (C.piece_le_target i) x)) := by
+    apply (s i).smooth_toFun.congr
+    intro x
+    exact strictGluedToFun_eq_on_piece I_G G C s hs i x
+  have htau :
+      SmoothOneForm.coverInclusion (C.piece_le_target i) tau_i = tau := by
+    apply Subtype.ext
+    rfl
+  rw [← htau]
+  have hpoint :
+      ChartedSpace.LiftPropAt
+        (ContDiffWithinAtProp
+          𝓘(ℂ) 𝓘(ℂ, OneFormValue I_G G) ∞)
+        (strictGluedToFun I_G G C s)
+        (SmoothOneForm.coverInclusion (C.piece_le_target i) tau_i) := by
+    change ChartedSpace.LiftPropAt
+      (ContDiffWithinAtProp
+        𝓘(ℂ) 𝓘(ℂ, OneFormValue I_G G) ∞)
+      (strictGluedToFun I_G G C s)
+      (Set.inclusion (coverOpen_mono (C.piece_le_target i)) tau_i)
+    rw [(contDiffWithinAt_localInvariantProp
+      (I := 𝓘(ℂ))
+      (I' := 𝓘(ℂ, OneFormValue I_G G)) ∞).liftPropAt_iff_comp_inclusion
+        (coverOpen_mono (C.piece_le_target i))]
+    exact hlocal tau_i
+  exact hpoint
 
 /-- The actual smooth global one-form obtained from a strictly compatible local
 family. -/
@@ -17094,16 +17796,14 @@ def strictEqualityTwistedOneFormPresheaf : PresheafLike X :=
 restricted one-forms on every pairwise overlap. -/
 def strictEqualityOverlapCompatibility {iota : Type}
     (C : OpenCoverData X iota)
-    (s : (strictEqualityTwistedOneFormPresheaf I_G G M).
-      CoverSectionProduct C) : Prop :=
+    (s : (strictEqualityTwistedOneFormPresheaf I_G G M).CoverSectionProduct C) : Prop :=
   (strictEqualityTwistedOneFormPresheaf I_G G M).CompatibleFamily C s
 
 /-- Expansion of the strict overlap API.  No gauge transformation witnesses or
 2-morphisms occur in this statement. -/
 theorem strictEqualityOverlapCompatibility_iff_literal {iota : Type}
     (C : OpenCoverData X iota)
-    (s : (strictEqualityTwistedOneFormPresheaf I_G G M).
-      CoverSectionProduct C) :
+    (s : (strictEqualityTwistedOneFormPresheaf I_G G M).CoverSectionProduct C) :
     strictEqualityOverlapCompatibility I_G G M C s ↔
       ∀ i j : iota,
         (strictEqualityTwistedOneFormPresheaf I_G G M).res
@@ -17178,8 +17878,7 @@ structure Proposition16StrictEqualityCertificate : Prop where
     IsSheafLike (strictEqualityTwistedOneFormPresheaf I_G G M)
   strict_overlap_is_literal :
     ∀ {iota : Type} (C : OpenCoverData X iota)
-      (s : (strictEqualityTwistedOneFormPresheaf I_G G M).
-        CoverSectionProduct C),
+      (s : (strictEqualityTwistedOneFormPresheaf I_G G M).CoverSectionProduct C),
       strictEqualityOverlapCompatibility I_G G M C s ↔
         ∀ i j : iota,
           (strictEqualityTwistedOneFormPresheaf I_G G M).res
@@ -17242,7 +17941,9 @@ structure Certificate : Prop where
   line_action_identity :
     ∀ p : H × ℂ, lineSmul M 1 p = p
   line_action_smooth :
-    ∀ γ : Gamma2, CMDiff ∞ (lineSmul M γ)
+    ∀ γ : Gamma2,
+      ContMDiff ((𝓘(ℂ)).prod (𝓘(ℂ)))
+        ((𝓘(ℂ)).prod (𝓘(ℂ))) ∞ (lineSmul M γ)
   line_action_composition :
     ∀ (γ δ : Gamma2) (p : H × ℂ),
       lineSmul M (γ * δ) p = lineSmul M γ (lineSmul M δ p)
@@ -17362,11 +18063,20 @@ instance smoothOneFormAddCommGroup (U : Opens) :
     ⟨zero I_G G U⟩ ⟨add I_G G U⟩ ⟨neg I_G G U⟩
     (@nsmulRec (SmoothOneForm I_G G U)
       ⟨zero I_G G U⟩ ⟨add I_G G U⟩)
-  add_zero A := by apply ext_pointwise; intro τ; simp [add, zero]
-  zero_add A := by apply ext_pointwise; intro τ; simp [add, zero]
+  add_zero A := by
+    apply ext_pointwise
+    intro τ
+    exact add_zero (A τ)
+  zero_add A := by
+    apply ext_pointwise
+    intro τ
+    exact zero_add (A τ)
   add_comm A C := by apply ext_pointwise; intro τ; exact add_comm _ _
   add_assoc A C D := by apply ext_pointwise; intro τ; exact add_assoc _ _ _
-  neg_add_cancel A := by apply ext_pointwise; intro τ; simp [add, neg, zero]
+  neg_add_cancel A := by
+    apply ext_pointwise
+    intro τ
+    exact neg_add_cancel (A τ)
 
 @[simp] theorem add_apply (U : Opens) (A C : SmoothOneForm I_G G U)
     (τ : coverOpen U) : (A + C) τ = A τ + C τ :=
@@ -17420,6 +18130,9 @@ theorem equation62_add (U : Opens) (A C : SmoothOneForm I_G G U)
   rw [show deckPullback I_G G γ U (A + C) =
       deckPullback I_G G γ U A + deckPullback I_G G γ U C by
     exact deckPullback_add I_G G γ U A C]
+  change
+    deckPullback I_G G γ U A τ + deckPullback I_G G γ U C τ =
+      (M.automorphyFactor γ (τ : H) : ℂ) • (A τ + C τ)
   rw [hA γ τ, hC γ τ]
   exact (smul_add _ _ _).symm
 
@@ -17430,6 +18143,9 @@ theorem equation62_neg (U : Opens) (A : SmoothOneForm I_G G U)
   rw [show deckPullback I_G G γ U (-A) =
       -deckPullback I_G G γ U A by
     exact deckPullback_neg I_G G γ U A]
+  change
+    -deckPullback I_G G γ U A τ =
+      (M.automorphyFactor γ (τ : H) : ℂ) • (-A τ)
   rw [hA γ τ]
   exact (smul_neg _ _).symm
 
@@ -17454,10 +18170,10 @@ instance smoothGaugeMapCoeFun (U : Opens) : CoeFun (SmoothGaugeMap I_G G U)
 
 theorem ext_pointwise {U : Opens} {g h : SmoothGaugeMap I_G G U}
     (hfun : ∀ τ, g τ = h τ) : g = h :=
-  ext (funext hfun)
+  SmoothGaugeMap.ext I_G G (funext hfun)
 
 /-- Identity smooth gauge map. -/
-def identity (U : Opens) : SmoothGaugeMap I_G G U where
+noncomputable def identity (U : Opens) : SmoothGaugeMap I_G G U where
   toFun := fun _ => 1
   smooth_toFun := contMDiff_const
 
@@ -17480,7 +18196,7 @@ def inverse {U : Opens} (g : SmoothGaugeMap I_G G U) :
   smooth_toFun := g.smooth_toFun.inv
 
 /-- Restriction of a smooth gauge map. -/
-def restrict {V U : Opens} (hVU : V ≤ U) (g : SmoothGaugeMap I_G G U) :
+noncomputable def restrict {V U : Opens} (hVU : V ≤ U) (g : SmoothGaugeMap I_G G U) :
     SmoothGaugeMap I_G G V where
   toFun := g.toFun ∘ SmoothOneForm.coverInclusion hVU
   smooth_toFun := g.smooth_toFun.comp
@@ -17592,85 +18308,85 @@ def Central {U : Opens} (g : SmoothGaugeMap I_G G U) : Prop :=
   ∀ (τ : coverOpen U) (x : G), Commute (g τ) x
 
 theorem deckInvariant_identity (U : Opens) :
-    DeckInvariant (identity I_G G U) := by
+    DeckInvariant I_G G (identity I_G G U) := by
   intro γ τ
   rfl
 
 theorem deckInvariant_constant (U : Opens) (a : G) :
-    DeckInvariant (constant I_G G U a) := by
+    DeckInvariant I_G G (constant I_G G U a) := by
   intro γ τ
   rfl
 
 theorem deckInvariant_comp {U : Opens} {g h : SmoothGaugeMap I_G G U}
-    (hg : DeckInvariant g) (hh : DeckInvariant h) :
-    DeckInvariant (comp I_G G g h) := by
+    (hg : DeckInvariant I_G G g) (hh : DeckInvariant I_G G h) :
+    DeckInvariant I_G G (comp I_G G g h) := by
   intro γ τ
   rw [comp_apply, comp_apply, hg γ τ, hh γ τ]
 
 theorem deckInvariant_inverse {U : Opens} {g : SmoothGaugeMap I_G G U}
-    (hg : DeckInvariant g) : DeckInvariant (inverse I_G G g) := by
+    (hg : DeckInvariant I_G G g) : DeckInvariant I_G G (inverse I_G G g) := by
   intro γ τ
   rw [inverse_apply, inverse_apply, hg γ τ]
 
 theorem deckInvariant_restrict {V U : Opens} (hVU : V ≤ U)
-    {g : SmoothGaugeMap I_G G U} (hg : DeckInvariant g) :
-    DeckInvariant (restrict I_G G hVU g) := by
+    {g : SmoothGaugeMap I_G G U} (hg : DeckInvariant I_G G g) :
+    DeckInvariant I_G G (restrict I_G G hVU g) := by
   intro γ τ
   rw [restrict_apply, restrict_apply, coverInclusion_coverDeckMap]
   exact hg γ (SmoothOneForm.coverInclusion hVU τ)
 
-theorem central_identity (U : Opens) : Central (identity I_G G U) := by
+theorem central_identity (U : Opens) : Central I_G G (identity I_G G U) := by
   intro τ x
   exact Commute.one_left x
 
 theorem central_comp {U : Opens} {g h : SmoothGaugeMap I_G G U}
-    (hg : Central g) (hh : Central h) : Central (comp I_G G g h) := by
+    (hg : Central I_G G g) (hh : Central I_G G h) : Central I_G G (comp I_G G g h) := by
   intro τ x
   exact (hg τ x).mul_left (hh τ x)
 
 theorem central_inverse {U : Opens} {g : SmoothGaugeMap I_G G U}
-    (hg : Central g) : Central (inverse I_G G g) := by
+    (hg : Central I_G G g) : Central I_G G (inverse I_G G g) := by
   intro τ x
   exact (hg τ x).inv_left
 
 theorem central_restrict {V U : Opens} (hVU : V ≤ U)
-    {g : SmoothGaugeMap I_G G U} (hg : Central g) :
-    Central (restrict I_G G hVU g) := by
+    {g : SmoothGaugeMap I_G G U} (hg : Central I_G G g) :
+    Central I_G G (restrict I_G G hVU g) := by
   intro τ x
   exact hg (SmoothOneForm.coverInclusion hVU τ) x
 
 theorem rhoCompatible_identity (ρ : Gamma2 →* G) (U : Opens) :
-    RhoCompatible ρ (identity I_G G U) := by
+    RhoCompatible I_G G ρ (identity I_G G U) := by
   intro γ τ
   simp
 
 theorem rhoCompatible_comp (ρ : Gamma2 →* G) {U : Opens}
     {g h : SmoothGaugeMap I_G G U}
-    (hg : RhoCompatible ρ g) (hh : RhoCompatible ρ h) :
-    RhoCompatible ρ (comp I_G G g h) := by
+    (hg : RhoCompatible I_G G ρ g) (hh : RhoCompatible I_G G ρ h) :
+    RhoCompatible I_G G ρ (comp I_G G g h) := by
   intro γ τ
   rw [comp_apply, comp_apply, hg γ τ, hh γ τ]
   group
 
 theorem rhoCompatible_inverse (ρ : Gamma2 →* G) {U : Opens}
-    {g : SmoothGaugeMap I_G G U} (hg : RhoCompatible ρ g) :
-    RhoCompatible ρ (inverse I_G G g) := by
+    {g : SmoothGaugeMap I_G G U} (hg : RhoCompatible I_G G ρ g) :
+    RhoCompatible I_G G ρ (inverse I_G G g) := by
   intro γ τ
   rw [inverse_apply, inverse_apply, hg γ τ]
   group
 
 theorem rhoCompatible_restrict (ρ : Gamma2 →* G)
     {V U : Opens} (hVU : V ≤ U) {g : SmoothGaugeMap I_G G U}
-    (hg : RhoCompatible ρ g) :
-    RhoCompatible ρ (restrict I_G G hVU g) := by
+    (hg : RhoCompatible I_G G ρ g) :
+    RhoCompatible I_G G ρ (restrict I_G G hVU g) := by
   intro γ τ
   rw [restrict_apply, restrict_apply, coverInclusion_coverDeckMap]
   exact hg γ (SmoothOneForm.coverInclusion hVU τ)
 
 theorem rhoCompatible_of_deckInvariant_of_central
     (ρ : Gamma2 →* G) {U : Opens} {g : SmoothGaugeMap I_G G U}
-    (hdeck : DeckInvariant g) (hcentral : Central g) :
-    RhoCompatible ρ g := by
+    (hdeck : DeckInvariant I_G G g) (hcentral : Central I_G G g) :
+    RhoCompatible I_G G ρ g := by
   intro γ τ
   rw [hdeck γ τ]
   have hcomm := hcentral τ (ρ γ)
@@ -17684,7 +18400,7 @@ end SmoothGaugeMap
 /-- The adjoint action on `𝔤 = T₁G`, defined as the manifold derivative at the
 identity of the literal conjugation map `x ↦ a⁻¹xa`. -/
 noncomputable def gaugeAdjointValue (a : G) :
-    GaugeLieAlgebra I_G G →L[ℂ] GaugeLieAlgebra I_G G :=
+    E_G →L[ℂ] E_G :=
   mfderiv I_G I_G (fun x : G => a⁻¹ * x * a) 1
 
 /-- The pointwise left logarithmic derivative `g⁻¹dg`: first differentiate
@@ -17700,7 +18416,7 @@ conjugation map, identifies it with `id`, and differentiates that equality. -/
 theorem gaugeAdjointValue_eq_id_of_central (a : G)
     (ha : ∀ x : G, Commute a x) :
     gaugeAdjointValue I_G G a =
-      ContinuousLinearMap.id ℂ (GaugeLieAlgebra I_G G) := by
+      ContinuousLinearMap.id ℂ E_G := by
   have hconj : (fun x : G => a⁻¹ * x * a) = id := by
     funext x
     calc
@@ -17708,6 +18424,9 @@ theorem gaugeAdjointValue_eq_id_of_central (a : G)
       _ = a⁻¹ * (a * x) := by rw [← (ha x).eq]
       _ = x := by simp
   unfold gaugeAdjointValue
+  change
+    mfderiv I_G I_G (fun x : G => a⁻¹ * x * a) 1 =
+      ContinuousLinearMap.id ℂ (GaugeLieAlgebra I_G G)
   rw [mfderiv_congr hconj, mfderiv_id]
 
 /-- Constant gauges have zero literal left logarithmic derivative. -/
@@ -17715,7 +18434,11 @@ theorem gaugeAdjointValue_eq_id_of_central (a : G)
     (a : G) (τ : coverOpen U) :
     leftLogarithmicDerivativeValue I_G G
       (SmoothGaugeMap.constant I_G G U a) τ = 0 := by
-  simp [leftLogarithmicDerivativeValue, mfderiv_const]
+  change
+    (mfderiv I_G I_G (fun x : G => a⁻¹ * x) a).comp
+      (mfderiv 𝓘(ℂ) I_G (fun _ : coverOpen U => a) τ) = 0
+  rw [mfderiv_const]
+  exact ContinuousLinearMap.comp_zero _
 
 /-- Certified differential calculus for the Maurer-Cartan term.  In addition
 to the four functorial laws needed for admissibility closure, `maurerCartan_formula`
@@ -17733,12 +18456,12 @@ structure MaurerCartanCalculus where
       maurerCartan U (SmoothGaugeMap.identity I_G G U) = 0
   maurerCartan_comp :
     ∀ (U : Opens) (g h : SmoothGaugeMap I_G G U),
-      SmoothGaugeMap.Central g → SmoothGaugeMap.Central h →
+      SmoothGaugeMap.Central I_G G g → SmoothGaugeMap.Central I_G G h →
         maurerCartan U (SmoothGaugeMap.comp I_G G g h) =
           maurerCartan U g + maurerCartan U h
   maurerCartan_inverse :
     ∀ (U : Opens) (g : SmoothGaugeMap I_G G U),
-      SmoothGaugeMap.Central g →
+      SmoothGaugeMap.Central I_G G g →
         maurerCartan U (SmoothGaugeMap.inverse I_G G g) =
           -maurerCartan U g
   maurerCartan_restrict :
@@ -17751,8 +18474,8 @@ equation (6.2) for the Maurer-Cartan term itself.  No connection `A` occurs in
 this definition, so preservation is not assumed circularly. -/
 def GaugeAdmissible (D : MaurerCartanCalculus I_G G)
     (ρ : Gamma2 →* G) (U : Opens) (g : SmoothGaugeMap I_G G U) : Prop :=
-  SmoothGaugeMap.Central g ∧
-    SmoothGaugeMap.RhoCompatible ρ g ∧
+  SmoothGaugeMap.Central I_G G g ∧
+    SmoothGaugeMap.RhoCompatible I_G G ρ g ∧
       Equation62 I_G G M U (D.maurerCartan U g)
 
 namespace GaugeAdmissible
@@ -17799,8 +18522,8 @@ theorem restrict (D : MaurerCartanCalculus I_G G)
 `ρ`-compatibility component of admissibility. -/
 theorem of_deckInvariant (D : MaurerCartanCalculus I_G G)
     (ρ : Gamma2 →* G) {U : Opens} {g : SmoothGaugeMap I_G G U}
-    (hcentral : SmoothGaugeMap.Central g)
-    (hdeck : SmoothGaugeMap.DeckInvariant g)
+    (hcentral : SmoothGaugeMap.Central I_G G g)
+    (hdeck : SmoothGaugeMap.DeckInvariant I_G G g)
     (hmc : Equation62 I_G G M U (D.maurerCartan U g)) :
     GaugeAdmissible I_G G M D ρ U g :=
   ⟨hcentral,
@@ -17830,7 +18553,7 @@ def gaugeAction (D : MaurerCartanCalculus I_G G)
 adjoint/conjugation term `g⁻¹Ag`. -/
 theorem centralConjugate_pointwise_paper_formula (U : Opens)
     (g : SmoothGaugeMap I_G G U) (A : SmoothOneForm I_G G U)
-    (hg : SmoothGaugeMap.Central g) (τ : coverOpen U) :
+    (hg : SmoothGaugeMap.Central I_G G g) (τ : coverOpen U) :
     centralConjugate I_G G U g A τ =
       (gaugeAdjointValue I_G G (g τ)).comp (A τ) := by
   rw [centralConjugate_apply,
@@ -17855,9 +18578,10 @@ theorem gaugeAction_pointwise_paper_formula
       (gaugeAdjointValue I_G G (g τ)).comp (A τ) +
         leftLogarithmicDerivativeValue I_G G g τ := by
   change A τ + D.maurerCartan U g τ = _
-  rw [show A τ = (gaugeAdjointValue I_G G (g τ)).comp (A τ) by
-      exact centralConjugate_pointwise_paper_formula I_G G U g A hg.1 τ,
-    D.maurerCartan_formula U g τ]
+  rw [D.maurerCartan_formula U g τ]
+  congr 1
+  simpa using
+    centralConjugate_pointwise_paper_formula I_G G U g A hg.1 τ
 
 /-- Direct proof that equation (6.2) is preserved.  It uses only the equation
 for `A`, the independently stated equation for `g⁻¹dg`, and pullback
@@ -17935,12 +18659,12 @@ structure Section63AdmissibleGaugeCertificate
       ContMDiff 𝓘(ℂ) I_G ∞ (SmoothGaugeMap.inverse I_G G g).toFun
   deck_invariance_is_exact :
     ∀ (U : Opens) (g : SmoothGaugeMap I_G G U),
-      SmoothGaugeMap.DeckInvariant g ↔
+      SmoothGaugeMap.DeckInvariant I_G G g ↔
         ∀ (γ : Gamma2) (τ : coverOpen U),
           g (coverDeckMap γ U τ) = g τ
   rho_compatibility_is_exact :
     ∀ (U : Opens) (g : SmoothGaugeMap I_G G U),
-      SmoothGaugeMap.RhoCompatible ρ g ↔
+      SmoothGaugeMap.RhoCompatible I_G G ρ g ↔
         ∀ (γ : Gamma2) (τ : coverOpen U),
           g (coverDeckMap γ U τ) = (ρ γ)⁻¹ * g τ * ρ γ
   identity_closed :
@@ -17962,8 +18686,8 @@ structure Section63AdmissibleGaugeCertificate
           (SmoothGaugeMap.restrict I_G G hVU g)
   deck_invariant_central_route :
     ∀ (U : Opens) (g : SmoothGaugeMap I_G G U),
-      SmoothGaugeMap.Central g →
-        SmoothGaugeMap.DeckInvariant g →
+      SmoothGaugeMap.Central I_G G g →
+        SmoothGaugeMap.DeckInvariant I_G G g →
           Equation62 I_G G M U (D.maurerCartan U g) →
             GaugeAdmissible I_G G M D ρ U g
   literal_maurer_cartan_value :
@@ -18008,15 +18732,17 @@ theorem section63_admissibleGauge_certificate
     (D : MaurerCartanCalculus I_G G) (ρ : Gamma2 →* G) :
     Section63AdmissibleGaugeCertificate I_G G M D ρ where
   smooth_gauge_data := fun U g => g.smooth_toFun
-  inverse_is_pointwise_inverse := SmoothGaugeMap.inverse_apply I_G G
-  inverse_is_smooth := SmoothGaugeMap.inverse_smooth I_G G
+  inverse_is_pointwise_inverse := fun U g τ =>
+    SmoothGaugeMap.inverse_apply I_G G g τ
+  inverse_is_smooth := fun U g =>
+    SmoothGaugeMap.inverse_smooth I_G G g
   deck_invariance_is_exact := fun U g => Iff.rfl
   rho_compatibility_is_exact := fun U g => Iff.rfl
   identity_closed := GaugeAdmissible.identity I_G G M D ρ
   composition_closed := fun U g h hg hh =>
     GaugeAdmissible.comp I_G G M D ρ hg hh
   inverse_closed := fun U g hg => GaugeAdmissible.inverse I_G G M D ρ hg
-  restriction_closed := fun V U hVU g hg =>
+  restriction_closed := fun {V U} hVU g hg =>
     GaugeAdmissible.restrict I_G G M D ρ hVU hg
   deck_invariant_central_route := fun U g hcentral hdeck hmc =>
     GaugeAdmissible.of_deckInvariant I_G G M D ρ hcentral hdeck hmc
@@ -18055,9 +18781,21 @@ abbrev ModelSpace := Fin 0 → ℂ
 abbrev GaugeGroup := Multiplicative ModelSpace
 
 /-- Standard manifold model on the zero-dimensional complex vector space. -/
-abbrev GaugeModel : ModelWithCorners ℂ ModelSpace ModelSpace := 𝓘(ℂ)
+abbrev GaugeModel : ModelWithCorners ℂ ModelSpace ModelSpace := 𝓘(ℂ, ModelSpace)
+
+noncomputable instance gaugeGroupChartedSpace :
+    ChartedSpace ModelSpace GaugeGroup := by
+  change ChartedSpace ModelSpace ModelSpace
+  infer_instance
+
+noncomputable local instance gaugeGroupIsManifold :
+    IsManifold GaugeModel ∞ GaugeGroup := by
+  change IsManifold GaugeModel ∞ ModelSpace
+  infer_instance
 
 instance gaugeGroupLieGroup : LieGroup GaugeModel ∞ GaugeGroup where
+  compatible := by
+    apply StructureGroupoid.compatible
   contMDiff_mul := by
     change ContMDiff (GaugeModel.prod GaugeModel) GaugeModel ∞
       (fun p : ModelSpace × ModelSpace => p.1 + p.2)
@@ -18083,10 +18821,7 @@ def literalMaurerCartanCalculus :
   maurerCartan := fun U _ => 0
   maurerCartan_formula := by
     intro U g τ
-    rw [smoothGaugeMap_eq_constant U g]
-    simpa using
-      (leftLogarithmicDerivativeValue_constant GaugeModel GaugeGroup
-        U (1 : GaugeGroup) τ).symm
+    exact Subsingleton.elim _ _
   maurerCartan_identity := by
     intro U
     rfl
@@ -18156,6 +18891,7 @@ namespace Proposition17And18FinalSpecialization
 
 noncomputable section
 
+open scoped Manifold ContDiff
 open PolynomialMatrixDifferentialForms
 open PaperFaithfulConnection
 
@@ -18198,7 +18934,7 @@ def differential {n : ℕ} {U : TopologicalSpace.Opens Base}
   rfl
 
 /-- Matrix/exterior wedge, evaluated pointwise in the actual polynomial DGA. -/
-def wedge {p q : ℕ} {U : TopologicalSpace.Opens Base}
+noncomputable def wedge {p q : ℕ} {U : TopologicalSpace.Opens Base}
     (A : Form p U) (B : Form q U) : Form (p + q) U where
   toFun x := matrixWedge (A x) (B x)
   isLocallyConstant :=
@@ -18248,7 +18984,7 @@ theorem restrictForm_wedge {p q : ℕ}
   rfl
 
 /-- Concrete curvature algebra obtained pointwise from the actual graded DGA. -/
-def curvatureAlgebra : CurvatureAlgebra Base where
+noncomputable def curvatureAlgebra : CurvatureAlgebra Base where
   Form := Proposition17And18FinalSpecialization.Form
   res := fun n U V hUV A => restrictForm hUV A
   res_id := restrictForm_id
@@ -18262,7 +18998,7 @@ def curvatureAlgebra : CurvatureAlgebra Base where
 
 @[simp] theorem curvature_apply {U : TopologicalSpace.Opens Base}
     (A : Form 1 U) (x : U) :
-    curvatureAlgebra.curvature A x =
+    (curvatureAlgebra.curvature A).toFun x =
       matrixDifferential (A x) + matrixWedge (A x) (A x) :=
   rfl
 
@@ -18300,7 +19036,7 @@ structure FrameChange (U : TopologicalSpace.Opens Base) where
 namespace FrameChange
 
 /-- Identity locally constant frame change. -/
-def identity (U : TopologicalSpace.Opens Base) : FrameChange U where
+noncomputable def identity (U : TopologicalSpace.Opens Base) : FrameChange U where
   forward := identityForm U
   inverse := identityForm U
   inverse_forward := by
@@ -18314,75 +19050,79 @@ def identity (U : TopologicalSpace.Opens Base) : FrameChange U where
 
 /-- Evaluation at a point gives the already certified concrete local frame
 change in `PolynomialMatrixDifferentialForms`. -/
-def at {U : TopologicalSpace.Opens Base} (g : FrameChange U) (x : U) :
+def «at» {U : TopologicalSpace.Opens Base} (g : FrameChange U) (x : U) :
     PaperFaithfulConnection.LocalFrameChange
       (X := Base) (U := (⊥ : TopologicalSpace.Opens Base)) where
   forward := g.forward x
   inverse := g.inverse x
   inverse_forward := by
-    have h := congrArg (fun A : Form 0 U => A x) g.inverse_forward
-    simpa [identityForm] using h
+    change (wedge g.inverse g.forward) x = identityForm U x
+    exact congrArg (fun A : Form 0 U => A x) g.inverse_forward
   forward_inverse := by
-    have h := congrArg (fun A : Form 0 U => A x) g.forward_inverse
-    simpa [identityForm] using h
+    change (wedge g.forward g.inverse) x = identityForm U x
+    exact congrArg (fun A : Form 0 U => A x) g.forward_inverse
 
 /-- Restriction of an invertible local frame change. -/
-def restrict {U V : TopologicalSpace.Opens Base} (hUV : U ≤ V)
+noncomputable def restrict {U V : TopologicalSpace.Opens Base} (hUV : U ≤ V)
     (g : FrameChange V) : FrameChange U where
   forward := restrictForm hUV g.forward
   inverse := restrictForm hUV g.inverse
   inverse_forward := by
     apply LocallyConstant.ext
     intro x
-    have h := congrArg (fun A : Form 0 V => A ⟨x.1, hUV x.2⟩)
+    change
+      (wedge g.inverse g.forward) ⟨x.1, hUV x.2⟩ =
+        identityForm V ⟨x.1, hUV x.2⟩
+    exact congrArg (fun A : Form 0 V => A ⟨x.1, hUV x.2⟩)
       g.inverse_forward
-    simpa [identityForm] using h
   forward_inverse := by
     apply LocallyConstant.ext
     intro x
-    have h := congrArg (fun A : Form 0 V => A ⟨x.1, hUV x.2⟩)
+    change
+      (wedge g.forward g.inverse) ⟨x.1, hUV x.2⟩ =
+        identityForm V ⟨x.1, hUV x.2⟩
+    exact congrArg (fun A : Form 0 V => A ⟨x.1, hUV x.2⟩)
       g.forward_inverse
-    simpa [identityForm] using h
 
 /-- Pointwise matrix conjugation of a one-form. -/
-def conjugateOne {U : TopologicalSpace.Opens Base} (g : FrameChange U)
+noncomputable def conjugateOne {U : TopologicalSpace.Opens Base} (g : FrameChange U)
     (A : Form 1 U) : Form 1 U :=
   wedge (wedge g.inverse A) g.forward
 
 /-- Pointwise matrix conjugation of a two-form. -/
-def conjugateTwo {U : TopologicalSpace.Opens Base} (g : FrameChange U)
+noncomputable def conjugateTwo {U : TopologicalSpace.Opens Base} (g : FrameChange U)
     (F : Form 2 U) : Form 2 U :=
   wedge (wedge g.inverse F) g.forward
 
 /-- Literal Maurer-Cartan term `g⁻¹dg` in the actual graded DGA. -/
-def pureGauge {U : TopologicalSpace.Opens Base} (g : FrameChange U) :
+noncomputable def pureGauge {U : TopologicalSpace.Opens Base} (g : FrameChange U) :
     Form 1 U :=
   wedge g.inverse (differential g.forward)
 
 /-- Literal transformed connection `A^g = g⁻¹Ag + g⁻¹dg`. -/
-def transformPotential {U : TopologicalSpace.Opens Base}
+noncomputable def transformPotential {U : TopologicalSpace.Opens Base}
     (g : FrameChange U) (A : Form 1 U) : Form 1 U :=
   g.conjugateOne A + g.pureGauge
 
 @[simp] theorem conjugateOne_apply {U : TopologicalSpace.Opens Base}
     (g : FrameChange U) (A : Form 1 U) (x : U) :
-    g.conjugateOne A x = (g.at x).conjugateOne (A x) :=
+    g.conjugateOne A x = (g.«at» x).conjugateOne (A x) :=
   rfl
 
 @[simp] theorem conjugateTwo_apply {U : TopologicalSpace.Opens Base}
     (g : FrameChange U) (F : Form 2 U) (x : U) :
-    g.conjugateTwo F x = (g.at x).conjugateTwo (F x) :=
+    g.conjugateTwo F x = (g.«at» x).conjugateTwo (F x) :=
   rfl
 
 @[simp] theorem pureGauge_apply {U : TopologicalSpace.Opens Base}
     (g : FrameChange U) (x : U) :
-    g.pureGauge x = (g.at x).pureGauge :=
+    g.pureGauge x = (g.«at» x).pureGauge :=
   rfl
 
 @[simp] theorem transformPotential_apply
     {U : TopologicalSpace.Opens Base} (g : FrameChange U)
     (A : Form 1 U) (x : U) :
-    g.transformPotential A x = (g.at x).transformPotential (A x) :=
+    g.transformPotential A x = (g.«at» x).transformPotential (A x) :=
   rfl
 
 /-- Checklist 6.4 inverse-derivative formula in the concrete locally constant
@@ -18397,7 +19137,7 @@ theorem differential_inverse {U : TopologicalSpace.Opens Base}
     -(matrixWedge
       (matrixWedge (g.inverse x) (matrixDifferential (g.forward x)))
       (g.inverse x))
-  exact (g.at x).differential_inverse
+  exact (g.«at» x).differential_inverse
 
 /-- The degree-one/degree-zero Leibniz rule exposes the required minus sign
 from the actual wedge convention. -/
@@ -18414,7 +19154,7 @@ theorem conjugateTwo_add {U : TopologicalSpace.Opens Base}
     g.conjugateTwo (F + K) = g.conjugateTwo F + g.conjugateTwo K := by
   apply LocallyConstant.ext
   intro x
-  exact (g.at x).conjugateTwo_add (F x) (K x)
+  exact (g.«at» x).conjugateTwo_add (F x) (K x)
 
 /-- Differential expansion of `A^g`, retaining all signed cross terms. -/
 theorem differential_transformPotential {U : TopologicalSpace.Opens Base}
@@ -18426,7 +19166,7 @@ theorem differential_transformPotential {U : TopologicalSpace.Opens Base}
         wedge g.pureGauge g.pureGauge := by
   apply LocallyConstant.ext
   intro x
-  exact (g.at x).differential_transformPotential (A x)
+  exact (g.«at» x).differential_transformPotential (A x)
 
 /-- Bilinear expansion of the transformed potential square. -/
 theorem transformPotential_wedge_self {U : TopologicalSpace.Opens Base}
@@ -18438,7 +19178,7 @@ theorem transformPotential_wedge_self {U : TopologicalSpace.Opens Base}
         wedge g.pureGauge g.pureGauge := by
   apply LocallyConstant.ext
   intro x
-  exact (g.at x).transformPotential_wedge_self (A x)
+  exact (g.«at» x).transformPotential_wedge_self (A x)
 
 /-- All four signed cross terms cancel with the actual wedge convention.  This
 is the algebraic heart of Propositions 17 and 18, isolated from the final
@@ -18452,14 +19192,14 @@ theorem crossTermCancellation {U : TopologicalSpace.Opens Base}
   apply LocallyConstant.ext
   intro x
   change
-    matrixDifferential ((g.at x).transformPotential (A x)) +
-        matrixWedge ((g.at x).transformPotential (A x))
-          ((g.at x).transformPotential (A x)) =
-      (g.at x).conjugateTwo (matrixDifferential (A x)) +
-        (g.at x).conjugateTwo (matrixWedge (A x) (A x))
-  rw [(g.at x).differential_transformPotential (A x),
-    (g.at x).transformPotential_wedge_self (A x),
-    (g.at x).conjugateOne_wedge (A x) (A x)]
+    matrixDifferential ((g.«at» x).transformPotential (A x)) +
+        matrixWedge ((g.«at» x).transformPotential (A x))
+          ((g.«at» x).transformPotential (A x)) =
+      (g.«at» x).conjugateTwo (matrixDifferential (A x)) +
+        (g.«at» x).conjugateTwo (matrixWedge (A x) (A x))
+  rw [(g.«at» x).differential_transformPotential (A x),
+    (g.«at» x).transformPotential_wedge_self (A x),
+    (g.«at» x).conjugateOne_wedge (A x) (A x)]
   abel
 
 /-- Concrete object-level gauge covariance
@@ -18468,15 +19208,19 @@ theorem curvature_transformPotential {U : TopologicalSpace.Opens Base}
     (g : FrameChange U) (A : Form 1 U) :
     curvatureAlgebra.curvature (g.transformPotential A) =
       g.conjugateTwo (curvatureAlgebra.curvature A) := by
-  calc
-    curvatureAlgebra.curvature (g.transformPotential A) =
-        differential (g.transformPotential A) +
-          wedge (g.transformPotential A) (g.transformPotential A) := rfl
-    _ = g.conjugateTwo (differential A) +
-          g.conjugateTwo (wedge A A) := g.crossTermCancellation A
-    _ = g.conjugateTwo (differential A + wedge A A) :=
-      (g.conjugateTwo_add (differential A) (wedge A A)).symm
-    _ = g.conjugateTwo (curvatureAlgebra.curvature A) := rfl
+  apply LocallyConstant.ext
+  intro x
+  change
+    matrixDifferential ((g.«at» x).transformPotential (A x)) +
+        matrixWedge ((g.«at» x).transformPotential (A x))
+          ((g.«at» x).transformPotential (A x)) =
+      (g.«at» x).conjugateTwo
+        (matrixDifferential (A x) + matrixWedge (A x) (A x))
+  rw [(g.«at» x).differential_transformPotential (A x),
+    (g.«at» x).transformPotential_wedge_self (A x),
+    (g.«at» x).conjugateOne_wedge (A x) (A x),
+    (g.«at» x).conjugateTwo_add]
+  abel
 
 /-- Expanded literal form of concrete gauge covariance. -/
 theorem curvature_transformPotential_formula
@@ -18535,7 +19279,7 @@ def zeroConnection (U : TopologicalSpace.Opens Base) : Connection U :=
 instance. -/
 def connectionPresheaf : PresheafLike Base where
   Section := Proposition17And18FinalSpecialization.Connection
-  res := fun U V hUV A =>
+  res := fun hUV A =>
     (modularConnectionPresheaf.res hUV A.1, restrictForm hUV A.2)
   res_id := by
     intro U A
@@ -18680,13 +19424,9 @@ theorem localCurvatures_glue_to_global {ι : Type}
     (curvatureAlgebra.formPresheaf 2).IsGluing C
       (localCurvatureFamily C A) (connectionCurvature Aglobal) := by
   intro i
-  calc
-    restrictForm (C.piece_le_target i) (connectionCurvature Aglobal) =
-        connectionCurvature
-          (connectionPresheaf.res (C.piece_le_target i) Aglobal) :=
-      connectionCurvature_restrict (C.piece_le_target i) Aglobal
-    _ = connectionCurvature (A i) := congrArg connectionCurvature (hAglobal i)
-    _ = localCurvatureFamily C A i := rfl
+  exact
+    (connectionCurvature_restrict (C.piece_le_target i) Aglobal).trans
+      (congrArg connectionCurvature (hAglobal i))
 
 /-- The curvatures of a merely compatible local family glue to the curvature
 of the selected global connection.  No global connection is an input. -/
@@ -19018,7 +19758,7 @@ def aqField (A : AdmissibleGlobalConfiguration μ I) : GlobalAqSection :=
   Definition18Proposition19ActualSpecialization.aqField A.connection
 
 /-- The actual global curvature of an admissible configuration. -/
-def curvature (A : AdmissibleGlobalConfiguration μ I) : GlobalCurvatureForm :=
+noncomputable def curvature (A : AdmissibleGlobalConfiguration μ I) : GlobalCurvatureForm :=
   curvatureForm A.connection
 
 /-- Flatness of an admissible configuration is literal zero curvature. -/
@@ -19080,9 +19820,16 @@ def zeroGlobalConnection : GlobalConnection :=
 theorem zeroGlobalConnection_isFlat : IsFlat zeroGlobalConnection := by
   apply LocallyConstant.ext
   intro x
-  simp [IsFlat, curvatureForm, zeroGlobalConnection,
-    Proposition17And18FinalSpecialization.connectionCurvature,
-    Proposition17And18FinalSpecialization.curvature_apply]
+  change
+    PolynomialMatrixDifferentialForms.matrixDifferential
+          (0 : FormFibre 1) +
+        PolynomialMatrixDifferentialForms.matrixWedge
+          (0 : FormFibre 1) (0 : FormFibre 1) = 0
+  rw [PolynomialMatrixDifferentialForms.matrixDifferential_zero]
+  apply Matrix.ext
+  intro i j
+  apply PolynomialMatrixDifferentialForms.ChartForm.ext <;>
+    simp [PolynomialMatrixDifferentialForms.matrixWedge, Fin.sum_univ_two]
 
 theorem zeroGlobalConnection_density_eq_zero :
     curvatureDensity I zeroGlobalConnection = (0 : Base → ℝ) := by
@@ -19147,7 +19894,7 @@ structure HypothesisH1 (Mq : MqFunctional μ I)
 /-- Exact H2: a flat admissible vacuum exists and both non-curvature terms
 vanish there. -/
 structure HypothesisH2 (Mq : MqFunctional μ I)
-    (Rq : RqFunctional μ I) : Prop where
+    (Rq : RqFunctional μ I) : Type where
   vacuum : AdmissibleFlatSector μ I
   Mq_vacuum_eq_zero : Mq vacuum.1 = 0
   Rq_vacuum_eq_zero : Rq vacuum.1 = 0
@@ -19537,7 +20284,7 @@ abbrev GaugeModel := Proposition17And18FinalSpecialization.ModularGaugeModel
 abbrev GaugeGroup := Proposition17And18FinalSpecialization.ModularGaugeGroup
 
 /-- The exact Proposition 16 presheaf of equation-(6.2) q-gauge fields. -/
-def AqPresheaf : PresheafLike Base :=
+noncomputable def AqPresheaf : PresheafLike Base :=
   Definition15Geometry.strictEqualityTwistedOneFormPresheaf
     GaugeModel GaugeGroup Definition15Geometry.EtaHalfWeight.multiplier
 
@@ -19631,14 +20378,16 @@ end AdaptedGeometryCover
 
 /-- Pointwise addition preserves the exact equation (6.2). -/
 def aqAdd (U : Opens) (A B : Aq U) : Aq U :=
-  ⟨A.1 + B.1,
+  ⟨Definition15Geometry.SmoothOneForm.add
+      GaugeModel GaugeGroup U A.1 B.1,
     Definition15Geometry.equation62_add
       GaugeModel GaugeGroup Definition15Geometry.EtaHalfWeight.multiplier
       U A.1 B.1 A.2 B.2⟩
 
 /-- Pointwise negation preserves the exact equation (6.2). -/
 def aqNeg (U : Opens) (A : Aq U) : Aq U :=
-  ⟨-A.1,
+  ⟨Definition15Geometry.SmoothOneForm.neg
+      GaugeModel GaugeGroup U A.1,
     Definition15Geometry.equation62_neg
       GaugeModel GaugeGroup Definition15Geometry.EtaHalfWeight.multiplier
       U A.1 A.2⟩
@@ -19657,28 +20406,55 @@ instance aqSectionAddCommGroup (U : Opens) : AddCommGroup (Aq U) where
     (@nsmulRec (Aq U) ⟨aqZero U⟩ ⟨aqAdd U⟩)
   add_zero A := by
     apply Subtype.ext
-    exact add_zero A.1
+    change Definition15Geometry.SmoothOneForm.add
+        GaugeModel GaugeGroup U A.1
+          (Definition15Geometry.SmoothOneForm.zero GaugeModel GaugeGroup U) = A.1
+    exact add_zero
+      (show Definition15Geometry.SmoothOneForm GaugeModel GaugeGroup U from A.1)
   zero_add A := by
     apply Subtype.ext
-    exact zero_add A.1
+    change Definition15Geometry.SmoothOneForm.add
+        GaugeModel GaugeGroup U
+          (Definition15Geometry.SmoothOneForm.zero GaugeModel GaugeGroup U) A.1 = A.1
+    exact zero_add
+      (show Definition15Geometry.SmoothOneForm GaugeModel GaugeGroup U from A.1)
   add_comm A B := by
     apply Subtype.ext
-    exact add_comm A.1 B.1
+    change Definition15Geometry.SmoothOneForm.add
+        GaugeModel GaugeGroup U A.1 B.1 =
+      Definition15Geometry.SmoothOneForm.add GaugeModel GaugeGroup U B.1 A.1
+    exact add_comm
+      (show Definition15Geometry.SmoothOneForm GaugeModel GaugeGroup U from A.1)
+      (show Definition15Geometry.SmoothOneForm GaugeModel GaugeGroup U from B.1)
   add_assoc A B D := by
     apply Subtype.ext
-    exact add_assoc A.1 B.1 D.1
+    change Definition15Geometry.SmoothOneForm.add GaugeModel GaugeGroup U
+        (Definition15Geometry.SmoothOneForm.add GaugeModel GaugeGroup U A.1 B.1) D.1 =
+      Definition15Geometry.SmoothOneForm.add GaugeModel GaugeGroup U A.1
+        (Definition15Geometry.SmoothOneForm.add GaugeModel GaugeGroup U B.1 D.1)
+    exact add_assoc
+      (show Definition15Geometry.SmoothOneForm GaugeModel GaugeGroup U from A.1)
+      (show Definition15Geometry.SmoothOneForm GaugeModel GaugeGroup U from B.1)
+      (show Definition15Geometry.SmoothOneForm GaugeModel GaugeGroup U from D.1)
   neg_add_cancel A := by
     apply Subtype.ext
-    exact neg_add_cancel A.1
+    change Definition15Geometry.SmoothOneForm.add GaugeModel GaugeGroup U
+        (Definition15Geometry.SmoothOneForm.neg GaugeModel GaugeGroup U A.1) A.1 =
+      Definition15Geometry.SmoothOneForm.zero GaugeModel GaugeGroup U
+    exact neg_add_cancel
+      (show Definition15Geometry.SmoothOneForm GaugeModel GaugeGroup U from A.1)
 
 @[simp] theorem aqAdd_val (U : Opens) (A B : Aq U) :
-    (A + B).1 = A.1 + B.1 := rfl
+    (A + B).1 = Definition15Geometry.SmoothOneForm.add
+      GaugeModel GaugeGroup U A.1 B.1 := rfl
 
 @[simp] theorem aqNeg_val (U : Opens) (A : Aq U) :
-    (-A).1 = -A.1 := rfl
+    (-A).1 = Definition15Geometry.SmoothOneForm.neg
+      GaugeModel GaugeGroup U A.1 := rfl
 
 @[simp] theorem aqZero_val (U : Opens) :
-    (0 : Aq U).1 = 0 := rfl
+    (0 : Aq U).1 = Definition15Geometry.SmoothOneForm.zero
+      GaugeModel GaugeGroup U := rfl
 
 /-- Every concrete q-gauge restriction map preserves zero. -/
 theorem aqRes_zero {V U : Opens} (hVU : V ≤ U) :
@@ -19693,15 +20469,17 @@ theorem aqRes_add {V U : Opens} (hVU : V ≤ U) (A B : Aq U) :
     AqPresheaf.res hVU (A + B) =
       AqPresheaf.res hVU A + AqPresheaf.res hVU B := by
   apply Subtype.ext
-  exact Definition15Geometry.SmoothOneForm.restrict_add
-    GaugeModel GaugeGroup hVU A.1 B.1
+  apply Definition15Geometry.SmoothOneForm.ext_pointwise
+  intro τ
+  rfl
 
 /-- Every concrete q-gauge restriction map preserves negation. -/
 theorem aqRes_neg {V U : Opens} (hVU : V ≤ U) (A : Aq U) :
     AqPresheaf.res hVU (-A) = -AqPresheaf.res hVU A := by
   apply Subtype.ext
-  exact Definition15Geometry.SmoothOneForm.restrict_neg
-    GaugeModel GaugeGroup hVU A.1
+  apply Definition15Geometry.SmoothOneForm.ext_pointwise
+  intro τ
+  rfl
 
 variable (C : AdaptedGeometryCover)
 
@@ -19833,61 +20611,74 @@ theorem equation614_existsUnique_gluing (s : LocalFamily C)
 
 /-! ### Categorical equalizer universal property in `Type` -/
 
+/-- Underlying Type-valued morphism of the left overlap map. -/
+def equation613LeftType : LocalFamily C ⟶ OverlapFamily C :=
+  ↾(fun s : LocalFamily C => equation613Left C s)
+
+/-- Underlying Type-valued morphism of the right overlap map. -/
+def equation613RightType : LocalFamily C ⟶ OverlapFamily C :=
+  ↾(fun s : LocalFamily C => equation613Right C s)
+
 /-- The subtype inclusion equalizes the two maps in (6.13). -/
 theorem categoricalInclusion_condition :
-    (fun e : AqPresheaf.CoverEqualizer C.openCover => e.1) ≫
-        (equation613Left C : LocalFamily C ⟶ OverlapFamily C) =
-      (fun e : AqPresheaf.CoverEqualizer C.openCover => e.1) ≫
-        (equation613Right C : LocalFamily C ⟶ OverlapFamily C) := by
-  funext e
+    ↾(fun e : AqPresheaf.CoverEqualizer C.openCover => e.1) ≫
+        (equation613LeftType C) =
+      ↾(fun e : AqPresheaf.CoverEqualizer C.openCover => e.1) ≫
+        (equation613RightType C) := by
+  apply ConcreteCategory.hom_ext
+  intro e
+  change AqPresheaf.overlapRestrictionLeft C.openCover e.1 =
+    AqPresheaf.overlapRestrictionRight C.openCover e.1
   exact e.2
 
 /-- The explicit subtype equalizer as a Mathlib categorical fork in `Type`. -/
 def categoricalEqualizerFork :
-    Fork (equation613Left C : LocalFamily C ⟶ OverlapFamily C)
-      (equation613Right C : LocalFamily C ⟶ OverlapFamily C) :=
-  Fork.ofι (fun e : AqPresheaf.CoverEqualizer C.openCover => e.1)
+    Fork (equation613LeftType C)
+      (equation613RightType C) :=
+  Fork.ofι (↾(fun e : AqPresheaf.CoverEqualizer C.openCover => e.1))
     (categoricalInclusion_condition C)
 
 /-- A competing fork satisfies the overlap equality pointwise. -/
 theorem competingFork_condition
-    (S : Fork (equation613Left C : LocalFamily C ⟶ OverlapFamily C)
-      (equation613Right C : LocalFamily C ⟶ OverlapFamily C))
+    (S : Fork (equation613LeftType C)
+      (equation613RightType C))
     (x : S.pt) : equation613Left C (S.ι x) = equation613Right C (S.ι x) := by
-  have h := congrArg (fun k : S.pt ⟶ OverlapFamily C => k x) S.condition
-  simpa only [Function.comp_apply] using h
+  have h := ConcreteCategory.congr_hom S.condition x
+  simpa [equation613LeftType, equation613RightType] using h
 
 /-- Canonical lift of any competing fork into the explicit subtype equalizer. -/
 def categoricalLift
-    (S : Fork (equation613Left C : LocalFamily C ⟶ OverlapFamily C)
-      (equation613Right C : LocalFamily C ⟶ OverlapFamily C)) :
+    (S : Fork (equation613LeftType C)
+      (equation613RightType C)) :
     S.pt ⟶ AqPresheaf.CoverEqualizer C.openCover :=
-  fun x => ⟨S.ι x, competingFork_condition C S x⟩
+  ↾(fun x => ⟨S.ι x, competingFork_condition C S x⟩)
 
 @[simp] theorem categoricalLift_val
-    (S : Fork (equation613Left C : LocalFamily C ⟶ OverlapFamily C)
-      (equation613Right C : LocalFamily C ⟶ OverlapFamily C)) (x : S.pt) :
+    (S : Fork (equation613LeftType C)
+      (equation613RightType C)) (x : S.pt) :
     (categoricalLift C S x).1 = S.ι x := rfl
 
 /-- The canonical lift factors the competing fork. -/
 theorem categoricalLift_fac
-    (S : Fork (equation613Left C : LocalFamily C ⟶ OverlapFamily C)
-      (equation613Right C : LocalFamily C ⟶ OverlapFamily C)) :
+    (S : Fork (equation613LeftType C)
+      (equation613RightType C)) :
     categoricalLift C S ≫ (categoricalEqualizerFork C).ι = S.ι := by
-  funext x
+  apply ConcreteCategory.hom_ext
+  intro x
   rfl
 
 /-- The factorization through the subtype equalizer is unique. -/
 theorem categoricalLift_unique
-    (S : Fork (equation613Left C : LocalFamily C ⟶ OverlapFamily C)
-      (equation613Right C : LocalFamily C ⟶ OverlapFamily C))
+    (S : Fork (equation613LeftType C)
+      (equation613RightType C))
     (m : S.pt ⟶ AqPresheaf.CoverEqualizer C.openCover)
     (hm : m ≫ (categoricalEqualizerFork C).ι = S.ι) :
     m = categoricalLift C S := by
-  funext x
+  apply ConcreteCategory.hom_ext
+  intro x
   apply Subtype.ext
-  have h := congrArg (fun k : S.pt ⟶ LocalFamily C => k x) hm
-  simpa only [Function.comp_apply] using h
+  have h := ConcreteCategory.congr_hom hm x
+  simpa [categoricalEqualizerFork] using h
 
 /-- The explicit equation-(6.13) subtype satisfies the categorical equalizer
 universal property. -/
@@ -19903,30 +20694,31 @@ categorical equalizer. -/
 noncomputable def categoricalEqualizerIso :
     AqPresheaf.CoverEqualizer C.openCover ≃
       CategoryTheory.Limits.equalizer
-        (equation613Left C : LocalFamily C ⟶ OverlapFamily C)
-        (equation613Right C : LocalFamily C ⟶ OverlapFamily C) :=
-  IsLimit.conePointUniqueUpToIso (categoricalEqualizerForkIsLimit C)
+        (equation613LeftType C)
+        (equation613RightType C) :=
+  (IsLimit.conePointUniqueUpToIso (categoricalEqualizerForkIsLimit C)
     (limit.isLimit (parallelPair
-      (equation613Left C : LocalFamily C ⟶ OverlapFamily C)
-      (equation613Right C : LocalFamily C ⟶ OverlapFamily C)))
+      (equation613LeftType C)
+      (equation613RightType C)))).toEquiv
 
 /-- The global restriction map itself forms a fork over (6.13). -/
 theorem globalRestriction_condition :
-    (fun A : Aq (⊤ : Opens) => AqPresheaf.restrictToCover C.openCover A) ≫
-        (equation613Left C : LocalFamily C ⟶ OverlapFamily C) =
-      (fun A : Aq (⊤ : Opens) => AqPresheaf.restrictToCover C.openCover A) ≫
-        (equation613Right C : LocalFamily C ⟶ OverlapFamily C) := by
-  funext A
+    ↾(fun A : Aq (⊤ : Opens) => AqPresheaf.restrictToCover C.openCover A) ≫
+        (equation613LeftType C) =
+      ↾(fun A : Aq (⊤ : Opens) => AqPresheaf.restrictToCover C.openCover A) ≫
+        (equation613RightType C) := by
+  apply ConcreteCategory.hom_ext
+  intro A
   exact (AqPresheaf.overlapRestrictions_eq_iff_compatible C.openCover _).mpr
     (AqPresheaf.restrictToCover_compatible C.openCover A)
 
 /-- The categorical fork whose point is the actual global q-gauge section
 type, rather than the equalizer subtype. -/
 def globalRestrictionFork :
-    Fork (equation613Left C : LocalFamily C ⟶ OverlapFamily C)
-      (equation613Right C : LocalFamily C ⟶ OverlapFamily C) :=
+    Fork (equation613LeftType C)
+      (equation613RightType C) :=
   Fork.ofι
-    (fun A : Aq (⊤ : Opens) => AqPresheaf.restrictToCover C.openCover A)
+    (↾(fun A : Aq (⊤ : Opens) => AqPresheaf.restrictToCover C.openCover A))
     (globalRestriction_condition C)
 
 /-- Restricting the selected gluing of an equalizer point recovers its family. -/
@@ -19940,35 +20732,36 @@ theorem globalEquiv_symm_restrict
 
 /-- Lift a competing fork directly to an actual global q-gauge field. -/
 def globalCategoricalLift
-    (S : Fork (equation613Left C : LocalFamily C ⟶ OverlapFamily C)
-      (equation613Right C : LocalFamily C ⟶ OverlapFamily C)) :
+    (S : Fork (equation613LeftType C)
+      (equation613RightType C)) :
     S.pt ⟶ Aq (⊤ : Opens) :=
-  fun x => (proposition20ActualGlobalEquivEqualizer C).symm
-    (categoricalLift C S x)
+  ↾(fun x => (proposition20ActualGlobalEquivEqualizer C).symm
+    (categoricalLift C S x))
 
 /-- The direct global lift factors through global restriction. -/
 theorem globalCategoricalLift_fac
-    (S : Fork (equation613Left C : LocalFamily C ⟶ OverlapFamily C)
-      (equation613Right C : LocalFamily C ⟶ OverlapFamily C)) :
+    (S : Fork (equation613LeftType C)
+      (equation613RightType C)) :
     globalCategoricalLift C S ≫ (globalRestrictionFork C).ι = S.ι := by
-  funext x
+  apply ConcreteCategory.hom_ext
+  intro x
   exact globalEquiv_symm_restrict C (categoricalLift C S x)
 
 /-- Sheaf locality makes the direct global factorization unique. -/
 theorem globalCategoricalLift_unique
-    (S : Fork (equation613Left C : LocalFamily C ⟶ OverlapFamily C)
-      (equation613Right C : LocalFamily C ⟶ OverlapFamily C))
+    (S : Fork (equation613LeftType C)
+      (equation613RightType C))
     (m : S.pt ⟶ Aq (⊤ : Opens))
     (hm : m ≫ (globalRestrictionFork C).ι = S.ι) :
     m = globalCategoricalLift C S := by
-  funext x
+  apply ConcreteCategory.hom_ext
+  intro x
   apply (proposition16_supplies_hAq).locality C.openCover
   intro i
-  have hm' := congrArg (fun k : S.pt ⟶ LocalFamily C => k x) hm
+  have hm' := ConcreteCategory.congr_hom hm x
   have hmi :
       AqPresheaf.res (C.openCover.piece_le_target i) (m x) = S.ι x i := by
-    simpa only [Function.comp_apply] using
-      congrArg (fun t : LocalFamily C => t i) hm'
+    exact congrArg (fun t : LocalFamily C => t i) hm'
   have hli := congrFun
     (globalEquiv_symm_restrict C (categoricalLift C S x)) i
   exact hmi.trans hli.symm
@@ -19992,12 +20785,14 @@ variable {X : Type u} [TopologicalSpace X]
 def toMathlibPresheaf (F : PresheafLike X) :
     TopCat.Presheaf (Type v) (TopCat.of X) where
   obj U := F.Section U.unop
-  map f := F.res f.unop.le
+  map f := ↾(F.res f.unop.le)
   map_id U := by
-    funext s
+    apply ConcreteCategory.hom_ext
+    intro s
     exact F.res_id U.unop s
   map_comp f g := by
-    funext s
+    apply ConcreteCategory.hom_ext
+    intro s
     exact (F.res_comp g.unop.le f.unop.le s).symm
 
 @[simp] theorem toMathlibPresheaf_obj (F : PresheafLike X)
@@ -20007,7 +20802,8 @@ def toMathlibPresheaf (F : PresheafLike X) :
 @[simp] theorem toMathlibPresheaf_map_apply (F : PresheafLike X)
     {U V : (TopologicalSpace.Opens X)ᵒᵖ} (f : U ⟶ V)
     (s : F.Section U.unop) :
-    (toMathlibPresheaf F).map f s = F.res f.unop.le s := rfl
+    (toMathlibPresheaf F).map f s = F.res f.unop.le s := by
+  rfl
 
 /-- The custom arbitrary-cover sheaf axiom implies Mathlib's Grothendieck
 sheaf condition. -/
@@ -20024,17 +20820,22 @@ theorem toMathlibPresheaf_isSheaf (F : PresheafLike X)
         exact TopologicalSpace.Opens.mem_iSup.mp hx }
   have hcompat : F.CompatibleFamily D sf := by
     intro i j
-    exact hsf i j
+    have hij := hsf i j
+    change F.res ((U i).infLELeft (U j)).le (sf i) =
+      F.res ((U i).infLERight (U j)).le (sf j) at hij
+    exact hij
   obtain ⟨s, hs, huniq⟩ := hF.existsUnique_gluing D sf hcompat
   refine ⟨s, ?_, ?_⟩
   · intro i
-    change F.res (le_iSup U i) s = sf i
-    exact hs i
+    have hi := hs i
+    change F.res (le_iSup U i) s = sf i at hi
+    exact hi
   · intro t ht
     apply huniq t
     intro i
-    change F.res (le_iSup U i) t = sf i
-    exact ht i
+    have hti := ht i
+    change F.res (le_iSup U i) t = sf i at hti
+    exact hti
 
 /-- Bundle a custom proved sheaf as a Mathlib sheaf object. -/
 def toMathlibSheaf (F : PresheafLike X) (hF : IsSheafLike F) :
@@ -20087,7 +20888,7 @@ theorem customMathlibComparison_certificate :
 /-! ### Final Proposition 20 certification -/
 
 /-- Complete concrete certificate for every P1 requirement. -/
-structure ActualProposition20Certificate : Prop where
+structure ActualProposition20Certificate : Type 2 where
   proposition16_connected :
     QGaugePresheaf.SheafProperty actualQGaugePresheaf
   adapted_cover_covers_X :
@@ -20128,7 +20929,7 @@ structure ActualProposition20Certificate : Prop where
   custom_mathlib_comparison : CustomMathlibComparisonCertificate
 
 /-- All certificate fields are theorems derived above. -/
-theorem actualProposition20_certificate : ActualProposition20Certificate C where
+noncomputable def actualProposition20_certificate : ActualProposition20Certificate C where
   proposition16_connected := proposition16_supplies_hAq
   adapted_cover_covers_X := C.covers_exists
   equation613_domain_literal := rfl
@@ -20144,7 +20945,7 @@ theorem actualProposition20_certificate : ActualProposition20Certificate C where
   custom_mathlib_comparison := customMathlibComparison_certificate
 
 /-- Empty-context closure using the canonical actual three-chart cover. -/
-theorem checklist_8_P1_unconditional :
+noncomputable def checklist_8_P1_unconditional :
     ActualProposition20Certificate AdaptedGeometryCover.canonical :=
   actualProposition20_certificate AdaptedGeometryCover.canonical
 
@@ -20416,7 +21217,7 @@ structure FiniteCoverSheafData (I : Type u) [Fintype I] where
 namespace FiniteCoverSheafData
 
 variable {I : Type u} [Fintype I]
-variable (D : FiniteCoverSheafData I)
+variable (D : FiniteCoverSheafData.{u, v} I)
 
 abbrev LocalFamily : Type (max u v) :=
   ∀ i : I, D.SectionLocal i
@@ -20435,7 +21236,7 @@ end FiniteCoverSheafData
 /-- Finite-cover locality and gluing axioms, stated without a general sheaf
 category. -/
 structure FiniteCoverSheafAxioms
-    {I : Type u} [Fintype I] (D : FiniteCoverSheafData I) : Prop where
+    {I : Type u} [Fintype I] (D : FiniteCoverSheafData.{u, v} I) : Type (max u v) where
   global_compatible :
     ∀ x : D.SectionGlobal, D.Compatible (D.restrictGlobal x)
   locality :
@@ -20450,7 +21251,7 @@ structure FiniteCoverSheafAxioms
 namespace FiniteCoverSheafAxioms
 
 variable {I : Type u} [Fintype I]
-variable {D : FiniteCoverSheafData I}
+variable {D : FiniteCoverSheafData.{u, v} I}
 
 def globalToEqualizer (H : FiniteCoverSheafAxioms D)
     (x : D.SectionGlobal) : D.Equalizer :=
@@ -20602,7 +21403,7 @@ variable {Open : Type u} [Preorder Open]
 variable {S : AbstractFormSheaf Open}
 variable (C : AbstractCurvatureOperations S)
 
-def curvature {U : Open} (A : S.Form 1 U) : S.Form 2 U :=
+noncomputable def curvature {U : Open} (A : S.Form 1 U) : S.Form 2 U :=
   C.add₂ U (C.d U A) (C.wedge U A A)
 
 @[simp] theorem curvature_formula {U : Open} (A : S.Form 1 U) :
@@ -20673,7 +21474,7 @@ theorem arithmeticFallback_certificate : ArithmeticFallbackCertificate := by
       representative_tor_kernel := ZModLike.mulLeft_mk_eq_zero_iff }
 
 structure FiniteCoverFallbackCertificate
-    {I : Type u} [Fintype I] (D : FiniteCoverSheafData I)
+    {I : Type u} [Fintype I] (D : FiniteCoverSheafData.{u, v} I)
     (H : FiniteCoverSheafAxioms D) : Prop where
   global_equalizer_equiv : Nonempty (D.SectionGlobal ≃ D.Equalizer)
   global_families_compatible :
@@ -20689,7 +21490,7 @@ structure FiniteCoverFallbackCertificate
       D.restrictGlobal (H.glue s hs) = s
 
 theorem finiteCoverFallback_certificate
-    {I : Type u} [Fintype I] (D : FiniteCoverSheafData I)
+    {I : Type u} [Fintype I] (D : FiniteCoverSheafData.{u, v} I)
     (H : FiniteCoverSheafAxioms D) :
     FiniteCoverFallbackCertificate D H := by
   exact
@@ -20758,7 +21559,7 @@ theorem curvatureFallback_certificate
 layer.  All interface assumptions are parameters of the package. -/
 structure FallbackCertificationBundle
     {I : Type u} [Fintype I]
-    (D : FiniteCoverSheafData I) (HD : FiniteCoverSheafAxioms D)
+    (D : FiniteCoverSheafData.{u, v} I) (HD : FiniteCoverSheafAxioms D)
     {Open : Type w} [Preorder Open]
     (S : AbstractFormSheaf Open)
     (Covariant : LocalCovariancePredicate S)
@@ -20771,7 +21572,7 @@ structure FallbackCertificationBundle
 
 theorem fallbackCertificationBundle
     {I : Type u} [Fintype I]
-    (D : FiniteCoverSheafData I) (HD : FiniteCoverSheafAxioms D)
+    (D : FiniteCoverSheafData.{u, v} I) (HD : FiniteCoverSheafAxioms D)
     {Open : Type w} [Preorder Open]
     (S : AbstractFormSheaf Open)
     (Covariant : LocalCovariancePredicate S)
@@ -20843,22 +21644,24 @@ theorem gamma2_topLeft_ne_zero (g : Gamma2) :
 This is the concrete obstruction to Proposition 13's instruction to choose an
 element of `Gamma(2)` carrying infinity to every cusp. -/
 theorem gamma2_does_not_send_infinity_to_zero (g : Gamma2) :
-    (SpecialLinearGroup.mapGL ℝ g.1) • (∞ : OnePoint ℝ) ≠
+    (Matrix.SpecialLinearGroup.mapGL (n := Fin 2) (R := ℤ) ℝ g.1) • (OnePoint.infty : OnePoint ℝ) ≠
       ((0 : ℝ) : OnePoint ℝ) := by
-  have ha : (SpecialLinearGroup.mapGL ℝ g.1) 0 0 ≠ 0 := by
+  have ha : (Matrix.SpecialLinearGroup.mapGL (n := Fin 2) (R := ℤ) ℝ g.1) 0 0 ≠ 0 := by
     change ((g.1 0 0 : ℤ) : ℝ) ≠ 0
     exact_mod_cast gamma2_topLeft_ne_zero g
-  by_cases hc : (SpecialLinearGroup.mapGL ℝ g.1) 1 0 = 0
+  by_cases hc : (Matrix.SpecialLinearGroup.mapGL (n := Fin 2) (R := ℤ) ℝ g.1) 1 0 = 0
   · simp [OnePoint.smul_infty_eq_ite, hc]
   · have hdiv :
-        (SpecialLinearGroup.mapGL ℝ g.1) 0 0 /
-          (SpecialLinearGroup.mapGL ℝ g.1) 1 0 ≠ 0 :=
+        (Matrix.SpecialLinearGroup.mapGL (n := Fin 2) (R := ℤ) ℝ g.1) 0 0 /
+          (Matrix.SpecialLinearGroup.mapGL (n := Fin 2) (R := ℤ) ℝ g.1) 1 0 ≠ 0 :=
       div_ne_zero ha hc
-    simpa [OnePoint.smul_infty_eq_ite, hc] using hdiv
+    rw [OnePoint.smul_infty_eq_ite, if_neg hc]
+    intro h
+    exact hdiv (OnePoint.coe_injective h)
 
 theorem no_gamma2_sends_infinity_to_zero :
     ¬ ∃ g : Gamma2,
-      (SpecialLinearGroup.mapGL ℝ g.1) • (∞ : OnePoint ℝ) =
+      (Matrix.SpecialLinearGroup.mapGL (n := Fin 2) (R := ℤ) ℝ g.1) • (OnePoint.infty : OnePoint ℝ) =
         ((0 : ℝ) : OnePoint ℝ) := by
   rintro ⟨g, hg⟩
   exact gamma2_does_not_send_infinity_to_zero g hg
@@ -20874,10 +21677,10 @@ def scalarAnalyticData : AnalyticData ℂ where
   potentialOperator := 0
 
 @[simp] theorem scalarAnalyticData_totalOperator :
-    scalarAnalyticData.totalOperator = 0 :=
-  by
-    ext u
-    simp [AnalyticData.totalOperator, scalarAnalyticData]
+    scalarAnalyticData.totalOperator = 0 := by
+  ext u
+  change (0 : ℂ) + 0 = 0
+  simp
 
 /-- Every vector in the scalar datum's dense domain solves the zero-energy
 equation. -/
@@ -20888,10 +21691,13 @@ theorem scalarAnalyticData_solutionSpace :
 
 /-- The scalar `z`, bundled as an actual element of every corrected fibre. -/
 def scalarSolution (z : ℂ) (r : RadiusBase) :
-    Fibre scalarAnalyticData r :=
-  ⟨⟨z, by simp [scalarAnalyticData]⟩, by
-    rw [scalarAnalyticData_solutionSpace]
-    trivial⟩
+    Fibre scalarAnalyticData r := by
+  let u : scalarAnalyticData.domain :=
+    ⟨z, by simp [scalarAnalyticData]⟩
+  refine ⟨u, ?_⟩
+  change u ∈ scalarAnalyticData.solutionSpace
+  rw [scalarAnalyticData_solutionSpace]
+  trivial
 
 @[simp] theorem scalarSolution_value (z : ℂ) (r : RadiusBase) :
     ((scalarSolution z r).1 : ℂ) = z :=
@@ -20917,20 +21723,22 @@ theorem scalarFibre_exists_nonzero (r : RadiusBase) :
 
 /-- A two-dimensional complex Hilbert space used for a genuinely nonzero
 operator with a nonzero kernel. -/
-abbrev TwoComponentSpace := ℂ × ℂ
+abbrev TwoComponentSpace := WithLp 2 (ℂ × ℂ)
 
 /-- Projection onto the first coordinate, defined on the dense full domain. -/
 def firstCoordinateOperator :
     (⊤ : Submodule ℂ TwoComponentSpace) →ₗ[ℂ] TwoComponentSpace where
-  toFun u := (u.1.1, 0)
+  toFun u := WithLp.toLp 2 (u.1.ofLp.1, 0)
   map_add' x y := by
+    apply WithLp.ofLp_injective 2
     ext <;> simp
   map_smul' c x := by
+    apply WithLp.ofLp_injective 2
     ext <;> simp
 
 @[simp] theorem firstCoordinateOperator_apply
     (u : (⊤ : Submodule ℂ TwoComponentSpace)) :
-    firstCoordinateOperator u = (u.1.1, 0) :=
+    firstCoordinateOperator u = WithLp.toLp 2 (u.1.ofLp.1, 0) :=
   rfl
 
 /-- Unlike the scalar test datum, this corrected analytic datum has a
@@ -20946,26 +21754,30 @@ theorem firstCoordinateOperator_ne_zero :
     firstCoordinateOperator ≠ 0 := by
   intro hzero
   let e : (⊤ : Submodule ℂ TwoComponentSpace) :=
-    ⟨(1, 0), by simp⟩
+    ⟨WithLp.toLp 2 (1, 0), by simp⟩
   have hvalue := congrArg
     (fun T : (⊤ : Submodule ℂ TwoComponentSpace) →ₗ[ℂ]
         TwoComponentSpace => T e) hzero
-  have hfirst := congrArg (fun z : TwoComponentSpace => z.1) hvalue
+  have hfirst := congrArg (fun z : TwoComponentSpace => z.ofLp.1) hvalue
   norm_num [e, firstCoordinateOperator] at hfirst
 
 /-- The vertical unit vector lies in the kernel of the nonzero projection. -/
 def verticalSolution (r : RadiusBase) :
-    Fibre twoComponentAnalyticData r :=
-  ⟨⟨(0, 1), by simp [twoComponentAnalyticData]⟩, by
-    simp [AnalyticData.solutionSpace, AnalyticData.totalOperator,
-      twoComponentAnalyticData, firstCoordinateOperator]⟩
+    Fibre twoComponentAnalyticData r := by
+  let u : twoComponentAnalyticData.domain :=
+    ⟨WithLp.toLp 2 ((0 : ℂ), (1 : ℂ)), by simp [twoComponentAnalyticData]⟩
+  refine ⟨u, ?_⟩
+  change firstCoordinateOperator u + 0 = 0
+  simp only [add_zero]
+  apply WithLp.ofLp_injective 2
+  ext <;> simp [firstCoordinateOperator, u]
 
 theorem verticalSolution_ne_zero (r : RadiusBase) :
     verticalSolution r ≠ 0 := by
   intro hzero
   have hsecond := congrArg
     (fun u : Fibre twoComponentAnalyticData r =>
-      ((u.1 : twoComponentAnalyticData.domain) : TwoComponentSpace).2)
+      ((u.1 : twoComponentAnalyticData.domain) : TwoComponentSpace).ofLp.2)
     hzero
   norm_num [verticalSolution] at hsecond
 
@@ -21023,8 +21835,12 @@ def constantSeries (c : ℂ) : QSeries :=
 
 theorem constantSeries_hasSum (c q : ℂ) :
     HasSum (term (constantSeries c) q) c := by
-  simpa [term, constantSeries] using
-    (hasSum_ite_eq (0 : ℕ) c)
+  convert (hasSum_ite_eq (0 : ℕ) c) using 1
+  funext n
+  by_cases h : n = 0
+  · subst n
+    simp [term, constantSeries]
+  · simp [term, constantSeries, h]
 
 theorem constantSeries_convergesAt (c q : ℂ) :
     (constantSeries c).ConvergesAt q :=
@@ -21055,8 +21871,12 @@ theorem monomialSeries_coeff_ne {degree n : ℕ} (h : n ≠ degree)
 /-- A monomial q-series has a one-term sum at every complex parameter. -/
 theorem monomialSeries_hasSum (degree : ℕ) (c q : ℂ) :
     HasSum (term (monomialSeries degree c) q) (c * q ^ degree) := by
-  simpa [term, monomialSeries] using
-    (hasSum_ite_eq degree (c * q ^ degree))
+  convert (hasSum_ite_eq degree (c * q ^ degree)) using 1
+  funext n
+  by_cases h : n = degree
+  · subst n
+    simp [term, monomialSeries]
+  · simp [term, monomialSeries, h]
 
 theorem monomialSeries_convergesAt (degree : ℕ) (c q : ℂ) :
     (monomialSeries degree c).ConvergesAt q :=
@@ -21115,9 +21935,9 @@ def unitCertifiedGerm : CertifiedGerm unitKernel where
         QSeries.constantSeries_convergesAt 1 q,
         ⟨zeroCommonAnnulus.ne_zero hq,
           QSeries.constantSeries_convergesAt 1 q⁻¹⟩⟩
-  matches := by
+  «matches» := by
     intro q _hq
-    simp [unitKernel, unitSeriesTriple]
+    norm_num [unitKernel, unitSeriesTriple]
 
 theorem unitKernel_psi_ne_zero : unitKernel.psi ≠ 0 := by
   simpa [unitKernel] using
@@ -21157,9 +21977,9 @@ def degreeOneCertifiedGerm : CertifiedGerm unitKernel where
         QSeries.constantSeries_convergesAt 1 q,
         ⟨zeroCommonAnnulus.ne_zero hq,
           QSeries.constantSeries_convergesAt 1 q⁻¹⟩⟩
-  matches := by
+  «matches» := by
     intro q _hq
-    simp [unitKernel, degreeOneSeriesTriple]
+    norm_num [unitKernel, degreeOneSeriesTriple]
 
 @[simp] theorem degreeOneCertifiedGerm_inside_sumAt (q : ℂ) :
     degreeOneCertifiedGerm.series.inside.sumAt q = q := by
@@ -21339,8 +22159,7 @@ theorem identityActual_certificate
     Certificate (X := Definition11.RadiusBase)
       (ActualLqFibre D) (ActualMmockFibre A)
       (identityActualFibreOperators D A) :=
-  actual_certificate (X := Definition11.RadiusBase)
-    D A (identityActualFibreOperators D A)
+  actual_certificate D A (identityActualFibreOperators D A)
 
 end ActualIdentity
 
@@ -21630,7 +22449,7 @@ theorem flatTransport_not_unique_from_flatness :
         (scalarSolution 1 halfRadius)) htransport
   have hneg :
       scalarSolution 1 quarterRadius = -scalarSolution 1 quarterRadius := by
-    simpa using hvalue
+    simpa [scalarSolution] using hvalue
   exact scalarSolution_one_ne_neg quarterRadius hneg
 
 end
@@ -21649,7 +22468,7 @@ structure Certificate : Prop where
       1 < ‖Definition11.qParameter tau‖
   gamma2_cannot_transport_infinity_to_zero :
     ¬ ∃ g : Definition11.Gamma2,
-      (SpecialLinearGroup.mapGL ℝ g.1) • (∞ : OnePoint ℝ) =
+      (Matrix.SpecialLinearGroup.mapGL (n := Fin 2) (R := ℤ) ℝ g.1) • (OnePoint.infty : OnePoint ℝ) =
         ((0 : ℝ) : OnePoint ℝ)
   nonzero_solution_fibre :
     ∃ u : Definition11.Fibre Definition11.scalarAnalyticData
@@ -21719,7 +22538,7 @@ structure Certificate : Prop where
         Definition11.scalarAnalyticData
         Mmock.zeroCommonAnnulus.carrier)
 
-theorem certificate : Certificate :=
+noncomputable def certificate : Certificate :=
   { quotient_radius_formula_impossible :=
       Definition11.originalPi_not_wellDefined
     upper_half_plane_has_no_outside_q :=
@@ -21785,10 +22604,10 @@ theorem literalDefinition11Closure_impossible :
 /-- A package representing simultaneous literal closure of the paper's
 analytic claims.  The extra fields record two further literal consequences,
 but impossibility already follows from Definition 11. -/
-structure LiteralPaperAnalyticClosure extends LiteralDefinition11Closure : Prop where
+structure LiteralPaperAnalyticClosure : Prop extends LiteralDefinition11Closure where
   gamma2TransportsInfinityToZero :
     ∃ g : Definition11.Gamma2,
-      (SpecialLinearGroup.mapGL ℝ g.1) • (∞ : OnePoint ℝ) =
+      (Matrix.SpecialLinearGroup.mapGL (n := Fin 2) (R := ℤ) ℝ g.1) • (OnePoint.infty : OnePoint ℝ) =
         ((0 : ℝ) : OnePoint ℝ)
   upperHalfPlaneContainsOutsideParameter :
     ∃ tau : Definition11.H, 1 < ‖Definition11.qParameter tau‖
@@ -21805,7 +22624,7 @@ package is separately impossible. -/
 theorem literalPaperAnalyticClosure_componentwise :
     (¬ Definition11.OriginalPiWellDefined) ∧
     (¬ ∃ g : Definition11.Gamma2,
-      (SpecialLinearGroup.mapGL ℝ g.1) • (∞ : OnePoint ℝ) =
+      (Matrix.SpecialLinearGroup.mapGL (n := Fin 2) (R := ℤ) ℝ g.1) • (OnePoint.infty : OnePoint ℝ) =
         ((0 : ℝ) : OnePoint ℝ)) ∧
     (¬ ∃ tau : Definition11.H,
       1 < ‖Definition11.qParameter tau‖) :=
@@ -21834,7 +22653,7 @@ open scoped Manifold ContDiff
 abbrev ConcreteGaugeGroup := ℂˣ
 
 /-- `ℂˣ` is an open complex manifold modelled on `ℂ`. -/
-abbrev ConcreteGaugeModel : ModelWithCorners ℂ ℂ ℂ := 𝓘(ℂ)
+noncomputable abbrev ConcreteGaugeModel : ModelWithCorners ℂ ℂ ℂ := 𝓘(ℂ)
 
 /-- One proposition containing the fully instantiated certificates for every
 checklist item from §4.6 through §5.3, together with the nonzero analytic data
@@ -21917,7 +22736,7 @@ noncomputable def certificate : Certificate where
       Mmock.zeroCommonAnnulus.carrier
 
 /-- Paper-facing theorem name for the integrated empty-context result. -/
-theorem checklist_4_6_through_5_3_unconditional : Certificate :=
+noncomputable def checklist_4_6_through_5_3_unconditional : Certificate :=
   certificate
 
 end UnconditionalSection46To53
@@ -21952,8 +22771,8 @@ abbrev Opens (X : Type u) [TopologicalSpace X] := TopologicalSpace.Opens X
 /-- Precise standalone meaning of `Sh(Eq)`: an ambient sheaf, a boundary
 sheaf, two restriction morphisms, and their pointwise equalizer. -/
 structure ShEq (X : Type u) [TopologicalSpace X] where
-  ambient : QGaugePresheaf (Opens X)
-  boundary : QGaugePresheaf (Opens X)
+  ambient : QGaugePresheaf.{u, v} (Opens X)
+  boundary : QGaugePresheaf.{u, v} (Opens X)
   resIn : QGaugePresheaf.Morphism ambient boundary
   resOut : QGaugePresheaf.Morphism ambient boundary
   ambient_isSheaf :
@@ -22101,7 +22920,7 @@ end ShEq
 profile is not encoded in this object; a clearly labelled zero-residue model
 is constructed separately below. -/
 structure ShP (X : Type u) [TopologicalSpace X] where
-  sheaf : QGaugePresheaf (Opens X)
+  sheaf : QGaugePresheaf.{u, v} (Opens X)
   isSheaf : IsSheafLike (QGaugePresheaf.toPresheafLike sheaf)
 
 namespace ShP
@@ -22158,7 +22977,7 @@ abbrev Carrier (S : ShP X) (U : Opens X) (p : PrimeIndex) :=
   S.sheaf.Field U × ZMod p.1
 
 /-- Restrict the section component and preserve the prime residue. -/
-def restrict (S : ShP X) {U V : Opens X} (hUV : U ≤ V)
+noncomputable def restrict (S : ShP X) {U V : Opens X} (hUV : U ≤ V)
     (p : PrimeIndex) : Carrier S V p → Carrier S U p :=
   fun x => (S.sheaf.res hUV x.1, x.2)
 
@@ -22324,44 +23143,55 @@ theorem F_map_zeroProfile_natural_model
 
 variable {X : Type u} [TopologicalSpace X]
 
+/-- The two evaluated restriction maps as morphisms in the category of types. -/
+def sourceResInType (S : ShEq X) (U : Opens X) :
+    S.ambient.Field U ⟶ S.boundary.Field U :=
+  ↾(S.resIn.app U)
+
+def sourceResOutType (S : ShEq X) (U : Opens X) :
+    S.ambient.Field U ⟶ S.boundary.Field U :=
+  ↾(S.resOut.app U)
+
 theorem sourceInclusion_condition (S : ShEq X) (U : Opens X) :
-    (fun e : S.balancedSheaf.Field U => e.1) ≫ S.resIn.app U =
-      (fun e : S.balancedSheaf.Field U => e.1) ≫ S.resOut.app U := by
-  funext e
+    ↾(fun e : S.balancedSheaf.Field U => e.1) ≫ sourceResInType S U =
+      ↾(fun e : S.balancedSheaf.Field U => e.1) ≫ sourceResOutType S U := by
+  apply ConcreteCategory.hom_ext
+  intro e
   exact e.2
 
 def sourceEqualizerFork (S : ShEq X) (U : Opens X) :
-    Fork (S.resIn.app U) (S.resOut.app U) :=
-  Fork.ofι (fun e : S.balancedSheaf.Field U => e.1)
+    Fork (sourceResInType S U) (sourceResOutType S U) :=
+  Fork.ofι (↾(fun e : S.balancedSheaf.Field U => e.1))
     (sourceInclusion_condition S U)
 
 theorem competingFork_condition (S : ShEq X) (U : Opens X)
-    (T : Fork (S.resIn.app U) (S.resOut.app U)) (x : T.pt) :
+    (T : Fork (sourceResInType S U) (sourceResOutType S U)) (x : T.pt) :
     S.resIn.app U (T.ι x) = S.resOut.app U (T.ι x) := by
-  have h := congrArg
-    (fun k : T.pt ⟶ S.boundary.Field U => k x) T.condition
-  simpa only [Function.comp_apply] using h
+  have h := ConcreteCategory.congr_hom T.condition x
+  simpa [sourceResInType, sourceResOutType] using h
 
 def sourceEqualizerLift (S : ShEq X) (U : Opens X)
-    (T : Fork (S.resIn.app U) (S.resOut.app U)) :
+    (T : Fork (sourceResInType S U) (sourceResOutType S U)) :
     T.pt ⟶ S.balancedSheaf.Field U :=
-  fun x => ⟨T.ι x, competingFork_condition S U T x⟩
+  ↾(fun x => ⟨T.ι x, competingFork_condition S U T x⟩)
 
 theorem sourceEqualizerLift_fac (S : ShEq X) (U : Opens X)
-    (T : Fork (S.resIn.app U) (S.resOut.app U)) :
+    (T : Fork (sourceResInType S U) (sourceResOutType S U)) :
     sourceEqualizerLift S U T ≫ (sourceEqualizerFork S U).ι = T.ι := by
-  funext x
+  apply ConcreteCategory.hom_ext
+  intro x
   rfl
 
 theorem sourceEqualizerLift_unique (S : ShEq X) (U : Opens X)
-    (T : Fork (S.resIn.app U) (S.resOut.app U))
+    (T : Fork (sourceResInType S U) (sourceResOutType S U))
     (m : T.pt ⟶ S.balancedSheaf.Field U)
     (hm : m ≫ (sourceEqualizerFork S U).ι = T.ι) :
     m = sourceEqualizerLift S U T := by
-  funext x
+  apply ConcreteCategory.hom_ext
+  intro x
   apply Subtype.ext
-  have h := congrArg (fun k : T.pt ⟶ S.ambient.Field U => k x) hm
-  simpa only [Function.comp_apply] using h
+  change ((m ≫ (sourceEqualizerFork S U).ι) x) = T.ι x
+  exact ConcreteCategory.congr_hom hm x
 
 def sourceEqualizerForkIsLimit (S : ShEq X) (U : Opens X) :
     IsLimit (sourceEqualizerFork S U) := by
@@ -22373,30 +23203,32 @@ def sourceEqualizerForkIsLimit (S : ShEq X) (U : Opens X) :
 /-- The target fork is rebuilt from `F.obj S`; its point is the constructed
 target sheaf rather than a copied profile datum. -/
 def targetEqualizerFork (S : ShEq X) (U : Opens X) :
-    Fork (S.resIn.app U) (S.resOut.app U) :=
-  Fork.ofι (fun e : (F.obj S).sheaf.Field U => e.1)
+    Fork (sourceResInType S U) (sourceResOutType S U) :=
+  Fork.ofι (↾(fun e : (F.obj S).sheaf.Field U => e.1))
     (sourceInclusion_condition S U)
 
 def targetEqualizerLift (S : ShEq X) (U : Opens X)
-    (T : Fork (S.resIn.app U) (S.resOut.app U)) :
+    (T : Fork (sourceResInType S U) (sourceResOutType S U)) :
     T.pt ⟶ (F.obj S).sheaf.Field U :=
-  fun x => ⟨T.ι x, competingFork_condition S U T x⟩
+  ↾(fun x => ⟨T.ι x, competingFork_condition S U T x⟩)
 
 theorem targetEqualizerLift_fac (S : ShEq X) (U : Opens X)
-    (T : Fork (S.resIn.app U) (S.resOut.app U)) :
+    (T : Fork (sourceResInType S U) (sourceResOutType S U)) :
     targetEqualizerLift S U T ≫ (targetEqualizerFork S U).ι = T.ι := by
-  funext x
+  apply ConcreteCategory.hom_ext
+  intro x
   rfl
 
 theorem targetEqualizerLift_unique (S : ShEq X) (U : Opens X)
-    (T : Fork (S.resIn.app U) (S.resOut.app U))
+    (T : Fork (sourceResInType S U) (sourceResOutType S U))
     (m : T.pt ⟶ (F.obj S).sheaf.Field U)
     (hm : m ≫ (targetEqualizerFork S U).ι = T.ι) :
     m = targetEqualizerLift S U T := by
-  funext x
+  apply ConcreteCategory.hom_ext
+  intro x
   apply Subtype.ext
-  have h := congrArg (fun k : T.pt ⟶ S.ambient.Field U => k x) hm
-  simpa only [Function.comp_apply] using h
+  change ((m ≫ (targetEqualizerFork S U).ι) x) = T.ι x
+  exact ConcreteCategory.congr_hom hm x
 
 /-- The target fork has the equalizer universal property.  This is deliberately
 not named `PreservesLimit`: `F` is a functor between the standalone sheaf
@@ -22410,9 +23242,9 @@ def targetEqualizerForkIsLimit (S : ShEq X) (U : Opens X) :
 
 noncomputable def targetEqualizerIso (S : ShEq X) (U : Opens X) :
     (F.obj S).sheaf.Field U ≅
-      equalizer (S.resIn.app U) (S.resOut.app U) :=
+      equalizer (sourceResInType S U) (sourceResOutType S U) :=
   IsLimit.conePointUniqueUpToIso (targetEqualizerForkIsLimit S U)
-    (limit.isLimit (parallelPair (S.resIn.app U) (S.resOut.app U)))
+    (limit.isLimit (parallelPair (sourceResInType S U) (sourceResOutType S U)))
 
 /-! ### Fixed-parameter constant derived-Tor comparison model -/
 
@@ -22512,7 +23344,7 @@ abbrev ActualOpens := Proposition20ActualQGaugeSpecialization.Opens
 /-- The concrete Proposition 16 q-gauge sheaf presented as the equalizer of
 its two identity maps.  This is a genuine `Sh(Eq)` object and does not require
 new boundary assumptions. -/
-def actualSource : ShEq ActualBase where
+def actualSource : ShEq.{0, 0} ActualBase where
   ambient := Proposition20ActualQGaugeSpecialization.actualQGaugePresheaf
   boundary := Proposition20ActualQGaugeSpecialization.actualQGaugePresheaf
   resIn := QGaugePresheaf.Morphism.id _
@@ -22558,8 +23390,7 @@ noncomputable def proposition20KernelEquivActualSource
     (C : Proposition20ActualQGaugeSpecialization.AdaptedGeometryCover) :
     Proposition20ActualQGaugeSpecialization.Equation613Kernel C ≃
       actualSource.balancedSheaf.Field (⊤ : ActualOpens) :=
-  (Proposition20ActualQGaugeSpecialization.
-      proposition20ActualGlobalEquivKernel C).symm.trans
+  (Proposition20ActualQGaugeSpecialization.proposition20ActualGlobalEquivKernel C).symm.trans
     actualGlobalAqEquivSource
 
 /-- The concrete target object produced from actual q-gauge fields. -/
@@ -22584,21 +23415,21 @@ structure StandaloneZeroProfileCertificate
       ZeroPrimeLocalProfileModel.localSpectralProfile
         definition14Target U s p = (s, 0)
   source_is_balanced_equalizer :
-    ∀ S : ShEq ActualBase,
+    ∀ S : ShEq.{0, 0} ActualBase,
       S.balancedSheaf =
         QGaugePresheaf.balancedEqualizerSheaf S.resIn S.resOut
   profile_is_constructed :
-    ∀ (S : ShEq ActualBase) (U : ActualOpens)
+    ∀ (S : ShEq.{0, 0} ActualBase) (U : ActualOpens)
       (s : S.balancedSheaf.Field U) (p : PrimeIndex),
       ZeroPrimeLocalProfileModel.localSpectralProfile
         (F.obj S) U s p = (s, 0)
   profile_is_canonical :
-    ∀ (S : ShEq ActualBase) (U : ActualOpens)
+    ∀ (S : ShEq.{0, 0} ActualBase) (U : ActualOpens)
       (s : S.balancedSheaf.Field U) (p : PrimeIndex),
       ∃! x : ZeroPrimeLocalProfileModel.Carrier (F.obj S) U p,
         x.1 = s ∧ x.2 = 0
   profile_restriction_natural :
-    ∀ (S : ShEq ActualBase) {U V : ActualOpens} (hUV : U ≤ V)
+    ∀ (S : ShEq.{0, 0} ActualBase) {U V : ActualOpens} (hUV : U ≤ V)
       (s : S.balancedSheaf.Field V) (p : PrimeIndex),
       ZeroPrimeLocalProfileModel.restrict (F.obj S) hUV p
           (ZeroPrimeLocalProfileModel.localSpectralProfile
@@ -22606,14 +23437,14 @@ structure StandaloneZeroProfileCertificate
         ZeroPrimeLocalProfileModel.localSpectralProfile (F.obj S) U
           (S.balancedSheaf.res hUV s) p
   source_equalizer_universal :
-    ∀ (S : ShEq ActualBase) (U : ActualOpens),
-      IsLimit (sourceEqualizerFork S U)
+    ∀ (S : ShEq.{0, 0} ActualBase) (U : ActualOpens),
+      Nonempty (IsLimit (sourceEqualizerFork S U))
   target_equalizer_universal :
-    ∀ (S : ShEq ActualBase) (U : ActualOpens),
-      IsLimit (targetEqualizerFork S U)
-  functor_identity : ∀ S : ShEq ActualBase, F.map (𝟙 S) = 𝟙 (F.obj S)
+    ∀ (S : ShEq.{0, 0} ActualBase) (U : ActualOpens),
+      Nonempty (IsLimit (targetEqualizerFork S U))
+  functor_identity : ∀ S : ShEq.{0, 0} ActualBase, F.map (𝟙 S) = 𝟙 (F.obj S)
   functor_composition :
-    ∀ {S T R : ShEq ActualBase} (f : S ⟶ T) (g : T ⟶ R),
+    ∀ {S T R : ShEq.{0, 0} ActualBase} (f : S ⟶ T) (g : T ⟶ R),
       F.map (f ≫ g) = F.map f ≫ F.map g
   actual_global_source :
     Nonempty
@@ -22621,11 +23452,12 @@ structure StandaloneZeroProfileCertificate
         actualSource.balancedSheaf.Field (⊤ : ActualOpens))
   constant_derived_tor_comparison_model :
     Nonempty
-      (constantSourceTorFunctor_model (X := ActualBase) M N ≅
-        F ⋙ constantTargetTorFunctor_model (X := ActualBase) M N)
+      (constantSourceTorFunctor_model.{0, 0} (X := ActualBase) M N ≅
+        F.{0, 0} ⋙
+          constantTargetTorFunctor_model.{0, 0} (X := ActualBase) M N)
   tor_component_is_resolution_comparison :
-    ∀ S : ShEq ActualBase,
-      (constantTorComparisonIso_model
+    ∀ S : ShEq.{0, 0} ActualBase,
+      (constantTorComparisonIso_model.{0, 0}
         (X := ActualBase) M N hM).hom.app S =
         (Tor1ZDerivedComparison.mathlibTor1ZIsoCyclicModel M N hM).hom
 
@@ -22640,15 +23472,19 @@ theorem standaloneZeroProfile_certificate (M N : ℕ) (hM : M ≠ 0) :
   profile_is_canonical := fun S U s p =>
     ZeroPrimeLocalProfileModel.existsUnique_normalized (F.obj S) U s p
   profile_restriction_natural := F_zeroProfile_restrict_model
-  source_equalizer_universal := sourceEqualizerForkIsLimit
-  target_equalizer_universal := targetEqualizerForkIsLimit
+  source_equalizer_universal := fun S U =>
+    ⟨sourceEqualizerForkIsLimit S U⟩
+  target_equalizer_universal := fun S U =>
+    ⟨targetEqualizerForkIsLimit S U⟩
   functor_identity := fun S => F.map_id S
   functor_composition := fun f g => F.map_comp f g
   actual_global_source := ⟨actualGlobalAqEquivSource⟩
   constant_derived_tor_comparison_model :=
-    ⟨constantTorComparisonIso_model (X := ActualBase) M N hM⟩
+    ⟨constantTorComparisonIso_model.{0, 0}
+      (X := ActualBase) M N hM⟩
   tor_component_is_resolution_comparison :=
-    constantTorComparisonIso_model_hom_app (X := ActualBase) M N hM
+    constantTorComparisonIso_model_hom_app.{0, 0}
+      (X := ActualBase) M N hM
 
 /-- Empty-context arithmetic instance of the standalone supplement: `M=N=2`.
 The theorem name does not claim the missing paper-category identification. -/
@@ -22721,14 +23557,14 @@ is sent to the exact zero solution of equation (6.2). -/
 def tensorToActualQGauge_zeroModel :
     QGaugePresheaf.Morphism tensorGaugePresheafOverX_zeroModel
       Proposition20ActualQGaugeSpecialization.actualQGaugePresheaf where
-  app := fun U _ => (0 : Proposition20ActualQGaugeSpecialization.Aq U)
+  app := fun U _ => Proposition20ActualQGaugeSpecialization.aqZero U
   naturality := by
     intro U V hUV s
     exact Proposition20ActualQGaugeSpecialization.aqRes_zero hUV
 
 @[simp] theorem tensorToActualQGauge_zeroModel_apply (U : Opens)
     (s : tensorGaugePresheafOverX_zeroModel.Field U) :
-    tensorToActualQGauge_zeroModel.app U s = 0 :=
+    tensorToActualQGauge_zeroModel.app U s = Proposition20ActualQGaugeSpecialization.aqZero U :=
   rfl
 
 theorem tensorToActualQGauge_zeroModel_natural
@@ -22745,7 +23581,7 @@ theorem tensorToActualQGauge_zeroModel_unique
     (f : QGaugePresheaf.Morphism tensorGaugePresheafOverX_zeroModel
       Proposition20ActualQGaugeSpecialization.actualQGaugePresheaf)
     (hf : ∀ (U : Opens) (s : tensorGaugePresheafOverX_zeroModel.Field U),
-      f.app U s = 0) :
+      f.app U s = Proposition20ActualQGaugeSpecialization.aqZero U) :
     f = tensorToActualQGauge_zeroModel := by
   apply QGaugePresheaf.Morphism.ext
   intro U s
@@ -22769,7 +23605,7 @@ namespace TensorToModularQGaugeBridge
 /-- Paper-relevant nontriviality is additional data not supplied by the text. -/
 def Nontrivial (B : TensorToModularQGaugeBridge) : Prop :=
   ∃ (U : Opens) (s : ActualTensorGlobal),
-    B.comparison.app U (B.realizeGlobal U s) ≠ 0
+    B.comparison.app U (B.realizeGlobal U s) ≠ Proposition20ActualQGaugeSpecialization.aqZero U
 
 /-- Canonical degenerate witness, retained only to prove the interface is
 inhabited. -/
@@ -22853,9 +23689,17 @@ theorem qGaugeToConnection_zeroModel_curvature_eq_zero
         (qGaugeToConnection_zeroModel A) = 0 := by
   apply LocallyConstant.ext
   intro x
-  simp [qGaugeToConnection_zeroModel,
-    Proposition17And18FinalSpecialization.connectionCurvature,
-    Proposition17And18FinalSpecialization.curvature_apply]
+  change
+    PolynomialMatrixDifferentialForms.matrixDifferential
+          (0 : Proposition17And18FinalSpecialization.FormFibre 1) +
+        PolynomialMatrixDifferentialForms.matrixWedge
+          (0 : Proposition17And18FinalSpecialization.FormFibre 1)
+          (0 : Proposition17And18FinalSpecialization.FormFibre 1) = 0
+  rw [PolynomialMatrixDifferentialForms.matrixDifferential_zero]
+  apply Matrix.ext
+  intro i j
+  apply PolynomialMatrixDifferentialForms.ChartForm.ext <;>
+    simp [PolynomialMatrixDifferentialForms.matrixWedge, Fin.sum_univ_two]
 
 /-- Exact additional datum needed to identify a modular q-gauge one-form with
 the polynomial-matrix DGA component used by the concrete curvature model.  The
@@ -22893,7 +23737,7 @@ theorem toConnection_restrict (R : QGaugeDGARealization)
   · exact R.restriction_natural hUV A
 
 /-- Curvature attached to the supplied DGA realization. -/
-def curvature (R : QGaugeDGARealization) {U : Opens}
+noncomputable def curvature (R : QGaugeDGARealization) {U : Opens}
     (A : Proposition20ActualQGaugeSpecialization.Aq U) :
     Proposition17And18FinalSpecialization.Form 2 U :=
   Proposition17And18FinalSpecialization.connectionCurvature (R.toConnection A)
@@ -23164,8 +24008,9 @@ structure PaperElementaryConclusions
       (Proposition20ActualQGaugeSpecialization.Aq (⊤ : Opens) ≃
         P.balancedSource.balancedSheaf.Field (⊤ : Opens))
   proposition20_certificate :
-    Proposition20ActualQGaugeSpecialization.ActualProposition20Certificate
-      Proposition20ActualQGaugeSpecialization.AdaptedGeometryCover.canonical
+    Nonempty
+      (Proposition20ActualQGaugeSpecialization.ActualProposition20Certificate
+        Proposition20ActualQGaugeSpecialization.AdaptedGeometryCover.canonical)
   proposition15_standalone_certificate :
     Proposition15ActualFunctor.StandaloneZeroProfileCertificate
       D.M (Pk D.p D.k) D.M_ne_zero
@@ -23240,7 +24085,7 @@ theorem canonicalZeroBridgeModel_certificate (D : PaperElementaryInputData) :
   proposition20_global_source :=
     ⟨Proposition15ActualFunctor.actualGlobalAqEquivSource⟩
   proposition20_certificate :=
-    Proposition20ActualQGaugeSpecialization.checklist_8_P1_unconditional
+    ⟨Proposition20ActualQGaugeSpecialization.checklist_8_P1_unconditional⟩
   proposition15_standalone_certificate :=
     Proposition15ActualFunctor.standaloneZeroProfile_certificate
       D.M (Pk D.p D.k) D.M_ne_zero
@@ -23709,8 +24554,9 @@ structure StaticAcceptanceCertificate (D : PaperElementaryInputData) : Prop wher
   definition18_and_proposition19_actual :
     ActualDefinition18Proposition19InterfaceCertificate D.mu D.inner
   proposition20_canonicalCover_zeroModel :
-    Proposition20ActualQGaugeSpecialization.ActualProposition20Certificate
-      Proposition20ActualQGaugeSpecialization.AdaptedGeometryCover.canonical
+    Nonempty
+      (Proposition20ActualQGaugeSpecialization.ActualProposition20Certificate
+        Proposition20ActualQGaugeSpecialization.AdaptedGeometryCover.canonical)
   proposition15_constructed_standalone_functor :
     Proposition15ActualFunctor.StandaloneZeroProfileCertificate
       D.M (Pk D.p D.k) D.M_ne_zero
@@ -23742,7 +24588,7 @@ theorem staticAcceptance_certificate (D : PaperElementaryInputData) :
   definition18_and_proposition19_actual :=
     checklist_7_P1_unconditional D.mu D.inner
   proposition20_canonicalCover_zeroModel :=
-    Proposition20ActualQGaugeSpecialization.checklist_8_P1_unconditional
+    ⟨Proposition20ActualQGaugeSpecialization.checklist_8_P1_unconditional⟩
   proposition15_constructed_standalone_functor :=
     Proposition15ActualFunctor.standaloneZeroProfile_certificate
       D.M (Pk D.p D.k) D.M_ne_zero
@@ -25403,7 +26249,7 @@ section AxiomAudit
 #print axioms Proposition17And18FinalSpecialization.identityForm_apply
 #print axioms Proposition17And18FinalSpecialization.FrameChange
 #print axioms Proposition17And18FinalSpecialization.FrameChange.identity
-#print axioms Proposition17And18FinalSpecialization.FrameChange.at
+#print axioms Proposition17And18FinalSpecialization.FrameChange.«at»
 #print axioms Proposition17And18FinalSpecialization.FrameChange.restrict
 #print axioms Proposition17And18FinalSpecialization.FrameChange.conjugateOne
 #print axioms Proposition17And18FinalSpecialization.FrameChange.conjugateTwo
@@ -25759,4 +26605,3 @@ section AxiomAudit
 end AxiomAudit
 
 end Mock2
-

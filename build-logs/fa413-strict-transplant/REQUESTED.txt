@@ -1,0 +1,5 @@
+Authoritative baseline: PASS376 artifact 9024606745
+SHA256: 07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4
+First Lean error: 31725
+Promotion rule: exit 0, or first_error_line strictly greater than 31725/current checked-in champion. Error-count reduction alone is never promotion.
+Ordered final gate: Mock2 and Mock2_Advanced prerequisites; FA x2; Integrated x2; every Mock3*.lean x2; QYM x2.

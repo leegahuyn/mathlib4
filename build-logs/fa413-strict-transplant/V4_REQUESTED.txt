@@ -1,0 +1,1 @@
+Use the latest checked-in strict champion. Accept only Lean exit 0 or a strictly later first error, while keeping downstream line positions fixed.

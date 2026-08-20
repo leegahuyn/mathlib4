@@ -1,0 +1,13 @@
+{
+  "schema": "fa-dynamic-idx3112-real-norm-followup-v1",
+  "status": "API_PROBE_VALIDATED_PENDING_MODULE_DIRECT_LEAN",
+  "api_probe_run_id": 31530293743,
+  "repairs": [
+    {
+      "declaration_index": 3112,
+      "declaration_name": "intrinsicCuspCutoff_fderiv_hyperbolic_bound",
+      "old_fragment": "    have hNormEq :\n        ‖upperLift (intrinsicCuspCutoff N) w -\n            upperLift (intrinsicCuspCutoff N) (z : ℂ)‖ =\n          dist (intrinsicCuspCutoffReal N (UpperHalfPlane.ofComplex w))\n            (intrinsicCuspCutoffReal N z) := by\n      rw [Real.dist_eq]\n      simp only [upperLift, Function.comp_def, intrinsicCuspCutoff,\n        Complex.norm_real, UpperHalfPlane.ofComplex_apply_of_im_pos z.im_pos]",
+      "new_fragment": "    have hNormEq :\n        ‖upperLift (intrinsicCuspCutoff N) w -\n            upperLift (intrinsicCuspCutoff N) (z : ℂ)‖ =\n          dist (intrinsicCuspCutoffReal N (UpperHalfPlane.ofComplex w))\n            (intrinsicCuspCutoffReal N z) := by\n      rw [Real.dist_eq]\n      simp only [upperLift, Function.comp_def, intrinsicCuspCutoff,\n        UpperHalfPlane.ofComplex_apply_of_im_pos z.im_pos]\n      rw [← Complex.ofReal_sub, Complex.norm_real, Real.norm_eq_abs]"
+    }
+  ]
+}

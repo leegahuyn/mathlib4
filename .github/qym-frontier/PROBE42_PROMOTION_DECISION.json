@@ -1,0 +1,49 @@
+{
+  "candidate": {
+    "bytes": 2944929,
+    "candidate_qym_blob": "ff49510790dd7ca136bf34c3ec7150617ee1c241",
+    "candidate_qym_sha256": "313c076645a51976237738bd10c7f22b54f2a483499e60b57fa0d69be007cc1e",
+    "error_headers": 89,
+    "exit": 1,
+    "first_error": {
+      "code": null,
+      "column": 30,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 37775,
+      "message": "unsolved goals",
+      "severity": "error"
+    },
+    "last_error": {
+      "code": null,
+      "column": 78,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 59170,
+      "message": "unsolved goals",
+      "severity": "error"
+    },
+    "lf": 62256,
+    "log_sha256": "58ac58a6fcb8a78668b8c53360f078be992703cc05353d1e081c4f39b37906d8",
+    "panic_lines": 0,
+    "probe": "Probe42",
+    "run_id": 32142277284,
+    "semantic_pass": false,
+    "variant": "baseline",
+    "warning_headers": 356
+  },
+  "previous": {
+    "candidate_qym_blob": "ff49510790dd7ca136bf34c3ec7150617ee1c241",
+    "candidate_qym_sha256": "313c076645a51976237738bd10c7f22b54f2a483499e60b57fa0d69be007cc1e",
+    "error_headers": 89,
+    "exit": 1,
+    "first_error": {
+      "line": 37775
+    },
+    "panic_lines": 0,
+    "probe": "Probe35-flat_infer",
+    "run_id": 32095253829,
+    "semantic_pass": false,
+    "variant": "flat_infer",
+    "warning_headers": 356
+  },
+  "promoted": false
+}

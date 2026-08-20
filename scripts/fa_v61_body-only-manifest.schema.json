@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.invalid/fa-v61-body-only-repair-manifest-v1.schema.json",
+  "title": "FA v61 generic fail-closed body-only repair manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "status", "authority_source_sha256", "manifest_id", "repairs", "constraints"],
+  "properties": {
+    "schema": {"const": "fa-v61-body-only-repair-manifest-v1"},
+    "status": {"enum": ["READY", "PENDING"]},
+    "authority_source_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "manifest_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"},
+    "repairs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "sequence", "stage", "depends_on", "owner", "old", "new", "counts", "diagnostic_coverage", "constraints"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "sequence": {"type": "integer", "minimum": 0},
+          "stage": {"type": "integer", "minimum": 0},
+          "depends_on": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+          "owner": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["declaration_index", "declaration_name", "expected_header", "expected_input_region_sha256"],
+            "properties": {
+              "declaration_index": {"type": "integer", "minimum": 1},
+              "declaration_name": {"type": "string", "minLength": 1},
+              "expected_header": {"type": "string", "minLength": 1},
+              "expected_input_region_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+            }
+          },
+          "old": {"type": "string", "minLength": 1},
+          "new": {"type": "string", "minLength": 1},
+          "counts": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["old_in_owner", "old_global", "new_in_owner_before", "new_in_owner_after", "new_global_before", "new_global_after"],
+            "properties": {
+              "old_in_owner": {"type": "integer", "minimum": 1},
+              "old_global": {"type": "integer", "minimum": 1},
+              "new_in_owner_before": {"type": "integer", "minimum": 0},
+              "new_in_owner_after": {"type": "integer", "minimum": 1},
+              "new_global_before": {"type": "integer", "minimum": 0},
+              "new_global_after": {"type": "integer", "minimum": 1}
+            }
+          },
+          "diagnostic_coverage": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["root_key", "baseline_ordinals", "count"],
+            "properties": {
+              "root_key": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"},
+              "baseline_ordinals": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "integer", "minimum": 1}},
+              "count": {"type": "integer", "minimum": 1}
+            }
+          },
+          "constraints": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["body_only", "header_unchanged", "statement_unchanged", "comments_unchanged", "attributes_unchanged", "source_move", "maxHeartbeats_unchanged", "trust_six_unchanged"],
+            "properties": {
+              "body_only": {"const": true},
+              "header_unchanged": {"const": true},
+              "statement_unchanged": {"const": true},
+              "comments_unchanged": {"const": true},
+              "attributes_unchanged": {"const": true},
+              "source_move": {"const": false},
+              "maxHeartbeats_unchanged": {"const": true},
+              "trust_six_unchanged": {"const": true}
+            }
+          }
+        }
+      }
+    },
+    "constraints": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["body_only", "source_moves", "maxHeartbeats_delta", "trust_six_delta", "diagnostic_coverage_overlap"],
+      "properties": {
+        "body_only": {"const": true},
+        "source_moves": {"const": 0},
+        "maxHeartbeats_delta": {"const": 0},
+        "trust_six_delta": {"const": 0},
+        "diagnostic_coverage_overlap": {"const": "SAME_OWNER_ROOT_ORDERED_ONLY"}
+      }
+    }
+  }
+}

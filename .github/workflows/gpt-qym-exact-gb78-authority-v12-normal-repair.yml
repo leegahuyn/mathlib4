@@ -1,0 +1,651 @@
+name: GPT QYM exact GB78 authority V12 normal repair
+
+on:
+  push:
+    branches:
+      - gpt/qym-gb78-authority-v12-repair-20260820
+    paths:
+      - .github/workflows/gpt-qym-exact-gb78-authority-v12-normal-repair.yml
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: gpt-qym-exact-gb78-authority-v12-normal-repair
+  cancel-in-progress: false
+
+env:
+  BRANCH: gpt/qym-gb78-authority-v12-repair-20260820
+  QYM: PrimalitySheafVerification/QYM.lean
+  OLEAN: .lake/build/lib/lean/PrimalitySheafVerification
+  BASE_ERRORS: '78'
+  BASE_WARNINGS: '358'
+  BASE_SHA256: 1a1abeeb248031cd91577034329944caab08fd9f9e6c70f7a913c1dd66e0e714
+  BASE_BLOB: 029620c5d7085dbc7a11c8eaaa485a67fe9312fe
+  BASE_RUN_ID: '32262658070'
+  BASE_JOB_ID: '96099391097'
+  BASE_ARTIFACT_ID: '9369764112'
+
+jobs:
+  recover_exact_gb78:
+    name: Recover and freeze exact authoritative GB78
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ env.BRANCH }}
+          fetch-depth: 0
+
+      - name: Download exact winning artifact from run 32262658070
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/qym-exact-gb78 /tmp/qym-exact-gb78.zip
+          mkdir -p /tmp/qym-exact-gb78
+          curl --retry 8 --retry-all-errors --fail --location \
+            --silent --show-error \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/$GITHUB_REPOSITORY/actions/artifacts/$BASE_ARTIFACT_ID/zip" \
+            -o /tmp/qym-exact-gb78.zip
+          unzip -q /tmp/qym-exact-gb78.zip -d /tmp/qym-exact-gb78
+
+      - name: Verify exact source, direct-Lean evidence, and forbidden audit
+        id: verify
+        shell: bash
+        run: |
+          set -euo pipefail
+          source_file=''
+          while IFS= read -r -d '' candidate; do
+            sha="$(sha256sum "$candidate" | awk '{print $1}')"
+            blob="$(git hash-object "$candidate")"
+            if [[ "$sha" = "$BASE_SHA256" && "$blob" = "$BASE_BLOB" ]]; then
+              source_file="$candidate"
+              break
+            fi
+          done < <(find /tmp/qym-exact-gb78 -type f -name QYM.lean -print0)
+          test -n "$source_file"
+
+          result_file="$(find /tmp/qym-exact-gb78 -type f -name RESULT.json -print -quit)"
+          test -n "$result_file"
+          jq -e \
+            --arg sha "$BASE_SHA256" \
+            --arg blob "$BASE_BLOB" \
+            --argjson run "$BASE_RUN_ID" \
+            '.candidate_qym_sha256 == $sha and
+             .candidate_qym_blob == $blob and
+             .run_id == $run and
+             .variant == "change_const_mul" and
+             .exit == 1 and
+             .error_headers == 78 and
+             .warning_headers == 358 and
+             .panic_lines == 0 and
+             .strict_improvement == true and
+             .first_error.file == "PrimalitySheafVerification/QYM.lean" and
+             .first_error.line == 44749 and
+             .first_error.column == 61 and
+             .first_error.message == "unsolved goals"' \
+            "$result_file" >/dev/null
+
+          python3 - "$source_file" <<'PY'
+          from pathlib import Path
+          import json
+          import re
+          import sys
+
+          text = Path(sys.argv[1]).read_text(encoding='utf-8')
+          audit = {
+              'sorry': len(re.findall(r'\bsorry\b', text)),
+              'admit': len(re.findall(r'\badmit\b', text)),
+              'unsafe': len(re.findall(r'(?m)^\s*unsafe\s+', text)),
+              'native_decide': len(re.findall(r'\bnative_decide\b', text)),
+              'Lean.ofReduceBool': text.count('Lean.ofReduceBool'),
+              'global_axiom': len(re.findall(r'(?m)^\s*axiom\s+', text)),
+              'maxHeartbeats_zero': len(
+                  re.findall(r'set_option\s+maxHeartbeats\s+0\b', text)
+              ),
+          }
+          print(json.dumps(audit, indent=2, sort_keys=True))
+          if any(audit.values()):
+              raise SystemExit(f'forbidden proof escape in exact GB78: {audit}')
+          PY
+
+          printf '%s\n' "$source_file" > /tmp/qym-exact-gb78-source-path
+          printf '%s\n' "$result_file" > /tmp/qym-exact-gb78-result-path
+          echo "source_file=$source_file" >> "$GITHUB_OUTPUT"
+          echo "result_file=$result_file" >> "$GITHUB_OUTPUT"
+
+      - name: Freeze exact GB78 as canonical source and immutable sidecar
+        shell: bash
+        run: |
+          set -euo pipefail
+          source_file="$(cat /tmp/qym-exact-gb78-source-path)"
+          result_file="$(cat /tmp/qym-exact-gb78-result-path)"
+          mkdir -p "$(dirname "$QYM")" .github/qym-frontier
+          cp "$source_file" "$QYM"
+          cp "$source_file" .github/qym-frontier/QYM_GB78_BEST.lean
+          cp "$result_file" .github/qym-frontier/GB78_RUN_32262658070_RESULT.json
+
+          python3 - <<'PY' > .github/qym-frontier/GB78_RECOVERY.json
+          import json
+          print(json.dumps({
+              'schema': 'qym-exact-gb78-recovery-v1',
+              'authority': 'actual full-QYM direct Lean',
+              'source_sha256': '1a1abeeb248031cd91577034329944caab08fd9f9e6c70f7a913c1dd66e0e714',
+              'source_blob': '029620c5d7085dbc7a11c8eaaa485a67fe9312fe',
+              'error_headers': 78,
+              'warning_headers': 358,
+              'panic_lines': 0,
+              'exit': 1,
+              'first_error': {
+                  'file': 'PrimalitySheafVerification/QYM.lean',
+                  'line': 44749,
+                  'column': 61,
+                  'message': 'unsolved goals',
+              },
+              'blocker': 'conj_mul_hyperbolicRightNormal_realMultiple_re',
+              'origin_run_id': 32262658070,
+              'origin_job_id': 96099391097,
+              'origin_artifact_id': 9369764112,
+              'origin_variant': 'change_const_mul',
+              'canonical_check_in': True,
+              'immutable_sidecar': '.github/qym-frontier/QYM_GB78_BEST.lean',
+              'forbidden_proof_escape_count': 0,
+          }, indent=2, sort_keys=True))
+          PY
+
+          test "$(sha256sum "$QYM" | awk '{print $1}')" = "$BASE_SHA256"
+          test "$(git hash-object "$QYM")" = "$BASE_BLOB"
+          test "$(sha256sum .github/qym-frontier/QYM_GB78_BEST.lean | awk '{print $1}')" = "$BASE_SHA256"
+          test "$(git hash-object .github/qym-frontier/QYM_GB78_BEST.lean)" = "$BASE_BLOB"
+
+      - name: Commit exact GB78 recovery to the repair branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "$QYM" \
+            .github/qym-frontier/QYM_GB78_BEST.lean \
+            .github/qym-frontier/GB78_RUN_32262658070_RESULT.json \
+            .github/qym-frontier/GB78_RECOVERY.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'QYM: recover and freeze exact authoritative GB78'
+            git push origin "HEAD:$BRANCH"
+          fi
+
+  candidate:
+    name: V12-${{ matrix.variant }}
+    needs: recover_exact_gb78
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      max-parallel: 8
+      matrix:
+        variant:
+          - c8_direct_inv
+          - c8_direct_inv_nf
+          - c8_structural_rw
+          - c8_direct_inv_c9_normsq
+          - c8_direct_inv_nf_c9_normsq
+          - c8_structural_rw_c9_normsq
+          - c8_direct_inv_c9_normsq_calc
+          - c8_structural_rw_c9_normsq_calc
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ env.BRANCH }}
+          fetch-depth: 0
+
+      - name: Gate exact recovered GB78 bytes
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(tr -d '\r\n' < lean-toolchain)" = leanprover/lean4:v4.33.0-rc1
+          test "$(sha256sum "$QYM" | awk '{print $1}')" = "$BASE_SHA256"
+          test "$(git hash-object "$QYM")" = "$BASE_BLOB"
+          test "$(sha256sum .github/qym-frontier/QYM_GB78_BEST.lean | awk '{print $1}')" = "$BASE_SHA256"
+          test "$(git hash-object .github/qym-frontier/QYM_GB78_BEST.lean)" = "$BASE_BLOB"
+          cmp -s "$QYM" .github/qym-frontier/QYM_GB78_BEST.lean
+          test -z "$(git status --porcelain=v1 --untracked-files=all)"
+
+      - name: Install pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT="$RUNNER_TEMP/qym-exact-gb78-v12-${{ matrix.variant }}"
+          mkdir -p "$OUT" "$OLEAN"
+          echo "OUT=$OUT" >> "$GITHUB_ENV"
+          curl --retry 8 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none > "$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          tc="$(tr -d '\r\n' < lean-toolchain)"
+          for attempt in 1 2 3 4 5; do
+            elan toolchain install "$tc" >> "$OUT/toolchain.log" 2>&1 && break
+            sleep $((attempt * 5))
+          done
+          lean --version | tee "$OUT/lean-version.txt"
+          lake --version | tee "$OUT/lake-version.txt"
+          for attempt in 1 2 3 4 5; do
+            lake exe cache get >> "$OUT/mathlib-cache.log" 2>&1 && break
+            sleep $((attempt * 5))
+          done
+
+      - name: Restore completed dependency objects
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: |
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.ilean
+          key: qym-deps-v3-${{ runner.os }}-${{ hashFiles('lean-toolchain','lake-manifest.json','lakefile.lean','PrimalitySheafVerification/Mock2.lean','PrimalitySheafVerification/Mock2_Advanced.lean','PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean','PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean') }}
+          restore-keys: |
+            qym-probe4-deps-v1-${{ runner.os }}-
+
+      - name: Ensure dependency objects are complete
+        shell: bash
+        run: |
+          set -euo pipefail
+          for source in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated; do
+            if [[ ! -s "$OLEAN/$source.olean" || ! -s "$OLEAN/$source.ilean" ]]; then
+              max_errors=1
+              if [[ "$source" = Mock2_FunctionalAnalysis || "$source" = Mock2_FunctionalAnalysis_Integrated ]]; then
+                max_errors=2000
+              fi
+              rm -f "$OLEAN/$source.olean" "$OLEAN/$source.ilean"
+              lake env lean "-DmaxErrors=$max_errors" -DwarningAsError=false \
+                -o "$OLEAN/$source.olean" -i "$OLEAN/$source.ilean" \
+                "PrimalitySheafVerification/$source.lean" > "$OUT/$source.log" 2>&1
+            fi
+            test -s "$OLEAN/$source.olean"
+            test -s "$OLEAN/$source.ilean"
+          done
+
+      - name: Generate exact-GB78 descendant candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp "$QYM" "$OUT/QYM.GB78.authority.lean"
+          python3 -B .github/qym_gb78_authority_v12_patch.py \
+            '${{ matrix.variant }}' "$QYM" > "$OUT/PATCH_RESULT.json"
+          test "$(jq -r '.input_sha256' "$OUT/PATCH_RESULT.json")" = "$BASE_SHA256"
+          test "$(jq -r '.input_blob' "$OUT/PATCH_RESULT.json")" = "$BASE_BLOB"
+          test "$(sha256sum "$QYM" | awk '{print $1}')" = \
+            "$(jq -r '.candidate_sha256' "$OUT/PATCH_RESULT.json")"
+          test "$(git hash-object "$QYM")" = \
+            "$(jq -r '.candidate_blob' "$OUT/PATCH_RESULT.json")"
+          test "$(jq '[.forbidden_after[]] | add' "$OUT/PATCH_RESULT.json")" = 0
+          cp "$QYM" "$OUT/QYM.lean"
+
+      - name: Local direct-Lean first-producer gate
+        shell: bash
+        run: |
+          set +e
+          /usr/bin/time -v -o "$OUT/local.time" \
+            lake env lean -DmaxErrors=1 -DwarningAsError=false \
+              -o "$OUT/QYM.local.olean" -i "$OUT/QYM.local.ilean" "$QYM" \
+              > "$OUT/local.log" 2>&1
+          local_exit=$?
+          set -e
+          printf '%s\n' "$local_exit" > "$OUT/local.exit"
+
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib
+          import json
+          import os
+          import re
+
+          out = Path(os.environ['OUT'])
+          patch = json.loads((out / 'PATCH_RESULT.json').read_text())
+          text = (out / 'local.log').read_text(errors='replace')
+          diagnostic = re.compile(
+              r'^(?P<file>.*?\.lean):(?P<line>\d+):(?P<column>\d+): '
+              r'(?P<severity>error|warning)(?:\((?P<code>[^)]*)\))?:\s*(?P<message>.*)$',
+              re.M,
+          )
+          rows = []
+          for match in diagnostic.finditer(text):
+              row = match.groupdict()
+              row['line'] = int(row['line'])
+              row['column'] = int(row['column'])
+              rows.append(row)
+          errors = [row for row in rows if row['severity'] == 'error']
+          warnings = [row for row in rows if row['severity'] == 'warning']
+          first = errors[0] if errors else None
+          gate_pass = first is None or int(first['line']) >= int(patch['gate_line'])
+          result = {
+              'schema': 'qym-exact-gb78-v12-local-gate-v1',
+              'variant': patch['variant'],
+              'candidate_qym_sha256': patch['candidate_sha256'],
+              'candidate_qym_blob': patch['candidate_blob'],
+              'exit': int((out / 'local.exit').read_text()),
+              'error_headers': len(errors),
+              'warning_headers': len(warnings),
+              'first_error': first,
+              'gate_line': int(patch['gate_line']),
+              'gate_label': patch['gate_label'],
+              'gate_pass': gate_pass,
+              'log_sha256': hashlib.sha256((out / 'local.log').read_bytes()).hexdigest(),
+          }
+          (out / 'LOCAL_RESULT.json').write_text(
+              json.dumps(result, indent=2, sort_keys=True) + '\n'
+          )
+          print(json.dumps(result, indent=2, sort_keys=True))
+          PY
+
+      - name: Authoritative actual full-QYM direct Lean
+        shell: bash
+        run: |
+          set -euo pipefail
+          if jq -e '.gate_pass == true' "$OUT/LOCAL_RESULT.json" >/dev/null; then
+            printf '%s\n' true > "$OUT/full.executed"
+            set +e
+            /usr/bin/time -v -o "$OUT/direct.time" \
+              lake env lean -DmaxErrors=10000 -DwarningAsError=false \
+                -o "$OUT/QYM.olean" -i "$OUT/QYM.ilean" "$QYM" \
+                > "$OUT/direct.log" 2>&1
+            direct_exit=$?
+            set -e
+            printf '%s\n' "$direct_exit" > "$OUT/direct.exit"
+          else
+            printf '%s\n' false > "$OUT/full.executed"
+            printf '%s\n' 125 > "$OUT/direct.exit"
+            printf '%s\n' 'FULL-QYM SKIPPED: local first-producer gate did not advance.' \
+              > "$OUT/direct.log"
+          fi
+
+      - name: Parse authoritative candidate evidence
+        shell: bash
+        env:
+          VARIANT: ${{ matrix.variant }}
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import collections
+          import hashlib
+          import json
+          import os
+          import re
+
+          out = Path(os.environ['OUT'])
+          qym = Path(os.environ['QYM'])
+          patch = json.loads((out / 'PATCH_RESULT.json').read_text())
+          local = json.loads((out / 'LOCAL_RESULT.json').read_text())
+          full_executed = (out / 'full.executed').read_text().strip() == 'true'
+          text = (out / 'direct.log').read_text(errors='replace')
+          diagnostic = re.compile(
+              r'^(?P<file>.*?\.lean):(?P<line>\d+):(?P<column>\d+): '
+              r'(?P<severity>error|warning)(?:\((?P<code>[^)]*)\))?:\s*(?P<message>.*)$',
+              re.M,
+          )
+          rows = []
+          for match in diagnostic.finditer(text):
+              row = match.groupdict()
+              row['line'] = int(row['line'])
+              row['column'] = int(row['column'])
+              rows.append(row)
+          errors = [row for row in rows if row['severity'] == 'error']
+          warnings = [row for row in rows if row['severity'] == 'warning']
+          panic_lines = len(re.findall(
+              r'(?im)^.*(?:internal error|uncaught exception|panic(?:!|:|\s)).*$',
+              text,
+          )) if full_executed else 0
+          exit_code = int((out / 'direct.exit').read_text())
+          raw = qym.read_bytes()
+          sha = hashlib.sha256(raw).hexdigest()
+          blob = hashlib.sha1(
+              b'blob ' + str(len(raw)).encode() + b'\0' + raw
+          ).hexdigest()
+          semantic_pass = (
+              full_executed
+              and exit_code == 0
+              and len(errors) == 0
+              and panic_lines == 0
+              and (out / 'QYM.olean').is_file()
+              and (out / 'QYM.ilean').is_file()
+          )
+          strict_improvement = (
+              full_executed
+              and panic_lines == 0
+              and (semantic_pass or len(errors) < int(os.environ['BASE_ERRORS']))
+          )
+          result = {
+              'schema': 'qym-exact-gb78-authority-v12-result-v1',
+              'variant': os.environ['VARIANT'],
+              'baseline_error_headers': int(os.environ['BASE_ERRORS']),
+              'baseline_warning_headers': int(os.environ['BASE_WARNINGS']),
+              'baseline_qym_sha256': os.environ['BASE_SHA256'],
+              'baseline_qym_blob': os.environ['BASE_BLOB'],
+              'baseline_run_id': int(os.environ['BASE_RUN_ID']),
+              'baseline_job_id': int(os.environ['BASE_JOB_ID']),
+              'baseline_artifact_id': int(os.environ['BASE_ARTIFACT_ID']),
+              'candidate_qym_sha256': sha,
+              'candidate_qym_blob': blob,
+              'patch_candidate_sha256': patch['candidate_sha256'],
+              'patch_candidate_blob': patch['candidate_blob'],
+              'forbidden_after': patch['forbidden_after'],
+              'local_gate': local,
+              'full_compile_executed': full_executed,
+              'exit': exit_code if full_executed else None,
+              'error_headers': len(errors) if full_executed else None,
+              'warning_headers': len(warnings) if full_executed else None,
+              'panic_lines': panic_lines if full_executed else None,
+              'first_error': errors[0] if errors else None,
+              'last_error': errors[-1] if errors else None,
+              'error_codes': dict(sorted(collections.Counter(
+                  str(row.get('code') or 'uncoded') for row in errors
+              ).items())) if full_executed else None,
+              'semantic_pass': semantic_pass,
+              'strict_improvement': strict_improvement,
+              'first_blocker_advanced': (
+                  full_executed
+                  and panic_lines == 0
+                  and (not errors or int(errors[0]['line']) >= int(patch['gate_line']))
+              ),
+              'log_sha256': hashlib.sha256(
+                  (out / 'direct.log').read_bytes()
+              ).hexdigest() if full_executed else None,
+              'run_id': int(os.environ['GITHUB_RUN_ID']),
+              'head_sha': os.environ['GITHUB_SHA'],
+              'branch': os.environ['BRANCH'],
+          }
+          if sha != patch['candidate_sha256'] or blob != patch['candidate_blob']:
+              raise SystemExit('candidate digest mismatch after compile')
+          if any(int(value) for value in patch['forbidden_after'].values()):
+              raise SystemExit('forbidden proof escape in candidate')
+          (out / 'RESULT.json').write_text(
+              json.dumps(result, indent=2, sort_keys=True) + '\n'
+          )
+          print(json.dumps(result, indent=2, sort_keys=True))
+          PY
+
+      - name: Upload immutable V12 candidate evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-exact-gb78-v12-${{ matrix.variant }}-${{ github.run_id }}
+          path: ${{ env.OUT }}
+          if-no-files-found: warn
+          retention-days: 30
+
+  select_and_promote:
+    name: Select by full direct-Lean evidence and promote monotonically
+    needs: candidate
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ env.BRANCH }}
+          fetch-depth: 0
+
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          pattern: qym-exact-gb78-v12-*-${{ github.run_id }}
+          path: /tmp/qym-exact-gb78-v12-results
+
+      - name: Select one strict candidate using only full direct-Lean evidence
+        id: choose
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib
+          import json
+          import os
+          import shutil
+
+          root = Path('/tmp/qym-exact-gb78-v12-results')
+          rows = []
+          for result_path in root.rglob('RESULT.json'):
+              result = json.loads(result_path.read_text())
+              result['_directory'] = str(result_path.parent)
+              rows.append(result)
+          rows.sort(key=lambda row: str(row.get('variant')))
+
+          viable = [
+              row for row in rows
+              if row.get('full_compile_executed') is True
+              and row.get('strict_improvement') is True
+              and int(row.get('panic_lines') or 0) == 0
+              and (
+                  row.get('semantic_pass') is True
+                  or int(row.get('error_headers', 10**9)) < 78
+              )
+              and sum(int(v) for v in (row.get('forbidden_after') or {}).values()) == 0
+          ]
+          viable.sort(key=lambda row: (
+              int(row.get('error_headers', 10**9)),
+              0 if row.get('semantic_pass') else 1,
+              -int((row.get('first_error') or {}).get('line') or 10**9),
+              int(row.get('warning_headers') or 10**9),
+              str(row.get('variant')),
+          ))
+
+          selection = {
+              'schema': 'qym-exact-gb78-authority-v12-selection-v1',
+              'run_id': int(os.environ['GITHUB_RUN_ID']),
+              'branch': os.environ['BRANCH'],
+              'baseline': {
+                  'error_headers': 78,
+                  'warning_headers': 358,
+                  'panic_lines': 0,
+                  'sha256': os.environ['BASE_SHA256'],
+                  'blob': os.environ['BASE_BLOB'],
+                  'origin_run_id': int(os.environ['BASE_RUN_ID']),
+                  'origin_artifact_id': int(os.environ['BASE_ARTIFACT_ID']),
+              },
+              'candidate_count': len(rows),
+              'full_compile_count': sum(
+                  1 for row in rows if row.get('full_compile_executed') is True
+              ),
+              'strict_improvement_found': bool(viable),
+              'best': viable[0] if viable else None,
+              'results': rows,
+          }
+          Path('/tmp/V12_SELECTION.json').write_text(
+              json.dumps(selection, indent=2, sort_keys=True) + '\n'
+          )
+
+          output = Path(os.environ['GITHUB_OUTPUT'])
+          if not viable:
+              with output.open('a') as handle:
+                  handle.write('has_winner=false\n')
+              print(json.dumps(selection, indent=2, sort_keys=True))
+              raise SystemExit(0)
+
+          best = viable[0]
+          source = Path(best['_directory']) / 'QYM.lean'
+          result_source = Path(best['_directory']) / 'RESULT.json'
+          if not source.is_file() or not result_source.is_file():
+              raise SystemExit('selected artifact is incomplete')
+          actual_sha = hashlib.sha256(source.read_bytes()).hexdigest()
+          actual_blob = hashlib.sha1(
+              b'blob ' + str(source.stat().st_size).encode() + b'\0' + source.read_bytes()
+          ).hexdigest()
+          if actual_sha != best['candidate_qym_sha256'] or actual_blob != best['candidate_qym_blob']:
+              raise SystemExit('selected artifact source digest mismatch')
+          shutil.copy2(source, '/tmp/V12_SELECTED_QYM.lean')
+          shutil.copy2(result_source, '/tmp/V12_SELECTED_RESULT.json')
+          with output.open('a') as handle:
+              handle.write('has_winner=true\n')
+              handle.write(f"best_errors={int(best['error_headers'])}\n")
+              handle.write(f"best_warnings={int(best['warning_headers'])}\n")
+              handle.write(f"best_variant={best['variant']}\n")
+              handle.write(f"best_sha256={best['candidate_qym_sha256']}\n")
+              handle.write(f"best_blob={best['candidate_qym_blob']}\n")
+          print(json.dumps(selection, indent=2, sort_keys=True))
+          PY
+
+      - name: Persist selection and promote exact winning bytes
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin "$BRANCH"
+          git reset --hard "origin/$BRANCH"
+          mkdir -p .github/qym-frontier
+          cp /tmp/V12_SELECTION.json \
+            ".github/qym-frontier/GB78_V12_SELECTION_${GITHUB_RUN_ID}.json"
+
+          if [[ '${{ steps.choose.outputs.has_winner }}' = true ]]; then
+            test "$(sha256sum "$QYM" | awk '{print $1}')" = "$BASE_SHA256"
+            test "$(git hash-object "$QYM")" = "$BASE_BLOB"
+            best_errors='${{ steps.choose.outputs.best_errors }}'
+            best_sha='${{ steps.choose.outputs.best_sha256 }}'
+            best_blob='${{ steps.choose.outputs.best_blob }}'
+            cp /tmp/V12_SELECTED_QYM.lean "$QYM"
+            cp /tmp/V12_SELECTED_QYM.lean \
+              ".github/qym-frontier/QYM_GB${best_errors}_BEST.lean"
+            cp /tmp/V12_SELECTED_RESULT.json \
+              ".github/qym-frontier/GB${best_errors}_V12_RESULT_${GITHUB_RUN_ID}.json"
+            test "$(sha256sum "$QYM" | awk '{print $1}')" = "$best_sha"
+            test "$(git hash-object "$QYM")" = "$best_blob"
+            test "$(sha256sum ".github/qym-frontier/QYM_GB${best_errors}_BEST.lean" | awk '{print $1}')" = "$best_sha"
+            test "$(git hash-object ".github/qym-frontier/QYM_GB${best_errors}_BEST.lean")" = "$best_blob"
+          fi
+
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "$QYM" .github/qym-frontier
+          if ! git diff --cached --quiet; then
+            if [[ '${{ steps.choose.outputs.has_winner }}' = true ]]; then
+              git commit -m \
+                "QYM V12: promote verified ${{ steps.choose.outputs.best_errors }}-error frontier (${{ steps.choose.outputs.best_variant }})"
+            else
+              git commit -m 'QYM V12: preserve no-improvement direct-Lean evidence'
+            fi
+            git push origin "HEAD:$BRANCH"
+          fi
+
+      - name: Upload selector and promotion evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-exact-gb78-v12-selector-${{ github.run_id }}
+          path: |
+            /tmp/V12_SELECTION.json
+            /tmp/V12_SELECTED_RESULT.json
+            /tmp/V12_SELECTED_QYM.lean
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Fail visibly only after preserving a no-winner selection
+        if: steps.choose.outputs.has_winner != 'true'
+        shell: bash
+        run: exit 1

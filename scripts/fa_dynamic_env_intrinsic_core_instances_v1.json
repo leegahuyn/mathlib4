@@ -1,0 +1,17 @@
+{
+  "schema": "fa-dynamic-env-intrinsic-core-instances-v3",
+  "status": "STRUCTURAL_ENVIRONMENT_REPAIR_PENDING_DIRECT_LEAN",
+  "root_cause": "FixedPhaseGraphCompletion defines the canonical Module/AddCommGroup instances locally; the two FixedPhaseIntrinsicAdjointCutoff namespace blocks that call extendOfNorm must reactivate them.",
+  "environment_replacements": [
+    {
+      "id": "intrinsic-cutoff-operator-core-instances",
+      "old_fragment": "/-! #### Intrinsic fixed-phase cutoff and its uniformly bounded commutators -/\n\nnamespace Mock2FA.PaperCorrections.AutomorphicSobolev\nnamespace FixedPhaseIntrinsicAdjointCutoff\n\nopen Set Function Topology Filter MeasureTheory\nopen scoped LinearPMap\nopen DefinitionOneSobolev\nopen GammaTwoQuotientGeometry\nopen SmoothCompactCoreGeometry\nopen HalfWeightDifferentialOperators\nopen DefinitionOneSobolev.FixedPhasePeterssonCoordinates\nopen FixedPhaseDensity\nopen FixedPhaseClosedOperators\nopen FixedPhaseEssentialCoreRoute\nopen FixedPhaseAdjointCutoffCore\nopen FixedPhaseGoodCuspCutoffBridge",
+      "new_fragment": "/-! #### Intrinsic fixed-phase cutoff and its uniformly bounded commutators -/\n\nnamespace Mock2FA.PaperCorrections.AutomorphicSobolev\nnamespace FixedPhaseIntrinsicAdjointCutoff\n\nopen Set Function Topology Filter MeasureTheory\nopen scoped LinearPMap\nopen DefinitionOneSobolev\nopen GammaTwoQuotientGeometry\nopen SmoothCompactCoreGeometry\nopen HalfWeightDifferentialOperators\nopen DefinitionOneSobolev.FixedPhasePeterssonCoordinates\nopen FixedPhaseDensity\nopen FixedPhaseClosedOperators\nopen FixedPhaseEssentialCoreRoute\nopen FixedPhaseAdjointCutoffCore\nopen FixedPhaseGoodCuspCutoffBridge\n\nattribute [local instance]\n  DefinitionOneSobolev.FixedPhaseGraphCompletion.fixedPhaseGraphCoreModule\n  DefinitionOneSobolev.FixedPhaseGraphCompletion.fixedPhaseGraphCoreAddCommGroup"
+    },
+    {
+      "id": "intrinsic-uniform-commutator-core-instances",
+      "old_fragment": "/-! #### Uniform completed intrinsic Maass commutators -/\n\nnamespace Mock2FA.PaperCorrections.AutomorphicSobolev\nnamespace FixedPhaseIntrinsicAdjointCutoff\n\nopen Set Function Topology Filter MeasureTheory\nopen scoped LinearPMap\nopen DefinitionOneSobolev\nopen GammaTwoQuotientGeometry\nopen SmoothCompactCoreGeometry\nopen HalfWeightDifferentialOperators\nopen DefinitionOneSobolev.FixedPhasePeterssonCoordinates\nopen FixedPhaseDensity\nopen FixedPhaseClosedOperators\nopen FixedPhaseEssentialCoreRoute\nopen FixedPhaseAdjointCutoffCore\nopen FixedPhaseGoodCuspCutoffBridge",
+      "new_fragment": "/-! #### Uniform completed intrinsic Maass commutators -/\n\nnamespace Mock2FA.PaperCorrections.AutomorphicSobolev\nnamespace FixedPhaseIntrinsicAdjointCutoff\n\nopen Set Function Topology Filter MeasureTheory\nopen scoped LinearPMap\nopen DefinitionOneSobolev\nopen GammaTwoQuotientGeometry\nopen SmoothCompactCoreGeometry\nopen HalfWeightDifferentialOperators\nopen DefinitionOneSobolev.FixedPhasePeterssonCoordinates\nopen FixedPhaseDensity\nopen FixedPhaseClosedOperators\nopen FixedPhaseEssentialCoreRoute\nopen FixedPhaseAdjointCutoffCore\nopen FixedPhaseGoodCuspCutoffBridge\n\nattribute [local instance]\n  DefinitionOneSobolev.FixedPhaseGraphCompletion.fixedPhaseGraphCoreModule\n  DefinitionOneSobolev.FixedPhaseGraphCompletion.fixedPhaseGraphCoreAddCommGroup"
+    }
+  ]
+}

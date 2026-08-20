@@ -1,0 +1,363 @@
+{
+  "authority_source_sha256": "1badac1451e11708114eb5438616063379558bcf0579dc82a01c2200b501d365",
+  "clean_claimed": false,
+  "compile_contract": {
+    "artifacts_independent": true,
+    "chain": [
+      "M2",
+      "M2A",
+      "FA2000"
+    ],
+    "exactly_one_independent_job_per_lane": true,
+    "individual_axes_may_not_be_omitted": true,
+    "job_count": 10,
+    "max_parallel": 10
+  },
+  "component_order": [
+    "v63_f3930_precursor",
+    "v64_f3930_field",
+    "v64_f3930_explicit",
+    "v63_f3933_fallback_precursor",
+    "v64_f3933_invcalc",
+    "v63_w4017_full_precursor",
+    "v64_w4017_primary",
+    "v64_w4017_rfl"
+  ],
+  "components": [
+    {
+      "depends_on": [],
+      "id": "v63_f3930_precursor",
+      "operation_refs": [
+        [
+          "v63_f3930_manifest",
+          "V63-F3930-PI-NEG-APPLY-RING",
+          "f3930-body"
+        ]
+      ],
+      "owner_index": 3930,
+      "status": "STATIC_LOCKED_DIRECT_LEAN_REQUIRED"
+    },
+    {
+      "depends_on": [
+        "v63_f3930_precursor"
+      ],
+      "id": "v64_f3930_field",
+      "owner_index": 3930,
+      "status": "STATIC_LOCKED_DIRECT_LEAN_REQUIRED",
+      "variant_id": "idx3930_after_pi_neg_fieldsimp_ring"
+    },
+    {
+      "depends_on": [
+        "v63_f3930_precursor"
+      ],
+      "id": "v64_f3930_explicit",
+      "owner_index": 3930,
+      "status": "STATIC_LOCKED_DIRECT_LEAN_REQUIRED",
+      "variant_id": "idx3930_after_pi_neg_explicit_cancel"
+    },
+    {
+      "depends_on": [],
+      "id": "v63_f3933_fallback_precursor",
+      "operation_refs": [
+        [
+          "v63_f3933_manifest",
+          "V63-F3933-PROGRESSION",
+          "f3933-direct-evidence-progression"
+        ],
+        [
+          "v63_f3933_manifest",
+          "V63-F3933-FIELDSIMP",
+          "f3933-bounded-fieldsimp"
+        ]
+      ],
+      "owner_index": 3933,
+      "status": "STATIC_LOCKED_DIRECT_LEAN_REQUIRED"
+    },
+    {
+      "depends_on": [
+        "v63_f3933_fallback_precursor"
+      ],
+      "id": "v64_f3933_invcalc",
+      "owner_index": 3933,
+      "status": "STATIC_LOCKED_DIRECT_LEAN_REQUIRED",
+      "variant_id": "idx3933_after_fallback_inv_calc"
+    },
+    {
+      "depends_on": [],
+      "id": "v63_w4017_full_precursor",
+      "operation_refs": [
+        [
+          "v63_w4017_manifest",
+          "V63-W4017-R17-BASE",
+          "w4017-r17-boundary-unblock"
+        ],
+        [
+          "v63_w4017_manifest",
+          "V63-W4017-P",
+          "w4017-p-literal"
+        ],
+        [
+          "v63_w4017_manifest",
+          "V63-W4017-P",
+          "w4017-p-carrier"
+        ],
+        [
+          "v63_w4017_manifest",
+          "V63-W4017-Z",
+          "w4017-z-unfold-phi"
+        ],
+        [
+          "v63_w4017_manifest",
+          "V63-W4017-W",
+          "w4017-w-literal"
+        ],
+        [
+          "v63_w4017_manifest",
+          "V63-W4017-W",
+          "w4017-w-carrier"
+        ]
+      ],
+      "owner_index": 4017,
+      "status": "STATIC_LOCKED_DIRECT_LEAN_REQUIRED"
+    },
+    {
+      "depends_on": [
+        "v63_w4017_full_precursor"
+      ],
+      "id": "v64_w4017_primary",
+      "owner_index": 4017,
+      "status": "STATIC_LOCKED_DIRECT_LEAN_REQUIRED",
+      "variant_id": "idx4017_after_full_literal_graph_base_simp"
+    },
+    {
+      "depends_on": [
+        "v63_w4017_full_precursor"
+      ],
+      "id": "v64_w4017_rfl",
+      "owner_index": 4017,
+      "status": "STATIC_LOCKED_DIRECT_LEAN_REQUIRED",
+      "variant_id": "idx4017_after_full_literal_rfl"
+    }
+  ],
+  "composition_mode": "EXACT_FROM_OFFICIAL_V62_AUTHORITY_NONCUMULATIVE",
+  "conflict_sets": [
+    [
+      "v64_f3930_field",
+      "v64_f3930_explicit"
+    ],
+    [
+      "v64_w4017_primary",
+      "v64_w4017_rfl"
+    ]
+  ],
+  "direct_lean_verified": false,
+  "hidden_cumulative_parentage": false,
+  "lane_order": [
+    "winner_baseline",
+    "w4017_primary",
+    "w4017_rfl_fallback",
+    "f3930_field",
+    "f3930_explicit",
+    "f3933_invcalc",
+    "f_field_f3933",
+    "f_explicit_f3933",
+    "all_field_w_primary",
+    "all_explicit_w_primary"
+  ],
+  "lanes": [
+    {
+      "changed_declaration_indices": [
+        4017
+      ],
+      "components": [
+        "v63_w4017_full_precursor"
+      ],
+      "expected_candidate": {
+        "bytes": 2813021,
+        "declaration_count": 4416,
+        "lines": 62944,
+        "sha256": "20ad5b01e774f1c388d2d16991e34840fdafe0f9d033038652311b29d84ae3f5"
+      },
+      "name": "winner_baseline",
+      "status": "STATIC_LOCKED_DIRECT_LEAN_REQUIRED"
+    },
+    {
+      "changed_declaration_indices": [
+        4017
+      ],
+      "components": [
+        "v63_w4017_full_precursor",
+        "v64_w4017_primary"
+      ],
+      "expected_candidate": {
+        "bytes": 2813090,
+        "declaration_count": 4416,
+        "lines": 62945,
+        "sha256": "93491e69d4e6f3d24f11ad45ecbb3a5c74aa28202c2771484a3663cdd51846fc"
+      },
+      "name": "w4017_primary",
+      "status": "STATIC_LOCKED_DIRECT_LEAN_REQUIRED"
+    },
+    {
+      "changed_declaration_indices": [
+        4017
+      ],
+      "components": [
+        "v63_w4017_full_precursor",
+        "v64_w4017_rfl"
+      ],
+      "expected_candidate": {
+        "bytes": 2813031,
+        "declaration_count": 4416,
+        "lines": 62945,
+        "sha256": "6a2524de966143f709c92dfb992a8f2029be4648812518010a4c5639f0c4b288"
+      },
+      "name": "w4017_rfl_fallback",
+      "status": "STATIC_LOCKED_DIRECT_LEAN_REQUIRED"
+    },
+    {
+      "changed_declaration_indices": [
+        3930
+      ],
+      "components": [
+        "v63_f3930_precursor",
+        "v64_f3930_field"
+      ],
+      "expected_candidate": {
+        "bytes": 2812585,
+        "declaration_count": 4416,
+        "lines": 62936,
+        "sha256": "772ed2cb7295175fe9e42217e646e766b0a7b0b8b92a4c956f193c49b2d9efb4"
+      },
+      "name": "f3930_field",
+      "status": "STATIC_LOCKED_DIRECT_LEAN_REQUIRED"
+    },
+    {
+      "changed_declaration_indices": [
+        3930
+      ],
+      "components": [
+        "v63_f3930_precursor",
+        "v64_f3930_explicit"
+      ],
+      "expected_candidate": {
+        "bytes": 2812774,
+        "declaration_count": 4416,
+        "lines": 62939,
+        "sha256": "26541fa4712474c944ee4ec2ac209a1873fb07062577c9a08286876bed937ca9"
+      },
+      "name": "f3930_explicit",
+      "status": "STATIC_LOCKED_DIRECT_LEAN_REQUIRED"
+    },
+    {
+      "changed_declaration_indices": [
+        3933
+      ],
+      "components": [
+        "v63_f3933_fallback_precursor",
+        "v64_f3933_invcalc"
+      ],
+      "expected_candidate": {
+        "bytes": 2813195,
+        "declaration_count": 4416,
+        "lines": 62948,
+        "sha256": "44b80a7976626073cdccc326c925741fd51244932e20d4a518928c5ad09ba448"
+      },
+      "name": "f3933_invcalc",
+      "status": "STATIC_LOCKED_DIRECT_LEAN_REQUIRED"
+    },
+    {
+      "changed_declaration_indices": [
+        3930,
+        3933
+      ],
+      "components": [
+        "v63_f3930_precursor",
+        "v64_f3930_field",
+        "v63_f3933_fallback_precursor",
+        "v64_f3933_invcalc"
+      ],
+      "expected_candidate": {
+        "bytes": 2813338,
+        "declaration_count": 4416,
+        "lines": 62951,
+        "sha256": "12b5a0e8e359461a8f492c5acefb47a17a31fae6a89fbf52ff8b127e5a99d634"
+      },
+      "name": "f_field_f3933",
+      "status": "STATIC_LOCKED_DIRECT_LEAN_REQUIRED"
+    },
+    {
+      "changed_declaration_indices": [
+        3930,
+        3933
+      ],
+      "components": [
+        "v63_f3930_precursor",
+        "v64_f3930_explicit",
+        "v63_f3933_fallback_precursor",
+        "v64_f3933_invcalc"
+      ],
+      "expected_candidate": {
+        "bytes": 2813527,
+        "declaration_count": 4416,
+        "lines": 62954,
+        "sha256": "23a4c5e517aa26cda065f98fa169342105f10cb132089b1293b0f54826e5488d"
+      },
+      "name": "f_explicit_f3933",
+      "status": "STATIC_LOCKED_DIRECT_LEAN_REQUIRED"
+    },
+    {
+      "changed_declaration_indices": [
+        3930,
+        3933,
+        4017
+      ],
+      "components": [
+        "v63_f3930_precursor",
+        "v64_f3930_field",
+        "v63_f3933_fallback_precursor",
+        "v64_f3933_invcalc",
+        "v63_w4017_full_precursor",
+        "v64_w4017_primary"
+      ],
+      "expected_candidate": {
+        "bytes": 2813986,
+        "declaration_count": 4416,
+        "lines": 62963,
+        "sha256": "71d8eeca6cce4e520754a3e45b43bf3d61a94f4f1bac6f452d0c8ae2c1ee853b"
+      },
+      "name": "all_field_w_primary",
+      "status": "STATIC_LOCKED_DIRECT_LEAN_REQUIRED"
+    },
+    {
+      "changed_declaration_indices": [
+        3930,
+        3933,
+        4017
+      ],
+      "components": [
+        "v63_f3930_precursor",
+        "v64_f3930_explicit",
+        "v63_f3933_fallback_precursor",
+        "v64_f3933_invcalc",
+        "v63_w4017_full_precursor",
+        "v64_w4017_primary"
+      ],
+      "expected_candidate": {
+        "bytes": 2814175,
+        "declaration_count": 4416,
+        "lines": 62966,
+        "sha256": "a7dd32aba7182c55cb3de9986eeabef537602cbfc24cf2aa956e6b43541d0c54"
+      },
+      "name": "all_explicit_w_primary",
+      "status": "STATIC_LOCKED_DIRECT_LEAN_REQUIRED"
+    }
+  ],
+  "producer_gates": {
+    "idx4019": "DEFERRED_UNTIL_IDX4017_PRODUCER_CLEAN",
+    "idx4020": "DEFERRED_UNTIL_IDX4019_PRODUCER_CLEAN",
+    "repair_components_present": false
+  },
+  "schema": "fa-v65-exact-ten-lane-dependency-graph-v1",
+  "status": "READY_DIRECT_LEAN_REQUIRED"
+}

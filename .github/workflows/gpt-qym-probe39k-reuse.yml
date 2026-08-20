@@ -1,0 +1,115 @@
+name: GPT QYM Probe39k repaired complete GammaTwo theorem
+
+on:
+  push:
+    branches:
+      - gpt/fa-qym-clean-final-20260816
+    paths:
+      - .github/workflows/gpt-qym-probe39k-reuse.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  repaired:
+    name: repaired complete GammaTwo theorem
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    env:
+      OUT: /tmp/qym-probe39k
+      TEST: QYM_Probe39k.lean
+
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Install pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT"
+          test "$(tr -d '\r\n' < lean-toolchain)" = leanprover/lean4:v4.33.0-rc1
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none > "$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" > "$OUT/toolchain.log" 2>&1
+          lake exe cache get > "$OUT/mathlib-cache.log" 2>&1
+          lean --version | tee "$OUT/lean-version.txt"
+          lake --version | tee "$OUT/lake-version.txt"
+
+      - name: Extract Probe39j theorem and repair hInv01
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - "$TEST" <<'PY'
+          from pathlib import Path
+          import sys
+
+          workflow = Path('.github/workflows/gpt-qym-probe39j-complete.yml').read_text(encoding='utf-8')
+          lines = workflow.splitlines()
+          begin = next(i for i, line in enumerate(lines) if "cat > \"$TEST\" <<'LEAN'" in line) + 1
+          end = next(i for i in range(begin, len(lines)) if lines[i].strip() == 'LEAN')
+          source_lines = []
+          for line in lines[begin:end]:
+              source_lines.append(line[10:] if line.startswith('          ') else line)
+          source = '\n'.join(source_lines) + '\n'
+
+          old = '''    have hInv01 : (ModularGroup.T⁻¹ : SL(2, ℤ)) 0 1 = (-1 : ℤ) := by
+              have h := congrArg (fun g : SL(2, ℤ) => g 0 1)
+                (inv_mul_cancel ModularGroup.T)
+              norm_num [Matrix.SpecialLinearGroup.coe_mul,
+                ModularGroup.T, Matrix.mul_fin_two, hInv00] at h
+              exact h
+          '''.replace('          ', '')
+          new = '''    have hInv01 : (ModularGroup.T⁻¹ : SL(2, ℤ)) 0 1 = (-1 : ℤ) := by
+              have h := congrArg (fun g : SL(2, ℤ) => g 0 1)
+                (inv_mul_cancel ModularGroup.T)
+              change
+                (ModularGroup.T⁻¹).val 0 0 * ModularGroup.T.val 0 1 +
+                  (ModularGroup.T⁻¹).val 0 1 * ModularGroup.T.val 1 1 = 0 at h
+              norm_num [ModularGroup.T, hInv00] at h
+              omega
+          '''.replace('          ', '')
+          assert source.count(old) == 1, source.count(old)
+          source = source.replace(old, new, 1)
+          Path(sys.argv[1]).write_text(source, encoding='utf-8')
+          PY
+          cp "$TEST" "$OUT/$TEST"
+
+      - name: Direct Lean compile repaired theorem
+        shell: bash
+        run: |
+          set -euo pipefail
+          set +e
+          /usr/bin/time -v -o "$OUT/TEST.time" \
+            lake env lean -DmaxErrors=10000 -DwarningAsError=false \
+              -o "$OUT/TEST.olean" -i "$OUT/TEST.ilean" \
+              "$TEST" > "$OUT/TEST.log" 2>&1
+          rc=$?
+          set -e
+          echo "$rc" > "$OUT/TEST.exit"
+          rm -f "$TEST"
+          exit 0
+
+      - name: Upload repaired theorem evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-probe39k-${{ github.sha }}
+          path: /tmp/qym-probe39k/**
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Fail closed unless repaired theorem passes
+        if: always()
+        shell: bash
+        run: |
+          test -f "$OUT/TEST.exit"
+          test "$(cat "$OUT/TEST.exit")" = 0
+          test -s "$OUT/TEST.olean"
+          test -s "$OUT/TEST.ilean"

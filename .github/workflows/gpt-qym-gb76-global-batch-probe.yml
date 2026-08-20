@@ -1,0 +1,198 @@
+name: GPT QYM GB76 global-batch source probe
+
+on:
+  push:
+    branches:
+      - gpt/qym-gb76-global-batch-repair-20260820
+    paths:
+      - .github/workflows/gpt-qym-gb76-global-batch-probe.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: gpt-qym-gb76-global-batch-source-probe
+  cancel-in-progress: true
+
+env:
+  BRANCH: gpt/qym-gb76-global-batch-repair-20260820
+  QYM: PrimalitySheafVerification/QYM.lean
+  GB76_SHA256: fada22264b6618467f89d436ddacff27453db1242769717d5e7a386682d4efb3
+  GB76_BLOB: 29d446743036dccd5d9ad8757c351b39d526cfa9
+
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - name: Gate exact GB76 and collect source bundle plus declaration contexts
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF_NAME" = "$BRANCH"
+          test "$(sha256sum "$QYM" | awk '{print $1}')" = "$GB76_SHA256"
+          test "$(git hash-object "$QYM")" = "$GB76_BLOB"
+          OUT=/tmp/qym-gb76-probe
+          rm -rf "$OUT"
+          mkdir -p "$OUT/sources"
+
+          cp PrimalitySheafVerification/Mock2.lean "$OUT/sources/"
+          cp PrimalitySheafVerification/Mock2_Advanced.lean "$OUT/sources/"
+          cp PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean "$OUT/sources/"
+          cp PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean "$OUT/sources/"
+          cp "$QYM" "$OUT/sources/"
+
+          python3 - <<'PY'
+          from __future__ import annotations
+          from pathlib import Path
+          import hashlib
+          import json
+          import re
+
+          root = Path('PrimalitySheafVerification')
+          out = Path('/tmp/qym-gb76-probe')
+          sources = [
+              root / 'Mock2.lean',
+              root / 'Mock2_Advanced.lean',
+              root / 'Mock2_FunctionalAnalysis.lean',
+              root / 'Mock2_FunctionalAnalysis_Integrated.lean',
+              root / 'QYM.lean',
+          ]
+
+          def sha(path: Path) -> str:
+              return hashlib.sha256(path.read_bytes()).hexdigest()
+
+          def blob(path: Path) -> str:
+              data = path.read_bytes()
+              return hashlib.sha1(b'blob ' + str(len(data)).encode() + b'\0' + data).hexdigest()
+
+          def contexts(path: Path, patterns: list[re.Pattern[str]], radius: int = 8,
+                       max_matches: int = 500) -> list[str]:
+              lines = path.read_text(encoding='utf-8').splitlines()
+              hits: list[int] = []
+              for i, line in enumerate(lines):
+                  if any(p.search(line) for p in patterns):
+                      hits.append(i)
+              hits = hits[:max_matches]
+              spans: list[tuple[int, int]] = []
+              for i in hits:
+                  lo, hi = max(0, i - radius), min(len(lines), i + radius + 1)
+                  if spans and lo <= spans[-1][1] + 1:
+                      spans[-1] = (spans[-1][0], max(spans[-1][1], hi))
+                  else:
+                      spans.append((lo, hi))
+              rendered: list[str] = []
+              for lo, hi in spans:
+                  rendered.append(f'===== {path}:{lo + 1}-{hi} =====')
+                  rendered.extend(f'{j + 1}: {lines[j]}' for j in range(lo, hi))
+              rendered.append(f'\nMATCH_COUNT={len(hits)}')
+              return rendered
+
+          token_patterns = [
+              re.compile(r'GammaTwoQuotient'),
+              re.compile(r'Definition15Geometry\.X'),
+              re.compile(r'quotientMap'),
+              re.compile(r'gammaTwoQuotientMk'),
+              re.compile(r'GammaTwoEffective'),
+              re.compile(r'InverseEtaBase'),
+          ]
+          bridge_patterns = [
+              re.compile(r'(GammaTwoQuotient|Definition15Geometry\.X|quotientMap).*(Equiv|Homeomorph|Embedding|equiv|homeomorph|bridge|transport|lift|Quotient)'),
+              re.compile(r'(Equiv|Homeomorph|Embedding|equiv|homeomorph|bridge|transport|lift|Quotient).*(GammaTwoQuotient|Definition15Geometry\.X|quotientMap)'),
+              re.compile(r'(abbrev|def|theorem|lemma|instance).*GammaTwoQuotient'),
+              re.compile(r'(abbrev|def|theorem|lemma|instance).*Definition15Geometry\.X'),
+          ]
+          qym_cross_patterns = [
+              re.compile(r'InverseEtaBase'),
+              re.compile(r'actualStageBundleValue'),
+              re.compile(r'distinguishedInverseEtaQuotientSection'),
+              re.compile(r'inverseEtaBaseChartedSpaceH'),
+              re.compile(r'actualStagePeterssonInner'),
+          ]
+
+          all_token = []
+          all_bridge = []
+          counts: dict[str, dict[str, int | str]] = {}
+          for path in sources:
+              text = path.read_text(encoding='utf-8')
+              counts[str(path)] = {
+                  'bytes': path.stat().st_size,
+                  'lines': text.count('\n'),
+                  'sha256': sha(path),
+                  'blob': blob(path),
+                  'GammaTwoQuotient': text.count('GammaTwoQuotient'),
+                  'Definition15Geometry.X': text.count('Definition15Geometry.X'),
+                  'quotientMap': text.count('quotientMap'),
+                  'InverseEtaBase': text.count('InverseEtaBase'),
+              }
+              all_token.extend(contexts(path, token_patterns, radius=5, max_matches=600))
+              all_bridge.extend(contexts(path, bridge_patterns, radius=12, max_matches=500))
+
+          (out / 'TOKEN_CONTEXTS.txt').write_text('\n'.join(all_token) + '\n', encoding='utf-8')
+          (out / 'BRIDGE_DECLARATION_CONTEXTS.txt').write_text('\n'.join(all_bridge) + '\n', encoding='utf-8')
+          (out / 'QYM_CROSS_TYPE_CONTEXT.txt').write_text(
+              '\n'.join(contexts(root / 'QYM.lean', qym_cross_patterns, radius=18, max_matches=500)) + '\n',
+              encoding='utf-8')
+          (out / 'TOKEN_COUNTS.json').write_text(
+              json.dumps(counts, indent=2, sort_keys=True) + '\n', encoding='utf-8')
+
+          identity = {
+              'schema': 'qym-gb76-global-batch-source-probe-v2',
+              'qym_sha256': sha(root / 'QYM.lean'),
+              'qym_blob': blob(root / 'QYM.lean'),
+              'source_count': len(sources),
+          }
+          (out / 'IDENTITY.json').write_text(
+              json.dumps(identity, indent=2, sort_keys=True) + '\n', encoding='utf-8')
+          PY
+
+          find "$OUT" -maxdepth 2 -type f -printf '%p %s bytes\n' | sort | tee "$OUT/FILE_MANIFEST.txt"
+
+      - name: Persist compact probe evidence on the working branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          src=/tmp/qym-gb76-probe
+          dest=.github/qym-frontier/GB76_GLOBAL_BATCH_SOURCE_PROBE_V2
+          rm -rf "$dest"
+          mkdir -p "$dest"
+          cp "$src"/IDENTITY.json "$dest"/
+          cp "$src"/TOKEN_COUNTS.json "$dest"/
+          cp "$src"/FILE_MANIFEST.txt "$dest"/
+          python3 - <<'PY'
+          from pathlib import Path
+          src = Path('/tmp/qym-gb76-probe')
+          dest = Path('.github/qym-frontier/GB76_GLOBAL_BATCH_SOURCE_PROBE_V2')
+          for name in ['TOKEN_CONTEXTS.txt', 'BRIDGE_DECLARATION_CONTEXTS.txt', 'QYM_CROSS_TYPE_CONTEXT.txt']:
+              text = (src / name).read_text(encoding='utf-8')
+              (dest / name).write_text(text[:800_000], encoding='utf-8')
+          PY
+          jq -n \
+            --arg branch "$BRANCH" \
+            --arg trigger_sha "$GITHUB_SHA" \
+            --argjson run_id "$GITHUB_RUN_ID" \
+            --arg qym_sha "$GB76_SHA256" \
+            --arg qym_blob "$GB76_BLOB" \
+            '{schema:"qym-gb76-global-batch-source-probe-v2",branch:$branch,trigger_sha:$trigger_sha,run_id:$run_id,qym_sha256:$qym_sha,qym_blob:$qym_blob,status:"COMPLETE",artifact_name:("qym-gb76-global-batch-source-bundle-" + ($run_id|tostring))}' \
+            > "$dest/STATUS.json"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "$dest"
+          git commit -m "QYM GB76 global batch: persist Python source probe ${GITHUB_RUN_ID} [skip ci]"
+          git push origin "HEAD:$BRANCH"
+
+      - name: Upload complete Lean source bundle and probe evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-gb76-global-batch-source-bundle-${{ github.run_id }}
+          path: /tmp/qym-gb76-probe
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 6

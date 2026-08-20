@@ -1,0 +1,264 @@
+{
+  "schema": "fa-v43-early-repair-manifest-v1",
+  "status": "STATIC_PASS_DIRECT_LEAN_UNVERIFIED",
+  "direct_lean_verified": false,
+  "full_fa_clean_claimed": false,
+  "authority": {
+    "run_id": 31709054520,
+    "head_sha": "d6e8e7d12bbf76bf371bb0f21c085f0ebd4ba199",
+    "job_id": 94476949087,
+    "artifact_id": 9184978707,
+    "artifact_digest": "sha256:a587808a5ca47993bba554673c4b24d2f8c6cbea08415be69db7f9f11923e042",
+    "variant": "conservative",
+    "source_path": "work/v42-run-31709054520/9184978707/Mock2_FunctionalAnalysis-candidate.lean",
+    "source_sha256": "442dc2841f80b6814a16396a9b08ec27e90d3bd3d1913c4edd417137d8d1bbe7",
+    "source_bytes": 2776625,
+    "source_lines": 62113,
+    "declaration_count": 4416,
+    "diagnostics_path": "work/v42-run-31709054520/9184978707/FULL_DIAGNOSTICS.json",
+    "diagnostics_sha256": "d71f00c9181ff3bdce00ca39d0bbb33367c3f939ee1ad2c47d4982f639406a8a",
+    "diagnostics_bytes": 49990,
+    "diagnostics_lines": 1136,
+    "fa_log_path": "work/v42-run-31709054520/9184978707/Mock2_FunctionalAnalysis.log",
+    "fa_log_sha256": "63b5dacbe7a6d40280ad0dea17001ef730a99a17400da72d8665d97b7d49c899",
+    "metric_path": "work/v42-run-31709054520/9184978707/METRIC.json",
+    "metric_sha256": "35f48eb733f4802eb4784ba4f19bd4bfa298b2803b8c8d822d9e302b5d4ae11d",
+    "patch_audit_path": "work/v42-run-31709054520/9184978707/PATCH_AUDIT.json",
+    "patch_audit_sha256": "1ba66a100ec5f20ee1f8f6f046a40135f6274b9a9fe779f2d3dea48973c55215"
+  },
+  "scope": {
+    "declaration_index_min": 3653,
+    "declaration_index_max": 3949,
+    "authority_owner_count": 25,
+    "authority_diagnostic_count": 36,
+    "selected_owner_count": 11,
+    "selected_unique_diagnostic_count": 13,
+    "repair_fragment_count": 13,
+    "selected_declaration_indices": [3669, 3689, 3798, 3838, 3884, 3899, 3924, 3931, 3943, 3946, 3949],
+    "selected_diagnostic_ordinals": [2, 3, 5, 6, 7, 8, 10, 11, 14, 26, 33, 34, 36]
+  },
+  "promotion_policy": "Runtime-proven A/B eliminations, an exact prior remote-success fragment, and narrow follow-on edits whose current residual displays the exact missing normalization are selected. API-order, dependent transport, Fourier-domain, multi-root, and resource-only proposals remain staged.",
+  "repairs": [
+    {
+      "id": "V43-E-H01-expand-pointwise-product-measurability",
+      "owner": "integrable_fullPlaneTest_mul_kernel_mul_translate",
+      "declaration_index": 3669,
+      "diagnostic_ordinals": [2],
+      "kind": "body",
+      "classification": "HIGH_CONFIDENCE_STATIC_FOLLOW_ON",
+      "confidence": "very-high-exact-displayed-function-product",
+      "expected_count_in_owner": 1,
+      "old": "    simpa only [mul_assoc] using hMeasV.mul hMeasBase\n",
+      "new": "    simpa only [Pi.mul_apply, mul_assoc] using hMeasV.mul hMeasBase\n",
+      "prior_relation": {
+        "state": "FOLLOW_ON_RESIDUAL",
+        "repair_id": "V42-Q1-02-change-uncurry-goal-before-measurability-reuse"
+      },
+      "evidence": "The authority error shows only a pointwise function product versus its lambda evaluation. Pi.mul_apply is used repeatedly in the same source and is the exact missing simplifier."
+    },
+    {
+      "id": "V43-E-H02-normalize-pointwise-lower-norm-square",
+      "owner": "cauchySeq_lowerFromSuccCoordinate_of_base_raise_tendsto",
+      "declaration_index": 3689,
+      "diagnostic_ordinals": [3],
+      "kind": "body",
+      "classification": "HIGH_CONFIDENCE_STATIC_FOLLOW_ON",
+      "confidence": "very-high-exact-pow-two-residual",
+      "expected_count_in_owner": 1,
+      "old": "        simpa only [map_add, map_smul, neg_smul, one_smul, map_neg,\n          sub_eq_add_neg, c] using h.symm)\n",
+      "new": "        simpa only [map_add, map_smul, neg_smul, one_smul, map_neg,\n          sub_eq_add_neg, pow_two, c] using h.symm)\n",
+      "prior_relation": {
+        "state": "FOLLOW_ON_RESIDUAL",
+        "repair_id": "V42-Q1-03-normalize-zero-square-with-pow-two"
+      },
+      "evidence": "The current diagnostic is exactly norm^2 versus norm*norm inside the congruence witness; the outer V42 repair already chose pow_two and the inner witness needs the same normalization."
+    },
+    {
+      "id": "V43-E-H03-horizontal-product-square-bounds",
+      "owner": "localizedGauge_planarDensity_le_on_cutoffSupport",
+      "declaration_index": 3798,
+      "diagnostic_ordinals": [5],
+      "kind": "body",
+      "classification": "HIGH_CONFIDENCE_RUNTIME_PROVEN",
+      "confidence": "very-high-v42-extended-ab-elimination",
+      "expected_count_in_owner": 1,
+      "old": "    dsimp only [Fx, F, X, Xx] at hadd hFxgraph hFgraph hXle hXxle ⊢\n    nlinarith [sq_nonneg (Fx * X - F * Xx),\n      mul_le_mul_of_nonneg_left hFxgraph (sq_nonneg X),\n      mul_le_mul_of_nonneg_right\n        ((sq_le_sq₀ hX hC).2 hXle) (mul_nonneg hh hG),\n      mul_le_mul_of_nonneg_left hFgraph (sq_nonneg Xx),\n      mul_le_mul_of_nonneg_right\n        ((sq_le_sq₀ hXx hC).2 hXxle) hG]\n",
+      "new": "    change\n      ‖dx (fixedPhaseEuclideanGauge n u) z *\n            literalStageCutoff Y (z : ℂ) +\n          fixedPhaseEuclideanGauge n u z *\n            HalfWeightCompactCoordinateGreen.dx\n              (literalStageCutoff Y) (z : ℂ)‖ ≤\n        Fx * X + F * Xx at hadd\n    have hXsq : X ^ 2 ≤ C ^ 2 :=\n      (sq_le_sq₀ hX hC).2 hXle\n    have hXxsq : Xx ^ 2 ≤ C ^ 2 :=\n      (sq_le_sq₀ hXx hC).2 hXxle\n    have hFxX : (Fx * X) ^ 2 ≤ (h * G) * C ^ 2 := by\n      rw [mul_pow]\n      exact mul_le_mul hFxgraph hXsq (sq_nonneg X)\n        (mul_nonneg hh hG)\n    have hFXx : (F * Xx) ^ 2 ≤ G * C ^ 2 := by\n      rw [mul_pow]\n      exact mul_le_mul hFgraph hXxsq (sq_nonneg Xx) hG\n    have hsum : 0 ≤ Fx * X + F * Xx :=\n      add_nonneg (mul_nonneg hFx hX) (mul_nonneg hF hXx)\n    have hnormSq :=\n      (sq_le_sq₀ (norm_nonneg _) hsum).2 hadd\n    nlinarith [hnormSq, hFxX, hFXx,\n      sq_nonneg (Fx * X - F * Xx)]\n",
+      "prior_relation": {
+        "state": "PROMOTED_FROM_V42_EXTENDED",
+        "repair_id": "V42-Q1-05-horizontal-product-square-bounds"
+      },
+      "evidence": "In run 31709054520 the conservative owner had 2 errors and the extended owner had 0; this and H04 are the only extended changes at index 3798."
+    },
+    {
+      "id": "V43-E-H04-vertical-product-square-bounds",
+      "owner": "localizedGauge_planarDensity_le_on_cutoffSupport",
+      "declaration_index": 3798,
+      "diagnostic_ordinals": [6],
+      "kind": "body",
+      "classification": "HIGH_CONFIDENCE_RUNTIME_PROVEN",
+      "confidence": "very-high-v42-extended-ab-elimination",
+      "expected_count_in_owner": 1,
+      "old": "    dsimp only [Fy, F, X, Xy] at hadd hFygraph hFgraph hXle hXyle ⊢\n    nlinarith [sq_nonneg (Fy * X - F * Xy),\n      mul_le_mul_of_nonneg_left hFygraph (sq_nonneg X),\n      mul_le_mul_of_nonneg_right\n        ((sq_le_sq₀ hX hC).2 hXle) (mul_nonneg hh hG),\n      mul_le_mul_of_nonneg_left hFgraph (sq_nonneg Xy),\n      mul_le_mul_of_nonneg_right\n        ((sq_le_sq₀ hXy hC).2 hXyle) hG]\n",
+      "new": "    change\n      ‖dy (fixedPhaseEuclideanGauge n u) z *\n            literalStageCutoff Y (z : ℂ) +\n          fixedPhaseEuclideanGauge n u z *\n            HalfWeightCompactCoordinateGreen.dy\n              (literalStageCutoff Y) (z : ℂ)‖ ≤\n        Fy * X + F * Xy at hadd\n    have hXsq : X ^ 2 ≤ C ^ 2 :=\n      (sq_le_sq₀ hX hC).2 hXle\n    have hXysq : Xy ^ 2 ≤ C ^ 2 :=\n      (sq_le_sq₀ hXy hC).2 hXyle\n    have hFyX : (Fy * X) ^ 2 ≤ (h * G) * C ^ 2 := by\n      rw [mul_pow]\n      exact mul_le_mul hFygraph hXsq (sq_nonneg X)\n        (mul_nonneg hh hG)\n    have hFXy : (F * Xy) ^ 2 ≤ G * C ^ 2 := by\n      rw [mul_pow]\n      exact mul_le_mul hFgraph hXysq (sq_nonneg Xy) hG\n    have hsum : 0 ≤ Fy * X + F * Xy :=\n      add_nonneg (mul_nonneg hFy hX) (mul_nonneg hF hXy)\n    have hnormSq :=\n      (sq_le_sq₀ (norm_nonneg _) hsum).2 hadd\n    nlinarith [hnormSq, hFyX, hFXy,\n      sq_nonneg (Fy * X - F * Xy)]\n",
+      "prior_relation": {
+        "state": "PROMOTED_FROM_V42_EXTENDED",
+        "repair_id": "V42-Q1-06-vertical-product-square-bounds"
+      },
+      "evidence": "Vertical twin of H03; the exact paired fragments eliminate both index-3798 errors in the extended remote run."
+    },
+    {
+      "id": "V43-E-H05-change-to-raw-lp-and-use-testfunction-evaluation",
+      "owner": "ambientTestCoreToPlaneL2Linear",
+      "declaration_index": 3838,
+      "diagnostic_ordinals": [7, 8],
+      "kind": "body",
+      "classification": "HIGH_CONFIDENCE_STATIC_AFTER_RUNTIME_PROGRESSION",
+      "confidence": "high-exact-extended-residual-and-same-source-api",
+      "expected_count_in_owner": 1,
+      "old": "  map_add' v w := by\n    simpa only [add_apply] using\n      MemLp.toLp_add (ambientTestCore_memLp_volume v)\n        (ambientTestCore_memLp_volume w)\n  map_smul' c v := by\n    simpa only [smul_apply, smul_eq_mul] using\n      MemLp.toLp_const_smul c (ambientTestCore_memLp_volume v)\n",
+      "new": "  map_add' v w := by\n    change @Eq (MeasureTheory.Lp ℂ 2 (volume : Measure ℂ)) _ _\n    simpa only [TestFunction.add_apply] using\n      MemLp.toLp_add (ambientTestCore_memLp_volume v)\n        (ambientTestCore_memLp_volume w)\n  map_smul' c v := by\n    change @Eq (MeasureTheory.Lp ℂ 2 (volume : Measure ℂ)) _ _\n    simpa only [TestFunction.smul_apply, smul_eq_mul, RingHom.id_apply] using\n      MemLp.toLp_const_smul c (ambientTestCore_memLp_volume v)\n",
+      "prior_relation": {
+        "state": "SUPERSEDES_V42_STAGE_WITH_FOLLOW_ON",
+        "repair_id": "Q1-S3838-change-record-equalities-to-raw-lp"
+      },
+      "evidence": "The extended run proves the raw-Lp change elaborates; its residual is exactly coe(v+w) versus coe v + coe w and the scalar twin. TestFunction.add_apply/smul_apply are established same-file APIs and formed the historical proof."
+    },
+    {
+      "id": "V43-E-H06-explicit-zero-selected-tail-bound",
+      "owner": "finiteHilbertProjection_tail_le_of_coeff_sq",
+      "declaration_index": 3884,
+      "diagnostic_ordinals": [10],
+      "kind": "body",
+      "classification": "HIGH_CONFIDENCE_STATIC_FOLLOW_ON",
+      "confidence": "very-high-explicit-nonnegative-product",
+      "expected_count_in_owner": 1,
+      "old": "      · rw [if_pos his]\n        positivity\n",
+      "new": "      · rw [if_pos his]\n        have hright : 0 ≤ delta ^ 2 *\n            (‖b.repr g₀ i‖ ^ 2 + ‖b.repr g₁ i‖ ^ 2) :=\n          mul_nonneg (sq_nonneg delta)\n            (add_nonneg (sq_nonneg _) (sq_nonneg _))\n        simpa using hright\n",
+      "prior_relation": {
+        "state": "FOLLOW_ON_RESIDUAL",
+        "repair_id": "Q1-P3884-explicit-positive-selected-tail"
+      },
+      "evidence": "The generic positivity call reports that the selected term is not a positivity goal. After if_pos, the left side is the norm square of zero; hright proves the exact right side nonnegative explicitly."
+    },
+    {
+      "id": "V43-E-H07-normalize-torus-ioc-right-endpoint-first",
+      "owner": "integral_literalStageTorusRepresentative_normSq_eq_box",
+      "declaration_index": 3899,
+      "diagnostic_ordinals": [11],
+      "kind": "body",
+      "classification": "HIGH_CONFIDENCE_STATIC_FOLLOW_ON",
+      "confidence": "very-high-exact-numeric-set-residual",
+      "expected_count_in_owner": 1,
+      "old": "  congr 1\n  ext x\n",
+      "new": "  have hhalf : -(1 / 2 : ℝ) + 1 = 1 / 2 := by norm_num\n  rw [hhalf]\n  congr 1\n  ext x\n",
+      "prior_relation": {
+        "state": "FOLLOW_ON_RESIDUAL",
+        "repair_id": "V42-Q3-H01-explicit-torus-ioc-coordinate-inverse"
+      },
+      "evidence": "The current failed apply is on the preceding domain equality, whose displayed sides differ only by -(1/2)+1 versus 1/2. Normalizing that endpoint before congruence exposes the already-materialized coordinate proof."
+    },
+    {
+      "id": "V43-E-H08-restore-remotely-successful-fin-product-proof",
+      "owner": "literalStageNegativePlaneWave_eq_conj_planeWaveRepresentative",
+      "declaration_index": 3924,
+      "diagnostic_ordinals": [14],
+      "kind": "body",
+      "classification": "HIGH_CONFIDENCE_HISTORICAL_RUNTIME_PROVEN",
+      "confidence": "very-high-exact-prior-remote-success",
+      "expected_count_in_owner": 1,
+      "old": "  simp only [literalStageNegativePlaneWave,\n    literalStagePhysicalTorusPoint, Fin.prod_univ_two,\n    UnitAddTorus.mFourier_neg, UnitAddTorus.mFourier,\n    ContinuousMap.coe_mk, map_mul, Complex.conj_inv,\n    Complex.conj_ofReal, Pi.neg_apply]\n  ring\n",
+      "new": "  simp only [literalStageNegativePlaneWave,\n    literalStagePhysicalTorusPoint, UnitAddTorus.mFourier_neg,\n    UnitAddTorus.mFourier, ContinuousMap.coe_mk, map_mul,\n    Complex.conj_inv, Complex.conj_ofReal, map_prod, Pi.neg_apply]\n  rw [show (∏ i : Fin 2,\n      fourier (-(k i))\n        (((literalStageFourierScale Y)⁻¹ *\n          Complex.measurableEquivPi w i : ℝ) : UnitAddCircle)) =\n      fourier (-(k 0))\n        (((literalStageFourierScale Y)⁻¹ * w.re : ℝ) : UnitAddCircle) *\n      fourier (-(k 1))\n        (((literalStageFourierScale Y)⁻¹ * w.im : ℝ) : UnitAddCircle) by\n    rw [Fin.prod_univ_two]\n    rfl]\n  ring\n",
+      "prior_relation": {
+        "state": "ROLLBACK_AND_SUPERSEDE",
+        "repair_id": "V42-Q2-3924-expand-both-fin-two-products"
+      },
+      "evidence": "The replacement is byte-equivalent to the proof in remote candidate d0a3decee1c0a7a781d14fdf122e235d71d8f210bb65a894dc4e518821bf03ec, whose full maxErrors=2000 diagnostics contain no error for this declaration. The V42 simplification removed map_prod and the explicit product bridge and regressed to one error."
+    },
+    {
+      "id": "V43-E-H09-pull-dx-scalar-through-fourier-integral",
+      "owner": "mFourierCoeff_scaled_dx",
+      "declaration_index": 3931,
+      "diagnostic_ordinals": [26],
+      "kind": "body",
+      "classification": "HIGH_CONFIDENCE_RUNTIME_PROGRESSION_FOLLOW_ON",
+      "confidence": "high-extended-reaches-only-redundant-tactic",
+      "expected_count_in_owner": 1,
+      "old": "  have hbase := inner_planeWave_ambientTestCore_eq_scale_mul_mFourierCoeff\n    Y k v hv\n  have hder := inner_planeWave_ambientTestCore_eq_scale_mul_mFourierCoeff\n    Y k (HalfWeightCompactCoordinateGreen.dx v) hdx\n  rw [map_smul]\n  simp only [smul_eq_mul]\n",
+      "new": "  have hbase := inner_planeWave_ambientTestCore_eq_scale_mul_mFourierCoeff\n    Y k v hv\n  have hder := inner_planeWave_ambientTestCore_eq_scale_mul_mFourierCoeff\n    Y k (HalfWeightCompactCoordinateGreen.dx v) hdx\n  have hScaled :\n      UnitAddTorus.mFourierCoeff\n          ((literalStageFourierScale Y : ℂ) •\n            literalStageTorusTest Y\n              (HalfWeightCompactCoordinateGreen.dx v)) k =\n        (literalStageFourierScale Y : ℂ) *\n          UnitAddTorus.mFourierCoeff\n            (literalStageTorusTest Y\n              (HalfWeightCompactCoordinateGreen.dx v)) k := by\n    unfold UnitAddTorus.mFourierCoeff\n    rw [← integral_const_mul]\n    apply integral_congr_ae\n    filter_upwards [MeasureTheory.Lp.coeFn_smul\n      (literalStageFourierScale Y : ℂ)\n      (literalStageTorusTest Y\n        (HalfWeightCompactCoordinateGreen.dx v))] with t ht\n    rw [ht]\n    simp only [Pi.smul_apply, smul_eq_mul]\n    ring\n  rw [hScaled]\n",
+      "prior_relation": {
+        "state": "PROMOTED_WITH_FOLLOW_ON",
+        "repair_id": "Q1-S3931-pull-scalar-through-fourier-integral-via-ae-coercion"
+      },
+      "evidence": "The extended run accepts the complete a.e. coercion bridge and reaches the final field_simp; its only owner diagnostic is No goals to be solved at the following ring."
+    },
+    {
+      "id": "V43-E-H10-drop-redundant-dx-ring-after-field-simp",
+      "owner": "mFourierCoeff_scaled_dx",
+      "declaration_index": 3931,
+      "diagnostic_ordinals": [26],
+      "kind": "body",
+      "classification": "HIGH_CONFIDENCE_EXACT_RUNTIME_FOLLOW_ON",
+      "confidence": "very-high-exact-no-goals-residual",
+      "expected_count_in_owner": 1,
+      "old": "      field_simp [literalStageFourierScale_ne_zero Y]\n      ring\n",
+      "new": "      field_simp [literalStageFourierScale_ne_zero Y]\n",
+      "prior_relation": {
+        "state": "FOLLOW_ON_TO_V43-E-H09",
+        "repair_id": "Q1-S3931-pull-scalar-through-fourier-integral-via-ae-coercion"
+      },
+      "evidence": "Extended diagnostic line 53489 is exactly No goals to be solved at ring, proving field_simp already closes the final equality."
+    },
+    {
+      "id": "V43-E-H11-explicit-nonnegative-full-tail-factor",
+      "owner": "norm_planeFourierRemainder_le_derivatives",
+      "declaration_index": 3943,
+      "diagnostic_ordinals": [33],
+      "kind": "body",
+      "classification": "HIGH_CONFIDENCE_STATIC_FOLLOW_ON",
+      "confidence": "very-high-exact-factor-and-same-proof-below",
+      "expected_count_in_owner": 1,
+      "old": "        _ ≤ _ := mul_le_mul_of_nonneg_left hsqrt (by positivity)\n",
+      "new": "        _ ≤ _ := mul_le_mul_of_nonneg_left hsqrt\n          (div_nonneg (literalStageFourierScale_pos Y).le\n            (mul_nonneg\n              (mul_nonneg (by norm_num : (0 : ℝ) ≤ 2) Real.pi_pos.le)\n              (by positivity)))\n",
+      "prior_relation": {
+        "state": "FOLLOW_ON_RESIDUAL",
+        "repair_id": "V42-Q2-3943-nonnegative-full-tail-factor"
+      },
+      "evidence": "The failed factor is scale/(2*pi*(N+1)); the replacement copies the explicit proof already accepted later in the same declaration cluster at authority lines 54033-54036."
+    },
+    {
+      "id": "V43-E-H12-reassociate-sqrt-bound-with-mul-assoc",
+      "owner": "norm_literalStagePlaneFiniteApproximation_sub_core_le",
+      "declaration_index": 3946,
+      "diagnostic_ordinals": [34],
+      "kind": "body",
+      "classification": "HIGH_CONFIDENCE_STATIC_FOLLOW_ON",
+      "confidence": "very-high-exact-association-residual",
+      "expected_count_in_owner": 1,
+      "old": "    change _ ≤ Real.sqrt 2 *\n      (literalStageLocalizationConstant Y n * ‖coreMap n u‖)\n    rw [← Real.sqrt_sq (mul_nonneg (Real.sqrt_nonneg 2) hC)]\n",
+      "new": "    rw [mul_assoc]\n    rw [← Real.sqrt_sq (mul_nonneg (Real.sqrt_nonneg 2) hC)]\n",
+      "prior_relation": {
+        "state": "SUPERSEDES_FAILED_FOLLOW_ON",
+        "repair_id": "V42-Q3-H05-reassociate-sqrt-localization-bound"
+      },
+      "evidence": "The current error says change is not definitional solely because the target is (sqrt 2 * C) * norm. Rewriting mul_assoc produces the parenthesized product hC required by Real.sqrt_sq."
+    },
+    {
+      "id": "V43-E-H13-type-the-constant-and-inverse-tendsto-factors",
+      "owner": "literalStagePlaneFiniteApproximation_tendsto",
+      "declaration_index": 3949,
+      "diagnostic_ordinals": [36],
+      "kind": "body",
+      "classification": "HIGH_CONFIDENCE_STATIC_FOLLOW_ON",
+      "confidence": "very-high-exact-unconstrained-constant-metavariable",
+      "expected_count_in_owner": 1,
+      "old": "      simpa only [one_mul, mul_zero] using\n        tendsto_const_nhds.mul\n          (by simpa only [div_eq_mul_inv, Nat.cast_add, Nat.cast_one] using\n            (tendsto_one_div_add_atTop_nhds_zero_nat :\n              Filter.Tendsto (fun N : ℕ ↦ (1 : ℝ) / (N + 1))\n                Filter.atTop (nhds 0))))\n",
+      "new": "      have hconst : Filter.Tendsto\n+          (fun _ : ℕ ↦ literalStagePlaneTailConstant Y n)\n+          Filter.atTop (nhds (literalStagePlaneTailConstant Y n)) :=\n+        tendsto_const_nhds\n+      have hinv : Filter.Tendsto\n+          (fun N : ℕ ↦ ((N : ℝ) + 1)⁻¹)\n+          Filter.atTop (nhds 0) := by\n+        simpa only [div_eq_mul_inv, one_mul, Nat.cast_add, Nat.cast_one] using\n+          (tendsto_one_div_add_atTop_nhds_zero_nat :\n+            Filter.Tendsto (fun N : ℕ ↦ (1 : ℝ) / (N + 1))\n+              Filter.atTop (nhds 0))\n+      simpa only [mul_zero] using hconst.mul hinv\n",
+      "prior_relation": {
+        "state": "FOLLOW_ON_RESIDUAL",
+        "repair_id": "V42-Q4-3949-normalize-tendsto-product"
+      },
+      "evidence": "The diagnostic exposes only an unconstrained constant metavariable ?m.61. Naming hconst with the exact literalStagePlaneTailConstant type fixes inference; hinv separately normalizes one_mul and the casted Nat denominator."
+    }
+  ]
+}

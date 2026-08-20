@@ -1,0 +1,103 @@
+name: PR9 comment exact PASS 320 result v2
+
+on:
+  workflow_run:
+    workflows: ['PR9 exact PASS 320 FA and QYM v2']
+    types: [completed]
+
+permissions:
+  actions: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  comment:
+    if: github.event.workflow_run.head_branch == 'ci/fa319-isolated-20260807'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Build and post verified result comment
+        shell: bash
+        run: |
+          set -euo pipefail
+          run_id='${{ github.event.workflow_run.id }}'
+          conclusion='${{ github.event.workflow_run.conclusion }}'
+          tmp='/tmp/pr9-comment-result'
+          mkdir -p "${tmp}"
+          gh api "/repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}/jobs?per_page=100" \
+            > "${tmp}/jobs.json"
+          gh api "/repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}/artifacts?per_page=100" \
+            > "${tmp}/artifacts.json"
+          python3 - "${tmp}/artifacts.json" > "${tmp}/artifacts.tsv" <<'PY'
+          import json,sys
+          p=json.load(open(sys.argv[1],encoding='utf-8'))
+          for a in p.get('artifacts',[]):
+              if not a.get('expired'):
+                  print(f"{a['id']}\t{a['name']}")
+          PY
+          while IFS=$'\t' read -r aid name; do
+            [[ -n "${aid}" ]] || continue
+            safe="$(printf '%s' "${name}" | tr -c 'A-Za-z0-9._-' '_')"
+            mkdir -p "${tmp}/${aid}-${safe}"
+            gh api "/repos/${GITHUB_REPOSITORY}/actions/artifacts/${aid}/zip" \
+              > "${tmp}/${aid}-${safe}.zip"
+            unzip -q "${tmp}/${aid}-${safe}.zip" -d "${tmp}/${aid}-${safe}"
+          done < "${tmp}/artifacts.tsv"
+
+          summary="$(find "${tmp}" -type f -name compile-summary.csv -print -quit)"
+          errors="$(find "${tmp}" -type f -name '*.errors.txt' -print -quit)"
+          hashes="$(find "${tmp}" -type f -name repair-hashes.txt -print -quit)"
+          body="${tmp}/comment.md"
+          {
+            echo '<!-- pr9-pass320-v2-result -->'
+            echo '## PR #9 exact PASS 320 verification result'
+            echo
+            echo "- Authority run/job: \`31159696948 / 92827136991\`"
+            echo "- Stable verification run: \`${run_id}\`"
+            echo "- Conclusion: **${conclusion}**"
+            echo "- Head: \`${{ github.event.workflow_run.head_sha }}\`"
+            echo
+            if [[ -n "${summary}" && -f "${summary}" ]]; then
+              echo '### Compile summary'
+              echo '```csv'
+              cat "${summary}"
+              echo '```'
+            fi
+            if [[ -n "${hashes}" && -f "${hashes}" ]]; then
+              echo '### Exact PASS 320 source hashes'
+              echo '```text'
+              cat "${hashes}"
+              echo '```'
+            fi
+            if [[ "${conclusion}" != 'success' ]]; then
+              echo '### First remaining error group'
+              echo '```text'
+              if [[ -n "${errors}" && -f "${errors}" ]]; then
+                sed -n '1,100p' "${errors}"
+              else
+                python3 - "${tmp}/jobs.json" <<'PY'
+          import json,sys
+          p=json.load(open(sys.argv[1],encoding='utf-8'))
+          for j in p.get('jobs',[]):
+              print(f"job={j['id']} {j['name']} => {j['conclusion']}")
+              for s in j.get('steps',[]):
+                  if s.get('conclusion') not in (None,'success','skipped'):
+                      print(f"step {s['number']}: {s['name']} => {s['conclusion']}")
+          PY
+              fi
+              echo '```'
+            fi
+          } > "${body}"
+
+          existing="$(gh api "/repos/${GITHUB_REPOSITORY}/issues/9/comments?per_page=100" \
+            --jq '.[] | select(.body | contains("<!-- pr9-pass320-v2-result -->")) | .id' \
+            | tail -1)"
+          if [[ -n "${existing}" ]]; then
+            gh api --method PATCH "/repos/${GITHUB_REPOSITORY}/issues/comments/${existing}" \
+              -F body=@"${body}" >/dev/null
+          else
+            gh api --method POST "/repos/${GITHUB_REPOSITORY}/issues/9/comments" \
+              -F body=@"${body}" >/dev/null
+          fi

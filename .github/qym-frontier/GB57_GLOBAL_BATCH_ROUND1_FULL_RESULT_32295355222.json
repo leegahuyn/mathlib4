@@ -1,0 +1,612 @@
+{
+  "command": [
+    "lake",
+    "env",
+    "lean",
+    "-DmaxErrors=10000",
+    "-DwarningAsError=false",
+    "-o",
+    "/tmp/qym-gb76-global-batch-round1/QYM.GLOBAL_REPAIR_CANDIDATE.olean",
+    "-i",
+    "/tmp/qym-gb76-global-batch-round1/QYM.GLOBAL_REPAIR_CANDIDATE.ilean",
+    "PrimalitySheafVerification/QYM.lean"
+  ],
+  "elapsed_seconds": 499.799,
+  "error_codes": {
+    "lean.synthInstanceFailed": 4,
+    "lean.unknownIdentifier": 2,
+    "uncoded": 51
+  },
+  "error_declarations": {
+    "actualFixedPhaseOldGraphToProductCollarExtension_norm_le": 1,
+    "actualStageBundleValue": 1,
+    "actualStageBundleValue_aemeasurable": 3,
+    "actualStageContinuousToL2_bundleValue_ae": 1,
+    "actualStageDistinguishedInverseEtaSection_bundleValue_ae": 1,
+    "actualStageFibreValue": 1,
+    "actualStageFibreValue_eq_iff": 1,
+    "actualStageInverseEtaL2Certificate": 2,
+    "actualStageInverseEtaL2PositiveCertificate": 1,
+    "actualStagePeterssonInner_self_re_eq_zero_iff": 1,
+    "actualStageSectionCoordinate": 1,
+    "actualStageSectionCoordinate_measurable": 1,
+    "coordinateHamiltonianForm_re_self": 1,
+    "distinguishedInverseEtaQuotientSection_continuous": 2,
+    "distinguishedInverseEtaQuotientSection_coordinate": 2,
+    "distinguishedInverseEtaQuotientSection_eq_totalOfBaseScalar": 7,
+    "distinguishedInverseEtaQuotientSection_measurable": 1,
+    "etaCoordinate_contMDiff": 1,
+    "gammaTwoQuotient_isManifold_of_smoothTransitionResidual": 1,
+    "globalStageProjectionErrorDensity_eventually_zero": 1,
+    "globalStageProjectionErrorDensity_le": 2,
+    "globalStageProjectionErrorDensity_tendsto_pointwise": 1,
+    "globalStageProjection_add": 2,
+    "globalStageProjection_smul": 2,
+    "interiorStageInclusion_contMDiff": 1,
+    "inverseEtaBaseChartedSpaceH": 1,
+    "inverseEtaBase_hasGroupoid": 2,
+    "inverseEtaBase_isManifold": 2,
+    "inverseEtaFibreHermitian_smul_right": 1,
+    "inverseEtaFibreOfCoordinate": 1,
+    "inverseEtaFibreOfCoordinate_continuous": 1,
+    "inverseEtaProjection_contMDiff": 1,
+    "inverseEtaTotalTransported_extChartAt_target": 1,
+    "inverseEtaTotalTrivializationDiffeomorph": 1,
+    "inverseEtaTotalTrivialization_contMDiff": 1,
+    "inverseEtaTotalTrivialization_symm_contMDiff": 3,
+    "quotientSectionToActualStageL2_bundleValue_ae": 3
+  },
+  "error_headers": 57,
+  "error_line_buckets": {
+    "45000": 2,
+    "48000": 3,
+    "49000": 1,
+    "50000": 28,
+    "51000": 13,
+    "52000": 1,
+    "57000": 8,
+    "59000": 1
+  },
+  "errors": [
+    {
+      "code": "lean.unknownIdentifier",
+      "column": 34,
+      "enclosing_declaration": "gammaTwoQuotient_isManifold_of_smoothTransitionResidual",
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 45539,
+      "message": "Unknown identifier `hSmooth`",
+      "severity": "error"
+    },
+    {
+      "code": "lean.unknownIdentifier",
+      "column": 34,
+      "enclosing_declaration": "interiorStageInclusion_contMDiff",
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 45575,
+      "message": "Unknown identifier `hSmooth`",
+      "severity": "error"
+    },
+    {
+      "code": null,
+      "column": 2,
+      "enclosing_declaration": "inverseEtaFibreOfCoordinate",
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 48402,
+      "message": "Dependent elimination failed: Failed to solve equation",
+      "severity": "error"
+    },
+    {
+      "code": null,
+      "column": 4,
+      "enclosing_declaration": "inverseEtaFibreOfCoordinate_continuous",
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 48427,
+      "message": "Type mismatch: After simplification, term",
+      "severity": "error"
+    },
+    {
+      "code": null,
+      "column": 42,
+      "enclosing_declaration": "inverseEtaFibreHermitian_smul_right",
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 48578,
+      "message": "unsolved goals",
+      "severity": "error"
+    },
+    {
+      "code": null,
+      "column": 2,
+      "enclosing_declaration": "actualFixedPhaseOldGraphToProductCollarExtension_norm_le",
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 49544,
+      "message": "(deterministic) timeout at `whnf`, maximum number of heartbeats (2000000) has been reached",
+      "severity": "error"
+    },
+    {
+      "code": null,
+      "column": 78,
+      "enclosing_declaration": "actualStageBundleValue",
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 50574,
+      "message": "Application type mismatch: The argument",
+      "severity": "error"
+    },
+    {
+      "code": "lean.synthInstanceFailed",
+      "column": 8,
+      "enclosing_declaration": "actualStageBundleValue_aemeasurable",
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 50589,
+      "message": "failed to synthesize instance of type class",
+      "severity": "error"
+    },
+    {
+      "code": null,
+      "column": 6,
+      "enclosing_declaration": "actualStageBundleValue_aemeasurable",
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 50595,
+      "message": "Type mismatch",
+      "severity": "error"
+    },
+    {
+      "code": null,
+      "column": 2,
+      "enclosing_declaration": "actualStageBundleValue_aemeasurable",
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 50592,
+      "message": "Cannot add `simp` attribute to `actualStageBundleValue_projection`: It is not a proposition nor a definition (to unfold)",
+      "severity": "error"
+    },
+    {
+      "code": null,
+      "column": 78,
+      "enclosing_declaration": "actualStageFibreValue",
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 50601,
+      "message": "Application type mismatch: The argument",
+      "severity": "error"
+    },
+    {
+      "code": null,
+      "column": 6,
+      "enclosing_declaration": "actualStageFibreValue_eq_iff",
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 50624,
+      "message": "Application type mismatch: The argument",
+      "severity": "error"
+    },
+    {
+      "code": null,
+      "column": 2,
+      "enclosing_declaration": "actualStagePeterssonInner_self_re_eq_zero_iff",
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 50687,
+      "message": "`simp` made no progress",
+      "severity": "error"
+    },
+    {
+      "code": null,
+      "column": 97,
+      "enclosing_declaration": "actualStageSectionCoordinate",
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 50696,
+      "message": "Application type mismatch: The argument",
+      "severity": "error"
+    },
+    {
+      "code": null,
+      "column": 48,
+      "enclosing_declaration": "distinguishedInverseEtaQuotientSection_coordinate",
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 50708,
+      "message": "Application type mismatch: The argument",
+      "severity": "error"
+    },
+    {
+      "code": null,
+      "column": 108,
+      "enclosing_declaration": "distinguishedInverseEtaQuotientSection_coordinate",
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 50709,
+      "message": "Application type mismatch: The argument",
+      "severity": "error"
+    },
+    {
+      "code": null,
+      "column": 43,
+      "enclosing_declaration": "distinguishedInverseEtaQuotientSection_eq_totalOfBaseScalar",
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 50715,
+      "message": "Application type mismatch: The argument",
+      "severity": "error"
+    },
+    {
+      "code": null,
+      "column": 82,
+      "enclosing_declaration": "distinguishedInverseEtaQuotientSection_eq_totalOfBaseScalar",
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 50716,
+      "message": "Application type mismatch: The argument",
+      "severity": "error"
+    },
+    {
+      "code": null,
+      "column": 43,
+      "enclosing_declaration": "distinguishedInverseEtaQuotientSection_eq_totalOfBaseScalar",
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 50718,
+      "message": "Application type mismatch: The argument",
+      "severity": "error"
+    },
+    {
+      "code": null,
+      "column": 52,
+      "enclosing_declaration": "distinguishedInverseEtaQuotientSection_eq_totalOfBaseScalar",
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 50721,
+      "message": "Application type mismatch: The argument",
+      "severity": "error"
+    },
+    {
+      "code": null,
+      "column": 52,
+      "enclosing_declaration": "distinguishedInverseEtaQuotientSection_eq_totalOfBaseScalar",
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 50723,
+      "message": "Application type mismatch: The argument",
+      "severity": "error"
+    },
+    {
+      "code": null,
+      "column": 84,
+      "enclosing_declaration": "distinguishedInverseEtaQuotientSection_eq_totalOfBaseScalar",
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 50725,
+      "message": "Application type mismatch: The argument",
+      "severity": "error"
+    },
+    {
+      "code": null,
+      "column": 91,
+      "enclosing_declaration": "distinguishedInverseEtaQuotientSection_eq_totalOfBaseScalar",
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 50725,
+      "message": "unsolved goals",
+      "severity": "error"
+    },
+    {
+      "code": null,
+      "column": 180,
+      "enclosing_declaration": "distinguishedInverseEtaQuotientSection_continuous",
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 50734,
+      "message": "Application type mismatch: The argument",
+      "severity": "error"
+    },
+    {
+      "code": null,
+      "column": 63,
+      "enclosing_declaration": "distinguishedInverseEtaQuotientSection_continuous",
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 50732,
+      "message": "unsolved goals",
+      "severity": "error"
+    },
+    {
+      "code": "lean.synthInstanceFailed",
+      "column": 2,
+      "enclosing_declaration": "distinguishedInverseEtaQuotientSection_measurable",
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 50742,
+      "message": "failed to synthesize instance of type class",
+      "severity": "error"
+    },
+    {
+      "code": "lean.synthInstanceFailed",
+      "column": 8,
+      "enclosing_declaration": "actualStageSectionCoordinate_measurable",
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 50758,
+      "message": "failed to synthesize instance of type class",
+      "severity": "error"
+    },
+    {
+      "code": null,
+      "column": 84,
+      "enclosing_declaration": "quotientSectionToActualStageL2_bundleValue_ae",
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 50812,
+      "message": "Application type mismatch: The argument",
+      "severity": "error"
+    },
+    {
+      "code": null,
+      "column": 27,
+      "enclosing_declaration": "quotientSectionToActualStageL2_bundleValue_ae",
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 50816,
+      "message": "Application type mismatch: The argument",
+      "severity": "error"
+    },
+    {
+      "code": null,
+      "column": 180,
+      "enclosing_declaration": "quotientSectionToActualStageL2_bundleValue_ae",
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 50812,
+      "message": "unsolved goals",
+      "severity": "error"
+    },
+    {
+      "code": null,
+      "column": 10,
+      "enclosing_declaration": "actualStageDistinguishedInverseEtaSection_bundleValue_ae",
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 50872,
+      "message": "Application type mismatch: The argument",
+      "severity": "error"
+    },
+    {
+      "code": null,
+      "column": 10,
+      "enclosing_declaration": "actualStageInverseEtaL2Certificate",
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 50945,
+      "message": "Type mismatch",
+      "severity": "error"
+    },
+    {
+      "code": null,
+      "column": 8,
+      "enclosing_declaration": "actualStageInverseEtaL2Certificate",
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 50941,
+      "message": "(kernel) unknown constant 'QYM.FullCertification.P3ActualStageL2SectionsExtension.actualStageBundleValue_projection'",
+      "severity": "error"
+    },
+    {
+      "code": null,
+      "column": 12,
+      "enclosing_declaration": "actualStageInverseEtaL2PositiveCertificate",
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 50979,
+      "message": "Application type mismatch: The argument",
+      "severity": "error"
+    },
+    {
+      "code": null,
+      "column": 2,
+      "enclosing_declaration": "inverseEtaBaseChartedSpaceH",
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 51649,
+      "message": "Type mismatch",
+      "severity": "error"
+    },
+    {
+      "code": null,
+      "column": 6,
+      "enclosing_declaration": "inverseEtaBase_hasGroupoid",
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 51664,
+      "message": "Type mismatch",
+      "severity": "error"
+    },
+    {
+      "code": null,
+      "column": 2,
+      "enclosing_declaration": "inverseEtaBase_hasGroupoid",
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 51670,
+      "message": "Type mismatch",
+      "severity": "error"
+    },
+    {
+      "code": null,
+      "column": 6,
+      "enclosing_declaration": "inverseEtaBase_isManifold",
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 51678,
+      "message": "Type mismatch",
+      "severity": "error"
+    },
+    {
+      "code": null,
+      "column": 2,
+      "enclosing_declaration": "inverseEtaBase_isManifold",
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 51683,
+      "message": "Type mismatch",
+      "severity": "error"
+    },
+    {
+      "code": null,
+      "column": 6,
+      "enclosing_declaration": "inverseEtaTotalTransported_extChartAt_target",
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 51748,
+      "message": "Tactic `rewrite` failed: Did not find an occurrence of the pattern",
+      "severity": "error"
+    },
+    {
+      "code": null,
+      "column": 58,
+      "enclosing_declaration": "inverseEtaTotalTrivialization_contMDiff",
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 51831,
+      "message": "unsolved goals",
+      "severity": "error"
+    },
+    {
+      "code": null,
+      "column": 4,
+      "enclosing_declaration": "inverseEtaTotalTrivialization_symm_contMDiff",
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 51865,
+      "message": "Type mismatch: After simplification, term",
+      "severity": "error"
+    },
+    {
+      "code": null,
+      "column": 50,
+      "enclosing_declaration": "inverseEtaTotalTrivialization_symm_contMDiff",
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 51868,
+      "message": "unsolved goals",
+      "severity": "error"
+    },
+    {
+      "code": null,
+      "column": 4,
+      "enclosing_declaration": "inverseEtaTotalTrivialization_symm_contMDiff",
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 51871,
+      "message": "Type mismatch: After simplification, term",
+      "severity": "error"
+    },
+    {
+      "code": "lean.synthInstanceFailed",
+      "column": 27,
+      "enclosing_declaration": "inverseEtaTotalTrivializationDiffeomorph",
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 51893,
+      "message": "failed to synthesize instance of type class",
+      "severity": "error"
+    },
+    {
+      "code": null,
+      "column": 2,
+      "enclosing_declaration": "inverseEtaProjection_contMDiff",
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 51912,
+      "message": "Type mismatch: After simplification, term",
+      "severity": "error"
+    },
+    {
+      "code": null,
+      "column": 2,
+      "enclosing_declaration": "etaCoordinate_contMDiff",
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 51962,
+      "message": "Type mismatch: After simplification, term",
+      "severity": "error"
+    },
+    {
+      "code": null,
+      "column": 84,
+      "enclosing_declaration": "actualStageContinuousToL2_bundleValue_ae",
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 52388,
+      "message": "Application type mismatch: The argument",
+      "severity": "error"
+    },
+    {
+      "code": null,
+      "column": 2,
+      "enclosing_declaration": "globalStageProjection_add",
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 57546,
+      "message": "unsolved goals",
+      "severity": "error"
+    },
+    {
+      "code": null,
+      "column": 2,
+      "enclosing_declaration": "globalStageProjection_add",
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 57547,
+      "message": "unsolved goals",
+      "severity": "error"
+    },
+    {
+      "code": null,
+      "column": 2,
+      "enclosing_declaration": "globalStageProjection_smul",
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 57563,
+      "message": "unsolved goals",
+      "severity": "error"
+    },
+    {
+      "code": null,
+      "column": 2,
+      "enclosing_declaration": "globalStageProjection_smul",
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 57564,
+      "message": "unsolved goals",
+      "severity": "error"
+    },
+    {
+      "code": null,
+      "column": 2,
+      "enclosing_declaration": "globalStageProjectionErrorDensity_le",
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 57887,
+      "message": "unsolved goals",
+      "severity": "error"
+    },
+    {
+      "code": null,
+      "column": 2,
+      "enclosing_declaration": "globalStageProjectionErrorDensity_le",
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 57891,
+      "message": "unsolved goals",
+      "severity": "error"
+    },
+    {
+      "code": null,
+      "column": 66,
+      "enclosing_declaration": "globalStageProjectionErrorDensity_eventually_zero",
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 57914,
+      "message": "unsolved goals",
+      "severity": "error"
+    },
+    {
+      "code": null,
+      "column": 21,
+      "enclosing_declaration": "globalStageProjectionErrorDensity_tendsto_pointwise",
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 57924,
+      "message": "unsolved goals",
+      "severity": "error"
+    },
+    {
+      "code": null,
+      "column": 2,
+      "enclosing_declaration": "coordinateHamiltonianForm_re_self",
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 59316,
+      "message": "`simp` made no progress",
+      "severity": "error"
+    }
+  ],
+  "exit": 1,
+  "first_error": {
+    "code": "lean.unknownIdentifier",
+    "column": 34,
+    "enclosing_declaration": "gammaTwoQuotient_isManifold_of_smoothTransitionResidual",
+    "file": "PrimalitySheafVerification/QYM.lean",
+    "line": 45539,
+    "message": "Unknown identifier `hSmooth`",
+    "severity": "error"
+  },
+  "ilean_bytes": 0,
+  "ilean_exists": false,
+  "last_error": {
+    "code": null,
+    "column": 2,
+    "enclosing_declaration": "coordinateHamiltonianForm_re_self",
+    "file": "PrimalitySheafVerification/QYM.lean",
+    "line": 59316,
+    "message": "`simp` made no progress",
+    "severity": "error"
+  },
+  "log_bytes": 290431,
+  "log_sha256": "ae4ff1925420abb8275e3e99cf80af7f3ca92e291b8956fa511874b46cc88a32",
+  "olean_bytes": 0,
+  "olean_exists": false,
+  "panic_lines": 0,
+  "warning_headers": 363
+}

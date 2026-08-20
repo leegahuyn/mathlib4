@@ -1,0 +1,99 @@
+{
+  "schema": "fa-v42-declaration-local-repairs-v1",
+  "status": "PATCH_READY_STATIC_SAME_FILE_API_EVIDENCE_DIRECT_LEAN_REQUIRED_V46_W07",
+  "worker_id": "W07",
+  "cluster_id": "V46-IDX3920-ADDCIRCLE-HALF-OPEN-ENDPOINT-NORMALIZATION",
+  "authority": {
+    "repository": "leegahuyn/mathlib4",
+    "run_id": 31728453514,
+    "head_sha": "5ec44f3d343955f3124e7efecc048b648dccc5ab",
+    "job_id": 94542617528,
+    "artifact_id": 9192669673,
+    "artifact_digest": "sha256:8f07a678145b62342aaa9cb94ebbce6c9f7cc1a45c400560918d42499e67f2f3",
+    "variant": "all_probes",
+    "source_path": "work/v45-results/run-31728453514/all_probes/Mock2_FunctionalAnalysis-candidate.lean",
+    "source_sha256": "726f40d1dd03d32f03592adf4f6b02e3f7f52e7e1f71087ee53bdb83c4bb0caf",
+    "source_bytes": 2788764,
+    "source_lines": 62383,
+    "declaration_count": 4416,
+    "diagnostics_path": "work/v45-results/run-31728453514/all_probes/FULL_DIAGNOSTICS.json",
+    "diagnostics_sha256": "1fb14600849d7281df6ff65ae9213b6671b19a396cf539041f864fea157476a1",
+    "fa_log_path": "work/v45-results/run-31728453514/all_probes/Mock2_FunctionalAnalysis.log",
+    "fa_log_sha256": "bcc92a247a531419b25677cfdd5e28ce1705e6c3fb87301b93e24510932b4888"
+  },
+  "assignment": {
+    "declaration_index": 3920,
+    "declaration": "literalStageTorusPoint_physicalTorusPoint",
+    "v45_error_ordinal": 6,
+    "line": 53206,
+    "column": 58,
+    "diagnostic": "Application type mismatch: hscaled proves membership in Ioc (-(1 / 2)) (1 / 2), but AddCircle.equivIoc_coe_eq expects Ioc (-(1 / 2)) (-(1 / 2) + 1)",
+    "new_error_relative_to_core": true,
+    "root_or_cascade": "ROOT_FROM_INCOMPLETE_V44_Q3_STAGED_REPAIR",
+    "ownership": "W07-only"
+  },
+  "comparison": {
+    "pre_v45_core_error": {
+      "line": 53200,
+      "column": 6,
+      "normalized_signature": "Tactic `rewrite` failed: Did not find an occurrence of the pattern",
+      "root": "The coordinate equality was rewritten only after entering the dependent measurableEquivPi representative, so the rewrite could not match inside the Fin-2 vector."
+    },
+    "v45_all_probes_error": {
+      "line": 53206,
+      "column": 58,
+      "normalized_signature": "Application type mismatch: The argument",
+      "root": "The whole-coordinate-function proof removed the dependent rewrite boundary. Its only remaining owner-local mismatch is propositionally equal endpoint notation for AddCircle.equivIoc_coe_eq."
+    },
+    "decision": "REPLACEMENT_NOT_ROLLBACK",
+    "reason": "The v44 staged body strictly advanced from a failed dependent rewrite to a single local endpoint-normalization mismatch. Rolling back would restore the earlier root failure."
+  },
+  "diagnosis": {
+    "prior_v44_repair": "V44-Q3-S02-prove-whole-torus-coordinate-function-before-injectivity",
+    "prior_repair_effect": "It successfully established the complete literalStageTorusCoordinate equality before unfolding literalStageTorusPoint, eliminating the old rewrite-under-dependent-representative obstruction.",
+    "exact_root_cause": "AddCircle.equivIoc_coe_eq exposes the canonical interval upper endpoint as -(1 / 2) + 1, whereas hscaled is stated with the arithmetically equal endpoint 1 / 2. These expressions are not definitionally equal, so direct application fails.",
+    "repair_strategy": "Retain the successful whole-coordinate-function proof and normalize the membership proof at the API boundary with `by simpa using hscaled`.",
+    "same_file_api_evidence": [
+      "At v45 all_probes source line 52853, the same declaration family already calls AddCircle.equivIoc_coe_eq with `(by simpa using x.2 i)` to normalize precisely this unit-Ioc endpoint representation.",
+      "The v45 log reports no earlier error within hcoord: its first and only owner diagnostic is the direct hscaled application at line 53206."
+    ],
+    "required_imports": [],
+    "expected_sibling_errors_closed": 1,
+    "dependency_assumptions": [
+      "The existing simplifier normalization used successfully at source line 52853 remains available at declaration 3920.",
+      "The v44 Q3 staged whole-coordinate-function replacement remains present before this one-line boundary normalization."
+    ],
+    "merge_order_requirements": [
+      "Compose against the exact v45 all_probes source SHA 726f40d1, where V44-Q3-S02 is already present; this repair completes that staged probe."
+    ],
+    "semantic_risk": "LOW",
+    "confidence": "VERY_HIGH_STATIC_EXACT_REMOTE_DIAGNOSTIC_AND_SAME_FILE_API_DIRECT_LEAN_REQUIRED",
+    "theorem_proposition_changed": false,
+    "disposition": "PATCH_READY"
+  },
+  "header_policy": "NO_HEADER_CHANGES_BODY_ONLY",
+  "trust_policy": {
+    "tokens": ["sorry", "admit", "axiom", "unsafe", "native_decide", "Lean.ofReduceBool"],
+    "required_before": 0,
+    "required_after": 0
+  },
+  "repairs": [
+    {
+      "id": "V46-W07-IDX3920-normalize-addcircle-ioc-endpoint-at-api-boundary",
+      "owner": "literalStageTorusPoint_physicalTorusPoint",
+      "declaration_index": 3920,
+      "diagnostics": [6],
+      "kind": "body",
+      "classification": "PROPOSITIONALLY-EQUAL-Ioc-ENDPOINT-NORMALIZATION",
+      "confidence": "very-high-static-exact-v45-mismatch-and-identical-same-file-api-pattern-direct-Lean-required",
+      "expected_count_in_owner": 1,
+      "old": "    exact congrArg Subtype.val (AddCircle.equivIoc_coe_eq hscaled)",
+      "new": "    exact congrArg Subtype.val\n      (AddCircle.equivIoc_coe_eq (by simpa using hscaled))",
+      "evidence": "The remote error displays the sole difference `1 / 2` versus `-(1 / 2) + 1`. The exact same source already inserts `by simpa using ...` when applying AddCircle.equivIoc_coe_eq at line 52853, so the repair is a body-local API-boundary normalization and leaves all mathematical content unchanged."
+    }
+  ],
+  "promotion_rule": "Require direct remote Mock2=0, Mock2_Advanced=0, full FA maxErrors=2000 execution, disappearance of idx3920 without a new owner-local diagnostic, full inventory comparison, source identity, all 4416 declaration headers, comments and attributes preserved, and trust-six zero before promotion.",
+  "direct_lean_verified": false,
+  "clean_build_claimed": false,
+  "lean_lake_git_github_network_invoked_by_worker": false
+}

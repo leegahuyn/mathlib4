@@ -1,0 +1,26 @@
+{
+  "schema": "fa-dynamic-cluster-3286-3290-affine-kernel-v1",
+  "status": "DIRECT_DIAGNOSTIC_DERIVED_PENDING_RECOMPILE",
+  "source_run_id": 31561568521,
+  "source_sha256": "8709441789c6b021a9ef6b6495be722723a9cac66747432ece58d60461041e7e",
+  "repairs": [
+    {
+      "declaration_index": 3286,
+      "declaration_name": "integral_friedrichsAffineCommutatorKernel_eq_zero",
+      "old_fragment": "  rw [friedrichsAffineCommutatorKernel, integral_const_mul, hchange,\n    integral_friedrichsUnitAffineCommutatorTest_eq_zero, smul_zero, mul_zero]",
+      "new_fragment": "  change (∫ t : ℂ, (((a ^ 2 : ℝ) : ℂ) *\n    friedrichsUnitAffineCommutatorTest sigma (a • t))) = 0\n  rw [integral_const_mul, hchange,\n    integral_friedrichsUnitAffineCommutatorTest_eq_zero, smul_zero, mul_zero]"
+    },
+    {
+      "declaration_index": 3289,
+      "declaration_name": "friedrichsAffineCommutatorKernel_l1",
+      "old_fragment": "    _ = a ^ 2 * ((a ^ 2)^{-1} *\n          friedrichsAffineCommutatorL1 sigma) := by rw [hchange]\n    _ = friedrichsAffineCommutatorL1 sigma := by\n      field_simp [ha.ne']",
+      "new_fragment": "    _ = a ^ 2 * ((a ^ 2)⁻¹ *\n          friedrichsAffineCommutatorL1 sigma) := by rw [hchange]\n    _ = friedrichsAffineCommutatorL1 sigma := by\n      field_simp [ha.ne']"
+    },
+    {
+      "declaration_index": 3290,
+      "declaration_name": "friedrichsAffineCommutatorKernel_support_bound",
+      "old_fragment": "  exact (le_div_iff₀ ha).2 hle",
+      "new_fragment": "  have hle' : ‖t‖ * friedrichsScale j ≤ 2 := by\n    simpa only [mul_comm] using hle\n  exact (le_div_iff₀ ha).2 hle'"
+    }
+  ]
+}

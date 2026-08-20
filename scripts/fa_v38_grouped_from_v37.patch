@@ -1,0 +1,318 @@
+--- a/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
++++ b/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+@@ -50176,11 +50176,14 @@
+   · intro h y
+     let u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n := (l2CoreRangeEquiv n).symm y
+     have hu := h u
++    have hy : l2CoreRangeEquiv n u = y := by
++      simp only [u, LinearEquiv.apply_symm_apply]
+     change
+       inner ℂ (minimalStrongSchrodinger n t y) x =
+         inner ℂ (y : OrbitPeterssonHilbert n) f
+-    simpa only [minimalStrongSchrodinger_apply,
+-      l2Coordinate_l2CoreRangeEquiv_symm, u] using hu
++    rw [← hy]
++    simpa only [minimalStrongSchrodinger_on_core,
++      l2CoreRangeEquiv_coe] using hu
+ 
+ /-! ### What operator-core density would mean, exactly -/
+ 
+@@ -50664,7 +50667,24 @@
+     ContDiff ℝ ∞ (literalStageCutoffReal Y) := by
+   classical
+   unfold literalStageCutoffReal
+-  fun_prop
++  induction literalStageActiveCenters Y using Finset.induction_on with
++  | empty =>
++      simp only [Finset.sum_empty]
++      exact contDiff_const
++  | @insert z s hz ih =>
++      simp only [Finset.sum_insert hz]
++      change ContDiff ℝ ∞
++        ((literalStagePartition Y z : ℂ → ℝ) +
++          (fun w ↦ ∑ x ∈ s, literalStagePartition Y x w))
++      have hp := (literalStagePartition Y z).property
++      rw [contMDiff_iff_contDiff] at hp
++      have hfun :
++          (↑(literalStagePartition Y z) : ℂ → ℝ) =
++            (literalStagePartition Y z : ℂ → ℝ) := by
++        funext w
++        rfl
++      rw [← hfun]
++      exact hp.add ih
+ 
+ theorem literalStageCutoffReal_hasCompactSupport (Y : ℝ) :
+     HasCompactSupport (literalStageCutoffReal Y) := by
+@@ -50909,7 +50929,8 @@
+         fixedPhaseEuclideanGauge n u z *
+           HalfWeightCompactCoordinateGreen.dx
+             (literalStageCutoff Y) (z : ℂ) := by
+-  simpa only [HalfWeightCompactCoordinateGreen.dx,
++  simpa only [literalStageLocalizedGauge,
++    HalfWeightCompactCoordinateGreen.dx,
+     HalfWeightDifferentialOperators.dx] using
+       HalfWeightCompactCoordinateGreen.directionalDerivative_localizeLeft_apply
+         (fixedPhaseEuclideanGauge n u)
+@@ -50925,7 +50946,8 @@
+         fixedPhaseEuclideanGauge n u z *
+           HalfWeightCompactCoordinateGreen.dy
+             (literalStageCutoff Y) (z : ℂ) := by
+-  simpa only [HalfWeightCompactCoordinateGreen.dy,
++  simpa only [literalStageLocalizedGauge,
++    HalfWeightCompactCoordinateGreen.dy,
+     HalfWeightDifferentialOperators.dy] using
+       HalfWeightCompactCoordinateGreen.directionalDerivative_localizeLeft_apply
+         (fixedPhaseEuclideanGauge n u)
+@@ -52085,8 +52107,8 @@
+       fixedPhaseEuclideanGauge n u + fixedPhaseEuclideanGauge n v := by
+     simp only [fixedPhaseEuclideanGauge, map_add, orbitEuclideanGauge_add]
+   rw [hg]
+-  simp only [upperLift, Pi.add_apply]
+-  split_ifs <;> ring
++  simp only [upperLift, Function.comp_apply, Pi.add_apply]
++  ring
+ 
+ @[simp]
+ theorem literalStageLocalizedGauge_smul
+@@ -52102,8 +52124,8 @@
+     simp only [fixedPhaseEuclideanGauge, map_smul,
+       orbitEuclideanGauge_smul]
+   rw [hg]
+-  simp only [upperLift, Pi.smul_apply, smul_eq_mul]
+-  split_ifs <;> ring
++  simp only [upperLift, Function.comp_apply, Pi.smul_apply, smul_eq_mul]
++  ring
+ 
+ /-- Linear compact localization on the smooth fixed-phase graph core. -/
+ noncomputable def literalStageLocalizedGaugeLinear (Y : ℝ) (n : ℤ) :
+@@ -52328,7 +52350,7 @@
+ theorem literalStageFourierScale_pos (Y : ℝ) :
+     0 < literalStageFourierScale Y := by
+   unfold literalStageFourierScale
+-  positivity
++  exact mul_pos (by norm_num) (literalStageFourierRadius_pos Y)
+ 
+ theorem literalStageFourierScale_ne_zero (Y : ℝ) :
+     literalStageFourierScale Y ≠ 0 :=
+@@ -52344,7 +52366,12 @@
+ 
+ theorem literalStageFourierBox_measurableSet (Y : ℝ) :
+     MeasurableSet (literalStageFourierBox Y) := by
+-  unfold literalStageFourierBox
++  rw [show literalStageFourierBox Y = ⋂ i : Fin 2,
++      (fun w : ℂ ↦ Complex.measurableEquivPi w i) ⁻¹'
++        Set.Ioc (-(literalStageFourierScale Y / 2))
++          (literalStageFourierScale Y / 2) by
++    ext w
++    simp [literalStageFourierBox]]
+   exact MeasurableSet.iInter fun i ↦
+     measurableSet_Ioc.preimage
+       ((measurable_pi_apply i).comp
+@@ -52393,11 +52420,10 @@
+       tsupport_literalStageCutoff_subset_fourierBall Y hw
+   have hcoord : |Complex.measurableEquivPi w i| ≤ ‖w‖ := by
+     fin_cases i
+-    · simpa only [Complex.measurableEquivPi_apply,
+-        Matrix.cons_val_zero] using Complex.abs_re_le_norm w
+-    · simpa only [Complex.measurableEquivPi_apply,
+-        Matrix.cons_val_one, Matrix.head_cons] using
+-        Complex.abs_im_le_norm w
++    · change |w.re| ≤ ‖w‖
++      exact Complex.abs_re_le_norm w
++    · change |w.im| ≤ ‖w‖
++      exact Complex.abs_im_le_norm w
+   have hhalf : literalStageFourierRadius Y <
+       literalStageFourierScale Y / 2 := by
+     unfold literalStageFourierScale
+@@ -52885,10 +52911,14 @@
+       have hi := hw i
+       rw [Set.mem_Ioc] at hi ⊢
+       constructor
+-      · apply (mul_lt_mul_left (literalStageFourierScale_pos Y)).mp
+-        simpa [x, literalStageFourierScale_ne_zero Y] using hi.1
+-      · apply (mul_le_mul_left (literalStageFourierScale_pos Y)).mp
+-        simpa [x, literalStageFourierScale_ne_zero Y] using hi.2
++      · have h := mul_lt_mul_of_pos_left hi.1
++          (inv_pos.mpr (literalStageFourierScale_pos Y))
++        simpa [x, literalStageFourierScale_ne_zero Y,
++          div_eq_mul_inv, mul_assoc] using h
++      · have h := mul_le_mul_of_nonneg_left hi.2
++          (inv_pos.mpr (literalStageFourierScale_pos Y)).le
++        simpa [x, literalStageFourierScale_ne_zero Y,
++          div_eq_mul_inv, mul_assoc] using h
+     refine ⟨Complex.measurableEquivPi.symm x, ⟨x, hx, rfl⟩, ?_⟩
+     apply Complex.measurableEquivPi.injective
+     ext i
+@@ -52897,10 +52927,13 @@
+     intro i
+     have hi := hx i
+     rw [Set.mem_Ioc] at hi ⊢
+-    simpa [literalStageFourierScale_pos Y, mul_assoc] using
+-      (mul_lt_mul_of_pos_left hi.1 (literalStageFourierScale_pos Y)).and
+-        (mul_le_mul_of_nonneg_left hi.2
+-          (literalStageFourierScale_pos Y).le)
++    constructor
++    · have h := mul_lt_mul_of_pos_left hi.1
++        (literalStageFourierScale_pos Y)
++      simpa [div_eq_mul_inv, mul_assoc] using h
++    · have h := mul_le_mul_of_nonneg_left hi.2
++        (literalStageFourierScale_pos Y).le
++      simpa [div_eq_mul_inv, mul_assoc] using h
+ 
+ theorem norm_literalStageTorusTest_sq_eq_scale_inv_sq_mul_box
+     (Y : ℝ) (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore) :
+@@ -52958,10 +52991,14 @@
+           Complex.measurableEquivPi w i ∈ Set.Ioc (-(1 / 2 : ℝ)) (1 / 2) := by
+     rw [Set.mem_Ioc] at hi ⊢
+     constructor
+-    · apply (mul_lt_mul_left (literalStageFourierScale_pos Y)).mp
+-      simpa [literalStageFourierScale_ne_zero Y] using hi.1
+-    · apply (mul_le_mul_left (literalStageFourierScale_pos Y)).mp
+-      simpa [literalStageFourierScale_ne_zero Y] using hi.2
++    · have h := mul_lt_mul_of_pos_left hi.1
++        (inv_pos.mpr (literalStageFourierScale_pos Y))
++      simpa [literalStageFourierScale_ne_zero Y,
++        div_eq_mul_inv, mul_assoc] using h
++    · have h := mul_le_mul_of_nonneg_left hi.2
++        (inv_pos.mpr (literalStageFourierScale_pos Y)).le
++      simpa [literalStageFourierScale_ne_zero Y,
++        div_eq_mul_inv, mul_assoc] using h
+   rw [show
+       (AddCircle.equivIoc 1 (-(1 / 2 : ℝ))
+           (((literalStageFourierScale Y)⁻¹ *
+@@ -56124,7 +56161,7 @@
+ noncomputable def modularMassResolvent (n : ℤ) (t : ℝ) :
+     OrbitPeterssonHilbert n →L[ℂ] OrbitPeterssonHilbert n :=
+   (baseExtension n).comp
+-    ((coerciveFormEquiv 1
++    ((FredholmBypass.coerciveFormEquiv 1
+         (embeddedShiftedForm (baseExtension n)
+           (weakSchrodingerOperator n t) (discriminantMassShift t))
+         (weakSchrodinger_embeddedMassShift_coercive n t)).symm.toContinuousLinearMap.comp
+@@ -56143,7 +56180,7 @@
+   simp only [ContinuousLinearMap.comp_apply,
+     ContinuousLinearEquiv.coe_coe]
+   rw [peterssonPivotEmbedding_eq_embeddedAntiDual,
+-    coerciveFormEquiv_symm_apply]
++    FredholmBypass.coerciveFormEquiv_symm_apply]
+ 
+ /-- The canonical resolvent value and its represented operator value form a
+ literal graph point. -/
+@@ -56216,7 +56253,7 @@
+     ⟨u, hu, hForm⟩
+   let S := embeddedShiftedForm (baseExtension n)
+     (weakSchrodingerOperator n t) (discriminantMassShift t)
+-  let E := coerciveFormEquiv 1 S
++  let E := FredholmBypass.coerciveFormEquiv 1 S
+     (weakSchrodinger_embeddedMassShift_coercive n t)
+   have hEu :
+       E u = peterssonPivotEmbedding n
+@@ -56302,12 +56339,12 @@
+     ContinuousLinearEquiv.coe_coe]
+   calc
+     ‖baseExtension n
+-        ((coerciveFormEquiv 1
++        ((FredholmBypass.coerciveFormEquiv 1
+           (embeddedShiftedForm (baseExtension n)
+             (weakSchrodingerOperator n t) (discriminantMassShift t))
+           (weakSchrodinger_embeddedMassShift_coercive n t)).symm
+             (peterssonPivotEmbedding n y))‖ ≤
+-        ‖(coerciveFormEquiv 1
++        ‖(FredholmBypass.coerciveFormEquiv 1
+           (embeddedShiftedForm (baseExtension n)
+             (weakSchrodingerOperator n t) (discriminantMassShift t))
+           (weakSchrodinger_embeddedMassShift_coercive n t)).symm
+@@ -56315,7 +56352,7 @@
+       norm_baseExtension_le n _
+     _ ≤ ‖peterssonPivotEmbedding n y‖ := by
+       simpa only [inv_one, one_mul] using
+-        coerciveFormEquiv_symm_norm_le 1
++        FredholmBypass.coerciveFormEquiv_symm_norm_le 1
+           (embeddedShiftedForm (baseExtension n)
+             (weakSchrodingerOperator n t) (discriminantMassShift t))
+           (weakSchrodinger_embeddedMassShift_coercive n t)
+@@ -57568,7 +57605,7 @@
+       (((((gamma⁻¹ : GammaTwo) : SL(2, ℤ)) • x : ℍ) : ℂ) ∈
+         tsupport
+           (gammaTwoPeriodizationSeedCore m v : ℂ → ℂ))
+-    exact subset_tsupport hseed
++    exact subset_tsupport _ hseed
+   have hpreChart :
+       (((gamma⁻¹ : GammaTwo) : SL(2, ℤ)) • x) ∈
+         gammaTwoReducedChart z₀ :=
+@@ -59710,9 +59747,11 @@
+   induction s using Finset.induction_on with
+   | empty => simpa using realSmooth_const 0
+   | @insert i s hi ih =>
+-      simpa only [Finset.sum_insert hi, Finset.sum_apply] using
+-        (hf i (Finset.mem_insert_self i s)).add
+-          (ih (fun j hj ↦ hf j (Finset.mem_insert_of_mem hj)))
++      simp only [Finset.sum_insert hi]
++      change RealSmooth
++        ((f i) + (fun z ↦ ∑ j ∈ s, f j z))
++      exact (hf i (Finset.mem_insert_self i s)).add
++        (ih (fun j hj ↦ hf j (Finset.mem_insert_of_mem hj)))
+ 
+ /-! ### Weight-zero periodization for the faithful effective action -/
+ 
+@@ -59747,7 +59786,7 @@
+   refine ⟨a⁻¹ • z, ?_, by simp⟩
+   change ((((a⁻¹ • z : ℍ) : ℂ))) ∈
+     tsupport (v : ℂ → ℂ)
+-  exact subset_tsupport hz
++  exact subset_tsupport _ hz
+ 
+ theorem effectiveScalarPeriodizationTerm_locallyFinite
+     (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore) :
+@@ -59822,7 +59861,7 @@
+     by_contra hterm
+     have hxSupport : ((((a⁻¹ • z : ℍ) : ℂ))) ∈
+         tsupport (v : ℂ → ℂ) :=
+-      subset_tsupport hterm
++      subset_tsupport _ hterm
+     have hxU : a⁻¹ • z ∈ gammaTwoReducedChart z₀ :=
+       hv hxSupport
+     have hInter :
+@@ -60871,7 +60910,7 @@
+     ring
+   · have hphiZero : phi w = 0 := by
+       by_contra hne
+-      exact hw (hphi (subset_tsupport hne))
++      exact hw (hphi (subset_tsupport _ hne))
+     simp only [hphiZero, mul_zero, zero_mul]
+ 
+ /-! ### Pairing characterization of the completed invariant multiplier -/
+@@ -61039,9 +61078,9 @@
+   have hPair : (∑ i ∈ s, (x i, y i)) ∈ T.graph :=
+     T.graph.sum_mem fun i hi ↦ hxy i hi
+   have hFst : (∑ i ∈ s, (x i, y i)).1 = p.1 := by
+-    simpa only [Prod.fst_sum, Prod.fst_mk] using hx
++    simpa only [Prod.fst_sum] using hx
+   have hSnd := T.mem_graph_snd_inj' hPair hp hFst
+-  simpa only [Prod.snd_sum, Prod.snd_mk] using hSnd
++  simpa only [Prod.snd_sum] using hSnd
+ 
+ /-- A convergent sequence in the physical raising graph has its limit in the
+ closed opposite maximal-adjoint graph. -/
+@@ -61345,8 +61384,8 @@
+           (hqBase i).prodMk_nhds (hqRaise i))
+     have hTarget : (∑ i : {z // z ∈ t}, (x i, y i)) = p := by
+       apply Prod.ext
+-      · simpa only [Prod.fst_sum, Prod.fst_mk] using hxSum
+-      · simpa only [Prod.snd_sum, Prod.snd_mk] using hySum
++      · simpa only [Prod.fst_sum] using hxSum
++      · simpa only [Prod.snd_sum] using hySum
+     simpa only [hTarget] using hSum
+ 
+ /-- The compact weak lowering maximal graph is unconditionally regularized
+@@ -61416,8 +61455,8 @@
+           (hqBase i).prodMk_nhds (hqLower i))
+     have hTarget : (∑ i : {z // z ∈ t}, (x i, y i)) = p := by
+       apply Prod.ext
+-      · simpa only [Prod.fst_sum, Prod.fst_mk] using hxSum
+-      · simpa only [Prod.snd_sum, Prod.snd_mk] using hySum
++      · simpa only [Prod.fst_sum] using hxSum
++      · simpa only [Prod.snd_sum] using hySum
+     simpa only [hTarget] using hSum
+ 
+ /-! ### Public strong cross-adjoint endpoint -/

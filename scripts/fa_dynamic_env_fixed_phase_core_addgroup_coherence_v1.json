@@ -1,0 +1,9 @@
+{
+  "schema": "fa-dynamic-env-fixed-phase-core-addgroup-coherence-v1",
+  "status": "STRUCTURAL_INSTANCE_COHERENCE_RETRIGGER_ORDERED_V4_PENDING_DIRECT_LEAN",
+  "environment_replacement": {
+    "id": "fixed-phase-graph-core-addgroup-canonical-parent",
+    "old_fragment": "noncomputable local instance fixedPhaseGraphCoreAddCommGroup (n : ℤ) :\n    AddCommGroup (InverseEtaFixedPhaseCore n) := by\n  exact Module.addCommMonoidToAddCommGroup ℂ",
+    "new_fragment": "noncomputable local instance fixedPhaseGraphCoreAddCommGroup (n : ℤ) :\n    AddCommGroup (InverseEtaFixedPhaseCore n) := by\n  letI : AddCommMonoid (InverseEtaFixedPhaseCore n) := by\n    change AddCommMonoid ↥(inverseEtaFixedPhaseStableCoreSubmodule n)\n    infer_instance\n  exact Module.addCommMonoidToAddCommGroup ℂ"
+  }
+}

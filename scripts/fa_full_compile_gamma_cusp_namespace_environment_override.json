@@ -1,0 +1,46 @@
+{
+  "schema": "fa-environment-fragment-repair-override-v1",
+  "status": "FULL_INVENTORY_ROOTS_CONFIRMED_STATIC_ONLY_UNVERIFIED",
+  "scope": "GammaTwoFundamentalDomain correction-firewall namespace only, source lines 46686-46795",
+  "source_sha256": "d0a3decee1c0a7a781d14fdf122e235d71d8f210bb65a894dc4e518821bf03ec",
+  "analysis_note": "The local cusp-coordinate section is a sibling namespace of GammaTwoQuotientGeometry and omits the open used in every earlier section. Opening only GammaTwoQuotientGeometry inside this 109-line namespace resolves the actual gammaTwoCuspScaling/height/translation roots without a file-tail resolution change.",
+  "confirmed_root_selectors": {
+    "diagnostic_ids": [
+      "E0405", "E0406", "E0407", "E0408", "E0409", "E0410", "E0411", "E0412",
+      "E0413", "E0414", "E0415", "E0416", "E0418", "E0419", "E0420", "E0421", "E0422"
+    ],
+    "declaration_indices": [3529, 3530, 3531, 3532, 3533, 3535, 3537, 3538],
+    "direct_unknown_identifier_roots": ["gammaTwoCuspScaling"],
+    "same_namespace_cascades": ["gammaTwoCuspHeight", "gammaTwoCuspTranslation", "gammaTwoLocalCuspCoordinate_translation"]
+  },
+  "environment_replacement": {
+    "old_fragment": "namespace Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoFundamentalDomain\n\nopen UpperHalfPlane",
+    "new_fragment": "namespace Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoFundamentalDomain\n\nopen UpperHalfPlane\nopen GammaTwoQuotientGeometry",
+    "old_sha256": "7477c45b213e46a735f72b6630228c476b2f5c7870558150ad6692a38970a487",
+    "new_sha256": "fe28ae148877c2768541237e3c3f4b6bdf444caed7faedffc727e2491b112255",
+    "old_bytes": 100,
+    "new_bytes": 130,
+    "old_global_count": 1,
+    "new_global_count_before": 0
+  },
+  "standalone_candidate": {
+    "sha256": "d31149d6e4d5e94441e0c01a56b594720a3c45d4102699171a2e3d2e68e04b3c",
+    "bytes": 2702282,
+    "splitlines": 60574,
+    "direct_lean_verified": false
+  },
+  "static_validation": {
+    "declarations": 4397,
+    "declaration_sequence_preserved": true,
+    "all_existing_declaration_headers_preserved": true,
+    "documentation_and_comments_preserved": true,
+    "existing_at_attributes_preserved": true,
+    "executable_forbidden_six_zero": true
+  },
+  "local_execution": {
+    "lean": false,
+    "lake": false,
+    "git": false,
+    "github_write": false
+  }
+}

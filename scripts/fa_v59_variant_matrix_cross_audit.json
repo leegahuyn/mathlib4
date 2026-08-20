@@ -1,0 +1,252 @@
+{
+  "schema": "fa-v59-cross-variant-matrix-v1",
+  "status": "STATIC_MATERIALIZATION_LOCKS_COMPLETE_DIRECT_LEAN_REQUIRED",
+  "authority": {
+    "workflow_run_id": 31803223990,
+    "head_sha": "14e3e3f5e85f3c3ca7a1381eb88522552ffe29dc",
+    "head_branch": "codex/fa-exclusive-focus-20260814",
+    "artifact_id": 9220688452,
+    "artifact_name": "codex-fa-v58-core_base-highcap2000-14e3e3f5e85f3c3ca7a1381eb88522552ffe29dc",
+    "artifact_size_in_bytes": 619491,
+    "artifact_digest": "sha256:269100960a5e7ecd8b35e39cdde2c774f244b49c269e992aec00203bd2288ab4",
+    "variant": "core_base",
+    "source_sha256": "013f64cf5eaaab544629ad02fc2e33e63f90916e9b1e1581d73f2af2e7ba34ba",
+    "source_bytes": 2807163,
+    "source_lines": 62815,
+    "declaration_count": 4416,
+    "diagnostics_sha256": "a9ec828f9bbe0226b2bc694f26911cfd84fce016adca411f9bb8df52c6833db1",
+    "fa_log_sha256": "8395ab207c12ad32483166ec9a118b4fe1d82a1c772d5cd79d9237563efc9127",
+    "patch_audit_sha256": "372037c8eee8ce1a030e5085b831b5f04c9bfaaa9e8f707767ed48ecbe630b9a"
+  },
+  "normalized_group_registry": {
+    "path": "work/v59-cross-audit/normalized-repair-groups.json",
+    "schema": "fa-v59-cross-normalized-repair-groups-v1",
+    "group_count": 7,
+    "group_keys_in_source_order": [
+      "F3930",
+      "F3933",
+      "F3939",
+      "W4017",
+      "W4018P1",
+      "W4019",
+      "R4198"
+    ]
+  },
+  "matrix_contract": {
+    "primary_variant_count": 6,
+    "bounded": true,
+    "materialization_base": "the exact authority source for every variant; variants are never layered on one another",
+    "application_order": "strictly ascending declaration_index",
+    "W4018P1_status": "STAGED preferred P01, direct Lean unverified, not promoted and not causal clearance",
+    "P02_P03_status": "serial cumulative fallbacks excluded from the first matrix",
+    "heartbeat_policy": "preserve the eight existing maxHeartbeats options byte-for-byte; add no heartbeat option",
+    "direct_lean_verified": false,
+    "clean_build_claimed": false,
+    "promotion_ready": false
+  },
+  "common_static_postconditions": {
+    "declaration_count": 4416,
+    "declaration_name_order_identical": true,
+    "all_raw_declaration_headers_byte_identical": true,
+    "comments_identical": true,
+    "attributes_identical": true,
+    "trust_counts": {
+      "sorry": 0,
+      "admit": 0,
+      "axiom": 0,
+      "unsafe": 0,
+      "native_decide": 0,
+      "Lean.ofReduceBool": 0
+    },
+    "maxHeartbeats_token_count": 8,
+    "set_option_maxHeartbeats_count": 8
+  },
+  "recommended_execution_order": [
+    "M_promoted_without_idx3933",
+    "F_fourier_full",
+    "W_weighted_structural",
+    "R_reduced_inline_isolated",
+    "A_all",
+    "A_no_idx3933"
+  ],
+  "variants": [
+    {
+      "variant_id": "M_promoted_without_idx3933",
+      "purpose": "minimum promoted-static selection that deliberately excludes the uncertain idx3933 rewrite",
+      "group_keys_in_application_order": ["F3930", "F3939", "W4019"],
+      "repair_ids_in_application_order": [
+        "V58-FOURIER-IDX3930-INVERSE-FIRST-REAL-COORDINATE",
+        "V58-FOURIER-IDX3939-RING-NORMALIZE-CASTED-SQUARE",
+        "V58-WEIGHTED-IDX4019-use-exact-norm-neg-term"
+      ],
+      "declaration_indices_in_application_order": [3930, 3939, 4019],
+      "candidate_sha256": "c3311de418db700651ca9fd9b0e34f069c11e47e4eaa8171768fa722d8bc0c2a",
+      "candidate_bytes": 2807131,
+      "candidate_lines": 62813,
+      "static_postconditions_match_common": true,
+      "ready_for_direct_lean_probe": true,
+      "causal_note": "intentionally omits W4017 and W4018P1, so W4019 cannot be used to claim a clean weighted chain",
+      "clean_candidate": false,
+      "promotion_ready": false
+    },
+    {
+      "variant_id": "F_fourier_full",
+      "purpose": "isolate all three Fourier transforms without weighted or reduced staged edits",
+      "group_keys_in_application_order": ["F3930", "F3933", "F3939"],
+      "repair_ids_in_application_order": [
+        "V58-FOURIER-IDX3930-INVERSE-FIRST-REAL-COORDINATE",
+        "V58-FOURIER-IDX3933-DETERMINISTIC-INNER-STAR-REWRITE",
+        "V58-FOURIER-IDX3939-RING-NORMALIZE-CASTED-SQUARE"
+      ],
+      "declaration_indices_in_application_order": [3930, 3933, 3939],
+      "candidate_sha256": "25f1b28103e99dc3b7c70457d9ade2f137063c100878e73fd9bb3c50e8ff9b44",
+      "candidate_bytes": 2807136,
+      "candidate_lines": 62814,
+      "static_postconditions_match_common": true,
+      "ready_for_direct_lean_probe": true,
+      "clean_candidate": false,
+      "promotion_ready": false
+    },
+    {
+      "variant_id": "W_weighted_structural",
+      "purpose": "isolate the complete weighted source-order chain: staged idx4017, preferred staged idx4018 P01, then idx4019 exact local repair",
+      "group_keys_in_application_order": ["W4017", "W4018P1", "W4019"],
+      "repair_ids_in_application_order": [
+        "V58-WEIGHTED-IDX4017-explicit-two-level-clm-ext",
+        "V58-IDX4018-P01-EXPLICIT-MKCONTINUOUS2-EVALUATION",
+        "V58-WEIGHTED-IDX4019-use-exact-norm-neg-term"
+      ],
+      "declaration_indices_in_application_order": [4017, 4018, 4019],
+      "candidate_sha256": "aae300cb43942895c02be3ca4da3a85276ef70c8af7fd8eec543be35a120810c",
+      "candidate_bytes": 2807262,
+      "candidate_lines": 62818,
+      "static_postconditions_match_common": true,
+      "ready_for_direct_lean_probe": true,
+      "W4018P1_direct_lean_verified": false,
+      "promotion_ready": false,
+      "clean_candidate": false
+    },
+    {
+      "variant_id": "R_reduced_inline_isolated",
+      "purpose": "isolate the staged idx4198 inline proof without any Fourier or weighted transform",
+      "group_keys_in_application_order": ["R4198"],
+      "repair_ids_in_application_order": [
+        "V58-IDX4198-INLINE-EFFECTIVE-FREENESS-BODY-ONLY"
+      ],
+      "declaration_indices_in_application_order": [4198],
+      "candidate_sha256": "5a231db840bc576a365fa3f9cd9aeaccab5ec98683834edb20d41e4ec5eaf5eb",
+      "candidate_bytes": 2812354,
+      "candidate_lines": 62931,
+      "static_postconditions_match_common": true,
+      "ready_for_direct_lean_probe": true,
+      "clean_candidate": false,
+      "promotion_ready": false
+    },
+    {
+      "variant_id": "A_all",
+      "purpose": "compose every normalized repair group with preferred idx4018 P01; this is the minimal full-root candidate",
+      "group_keys_in_application_order": [
+        "F3930",
+        "F3933",
+        "F3939",
+        "W4017",
+        "W4018P1",
+        "W4019",
+        "R4198"
+      ],
+      "repair_ids_in_application_order": [
+        "V58-FOURIER-IDX3930-INVERSE-FIRST-REAL-COORDINATE",
+        "V58-FOURIER-IDX3933-DETERMINISTIC-INNER-STAR-REWRITE",
+        "V58-FOURIER-IDX3939-RING-NORMALIZE-CASTED-SQUARE",
+        "V58-WEIGHTED-IDX4017-explicit-two-level-clm-ext",
+        "V58-IDX4018-P01-EXPLICIT-MKCONTINUOUS2-EVALUATION",
+        "V58-WEIGHTED-IDX4019-use-exact-norm-neg-term",
+        "V58-IDX4198-INLINE-EFFECTIVE-FREENESS-BODY-ONLY"
+      ],
+      "declaration_indices_in_application_order": [3930, 3933, 3939, 4017, 4018, 4019, 4198],
+      "candidate_sha256": "dedbf67b514b3838c743c3eabe2bdf6b5482cdfd232556fc9acc4ab0138b68f8",
+      "candidate_bytes": 2812426,
+      "candidate_lines": 62933,
+      "static_postconditions_match_common": true,
+      "ready_for_direct_lean_probe": true,
+      "W4018P1_direct_lean_verified": false,
+      "clean_result_claimed": false,
+      "promotion_ready": false
+    },
+    {
+      "variant_id": "A_no_idx3933",
+      "purpose": "full-root negative control omitting only idx3933; compare directly with A_all to isolate idx3933",
+      "group_keys_in_application_order": [
+        "F3930",
+        "F3939",
+        "W4017",
+        "W4018P1",
+        "W4019",
+        "R4198"
+      ],
+      "repair_ids_in_application_order": [
+        "V58-FOURIER-IDX3930-INVERSE-FIRST-REAL-COORDINATE",
+        "V58-FOURIER-IDX3939-RING-NORMALIZE-CASTED-SQUARE",
+        "V58-WEIGHTED-IDX4017-explicit-two-level-clm-ext",
+        "V58-IDX4018-P01-EXPLICIT-MKCONTINUOUS2-EVALUATION",
+        "V58-WEIGHTED-IDX4019-use-exact-norm-neg-term",
+        "V58-IDX4198-INLINE-EFFECTIVE-FREENESS-BODY-ONLY"
+      ],
+      "declaration_indices_in_application_order": [3930, 3939, 4017, 4018, 4019, 4198],
+      "candidate_sha256": "84e0a7843de9bcf99a25e51db95d48e9d5feceffe4e1b94f315b11d166792e5a",
+      "candidate_bytes": 2812433,
+      "candidate_lines": 62933,
+      "static_postconditions_match_common": true,
+      "ready_for_direct_lean_probe": true,
+      "W4018P1_direct_lean_verified": false,
+      "clean_candidate": false,
+      "promotion_ready": false
+    }
+  ],
+  "non_matrix_compatibility_hash_locks": {
+    "purpose": "preserve the previously communicated P/PW/PR/PWR locks and the later PWI/PWRI extensions without expanding the six-run matrix",
+    "P": {
+      "group_keys": ["F3930", "F3933", "F3939", "W4019"],
+      "candidate_sha256": "ea169497b414b0228dc7df3aafb51c583697594bab6483acf750a4790f415d8d",
+      "candidate_bytes": 2807124,
+      "candidate_lines": 62813
+    },
+    "PW": {
+      "group_keys": ["F3930", "F3933", "F3939", "W4017", "W4019"],
+      "candidate_sha256": "405a78e760e91f35b6c31cb66888f8dcfb19fa940098aa594c4e056659448ffc",
+      "candidate_bytes": 2807198,
+      "candidate_lines": 62816
+    },
+    "PR": {
+      "group_keys": ["F3930", "F3933", "F3939", "W4019", "R4198"],
+      "candidate_sha256": "61dc710a3104d8b45a5f64310659ccfa292f9cdfac9b46590e8d4f42a3c21cec",
+      "candidate_bytes": 2812315,
+      "candidate_lines": 62929
+    },
+    "PWR": {
+      "group_keys": ["F3930", "F3933", "F3939", "W4017", "W4019", "R4198"],
+      "candidate_sha256": "bc91bcb196793a05bfbdcd0c1340b6693e19bae48e41a10e21fcdd771e264ec5",
+      "candidate_bytes": 2812389,
+      "candidate_lines": 62932,
+      "causal_note": "missing W4018P1 negative-control lock"
+    },
+    "PWI": {
+      "group_keys": ["F3930", "F3933", "F3939", "W4017", "W4018P1", "W4019"],
+      "candidate_sha256": "622548f5f6d426b5ffa3809310ce0b413d47c9bbcfe6eef7ab8a9dffe8b63eda",
+      "candidate_bytes": 2807235,
+      "candidate_lines": 62817,
+      "W4018P1_status": "STAGED_DIRECT_LEAN_UNVERIFIED"
+    },
+    "PWRI": {
+      "group_keys": ["F3930", "F3933", "F3939", "W4017", "W4018P1", "W4019", "R4198"],
+      "candidate_sha256": "dedbf67b514b3838c743c3eabe2bdf6b5482cdfd232556fc9acc4ab0138b68f8",
+      "candidate_bytes": 2812426,
+      "candidate_lines": 62933,
+      "same_materialization_as": "A_all",
+      "W4018P1_status": "STAGED_DIRECT_LEAN_UNVERIFIED"
+    }
+  },
+  "direct_lean_verified": false,
+  "clean_build_claimed": false,
+  "promotion_ready": false
+}

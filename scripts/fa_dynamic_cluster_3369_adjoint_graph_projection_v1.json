@@ -1,0 +1,14 @@
+{
+  "schema": "fa-dynamic-cluster-3369-adjoint-graph-projection-v1",
+  "status": "STAGED_PENDING_CURRENT_DIRECT_FRONTIER_CONFIRMATION",
+  "source_run_id": 31571686215,
+  "source_sha256": "61afe5d593f26fad577b7522bb4c1d74f261ea347fbeb97db8e3ae0101ec45c7",
+  "repairs": [
+    {
+      "declaration_index": 3369,
+      "declaration_name": "mem_adjoint_graph_iff_swapped_pairing",
+      "old_fragment": "    rcases (LinearPMap.mem_graph_iff (T†)).mp hGraph with\n      ⟨y', hy', hz'⟩\n    rw [← hy', ← hz']",
+      "new_fragment": "    rcases (LinearPMap.mem_graph_iff (T†)).mp hGraph with\n      ⟨y', hy', hz'⟩\n    change (y' : F) = y at hy'\n    change T† y' = z at hz'\n    rw [← hy', ← hz']"
+    }
+  ]
+}

@@ -1,0 +1,352 @@
+{
+  "schema": "fa-full-cumulative-late-root-library-v1",
+  "status": "STATIC_HIGH_CONFIDENCE_CANDIDATE_DIRECT_LEAN_UNVERIFIED",
+  "source": {
+    "sha256": "d0a3decee1c0a7a781d14fdf122e235d71d8f210bb65a894dc4e518821bf03ec",
+    "bytes": 2702252,
+    "lines": 60573,
+    "declaration_count": 4397,
+    "declaration_sequence_sha256": "a33d2a1e132e47c9c6b31924ed1b8a04a50de709ed2149a9f9abfb0b052b25eb",
+    "artifact_id": 9103368138,
+    "run_id": 31495034235
+  },
+  "batch_authority": {
+    "path": "work/fa_full_compile_independent_root_batches.json",
+    "sha256": "dcfd721e0b3653d48d430a448f52aec2766c5fbe97cf7b8f00860830b29f7b1c",
+    "owned_batches": [
+      "R011"
+    ],
+    "owned_index_ranges": [
+      "3988-4191"
+    ],
+    "excluded_as_external_or_shared": [
+      {
+        "declaration_index": 3996,
+        "diagnostic_ids": [
+          "E0723-E0730"
+        ],
+        "owner_root": "shared discriminant namespace environment overlay"
+      },
+      {
+        "declaration_indices": [
+          4069,
+          4072,
+          4074,
+          4075,
+          4076,
+          4077,
+          4147,
+          4154
+        ],
+        "diagnostic_ids": [
+          "E0747",
+          "E0749",
+          "E0751-E0756",
+          "E0774-E0776"
+        ],
+        "owner_root": "shared ActualScalar/Fredholm environment overlay"
+      },
+      {
+        "declaration_index": 4163,
+        "diagnostic_ids": [
+          "E0778",
+          "E0779"
+        ],
+        "owner_root": "shared conj_ofReal repair"
+      }
+    ]
+  },
+  "candidate_expected": {
+    "sha256": "6f19d52a7badc6022c0df24bd99e6c5609e315011a4609ca3a42577350d55b60",
+    "bytes": 2703187,
+    "lines": 60591,
+    "direct_lean_verified": false
+  },
+  "edit_count": 20,
+  "affected_declaration_count": 18,
+  "expected_direct_diagnostic_count": 24,
+  "edits": [
+    {
+      "id": "idx3988_pin_complex_norm_inner",
+      "mode": "literal_exact",
+      "scope": "proof_body",
+      "old_fragment": "          (graphEuclideanBase n u)‚Äñ := norm_inner_le_norm _ _",
+      "new_fragment": "          (graphEuclideanBase n u)‚Äñ :=\n        norm_inner_le_norm (ùïú := ‚ÑÇ) _ _",
+      "old_sha256": "965b012eb8ad17adf1e968f9958d57a443643aabba14d20d1aee635a15a8eae4",
+      "new_sha256": "e21909ff5745826ca9c97d6b06d65d447b114012221cf770ce5997d4bba07732",
+      "old_bytes": 63,
+      "new_bytes": 85,
+      "expected_global_old_occurrences": 1,
+      "expected_global_new_occurrences_before": 0,
+      "declaration_index": 3988,
+      "declaration_name": "weightedGraphLinear_bound",
+      "header_sha256": "e11b407f651b77a0ea990d02353a2bfa4c3bb64916261a6decdb3f5ced87840b",
+      "diagnostic_ids": [
+        "E0716"
+      ],
+      "anchor": "line 53475",
+      "reason": "Pin the complex scalar field on norm_inner_le_norm; the diagnostic has an unconstrained RCLike metavariable.",
+      "staged_unverified": true,
+      "direct_lean_verified": false
+    },
+    {
+      "id": "idx3991_explicit_inner_linearity",
+      "mode": "literal_exact",
+      "scope": "proof_body",
+      "old_fragment": "      map_add' := fun v w ‚Ü¶ by simp\n      map_smul' := fun c v ‚Ü¶ by simp }\n  map_add' f g := by\n    ext v\n    simp [lpInfinityMultiplier_apply, MeasureTheory.Lp.add_smul]\n  map_smul' c f := by\n    ext v\n    simp [lpInfinityMultiplier_apply, ‚Üê MeasureTheory.Lp.smul_comm,\n      MeasureTheory.Lp.smul_assoc]",
+      "new_fragment": "      map_add' := fun v w ‚Ü¶ by\n        simp only [map_add, inner_add_left]\n      map_smul' := fun c v ‚Ü¶ by\n        simp only [map_smul, inner_smul_left] }\n  map_add' f g := by\n    ext v\n    simp only [map_add, inner_add_right]\n  map_smul' c f := by\n    ext v\n    simp only [map_smul, inner_smul_right]",
+      "old_sha256": "d7d0fa053afb8b6602bafa40e79cfc0cee7054d715b40199f842bbf8785fa13d",
+      "new_sha256": "8791ea5e5f887291bae40afb7563f3d801168fdf5e717a90eaccdee401acaa25",
+      "old_bytes": 311,
+      "new_bytes": 305,
+      "expected_global_old_occurrences": 1,
+      "expected_global_new_occurrences_before": 0,
+      "declaration_index": 3991,
+      "declaration_name": "discriminantHardStagePairingLinear",
+      "header_sha256": "ac1095af4f130e0f3ad4bc0b220f68da27606485662bcdab50801c775b64084f",
+      "diagnostic_ids": [
+        "E0717",
+        "E0718",
+        "E0719",
+        "E0720"
+      ],
+      "anchor": "lines 53515-53523",
+      "reason": "Use the four exact inner-product linearity lemmas after the relevant linear maps normalize their add/smul arguments.",
+      "staged_unverified": true,
+      "direct_lean_verified": false
+    },
+    {
+      "id": "idx3992_pin_complex_norm_inner",
+      "mode": "literal_exact",
+      "scope": "proof_body",
+      "old_fragment": "          (discriminantHardStageWeightLp N) f‚Äñ := norm_inner_le_norm _ _",
+      "new_fragment": "          (discriminantHardStageWeightLp N) f‚Äñ :=\n        norm_inner_le_norm (ùïú := ‚ÑÇ) _ _",
+      "old_sha256": "a2e5004dac073670c4f839c2451ce0108437d6f034f36d50b2ff513322fa8c88",
+      "new_sha256": "88b4f5f60dd936586295988beb9d426eaab123af01d832d1853bc710e69a31c7",
+      "old_bytes": 74,
+      "new_bytes": 96,
+      "expected_global_old_occurrences": 1,
+      "expected_global_new_occurrences_before": 0,
+      "declaration_index": 3992,
+      "declaration_name": "discriminantHardStagePairingLinear_bound",
+      "header_sha256": "8805ac4631b3d3fd21d3369b957d0030e8ff864b2343a0856f28b0efb6d0b694",
+      "diagnostic_ids": [
+        "E0721"
+      ],
+      "anchor": "line 53539",
+      "reason": "Pin the same complex scalar field on the second norm_inner_le_norm failure.",
+      "staged_unverified": true,
+      "direct_lean_verified": false
+    },
+    {
+      "id": "idx4010_direct_realpart_simpa",
+      "mode": "literal_exact",
+      "scope": "proof_body",
+      "old_fragment": "  rw [evenEntireGaussian_ofReal]\n  simpa using Real.exp_pos (-a * x ^ 2)",
+      "new_fragment": "  simpa only [evenEntireGaussian_ofReal, Complex.ofReal_re] using\n    Real.exp_pos (-a * x ^ 2)",
+      "old_sha256": "cb1704dbd73a97fd411f691422c90733235566890d1639bd946581de78ca742e",
+      "new_sha256": "83b48318593cbea4ef0260d7ac77824479370fcfd62e0fe6af67695874fb47eb",
+      "old_bytes": 72,
+      "new_bytes": 95,
+      "expected_global_old_occurrences": 1,
+      "expected_global_new_occurrences_before": 0,
+      "declaration_index": 4010,
+      "declaration_name": "evenEntireGaussian_realAxis_re_pos",
+      "header_sha256": "b4b41e113e21a1b03cb58b42a6eed7f5cc0eb28cfac6e7bccf892549fce7e3ff",
+      "diagnostic_ids": [
+        "E0741"
+      ],
+      "anchor": "lines 53891-53892",
+      "reason": "Normalize the real-axis formula and real projection in one bounded simpa so simplification cannot expose cexp again.",
+      "staged_unverified": true,
+      "direct_lean_verified": false
+    },
+    {
+      "id": "idx4011_direct_imagpart_simpa",
+      "mode": "literal_exact",
+      "scope": "proof_body",
+      "old_fragment": "    (evenEntireGaussian a (x : ‚ÑÇ)).im = 0 := by\n  rw [evenEntireGaussian_ofReal]\n  simp",
+      "new_fragment": "    (evenEntireGaussian a (x : ‚ÑÇ)).im = 0 := by\n  simpa only [evenEntireGaussian_ofReal, Complex.ofReal_im]",
+      "old_sha256": "3feee52d369c9638e74a1a6d3735688e7ea427d73a8e105740cef4f365c8edc7",
+      "new_sha256": "c16022b400959cffa7df5f4fd56bd26007c5bb2f686967eba9bd460a37a776d1",
+      "old_bytes": 89,
+      "new_bytes": 109,
+      "expected_global_old_occurrences": 1,
+      "expected_global_new_occurrences_before": 0,
+      "declaration_index": 4011,
+      "declaration_name": "evenEntireGaussian_realAxis_im",
+      "header_sha256": "f00423696b182d82a65bce00c04e7fc6d4f3bcea6ab36d01cd11d3b18d62299b",
+      "diagnostic_ids": [
+        "E0742"
+      ],
+      "anchor": "lines 53896-53898",
+      "reason": "Normalize the real-axis formula and imaginary projection with only the two required lemmas.",
+      "staged_unverified": true,
+      "direct_lean_verified": false
+    },
+    {
+      "id": "idx4046_idx4107_natcast_positivity",
+      "mode": "literal_all",
+      "scope": "proof_body",
+      "old_fragment": "  apply (div_le_one (by simp [phaseModulus] :\n    (0 : ‚Ñù) < phaseModulus q)).2",
+      "new_fragment": "  apply (div_le_one (by\n    simpa only [phaseModulus, Nat.cast_add, Nat.cast_one] using\n      (show (0 : ‚Ñù) < (q : ‚Ñù) + 1 by positivity))).2",
+      "old_sha256": "e793ec35e6bd17d01801f6760236a49af2239d60d18fdf687c9aa4d971a949bd",
+      "new_sha256": "8de6ea2ac431556f646a211cdd05783ee7694b8df9cb2ee85c1e85fb2ff12f99",
+      "old_bytes": 80,
+      "new_bytes": 144,
+      "expected_global_old_occurrences": 2,
+      "expected_global_new_occurrences_before": 0,
+      "declaration_indices": [
+        4046,
+        4107
+      ],
+      "declaration_names": [
+        "norm_normalizedFiniteHalfIntegralKloostermanSum_le_one",
+        "norm_modulusNormalizedReducedResidueHalfPhaseSum_le_one"
+      ],
+      "header_sha256s": [
+        "10db163dd24bd0ff1deb27724791b6c88edde04a8cce20293952f9810fbffe7c",
+        "c095b8562675ac125a6426cdda3cda0580d2edcff67a434159350fa327965ee1"
+      ],
+      "diagnostic_ids": [
+        "E0744",
+        "E0769"
+      ],
+      "anchor": "lines 54137 and 54707",
+      "reason": "Both residual goals are the identical casted inequality 0 < q + 1; expose the Nat casts and discharge positivity once.",
+      "staged_unverified": true,
+      "direct_lean_verified": false
+    },
+    {
+      "id": "idx4047_fin_cardinality",
+      "mode": "literal_exact",
+      "scope": "proof_body",
+      "old_fragment": "    ‚Äñ‚àë _x : Fin (phaseModulus q), (1 : ‚ÑÇ)‚Äñ = phaseModulus q := by\n  simp [phaseModulus]",
+      "new_fragment": "    ‚Äñ‚àë _x : Fin (phaseModulus q), (1 : ‚ÑÇ)‚Äñ = phaseModulus q := by\n  simp [phaseModulus, Finset.card_univ, Fintype.card_fin]",
+      "old_sha256": "0afa0d9d2829a19229766ae2d25ef171f1c466572ea1205d832e94158311a70b",
+      "new_sha256": "5bcb666fb620b228f085d4cedc533294c9954ee212bb88db067aef4cf1a1925e",
+      "old_bytes": 95,
+      "new_bytes": 131,
+      "expected_global_old_occurrences": 1,
+      "expected_global_new_occurrences_before": 0,
+      "declaration_index": 4047,
+      "declaration_name": "norm_constantUnitPhaseSum",
+      "header_sha256": "feac24087f55a50b5f028b4ad31f6339fcf11977058ea724e2b803cf4dce5229",
+      "diagnostic_ids": [
+        "E0745"
+      ],
+      "anchor": "lines 54144-54146",
+      "reason": "Expose card univ and the cardinality of Fin to close the exact casted cardinality residual.",
+      "staged_unverified": true,
+      "direct_lean_verified": false
+    },
+    {
+      "id": "idx4050_pin_real_pow_nonneg",
+      "mode": "literal_exact",
+      "scope": "proof_body",
+      "old_fragment": "    (pow_nonneg (by norm_num) c)",
+      "new_fragment": "    (pow_nonneg (by norm_num : (0 : ‚Ñù) ‚â§ 1 / 2) c)",
+      "old_sha256": "386ad88776cdec32e84cdddfc4c5d960d86473e96a402930b25712e70326b596",
+      "new_sha256": "f8e055e5f4587ec56a31efa205164ddef0581e7899e3d148b30be594c8b8a94a",
+      "old_bytes": 32,
+      "new_bytes": 54,
+      "expected_global_old_occurrences": 1,
+      "expected_global_new_occurrences_before": 0,
+      "declaration_index": 4050,
+      "declaration_name": "norm_geometricallyDampedPhaseTerm_le",
+      "header_sha256": "b1a0cfc9672c05c554a9ca21fe26d929a646318cafc773f2f2b60f6e2a88bd25",
+      "diagnostic_ids": [
+        "E0746"
+      ],
+      "anchor": "line 54178",
+      "reason": "Pin the scalar of the nonnegativity subgoal to Real.",
+      "staged_unverified": true,
+      "direct_lean_verified": false
+    },
+    {
+      "id": "idx4129_cast_nonnegative_contradiction",
+      "mode": "literal_exact",
+      "scope": "proof_body",
+      "old_fragment": "  simp [compatibleAuditUpper, compatibleAuditLower] at hcross",
+      "new_fragment": "  simp [compatibleAuditUpper, compatibleAuditLower] at hcross\n  exact (not_lt_of_ge (Nat.cast_nonneg m)) hcross",
+      "old_sha256": "9b6b0e8dae1efa43e83a6d542517e54cf65087b9a5ca09eb24206e6412fc1ab6",
+      "new_sha256": "4ed8e601b5eedda30a1570e292d47b40d215ac55f8b610c53f2b7aa1b67d031d",
+      "old_bytes": 61,
+      "new_bytes": 111,
+      "expected_global_old_occurrences": 1,
+      "expected_global_new_occurrences_before": 0,
+      "declaration_index": 4129,
+      "declaration_name": "compatibleAudit_has_no_crossover",
+      "header_sha256": "dd0e2d3cc8f34d16eecd4d9891975043575f476bc2adbb747a36e60db4d8aa23",
+      "diagnostic_ids": [
+        "E0770"
+      ],
+      "anchor": "lines 54852-54853",
+      "reason": "After unfolding, contradict the sole residual (m : Real) < 0 with Nat.cast_nonneg.",
+      "staged_unverified": true,
+      "direct_lean_verified": false
+    },
+    {
+      "id": "idx4155_domain_value_apply_inverse",
+      "mode": "literal_exact",
+      "scope": "proof_body",
+      "old_fragment": "  apply_inverse y := by\n    have h := modularMassResolvent_spec n t y\n    simpa only [neg_smul, sub_neg_eq_add, add_comm] using h",
+      "new_fragment": "  apply_inverse y := by\n    change modularAssociatedOperator n t\n        (modularMassResolventDomainValue n t y) -\n      (-(discriminantMassShift t : ‚ÑÇ)) ‚Ä¢\n        modularMassResolvent n t y = y\n    simpa only [neg_smul, sub_neg_eq_add, add_comm] using\n      modularMassResolvent_spec n t y",
+      "old_sha256": "6efd3792c34096ef6a0806caec3b9ffc5e28e8305d5ddea195f700511d4ecaf7",
+      "new_sha256": "161d4bb168d0daae192f25a7f230bcde5b56914946a0a171bf6e877f18086030",
+      "old_bytes": 129,
+      "new_bytes": 294,
+      "expected_global_old_occurrences": 1,
+      "expected_global_new_occurrences_before": 0,
+      "declaration_index": 4155,
+      "declaration_name": "modularBoundedPartialResolvent",
+      "header_sha256": "c3f2a046e7512bd2297b20dc589913c2b905e94a73f5783ccee88dbc3fdacb8e",
+      "diagnostic_ids": [
+        "E0777"
+      ],
+      "anchor": "lines 55354-55356",
+      "reason": "Change the structure field target to the canonical domain-valued resolvent; proof irrelevance then aligns it with modularMassResolvent_spec.",
+      "staged_unverified": true,
+      "direct_lean_verified": false
+    },
+    {
+      "id": "idx4176_measurable_const_smul",
+      "mode": "literal_exact",
+      "scope": "proof_body",
+      "old_fragment": "  exact MeasurableSet.iUnion fun a ‚Ü¶ (hU.smul a)",
+      "new_fragment": "  exact MeasurableSet.iUnion fun a ‚Ü¶\n    MeasurableSet.const_smul hU a",
+      "old_sha256": "224edc63d908f8b11ee4cb3717d58889926b701df4b321cfbdc7dc6a51c24127",
+      "new_sha256": "012eeaf676bd069daad32dd64ee22333b9d9a89e1b757b02c1734061c978c320",
+      "old_bytes": 50,
+      "new_bytes": 72,
+      "expected_global_old_occurrences": 1,
+      "expected_global_new_occurrences_before": 0,
+      "declaration_index": 4176,
+      "declaration_name": "gammaTwoOrbitSaturation_measurable",
+      "header_sha256": "6a7142f9da4a176518af3da30a37428802462cb2c3c4ea5ea2fc4a035c914274",
+      "diagnostic_ids": [
+        "E0787"
+      ],
+      "anchor": "line 55663",
+      "reason": "Use the curreÎªhëÈÏ∂ªßq´^wÿ€‹ŸWŸ‹õ›\ÿ€€ùòX›[€àãàõ[ŸHéàõ]\ò[Ÿ^X›ãàúÿ€‹Héàúõ€ŸóÿõŸHãàõ€ŸúòY€Y[ùéàà⁄[\H€õH€][⁄[ùó‹ô]ã[ùó⁄[ùã][‹€][H\⁄[ô»àãàõô]◊ŸúòY€Y[ùéàà⁄[\H€õH€][⁄[ùó‹ô]ã[ùó⁄[ùã][‹€][][⁄[ùãà€ôW‹€][H\⁄[ô»àãàõ€‹⁄LçMàéàòÕÃåNNçÃYXÃŒYYYôŸMåçÕYéXMåMMôéLÿLŸôåŒYYLMXôÕàãàõô]◊‹⁄LçMàéàçMÿôYòLåŸNMéÃÕÃLŸYNXôXYòLÕLÕòÃMçLMMéYôYåŸYMÃŸX»ãàõ€ÿû]\»éàMãàõô]◊ÿû]\»éàKàô^X›YŸ€ÿò[€€€ÿÿ›\úô[òŸ\»éàKàô^X›YŸ€ÿò[€ô]◊€ÿÿ›\úô[òŸ\◊ÿôYõ‹ôHéààôX€\ò][€ó⁄[ô^éàMÕÀàôX€\ò][€ó€ò[YHéàú€][Ÿÿ[[XU€”‹òö]ÿ]\ò][€àãàöXY\ó‹⁄LçMàéàôXXŒLMÿŸMÕÿLYçŸòòôçôYLôåLMÕXNòÃååYLÿŸYôåXLåòÃŸXåŒLàãàôXY€õ‹›X◊⁄Y»éà¬àëLŒÇàKàò[ò⁄‹àéàõ[ôHMMéãàúôX\€€àéàê€€\]HHô\⁄YX[H
+àx†nÆH€€ùòX›[€à[ôô[[›ôHHô\›[[ô»Y[ù]HX›[€ãàãàú›YŸY›[ùô\öYöYYéàùYKàô\ôX›€X[ó›ô\öYöYYéàò[ŸBàKà¬àöYéàöYN◊›[ôõ€‹Z\ù⁄\ŸW€€ôù[àãàõ[ŸHéàõ]\ò[Ÿ^X›ãàúÿ€‹Héàúõ€ŸóÿõŸHãàõ€ŸúòY€Y[ùéàà⁄[\H€õH€€ôW‹€][H\⁄[ô»Z\àHãàõô]◊ŸúòY€Y[ùéàà⁄[\H€õH—ù[ò›[€ãõ€ëù[ã€ôW‹€][H\⁄[ô»Z\àHãàõ€‹⁄LçMàéàôòÿMYçXôåMLÕMMYòéYççÃNXLLÿMÿYŸNLôMYLÃçXéLLÿÕçòÿÕ»ãàõô]◊‹⁄LçMàéàçôXÿÿÿXLŒMLôåÃÕNMMMYôMåéXÕÕÃÕXXçYLòXŸôNòÃXMÕYŸXÕçHãàõ€ÿû]\»éàãàõô]◊ÿû]\»éàNàô^X›YŸ€ÿò[€€€ÿÿ›\úô[òŸ\»éàKàô^X›YŸ€ÿò[€ô]◊€ÿÿ›\úô[òŸ\◊ÿôYõ‹ôHéààôX€\ò][€ó⁄[ô^éàNÀàôX€\ò][€ó€ò[YHéàôÿ[[XU€‘ôYXŸY⁄\ù€€\]Yÿ\úöY\ó⁄\—ù[ô[Y[ù[ãàöXY\ó‹⁄LçMàéàôéLåôMŸMòMLôôYÕMMXçMMYMŸMNççÃŸéMLçÕçŒMÃŒXÕLÕÕ»ãàôXY€õ‹›X◊⁄Y»éà¬àëLŒLÇàKàò[ò⁄‹àéàõ[ôHMMÕMàãàúôX\€€àéàï[ôõ€Z\ù⁄\ŸI‹»€ëù[à‹ò\\àôYõ‹ôH⁄[\YûZ[ô»HY[ù]Hò[ú€]Kàãàú›YŸY›[ùô\öYöYYéàùYKàô\ôX›€X[ó›ô\öYöYYéàò[ŸBàKà¬àöYéàöYNW›[ôõ€€õ‹õWŸ[ú⁄]Hãàõ[ŸHéàõ]\ò[Ÿ^X›ãàúÿ€‹Héàúõ€ŸóÿõŸHãàõ€ŸúòY€Y[ùéàà⁄[\H€õHŸã\›Z\ú“[õô\ë[ú⁄]W‹Ÿ[ã€€\^õŸîôX[‹ôWH\⁄[ô◊àŸ[ãúôHãàõô]◊ŸúòY€Y[ùéàà⁄[\H€õHŸã\›Z\ú”õ‹õT‹Q[ú⁄]K\›Z\ú“[õô\ë[ú⁄]W‹Ÿ[ãà€€\^õŸîôX[‹ôWH\⁄[ô»Ÿ[ãúôHãàõ€‹⁄LçMàéàçòÕLçLYéXNLXŒMåÿçÕMòMÕôXŒòÕŸòYôòŸMçÕÿçéLåçYMÕåå»ãàõô]◊‹⁄LçMàéàéXÿåçLÕéÃåMéLYŒçYéŸLLLòÃNŒÕMXÕNLLÿåÕXéYôLŒYHãàõ€ÿû]\»éàKàõô]◊ÿû]\»éàLàô^X›YŸ€ÿò[€€€ÿÿ›\úô[òŸ\»éàKàô^X›YŸ€ÿò[€ô]◊€ÿÿ›\úô[òŸ\◊ÿôYõ‹ôHéààôX€\ò][€ó⁄[ô^éàNKàôX€\ò][€ó€ò[YHéàù\›Z\ú”õ‹õT‹Q[ú⁄]W⁄[ùY‹òXõS€ó‹ôYXŸY⁄\ùãàöXY\ó‹⁄LçMàéàéNòåLLôòYçLÿéLÕMMåMLXNMYòÿXMéNNLÕéLYÃçÕXôLNòYYXHãàôXY€õ‹›X◊⁄Y»éà¬àëLŒLHÇàKàò[ò⁄‹àéàõ[ô\»MNåÀMMNçãàúôX\€€àéàë^‹ŸHHõ‹õK\‹]X\ôH[ú⁄]HYö[ö][€àYù\àZ⁄[ô»HôX[\ùŸàHŸ[à[õô\ãY[ú⁄]H[ùY‹òXö[]H[‹ô[Kàãàú›YŸY›[ùô\öYöYYéàùYKàô\ôX›€X[ó›ô\öYöYYéàò[ŸBàKà¬àöYéàöYNW‹[óŸ[õúôX[›‹ãàõ[ŸHéàõ]\ò[Ÿ^X›ãàúÿ€‹Héàúõ€ŸóÿõŸHãàõ€ŸúòY€Y[ùéààSìîôX[õŸîôX[
+àäH8¢ ö\\òõ€X”YX\›\ôJH8¢'àèHûHãàõô]◊ŸúòY€Y[ùéààSìîôX[õŸîôX[
+àäH8¢ ö\\òõ€X”YX\›\ôJH
+8¢'àà8°'x¢iL8¢'äHèHûHãàõ€‹⁄LçMàéàôXXŸMéNçYMôåÕåÿåÕÃYLÃLåYôNåéÃMXéNLMÿMÿåÕÕôçòÃLXôãàõô]◊‹⁄LçMàéàéôMÃXòÃŒNMòNLôMMåMÿÿÕLçNLŸLMLÕçYòåLÃôçôòŒLLàãàõ€ÿû]\»éàçàõô]◊ÿû]\»éàŒKàô^X›YŸ€ÿò[€€€ÿÿ›\úô[òŸ\»éàKàô^X›YŸ€ÿò[€ô]◊€ÿÿ›\úô[òŸ\◊ÿôYõ‹ôHéààôX€\ò][€ó⁄[ô^éàNKàôX€\ò][€ó€ò[YHéàù\›Z\ú”õ‹õT‹Q[ú⁄]W⁄[ùY‹òXõS€ó‹ôYXŸY⁄\ùãàöXY\ó‹⁄LçMàéàéNòåLLôòYçLÿéLÕMMåMLXNMYòÿXMéNNLÕéLYÃçÕXôLNòYYXHãàôXY€õ‹›X◊⁄Y»éà¬àëLŒLàÇàKàò[ò⁄‹àéàõ[ôHMNç»ãàúôX\€€àéàîô\€€ôHH€õHõ›][€à[XöY›Z]HûH[õö[ô»‹»SìîôX[àãàú›YŸY›[ùô\öYöYYéàùYKàô\ôX›€X[ó›ô\öYöYYéàò[ŸBàKà¬àöYéàöYNWŸ^‹ŸW⁄[ùò\öX[ùŸ[ú⁄]Hãàõ[ŸHéàõ]\ò[Ÿ^X›ãàúÿ€‹Héàúõ€ŸóÿõŸHãàõ€ŸúòY€Y[ùéàà[ùõ»Hóàù»›\›Z\ú”õ‹õT‹Q[ú⁄]WŸYôôX›]ôW⁄[ùò\öX[ùHãàõô]◊ŸúòY€Y[ùéàà[ùõ»Hóà⁄[ôŸHSìîôX[õŸîôX[à
+\›Z\ú”õ‹õT‹Q[ú⁄]H
+‹òö]][\Y\àäHKù‘€[€›€‹ôH
+H8†(àäJHWàSìîôX[õŸîôX[à
+\›Z\ú”õ‹õT‹Q[ú⁄]H
+‹òö]][\Y\àäHKù‘€[€›€‹ôHäWàù»›\›Z\ú”õ‹õT‹Q[ú⁄]WŸYôôX›]ôW⁄[ùò\öX[ùHãàõ€‹⁄LçMàéàçMÿÕôåÕÿÿXåNLÕòòYåXéåÕLçÃçXôYLÕÃYòXÃòòÃÕXçôYòMNNLŸXHãàõô]◊‹⁄LçMàéàòŒåÃåÕYåYôçYåXåŸXçéYçXÿôçÃÕåÃÕåŸYLçôMMÕMÕLŸççLãàõ€ÿû]\»éàçàõô]◊ÿû]\»éàçNKàô^X›YŸ€ÿò[€€€ÿÿ›\úô[òŸ\»éàKàô^X›YŸ€ÿò[€ô]◊€ÿÿ›\úô[òŸ\◊ÿôYõ‹ôHéààôX€\ò][€ó⁄[ô^éàNKàôX€\ò][€ó€ò[YHéàù\›Z\ú”õ‹õT‹Q[ú⁄]W⁄[ùY‹òXõS€ó‹ôYXŸY⁄\ùãàöXY\ó‹⁄LçMàéàéNòåLLôòYçLÿéLÕMMåMLXNMYòÿXMéNNLÕéLYÃçÕXôLNòYYXHãàôXY€õ‹›X◊⁄Y»éà¬àëLŒL»ÇàKàò[ò⁄‹àéàõ[ô\»MNŒKMMNãàúôX\€€àéàë^‹ŸHH]Xõ›[ô[ú⁄]H[ô\àSìîôX[õŸîôX[€»H^X›YôôX›]ôKZ[ùò\öX[òŸHô]‹ö]Hÿ[àX]⁄àãàú›YŸY›[ùô\öYöYYéàùYKàô\ôX›€X[ó›ô\öYöYYéàò[ŸBàKà¬àöYéàöYN◊‹\úŸ\óÿ]ÿ]X⁄Y[ùãàõ[ŸHéàõ]\ò[Ÿ^X›ãàúÿ€‹Héàúõ€ŸóÿõŸHãàõ€ŸúòY€Y[ùéàà
+\\òõ€X”YX\›\ôKúô\›öX›
+ÿ[[XU€‘ôYXŸY⁄\ù∏††
+JH]à\\òõ€X»ãàõô]◊ŸúòY€Y[ùéàà
+\\òõ€X”YX\›\ôKúô\›öX›
+ÿ[[XU€‘ôYXŸY⁄\ù∏††
+JH]\\òõ€X»ãàõ€‹⁄LçMàéàôéXôôçNçXÕNLXÃÃôåMåYååLŒNÿMNLMåLLÕXååÿMXŒYôàãàõô]◊‹⁄LçMàéàéŸLÿåMŸLòÃMÃXMYMMNNMŸôôçXôXòXôMçMYåNNXÃÃYôçÿòNYåYHãàõ€ÿû]\»éàKàõô]◊ÿû]\»éàÕKàô^X›YŸ€ÿò[€€€ÿÿ›\úô[òŸ\»éàKàô^X›YŸ€ÿò[€ô]◊€ÿÿ›\úô[òŸ\◊ÿôYõ‹ôHéààôX€\ò][€ó⁄[ô^éàNÀàôX€\ò][€ó€ò[YHéàõ‹òö]]X€YX[ëÿ]YŸW€Y[S‹ôYXŸY⁄\ùãàöXY\ó‹⁄LçMàéàåòMçLÕLÃÿMMôYççLYååçåYYYYLNLçéLÕÃXòåNNLŒMLÃMòŒMÃÃÕçM»ãàôXY€õ‹›X◊⁄Y»éà¬àëLŒMÇàKàò[ò⁄‹àéàõ[ô\»MNŒMMNŒHãàúôX\€€àéàê]X⁄H⁄[ôŸK[ÿÿ][€à€]\ŸH€à€ôH[ôN»H‹öY⁄[ò[ô]€[ôH\»\úŸY\»[à[ò€€\]H\õH€€[X[ôàãàú›YŸY›[ùô\öYöYYéàùYKàô\ôX›€X[ó›ô\öYöYYéàò[ŸBàKà¬àöYéàöYNW€ò[YW€ôYÿ]]ôWÿ[XöY[ù€Y[Xô\ú⁄\ãàõ[ŸHéàõ]\ò[Ÿ^X›ãàúÿ€‹Héàúõ€ŸóÿõŸHãàõ€ŸúòY€Y[ùéàà0≠»⁄[\ÿ[XöY[ùôYXŸY⁄\ùÿ]YŸKù[à»8°©à
+ãåH WHãàõô]◊ŸúòY€Y[ùéàà0≠»]ôH»à
+àà8° äH8¢"H[XöY[ùÿ[[XU€‘ôYXŸY⁄\ù∏††èHûWà[ùõ»◊à^X›
+ãåH Wà⁄[\ÿ[XöY[ùôYXŸY⁄\ùÿ]YŸK◊Hãàõ€‹⁄LçMàéàçLôMòNMéNòMÿçÃXÃNåŒYÃçXôÃLÕÕåŸòYôéMYXÕXçòôôçŒYLHãàõô]◊‹⁄LçMàéàôòMNÿYXÕÃXŒMÕXNÿXôNLLôYYNçéYéôåòçXLŸNåçÃNXÕôéãàõ€ÿû]\»éàåÀàõô]◊ÿû]\»éàMKàô^X›YŸ€ÿò[€€€ÿÿ›\úô[òŸ\»éàKàô^X›YŸ€ÿò[€ô]◊€ÿÿ›\úô[òŸ\◊ÿôYõ‹ôHéààôX€\ò][€ó⁄[ô^éàNKàôX€\ò][€ó€ò[YHéàò[XöY[ùôYXŸY⁄\ùÿ]YŸWÿ€€\ÿ€ŸHãàöXY\ó‹⁄LçMàéàçÕYLåXÿÕMYéçLéNåMÃÕçÿXXXÿMŸçåçMåòMçÿôMNYXÕŸLXHãàôXY€õ‹›X◊⁄Y»éà¬àëLŒMHÇàKàò[ò⁄‹àéàõ[ôHMNLL»ãàúôX\€€àéàìò[YHH\ö]ôYôYÿ]]ôH[XöY[ùY[Xô\ú⁄\ôYõ‹ôH⁄[\YöXÿ][€é»\»ô[[›ô\»Hô\⁄YX[[\‹‹⁄XõH[\Xÿ][€ãàãàú›YŸY›[ùô\öYöYYéàùYKàô\ôX›€X[ó›ô\öYöYYéàò[ŸBàKà¬àöYéàöYNLWÿYW‹⁄[ù⁄\ŸW€Y[[›ò[úŸô\àãàõ[ŸHéàõ]\ò[Ÿ^X›ãàúÿ€‹Héàúõ€ŸóÿõŸHãàõ€ŸúòY€Y[ùéàà⁄[\H€õH—ù[ò›[€ãò€€\ÿ\Kà[XöY[ùôYXŸY⁄\ùÿ]YŸWÿ€€\ÿ€ŸWH\⁄[ô»\\àãàõô]◊ŸúòY€Y[ùéàà^X›
+Y[Sÿ€€ô‹óÿYWà
+ö[\ãë]ô[ùX[KõŸóŸõ‹ò[ù[àà8°©óà
+[XöY[ùôYXŸY⁄\ùÿ]YŸWÿ€€\ÿ€ŸHà∏††HäKúﬁ[[JJKåH\\àãàõ€‹⁄LçMàéàôMòLÃåòXNŸòYéYLYÃNÿåéYåçôŸMôMéYYXMYNNLMÿÿÕLÿMNHãàõô]◊‹⁄LçMàéàååŸYLYMLçéLŸLMNçòXLåŒMYçòòLéXÕÕÿåôÿYçåMôYòŸçŸéMŸÕãàõ€ÿû]\»éàLàõô]◊ÿû]\»éàMKàô^X›YŸ€ÿò[€€€ÿÿ›\úô[òŸ\»éàKàô^X›YŸ€ÿò[€ô]◊€ÿÿ›\úô[òŸ\◊ÿôYõ‹ôHéààôX€\ò][€ó⁄[ô^éàNLKàôX€\ò][€ó€ò[YHéàò[XöY[ùôYXŸY⁄\ùÿ]YŸW€Y[SãàöXY\ó‹⁄LçMàéàòXôòŒLŒLéXåòNXÿÿéôNLNMLMçåXåÕÃMXÿÃòòÕéXôLMYåYåŸXàãàôXY€õ‹›X◊⁄Y»éà¬àëLŒMàÇàKàò[ò⁄‹àéàõ[ô\»MNMãMMNM»ãàúôX\€€àéàïò[úŸô\àY[SX‹õ‹‹»H^X›⁄[ù⁄\ŸH\]X[]H⁄]Y[Sÿ€€ô‹óÿYH[ú›XYŸà^X›[ô»⁄[\»ô]‹ö]H[ú⁄YHY[Sàãàú›YŸY›[ùô\öYöYYéàùYKàô\ôX›€X[ó›ô\öYöYYéàò[ŸBàKà¬àöYéàöYNLW€ò\úõ›◊⁄[ôXÿ]‹ó‹⁄[\ãàõ[ŸHéàõ]\ò[Ÿ^X›ãàúÿ€‹Héàúõ€ŸóÿõŸHãàõ€ŸúòY€Y[ùéààûWÿÿ\Ÿ\»»à»8¢"Ÿ]úò[ôŸH\\í[î[ôKò€ŸWà0≠»⁄[\⁄◊Hãàõô]◊ŸúòY€Y[ùéààûWÿÿ\Ÿ\»»à»8¢"Ÿ]úò[ôŸH\\í[î[ôKò€ŸWà0≠»⁄[\€õH‘Ÿ]ö[ôXÿ]‹ó€Ÿó€Y[H◊Hãàõ€‹⁄LçMàéàôNYMÕLéçôMåXôXÿåÃMçåÃÕåÿXçŸéMÿŒÿÃŸNLçÕŸLŸXòÿÃçÿåÕåãàõô]◊‹⁄LçMàéàôYLXòåÿYLÕåYLXÿLXLYåMÕMåôôéMçÕåYéYLŒXççåMòNLôçYåòLàãàõ€ÿû]\»éàÃÀàõô]◊ÿû]\»éàNKàô^X›YŸ€ÿò[€€€ÿÿ›\úô[òŸ\»éàKàô^X›YŸ€ÿò[€ô]◊€ÿÿ›\úô[òŸ\◊ÿôYõ‹ôHéààôX€\ò][€ó⁄[ô^éàNLKàôX€\ò][€ó€ò[YHéàò[XöY[ùôYXŸY⁄\ùÿ]YŸW€Y[SãàöXY\ó‹⁄LçMàéàòXôòŒLŒLéXåòNXÿÿéôNLNMLMçåXåÕÃMXÿÃòòÕéXôLMYåYåŸXàãàôXY€õ‹›X◊⁄Y»éà¬àëLŒM»ÇàKàò[ò⁄‹àéàõ[ô\»MNMåKMMNMåàãàúôX\€€àéàï\ŸH€õH[ôXÿ]‹ó€Ÿó€Y[H[àH‹⁄]]ôH›\‹ùúò[ò⁄»úõÿY⁄[\[ôõ€»H[XöY[ùÿ]YŸH[ô‹ôX]\»[à[úô[]Y›Ÿ\ãZ[ã\[ôH[\Xÿ][€ãàãàú›YŸY›[ùô\öYöYYéàùYKàô\ôX›€X[ó›ô\öYöYYéàò[ŸBàBàKàú›YŸY€‹óŸ^€YYéà¬à¬àôX€\ò][€ó⁄[ô^éàŒNLÀàôXY€õ‹›X◊⁄Y»éà¬àëLÃåàÇàKàú›]\»éàëTSëSê÷W––T––QHãàúôX\€€àéàïH\Xÿ][€àZ\€X]⁄\»›€ú›ôX[HŸàHòZ[Y[ôX\ã[X\€€ú›ùX›[€à[ôõ›[ô]YŒNLKLŒNLãàÇàKà¬àôX€\ò][€ó⁄[ôXŸ\»éà¬àŒNMÀàŒNNàBàKàôXY€õ‹›X◊⁄Y»éà¬àëLÃÃHãàëLÃÃàãàëLÃÕKQLÕÇàKàú›]\»éàîëT”’Tê—W”‘ó”RT‘“Së◊–TW‘’Q—QãàúôX\€€àéàîô\€›\òŸH[Z]»[ô[ö€õ›€à\›ôX[H€€ú›[ù»»õ›YZ]HÿYôHúòY€Y[ù[€õH›]X»ô\Z\ãàÇàKà¬àôX€\ò][€ó⁄[ô^éààôXY€õ‹›X◊⁄Y»éà¬àëLÃÃ»ãàëLÃÕÇàKàú›]\»éàî“TëQ‘ì”’––T––QHãàúôX\€€àéàë\[ô»€àH\ô[ù[›€ôY\ÿ‹ö[Z[ò[ù[ùö\õ€õY[ù›ŸZY⁄YY[ù]Hô\Z\úÀàÇàKà¬àôX€\ò][€ó⁄[ô^éàNKàôXY€õ‹›X◊⁄Y»éà¬àëLÕ»ÇàKàú›]\»éàêTW“Sî’Sê—W‘—Sî“UUëW‘’Q—QãàúôX\€€àéàïH€»ö[ùYõ‹õYY\‹XŸH[ú›[òŸH]»Yôô\é»õ»õŸK[€õH€Ÿ\ò⁄[€àô\Z\à\»]]‹ö]]]ôH⁄]›]\ôX›X[ãàÇàKà¬àôX€\ò][€ó⁄[ô^éàLŒKàôXY€õ‹›X◊⁄Y»éà¬àëLÕÃHãàëLÕÃàÇàKàú›]\»éàîPìP◊“PQTó–“Së—W‘ëTURTëQ‘’Q—QãàúôX\€€àéàïH[úô\€€ôYÿ[[XU€–›\‹ö[ô\à\»[àH^‹ùY[‹ô[HXY\à[ô\»^€YYûHHXY\ã\ô\Ÿ\ùò][€à€XﬁKàÇàKà¬àôX€\ò][€ó⁄[ôXŸ\»éà¬àMçKàMçãàMçÀàMéàKàôXY€õ‹›X◊⁄Y»éà¬àëLŒQLŒàÇàKàú›]\»éàëV‘ïQ–TW‘ëTP—SQSï‘ëTURTëQ‘’Q—QãàúôX\€€àéàí\—ZYŸ[ùò[YH[ô[ôX\ìX\ôZYŸ[ú‹XŸH\ôHXúŸ[ùT\»[à^‹ùY›][Y[ùŒ»ô\X⁄[ô»[H€›[⁄[ôŸH€Z[\ÀàÇàKà¬àôX€\ò][€ó⁄[ô^éàMŒKàôXY€õ‹›X◊⁄Y»éà¬àëLŒHÇàKàú›]\»éàëì‘ï–Të‘ëQëTëSê—W‘’Q—QãàúôX\€€àéàïHõ€ŸàôYô\ô[òŸ\»ÿ[[XU€‘ôYXŸY⁄\ù⁄[ù\ó›ò[ú€]W⁄[\Ÿ\W€€ôHôYõ‹ôH]»]\àX€\ò][€é»õ»XY\ãH[ô‹ô\ã\ô\Ÿ\ùö[ô»úòY€Y[ùô\Z\à\»\›Xõ\⁄YàÇàBàKàô›X\ô»éà¬àú€›\òŸW⁄Y[ù]WŸ^X›éàùYKàôòZ[⁄Yó€€€ÿÿ›\úô[òŸWÿ€›[ùŸYôô\ú»éàùYKàôòZ[⁄Yó€ô]◊ŸúòY€Y[ù‹ôY^\›»éàùYKàúXõX◊⁄XY\ú◊ÿû]W‹ô\Ÿ\ùôYéàùYKàôX€\ò][€ó‹Ÿ\]Y[òŸW‹ô\Ÿ\ùôYéàùYKàò[Ÿÿ›[Y[ù][€óÿ€€[Y[ù◊ÿû]W‹ô\Ÿ\ùôYéàùYKàò[ÿ]öXù]\◊ÿû]W‹ô\Ÿ\ùôYéàùYKàô^X›]XõWŸõ‹òöY[ó‹⁄^ﬁô\õ◊ÿôYõ‹ôWÿ[ôÿYù\àéàùYKàúò]◊Ÿõ‹òöY[ó€YŸ\ó‹ô\Ÿ\ùôYéàùYKàõ]\ó›[õ\›YŸX€\ò][€ú◊€X^W€õ›ÿ⁄[ôŸHéàùYKàô\ôX›€X[ó›ò[Y][€ó‹ô\]Z\ôYÿôYõ‹ôW‹õ€[›[€àéàùYBàKàú›]X◊›ò[Y][€àéà¬àú\úŸ\àéàù€‹öÀŸòWŸù[ÿ€€\[W⁄[ùô[ù‹ûKúHÿ⁄ŸYP”‘’Tï\úŸ\àãàôX€\ò][€óÿ€›[ùÿôYõ‹ôHéàŒMÀàôX€\ò][€óÿ€›[ùÿYù\àéàŒMÀàôX€\ò][€ó‹Ÿ\]Y[òŸW‹⁄LçMóÿôYõ‹ôHéàòLÃŸòLYLLÃôMÿŒXÕòåÃNLçYXéLMLMÃYYåMXNYéXXôòååLòåçYXàãàôX€\ò][€ó‹Ÿ\]Y[òŸW‹⁄LçMóÿYù\àéàòLÃŸòLYLLÃôMÿŒXÕòåÃNLçYXéLMLMÃYYåMXNYéXXôòååLòåçYXàãàò⁄[ôŸYŸX€\ò][€ó⁄[ôXŸ\»éà¬àŒNàŒNLKàŒNLãàLàLKàãàÀàLàLÀàLéKàMMKàMÕãàMÕÀàNÀàNKàNÀàNKàNLBàKàò⁄[ôŸY⁄XY\ó⁄[ôXŸ\»éà◊Kàò€€[Y[ù◊‹⁄LçMóÿôYõ‹ôHéàåçôLçLŒNLÃYMMLYLYåMåéLYLÃLçXYåÿåÕçÃŒXçòMYXôMçÕçÃÃÃçYMçÃéMÕHãàò€€[Y[ù◊‹⁄LçMóÿYù\àéàåçôLçLŒNLÃYMMLYLYåMåéLYLÃLçXYåÿåÕçÃŒXçòMYXôMçÕçÃÃÃçYMçÃéMÕHãàò]öXù]\◊‹⁄LçMóÿôYõ‹ôHéàòÕLÕçLÃŒLŸXNXòÕYŸNLLLòXXéMMÕMXYçôôLçååÃŸçåÕÃÿçàãàò]öXù]\◊‹⁄LçMóÿYù\àéàòÕLÕçLÃŒLŸXNXòÕYŸNLLLòXXéMMÕMXYçôôLçååÃŸçåÕÃÿçàãàô^X›]XõWŸõ‹òöY[óÿ€›[ù◊ÿôYõ‹ôHéà¬àú€‹úûHéààòYZ]éààõô]◊Ÿ€ÿò[ÿ^[€Héààù[úÿYôHéààõò]]ôWŸX⁄YHéààìX[ãõŸîôYXŸPõ€€éààKàô^X›]XõWŸõ‹òöY[óÿ€›[ù◊ÿYù\àéà¬àú€‹úûHéààòYZ]éààõô]◊Ÿ€ÿò[ÿ^[€Héààù[úÿYôHéààõò]]ôWŸX⁄YHéààìX[ãõŸîôYXŸPõ€€éààKàúò]◊Ÿõ‹òöY[ó€Y[ù[€ú◊ÿôYõ‹ôHéà¬àú€‹úûHéàKàòYZ]éààõô]◊Ÿ€ÿò[ÿ^[€Héààù[úÿYôHéàKàõò]]ôWŸX⁄YHéààìX[ãõŸîôYXŸPõ€€éààKàúò]◊Ÿõ‹òöY[ó€Y[ù[€ú◊ÿYù\àéà¬àú€‹úûHéàKàòYZ]éààõô]◊Ÿ€ÿò[ÿ^[€Héààù[úÿYôHéàKàõò]]ôWŸX⁄YHéààìX[ãõŸîôYXŸPõ€€éààKàú\‹ŸYéàùYKàô\ôX›€X[óŸ^X›]Yéàò[ŸKàõÿÿ[€ZŸWŸ^X›]Yéàò[ŸKàõÿÿ[Ÿ⁄]Ÿ^X›]Yéàò[ŸKàô⁄]Xó›‹ö][àéàò[ŸBàBüB

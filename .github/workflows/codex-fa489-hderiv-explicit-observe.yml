@@ -1,0 +1,98 @@
+name: Codex FA489 explicit derivative continuity strict direct Lean
+# isolated retrigger after authoritative FA488 metric recovery
+
+on:
+  push:
+    branches:
+      - fix/fa489-hderiv-explicit-continuity-20260811
+    paths:
+      - .github/workflows/codex-fa489-hderiv-explicit-observe.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+  issues: write
+
+concurrency:
+  group: codex-fa489-hderiv-explicit-observe
+  cancel-in-progress: true
+
+jobs:
+  observe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Publish FA489 start identity
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          body="## FA489 authoritative observer started\n\n- run_id: \`${GITHUB_RUN_ID}\`\n- head_sha: \`${GITHUB_SHA}\`\n- sequence: \`FA475 -> ... -> FA488 -> FA489\`\n- upstream_FA488_run: \`31456106488\`\n- upstream_FA488_job: \`93670098634\`\n- upstream_FA488_source: \`efabb4d229666d7a6e292e853aa583833ae6c99d0bb6d65689168015eccb93ca\`\n- frontier: \`35337:4 selectedLogHeightEnergyDensity_continuous / index 2806\`\n- patch: \`reuse hcomp/hdycomp/hpoint + realSmooth_heightC; explicit mul/add continuity\`"
+          gh api "repos/${GITHUB_REPOSITORY}/issues/14/comments" -f body="$body"
+
+      - name: Run exact FA489 candidate/direct Lean loop and retain exit
+        id: run
+        shell: bash
+        run: |
+          set +e
+          bash scripts/fa489_hderiv_explicit_continuity_candidate_ci.sh 2>&1 | tee /tmp/fa489-observe.log
+          code=${PIPESTATUS[0]}
+          set -e
+          echo "exit_code=$code" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Report compact FA489 evidence
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SCRIPT_EXIT: ${{ steps.run.outputs.exit_code }}
+        shell: bash
+        run: |
+          python3 - <<'PY' > /tmp/fa489-comment.md
+          from pathlib import Path
+          import json, os
+          out = Path('build-logs/codex-fa489-hderiv-explicit-continuity/candidates/norms')
+          p = out / 'METRIC.json'
+          source = Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean')
+          log = Path('/tmp/fa489-observe.log')
+          lines = ['## FA489 authoritative observer — actual remote execution', '',
+                   f"- run_id: `{os.environ.get('GITHUB_RUN_ID','')}`",
+                   f"- head_sha: `{os.environ.get('GITHUB_SHA','')}`",
+                   f"- script_exit: `{os.environ.get('SCRIPT_EXIT','')}`"]
+          m = None
+          if p.exists():
+              m = json.loads(p.read_text(encoding='utf-8'))
+              for key in ['classification','source_sha256','line_count','Mock2_exit','Mock2_Advanced_exit','FA_exit','FA_first_actual_error_line','FA_first_actual_error_col','FA_first_error_declaration','FA_error_declaration_index','infra_reasons']:
+                  lines.append(f"- {key}: `{m.get(key)}`")
+              msg = str(m.get('FA_first_error_message','')).replace('`','\\`')[:5000]
+              lines += ['', '### first error', '```text', msg, '```']
+          else:
+              lines.append('- METRIC.json: `MISSING`')
+          if source.exists():
+              src = source.read_text(encoding='utf-8', errors='replace').splitlines()
+              center = m.get('FA_first_actual_error_line',35337) if isinstance(m,dict) else 35337
+              if center and center > 0:
+                  lo, hi = max(1, center-14), min(len(src), center+26)
+                  lines += ['', f'### Exact candidate source around line {center}', '```lean', '\n'.join(f'{i}: {src[i-1]}' for i in range(lo,hi+1)), '```']
+          if log.exists():
+              tail='\n'.join(log.read_text(encoding='utf-8',errors='replace').splitlines()[-100:])
+              lines += ['', '### Tail', '```text', tail[-12000:], '```']
+          print('\n'.join(lines)[:30000])
+          PY
+          gh api "repos/${GITHUB_REPOSITORY}/issues/14/comments" -f body="$(cat /tmp/fa489-comment.md)"
+
+      - name: Preserve FA489 script result as workflow conclusion
+        if: always()
+        env:
+          SCRIPT_EXIT: ${{ steps.run.outputs.exit_code }}
+        shell: bash
+        run: |
+          test -n "$SCRIPT_EXIT"
+          exit "$SCRIPT_EXIT"

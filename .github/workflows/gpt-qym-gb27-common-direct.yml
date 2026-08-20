@@ -1,0 +1,76 @@
+name: GPT QYM GB27 common direct Lean
+
+on:
+  push:
+    branches: [gpt/qym-gb57-global-batch-round2-20260820]
+    paths:
+      - .github/qym_patch_gb27_common.py
+      - .github/workflows/gpt-qym-gb27-common-direct.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  QYM: PrimalitySheafVerification/QYM.lean
+  OLEAN: .lake/build/lib/lean/PrimalitySheafVerification
+
+jobs:
+  direct:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+      - name: Gate and install
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/qym-gb27-common "$OLEAN"
+          test "$(sha256sum "$QYM" | awk '{print $1}')" = c604b258541c4ec8477f0e4aa93b7fb9658d5a9f74546e85faa4b2c6add7ace4
+          curl --retry 8 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          export PATH="$HOME/.elan/bin:$PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)"
+          lake exe cache get
+      - name: Build prerequisite objects
+        shell: bash
+        run: |
+          set -euo pipefail
+          for source in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated; do
+            max_errors=1
+            [[ "$source" = Mock2_FunctionalAnalysis* ]] && max_errors=2000
+            lake env lean "-DmaxErrors=$max_errors" -DwarningAsError=false \
+              -o "$OLEAN/$source.olean" -i "$OLEAN/$source.ilean" \
+              "PrimalitySheafVerification/$source.lean" >"/tmp/qym-gb27-common/$source.log" 2>&1
+          done
+      - name: Apply cumulative patches
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp "$QYM" /tmp/qym-gb27-common/QYM.GB8.lean
+          python3 -B .github/qym_patch_gb8_parser_unblock.py /tmp/qym-gb27-common/QYM.GB8.lean /tmp/qym-gb27-common/QYM.GB27.lean
+          python3 -B .github/qym_patch_gb27_common.py /tmp/qym-gb27-common/QYM.GB27.lean /tmp/qym-gb27-common/QYM.candidate.lean
+          cp /tmp/qym-gb27-common/QYM.candidate.lean "$QYM"
+      - name: Authoritative full QYM
+        shell: bash
+        run: |
+          set +e
+          lake env lean -DmaxErrors=10000 -DwarningAsError=false \
+            -o /tmp/qym-gb27-common/QYM.olean -i /tmp/qym-gb27-common/QYM.ilean \
+            "$QYM" >/tmp/qym-gb27-common/full.log 2>&1
+          rc=$?
+          grep -E '^.*\.lean:[0-9]+:[0-9]+: error' /tmp/qym-gb27-common/full.log > /tmp/qym-gb27-common/errors.txt || true
+          printf 'exit=%s\nerrors=%s\nwarnings=%s\n' "$rc" \
+            "$(wc -l </tmp/qym-gb27-common/errors.txt)" \
+            "$(grep -cE '^.*\.lean:[0-9]+:[0-9]+: warning' /tmp/qym-gb27-common/full.log || true)" \
+            > /tmp/qym-gb27-common/summary.txt
+          cat /tmp/qym-gb27-common/summary.txt
+          exit 0
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-gb27-common-${{ github.run_id }}
+          path: /tmp/qym-gb27-common
+          retention-days: 30

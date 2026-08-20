@@ -1,0 +1,15 @@
+{
+  "schema": "fa-dynamic-cluster-3292-function-sub-bridge-v2",
+  "status": "DIRECT_FRONTIER_AND_PINNED_PROBE_DERIVED_PENDING_RECOMPILE",
+  "source_run_id": 31565393904,
+  "source_sha256": "d9edddc9fd26eb138b913c9d34300c6fc3de4084a89025aa3c5285988c1b4b8b",
+  "api_probe_run_id": 31566134558,
+  "repairs": [
+    {
+      "declaration_index": 3292,
+      "declaration_name": "integrable_kernel_smul_translation_sub",
+      "old_fragment": "  rw [hPointwise]\n  simpa only [Pi.sub_apply] using hTranslate.sub hConst",
+      "new_fragment": "  rw [hPointwise]\n  have hfun :\n      ((fun t : ℂ ↦ K t • (DomAddAct.mk (-t) +ᵥ f)) -\n        (fun t : ℂ ↦ K t • f)) =\n        (fun t : ℂ ↦ K t • (DomAddAct.mk (-t) +ᵥ f) - K t • f) := by\n    funext t\n    rfl\n  rw [← hfun]\n  exact hTranslate.sub hConst"
+    }
+  ]
+}

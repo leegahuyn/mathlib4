@@ -1,0 +1,52 @@
+name: Codex FA API probe Fredholm signature v1
+on:
+  push:
+    branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
+    paths: [.github/workflows/codex-fa-api-probe-fredholm-signature-v1.yml]
+  workflow_dispatch:
+permissions: {actions: read, contents: read}
+env:
+  BASE_RUN_ID: "31567217895"
+  BASE_ARTIFACT_ID: "9130060135"
+  BASE_ARTIFACT_DIGEST: "sha256:402adae299f8f9f18a3e09b933cd2aa176757fbb48eecb18a85ffdca1b7b3168"
+  BASE_SOURCE_SHA256: "a61942815532fb6d5ba80ad460a9713dd5654f921e5b0f5cd7fd2be0c4f2027c"
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with: {ref: "${{ github.sha }}", fetch-depth: 1, persist-credentials: false}
+      - name: Materialize exact direct-tested prefix
+        env: {GH_TOKEN: "${{ github.token }}"}
+        shell: bash
+        run: |
+          set -euo pipefail;mkdir -p /tmp/base
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${BASE_ARTIFACT_ID}" >/tmp/artifact.json
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${BASE_ARTIFACT_ID}/zip" >/tmp/base.zip
+          test "sha256:$(sha256sum /tmp/base.zip|awk '{print $1}')" = "$BASE_ARTIFACT_DIGEST";unzip -q /tmp/base.zip -d /tmp/base
+          src=$(find /tmp/base -path '*/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean' | head -1);test -n "$src";test "$(sha256sum "$src"|awk '{print $1}')" = "$BASE_SOURCE_SHA256"
+          head -n 3510 "$src" >/tmp/ProbeFredholmSignature.lean
+          cat >>/tmp/ProbeFredholmSignature.lean <<'LEAN'
+          set_option pp.universes true in
+          #check @Mock2FA.PaperCorrections.AutomorphicSobolev.FredholmBypass.NontrivialKernelAlternative.NontrivialKernelFredholmData
+          set_option pp.universes true in
+          #check @Mock2FA.PaperCorrections.AutomorphicSobolev.FredholmBypass.NontrivialKernelAlternative.NontrivialKernelFredholmData.ofShiftedCompactDecomposition
+          set_option pp.all true in
+          #check @Mock2FA.PaperCorrections.AutomorphicSobolev.FredholmBypass.NontrivialKernelAlternative.NontrivialKernelFredholmData.ofShiftedCompactDecomposition
+          LEAN
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail;curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh;sh /tmp/elan.sh -y --default-toolchain none >/tmp/elan.log 2>&1;export PATH="$HOME/.elan/bin:$PATH";elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1;lake exe cache get >/tmp/cache.log 2>&1
+      - name: Print exact Fredholm signatures
+        shell: bash
+        run: |
+          set -euo pipefail;export PATH="$HOME/.elan/bin:$PATH";lake env lean -DwarningAsError=false /tmp/ProbeFredholmSignature.lean | tee /tmp/probe.log
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-api-probe-fredholm-signature-v1-${{ github.sha }}
+          path: /tmp/probe.log
+          retention-days: 7

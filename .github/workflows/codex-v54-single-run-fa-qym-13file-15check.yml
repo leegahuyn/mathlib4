@@ -1,0 +1,1172 @@
+name: Codex v54 single-run FA QYM 13-file 15-check
+
+on:
+  push:
+    branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
+    paths:
+      - .github/workflows/codex-v54-single-run-fa-qym-13file-15check.yml
+  workflow_dispatch: {}
+
+permissions:
+  actions: write
+  contents: write
+
+concurrency:
+  group: codex-v54-single-run-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  TARGET_BRANCH: codex/fa-qym-cleanbuild-final-20260811-fast
+  BASELINE_HEAD_SHA: b7e0ab4b983d55df33f6d4ac49cacf3830584d1a
+  AUTHORITY_RUN_ID: "31744262866"
+  AUTHORITY_HEAD_SHA: b7e0ab4b983d55df33f6d4ac49cacf3830584d1a
+  AUTHORITY_ARTIFACT_ID: "9198789937"
+  AUTHORITY_ARTIFACT_NAME: codex-fa-v46-all_probes-highcap2000-b7e0ab4b983d55df33f6d4ac49cacf3830584d1a
+  AUTHORITY_ARTIFACT_DIGEST: sha256:3cd13274cbccf6fd952da3b4a8f9df065a3ad1b0efbd299c7a6cf76ac45014f0
+  LOCKED_RUNNER_SHA256: 2459f0a2cd44f6a3716de1ed2934c7588ba1a1e27ef443947d9e6089af196514
+  LOCKED_COLLECTOR_SHA256: 7de7bc92e4e2735c0d25706d70777ea67340d8afcf67434e43b051d5cb8c90c6
+  ALLOWED_AXIOMS: propext,Classical.choice,Quot.sound
+
+jobs:
+  preflight:
+    name: preflight-and-cancel-legacy-races
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Validate helper syntax and locked direct scripts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m py_compile scripts/codex_pipeline_v54.py scripts/codex_final_15check_v54.py
+          test "$(sha256sum scripts/fa_v42_direct_compile_ci.sh | awk '{print $1}')" = "$LOCKED_RUNNER_SHA256"
+          test "$(sha256sum scripts/fa_v42_collect_full_diagnostics.py | awk '{print $1}')" = "$LOCKED_COLLECTOR_SHA256"
+          python3 scripts/codex_pipeline_v54.py --help >/dev/null
+          python3 scripts/codex_final_15check_v54.py --help >/dev/null
+
+      - name: Cancel superseded Codex FA QYM audit runs on this branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api --paginate "repos/${GITHUB_REPOSITORY}/actions/runs?branch=${TARGET_BRANCH}&per_page=100" >/tmp/v54-runs.json
+          python3 - <<'PY' >/tmp/v54-cancel-ids.txt
+          import json, os
+          data=json.load(open('/tmp/v54-runs.json'))
+          prefixes=(
+            'Codex FA v47', 'Codex FA v48', 'Codex FA v49', 'Codex FA v50',
+            'Codex FA v51', 'Codex FA v52', 'Codex FA v53',
+            'Codex QYM v1', 'Codex QYM v2', 'Codex QYM v3',
+            'Codex final 13-file 15-check clean build',
+          )
+          current=int(os.environ['GITHUB_RUN_ID'])
+          for run in data.get('workflow_runs', []):
+            if int(run['id']) == current:
+              continue
+            if run.get('status') not in {'queued','in_progress','waiting','requested','pending'}:
+              continue
+            if str(run.get('name','')).startswith(prefixes):
+              print(run['id'])
+          PY
+          while IFS= read -r run_id; do
+            test -z "$run_id" && continue
+            gh api -X POST "repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}/cancel" || true
+          done </tmp/v54-cancel-ids.txt
+
+  fa_known:
+    name: FA known-${{ matrix.variant }}
+    needs: [preflight]
+    strategy:
+      fail-fast: false
+      matrix:
+        variant:
+          - baseline
+          - w06_only
+          - w27_pi_only
+          - holder_only
+          - holder_w06
+          - holder_w27_pi
+          - holder_w06_w27_pi
+          - known_no_interval
+          - known_no_tendsto
+          - full_linarith
+          - full_nlinarith
+          - full_prime_linarith
+          - full_prime_nlinarith
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    env:
+      GH_TOKEN: ${{ github.token }}
+      VARIANT: ${{ matrix.variant }}
+      OUT: build-logs/codex-v54/fa-known/${{ matrix.variant }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Re-prove exact v46 all-probes authority and materialize source
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT"
+          root="/tmp/v54-authority-${GITHUB_RUN_ID}-${VARIANT}"
+          zip="/tmp/v54-authority-${GITHUB_RUN_ID}-${VARIANT}.zip"
+          rm -rf "$root" "$zip"
+          mkdir -p "$root"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${AUTHORITY_RUN_ID}" >"$OUT/AUTHORITY_RUN.json"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${AUTHORITY_ARTIFACT_ID}" >"$OUT/AUTHORITY_ARTIFACT.json"
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          out=Path(os.environ['OUT'])
+          run=json.loads((out/'AUTHORITY_RUN.json').read_text())
+          artifact=json.loads((out/'AUTHORITY_ARTIFACT.json').read_text())
+          assert int(run['id']) == int(os.environ['AUTHORITY_RUN_ID'])
+          assert run['head_sha'] == os.environ['AUTHORITY_HEAD_SHA']
+          assert run['head_branch'] == os.environ['TARGET_BRANCH']
+          assert run['status'] == 'completed' and run['conclusion'] == 'failure'
+          assert int(artifact['id']) == int(os.environ['AUTHORITY_ARTIFACT_ID'])
+          assert artifact['name'] == os.environ['AUTHORITY_ARTIFACT_NAME']
+          assert artifact['digest'] == os.environ['AUTHORITY_ARTIFACT_DIGEST']
+          assert artifact['expired'] is False
+          assert int(artifact['workflow_run']['id']) == int(os.environ['AUTHORITY_RUN_ID'])
+          assert artifact['workflow_run']['head_sha'] == os.environ['AUTHORITY_HEAD_SHA']
+          PY
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${AUTHORITY_ARTIFACT_ID}/zip" >"$zip"
+          test "sha256:$(sha256sum "$zip" | awk '{print $1}')" = "$AUTHORITY_ARTIFACT_DIGEST"
+          unzip -q "$zip" -d "$root"
+          ROOT="$root" python3 - <<'PY'
+          import hashlib, json, os, shutil
+          from pathlib import Path
+          from scripts.codex_pipeline_v54 import pick_diagnostic_log
+          root=Path(os.environ['ROOT']); out=Path(os.environ['OUT'])
+          sources=list(root.rglob('Mock2_FunctionalAnalysis-candidate.lean'))
+          metrics=list(root.rglob('METRIC.json'))
+          assert len(sources)==1, sources
+          assert len(metrics)==1, metrics
+          source=sources[0]; metric=json.loads(metrics[0].read_text())
+          sha=hashlib.sha256(source.read_bytes()).hexdigest()
+          assert str(metric['github_run_id']) == os.environ['AUTHORITY_RUN_ID']
+          assert metric['github_head_sha'] == os.environ['AUTHORITY_HEAD_SHA']
+          assert metric['variant'] == 'all_probes'
+          assert int(metric['Mock2_exit']) == 0
+          assert int(metric['Mock2_Advanced_exit']) == 0
+          assert int(metric['FA_exit']) == 1
+          assert int(metric['FA_compile_max_errors']) == 2000
+          assert metric['FA_error_cap_sentinel_present'] is False
+          assert metric['FA_inventory_complete_by_header_evidence'] is True
+          assert metric['source_executable_trust_six_zero'] is True
+          assert int(metric['synthetic_declaration_uses_sorry_warning_count']) == 0
+          assert metric['source_sha256'] == sha
+          target=Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean')
+          shutil.copyfile(source,target)
+          shutil.copyfile(source,out/'AUTHORITY_SOURCE.lean')
+          shutil.copyfile(metrics[0],out/'AUTHORITY_METRIC.json')
+          log=pick_diagnostic_log(root,'Mock2_FunctionalAnalysis')
+          assert log is not None
+          shutil.copyfile(log,out/'AUTHORITY_FA_DIAGNOSTICS.log')
+          (out/'authority-source.sha256').write_text(sha+'\n')
+          PY
+
+      - name: Apply one body-only known-repair candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/codex_pipeline_v54.py patch-fa-known \
+            --source PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+            --diagnostics "$OUT/AUTHORITY_FA_DIAGNOSTICS.log" \
+            --variant "$VARIANT" \
+            --out "$OUT"
+
+      - name: Re-check helper and trust locks
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m py_compile scripts/codex_pipeline_v54.py
+          test "$(sha256sum scripts/fa_v42_direct_compile_ci.sh | awk '{print $1}')" = "$LOCKED_RUNNER_SHA256"
+          test "$(sha256sum scripts/fa_v42_collect_full_diagnostics.py | awk '{print $1}')" = "$LOCKED_COLLECTOR_SHA256"
+
+      - name: Install pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none >"$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >"$OUT/toolchain.log" 2>&1
+          lake exe cache get >"$OUT/cache.log" 2>&1
+          lean --version >"$OUT/lean-version.txt" 2>&1
+          lake --version >"$OUT/lake-version.txt" 2>&1
+
+      - name: Directly compile Mock2 then Mock2 Advanced then full FA
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          export FA_V42_OUT="$OUT"
+          export FA_V42_EXPECTED_CANDIDATE_SHA256="$(tr -d '\r\n' < "$OUT/candidate.sha256")"
+          export FA_V42_VARIANT="$VARIANT"
+          bash scripts/fa_v42_direct_compile_ci.sh
+
+      - name: Collect complete direct diagnostics and metrics
+        if: always()
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT"
+          if test -f PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean; then
+            cp PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean "$OUT/Mock2_FunctionalAnalysis-observed.lean"
+          fi
+          if test -f "$OUT/candidate.sha256"; then
+            export FA_V42_EXPECTED_CANDIDATE_SHA256="$(tr -d '\r\n' < "$OUT/candidate.sha256")"
+            export FA_V42_VARIANT="$VARIANT"
+            python3 scripts/fa_v42_collect_full_diagnostics.py \
+              --source PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+              --out "$OUT" \
+              --max-errors 2000 \
+              >"$OUT/metric-console.log"
+          fi
+
+      - name: Upload exact known candidate evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: v54-fa-known-${{ matrix.variant }}-${{ github.run_id }}
+          path: build-logs/codex-v54/fa-known/${{ matrix.variant }}
+          retention-days: 30
+
+  select_fa_known:
+    name: select-known-FA-candidate
+    needs: [fa_known]
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    outputs:
+      fa_clean: ${{ steps.state.outputs.fa_clean }}
+      has_errors: ${{ steps.state.outputs.has_errors }}
+      selected_source_sha256: ${{ steps.state.outputs.selected_source_sha256 }}
+      selected_variant: ${{ steps.state.outputs.selected_variant }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          pattern: v54-fa-known-*-${{ github.run_id }}
+          path: /tmp/v54-fa-known
+          merge-multiple: false
+
+      - name: Select only a measured strict improvement and inventory it
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/v54-fa-known-payload
+          mkdir -p /tmp/v54-fa-known-payload
+          python3 scripts/codex_pipeline_v54.py select-fa \
+            --root /tmp/v54-fa-known \
+            --baseline baseline \
+            --report /tmp/v54-fa-known-payload/FA_KNOWN_SELECTION.json \
+            --selected-dir /tmp/v54-fa-known-payload/selected
+          python3 scripts/codex_pipeline_v54.py inventory-fa \
+            --bundle /tmp/v54-fa-known-payload/selected \
+            --out /tmp/v54-fa-known-payload/FA_KNOWN_INVENTORY.json \
+            --source-out /tmp/v54-fa-known-payload/FA_SELECTED_SOURCE.lean
+
+      - id: state
+        name: Publish selector outputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY' >>"$GITHUB_OUTPUT"
+          import json
+          r=json.load(open('/tmp/v54-fa-known-payload/FA_KNOWN_INVENTORY.json'))
+          print('fa_clean='+('true' if r['clean_build_claimed'] and r['direct_lean_verified'] else 'false'))
+          print('has_errors='+('true' if int(r['raw_error_count'])>0 else 'false'))
+          print('selected_source_sha256='+r['selected_source_sha256'])
+          print('selected_variant='+str(r.get('selected_variant') or 'unknown'))
+          PY
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: v54-fa-known-selected-${{ github.run_id }}
+          path: /tmp/v54-fa-known-payload
+          retention-days: 30
+
+  fa_local:
+    name: FA local-${{ matrix.variant }}
+    needs: [select_fa_known]
+    if: needs.select_fa_known.outputs.fa_clean != 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        variant:
+          - selected_base
+          - exact_to_simpa
+          - simpa_enriched
+          - simp_all_local
+          - aesop_local
+          - linarith_local
+          - nlinarith_local
+          - ring_normalize_local
+          - combined_conservative
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    env:
+      VARIANT: ${{ matrix.variant }}
+      OUT: build-logs/codex-v54/fa-local/${{ matrix.variant }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: v54-fa-known-selected-${{ github.run_id }}
+          path: /tmp/v54-fa-known-selected
+
+      - name: Materialize selected FA and apply one inventory-local candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT"
+          source_file="$(find /tmp/v54-fa-known-selected -type f -name Mock2_FunctionalAnalysis-candidate.lean -print -quit)"
+          inventory="$(find /tmp/v54-fa-known-selected -type f -name FA_KNOWN_INVENTORY.json -print -quit)"
+          test -n "$source_file" && test -n "$inventory"
+          cp "$source_file" PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          cp "$inventory" "$OUT/PARENT_INVENTORY.json"
+          python3 scripts/codex_pipeline_v54.py patch-fa-local \
+            --source PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+            --inventory "$OUT/PARENT_INVENTORY.json" \
+            --variant "$VARIANT" \
+            --out "$OUT"
+
+      - name: Install pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(sha256sum scripts/fa_v42_direct_compile_ci.sh | awk '{print $1}')" = "$LOCKED_RUNNER_SHA256"
+          test "$(sha256sum scripts/fa_v42_collect_full_diagnostics.py | awk '{print $1}')" = "$LOCKED_COLLECTOR_SHA256"
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none >"$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >"$OUT/toolchain.log" 2>&1
+          lake exe cache get >"$OUT/cache.log" 2>&1
+          lean --version >"$OUT/lean-version.txt" 2>&1
+          lake --version >"$OUT/lake-version.txt" 2>&1
+
+      - name: Directly compile local FA candidate
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          export FA_V42_OUT="$OUT"
+          export FA_V42_EXPECTED_CANDIDATE_SHA256="$(tr -d '\r\n' < "$OUT/candidate.sha256")"
+          export FA_V42_VARIANT="$VARIANT"
+          bash scripts/fa_v42_direct_compile_ci.sh
+
+      - name: Collect local FA metrics
+        if: always()
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euo pipefail
+          if test -f "$OUT/candidate.sha256"; then
+            cp PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean "$OUT/Mock2_FunctionalAnalysis-observed.lean"
+            export FA_V42_EXPECTED_CANDIDATE_SHA256="$(tr -d '\r\n' < "$OUT/candidate.sha256")"
+            export FA_V42_VARIANT="$VARIANT"
+            python3 scripts/fa_v42_collect_full_diagnostics.py \
+              --source PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+              --out "$OUT" --max-errors 2000 >"$OUT/metric-console.log"
+          fi
+
+      - name: Upload exact local candidate evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: v54-fa-local-${{ matrix.variant }}-${{ github.run_id }}
+          path: build-logs/codex-v54/fa-local/${{ matrix.variant }}
+          retention-days: 30
+
+  select_fa_local:
+    name: select-local-FA-candidate
+    needs: [select_fa_known, fa_local]
+    if: always() && needs.select_fa_known.outputs.fa_clean != 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          pattern: v54-fa-local-*-${{ github.run_id }}
+          path: /tmp/v54-fa-local
+          merge-multiple: false
+
+      - name: Select local result and create final FA payload
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/v54-fa-final-payload
+          mkdir -p /tmp/v54-fa-final-payload
+          python3 scripts/codex_pipeline_v54.py select-fa \
+            --root /tmp/v54-fa-local \
+            --baseline selected_base \
+            --report /tmp/v54-fa-final-payload/FA_FINAL_SELECTION.json \
+            --selected-dir /tmp/v54-fa-final-payload/selected
+          python3 scripts/codex_pipeline_v54.py inventory-fa \
+            --bundle /tmp/v54-fa-final-payload/selected \
+            --out /tmp/v54-fa-final-payload/FA_FINAL_INVENTORY.json \
+            --source-out /tmp/v54-fa-final-payload/FA_SELECTED_SOURCE.lean
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: v54-fa-final-${{ github.run_id }}
+          path: /tmp/v54-fa-final-payload
+          retention-days: 30
+
+  promote_fa_known:
+    name: promote-clean-known-FA
+    needs: [select_fa_known]
+    if: needs.select_fa_known.outputs.fa_clean == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: v54-fa-known-selected-${{ github.run_id }}
+          path: /tmp/v54-fa-known-selected
+
+      - name: Normalize clean known payload as final payload
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/v54-fa-final-payload
+          mkdir -p /tmp/v54-fa-final-payload
+          cp -a /tmp/v54-fa-known-selected/. /tmp/v54-fa-final-payload/
+          cp /tmp/v54-fa-final-payload/FA_KNOWN_SELECTION.json /tmp/v54-fa-final-payload/FA_FINAL_SELECTION.json
+          cp /tmp/v54-fa-final-payload/FA_KNOWN_INVENTORY.json /tmp/v54-fa-final-payload/FA_FINAL_INVENTORY.json
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: v54-fa-final-${{ github.run_id }}
+          path: /tmp/v54-fa-final-payload
+          retention-days: 30
+
+  fa_gate:
+    name: final-FA-gate
+    needs: [select_fa_known, select_fa_local, promote_fa_known]
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    outputs:
+      fa_clean: ${{ steps.state.outputs.fa_clean }}
+      selected_source_sha256: ${{ steps.state.outputs.selected_source_sha256 }}
+      selected_variant: ${{ steps.state.outputs.selected_variant }}
+      raw_error_count: ${{ steps.state.outputs.raw_error_count }}
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: v54-fa-final-${{ github.run_id }}
+          path: /tmp/v54-fa-final
+
+      - id: state
+        name: Verify final FA payload
+        shell: bash
+        run: |
+          set -euo pipefail
+          inventory="$(find /tmp/v54-fa-final -type f -name FA_FINAL_INVENTORY.json -print -quit)"
+          source_file="$(find /tmp/v54-fa-final -type f -name Mock2_FunctionalAnalysis-candidate.lean -print -quit)"
+          test -n "$inventory" && test -n "$source_file"
+          INVENTORY="$inventory" SOURCE_FILE="$source_file" python3 - <<'PY' >>"$GITHUB_OUTPUT"
+          import hashlib,json,os
+          r=json.load(open(os.environ['INVENTORY']))
+          sha=hashlib.sha256(open(os.environ['SOURCE_FILE'],'rb').read()).hexdigest()
+          assert sha==r['selected_source_sha256']
+          assert r['error_cap_sentinel_present'] is False
+          assert r['inventory_complete_by_header_evidence'] is True
+          assert r['trust_six_zero'] is True
+          clean=bool(r['clean_build_claimed'] and r['direct_lean_verified'] and int(r['FA_exit'])==0 and int(r['raw_error_count'])==0)
+          print('fa_clean='+('true' if clean else 'false'))
+          print('selected_source_sha256='+sha)
+          print('selected_variant='+str(r.get('selected_variant') or 'unknown'))
+          print('raw_error_count='+str(r['raw_error_count']))
+          PY
+
+  publish_fa:
+    name: publish-FA-source-and-exact-status
+    needs: [fa_gate]
+    if: always() && needs.fa_gate.result == 'success'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: codex/fa-qym-cleanbuild-final-20260811-fast
+          fetch-depth: 0
+          persist-credentials: true
+
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: v54-fa-final-${{ github.run_id }}
+          path: /tmp/v54-fa-final
+
+      - name: Stage exact selected FA source and machine evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          source_file="$(find /tmp/v54-fa-final -type f -name Mock2_FunctionalAnalysis-candidate.lean -print -quit)"
+          selection="$(find /tmp/v54-fa-final -type f -name FA_FINAL_SELECTION.json -print -quit)"
+          inventory="$(find /tmp/v54-fa-final -type f -name FA_FINAL_INVENTORY.json -print -quit)"
+          test -n "$source_file" && test -n "$selection" && test -n "$inventory"
+          cp "$source_file" PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          mkdir -p .github/codex
+          cp "$selection" .github/codex/FA_V54_SELECTION.json
+          cp "$inventory" .github/codex/FA_V54_REMAINING_ERRORS.json
+          python3 - <<'PY'
+          import json,os
+          from pathlib import Path
+          state={
+            'schema':'codex-v54-fa-publish-v1',
+            'github_run_id':os.environ['GITHUB_RUN_ID'],
+            'workflow_head_sha':os.environ['GITHUB_SHA'],
+            'target_branch':os.environ['TARGET_BRANCH'],
+            'authority_run_id':os.environ['AUTHORITY_RUN_ID'],
+            'authority_head_sha':os.environ['AUTHORITY_HEAD_SHA'],
+            'authority_artifact_id':os.environ['AUTHORITY_ARTIFACT_ID'],
+            'authority_artifact_digest':os.environ['AUTHORITY_ARTIFACT_DIGEST'],
+          }
+          Path('.github/codex/FA_V54_PROVENANCE.json').write_text(json.dumps(state,indent=2,sort_keys=True)+'\n')
+          PY
+
+      - name: Commit FA status without claiming unverified clean
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+            .github/codex/FA_V54_SELECTION.json \
+            .github/codex/FA_V54_REMAINING_ERRORS.json \
+            .github/codex/FA_V54_PROVENANCE.json
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "Codex: publish exact FA v54 direct-selection evidence"
+          git pull --rebase origin "$TARGET_BRANCH"
+          git push origin "HEAD:$TARGET_BRANCH"
+
+  direct13_base:
+    name: direct-13-files-and-base-QYM
+    needs: [fa_gate, publish_fa]
+    if: needs.fa_gate.outputs.fa_clean == 'true' && needs.publish_fa.result == 'success'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 720
+    outputs:
+      qym_clean: ${{ steps.state.outputs.qym_clean }}
+      prerequisites_zero: ${{ steps.state.outputs.prerequisites_zero }}
+      qym_source_sha256: ${{ steps.state.outputs.qym_source_sha256 }}
+      qym_error_count: ${{ steps.state.outputs.qym_error_count }}
+    env:
+      OUT: build-logs/codex-v54/direct13-base
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: codex/fa-qym-cleanbuild-final-20260811-fast
+          fetch-depth: 1
+          persist-credentials: false
+
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: v54-fa-final-${{ github.run_id }}
+          path: /tmp/v54-fa-final
+
+      - name: Verify committed FA equals selected artifact and resolve exact 13 files
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf "$OUT"
+          mkdir -p "$OUT/files"
+          selected="$(find /tmp/v54-fa-final -type f -name Mock2_FunctionalAnalysis-candidate.lean -print -quit)"
+          test -n "$selected"
+          test "$(sha256sum "$selected" | awk '{print $1}')" = "$(sha256sum PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | awk '{print $1}')"
+          python3 - <<'PY'
+          import hashlib,json,os,re
+          from pathlib import Path
+          from scripts.codex_pipeline_v54 import assert_trust_six_zero, declaration_headers
+          names=['Spt1.lean','Spt2.lean','Spt3.lean','Spt4.lean','Spt5.lean','Spt6.lean','Spt7.lean','Mock1.lean','Mock1_Advanced.lean','Mock2.lean','Mock2_Advanced.lean','Mock2_FunctionalAnalysis.lean','QYM.lean']
+          out=Path(os.environ['OUT']);rows=[]
+          for index,name in enumerate(names,1):
+            xs=[p for p in Path('.').rglob(name) if '.lake' not in p.parts and 'build-logs' not in p.parts and '.git' not in p.parts]
+            assert len(xs)==1,(name,xs)
+            p=xs[0];raw=p.read_bytes();text=raw.decode();trust=assert_trust_six_zero(text)
+            rows.append({'index':index,'name':name,'path':p.as_posix(),'sha256':hashlib.sha256(raw).hexdigest(),'bytes':len(raw),'lines':len(text.splitlines()),'declaration_header_count':len(declaration_headers(text)),'trust_counts':trust,'trust_six_zero':True})
+          (out/'FILES.json').write_text(json.dumps(rows,indent=2,sort_keys=True)+'\n')
+          (out/'file-order.txt').write_text('\n'.join(r['path'] for r in rows)+'\n')
+          qym=next(r for r in rows if r['name']=='QYM.lean')
+          Path(qym['path']).replace(out/'QYM-temporary-move.lean')
+          (out/'QYM-temporary-move.lean').replace(qym['path'])
+          import shutil
+          shutil.copyfile(qym['path'],out/'QYM-base.lean')
+          (out/'qym-path.txt').write_text(qym['path']+'\n')
+          PY
+
+      - name: Install pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none >"$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >"$OUT/toolchain.log" 2>&1
+          lake exe cache get >"$OUT/cache.log" 2>&1
+          lean --version >"$OUT/lean-version.txt" 2>&1
+          lake --version >"$OUT/lake-version.txt" 2>&1
+
+      - name: Directly compile every canonical file in locked order
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          : >"$OUT/DIRECT_EXIT.tsv"
+          while IFS= read -r file; do
+            name="$(basename "$file" .lean)"
+            set +e
+            lake env lean -DmaxErrors=2000 "$file" >"$OUT/files/${name}.direct.log" 2>&1
+            code=$?
+            set -e
+            printf '%s\t%s\t%s\n' "$name" "$code" "$file" | tee -a "$OUT/DIRECT_EXIT.tsv"
+            printf '%s\n' "$code" >"$OUT/files/${name}.exit"
+            sha256sum "$OUT/files/${name}.direct.log" >"$OUT/files/${name}.direct.log.sha256"
+          done <"$OUT/file-order.txt"
+
+      - name: Build complete base QYM inventory and selector seed
+        shell: bash
+        run: |
+          set -euo pipefail
+          qym_path="$(cat "$OUT/qym-path.txt")"
+          cp "$OUT/files/QYM.direct.log" "$OUT/QYM.direct.log"
+          cp "$OUT/files/QYM.exit" "$OUT/QYM.exit"
+          python3 scripts/codex_pipeline_v54.py inventory-qym \
+            --source "$qym_path" --log "$OUT/QYM.direct.log" \
+            --exit-file "$OUT/QYM.exit" --variant selected_base \
+            --out "$OUT/QYM_BASE_INVENTORY.json"
+          python3 - <<'PY'
+          import json,os
+          from pathlib import Path
+          out=Path(os.environ['OUT']);inv=json.load(open(out/'QYM_BASE_INVENTORY.json'))
+          exits={}
+          for line in (out/'DIRECT_EXIT.tsv').read_text().splitlines():
+            name,code,path=line.split('\t',2);exits[name]={'exit':int(code),'path':path}
+          pre={name:row['exit'] for name,row in exits.items() if name!='QYM'}
+          report={'schema':'qym-v54-base-selector-seed-v1','selected_variant':'selected_base','selected_source_sha256':inv['source_sha256'],'qym_clean_build_claimed':inv['qym_clean_build_claimed'],'qym_direct_lean_verified':inv['qym_direct_lean_verified'],'prerequisite_direct_results':pre,'all_prerequisites_zero':all(v==0 for v in pre.values()),'theorem_statements_changed':False,'declaration_order_changed':False,'source_moves':[]}
+          (out/'QYM_BASE_SELECTION.json').write_text(json.dumps(report,indent=2,sort_keys=True)+'\n')
+          PY
+
+      - id: state
+        name: Publish base QYM outputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY' >>"$GITHUB_OUTPUT"
+          import json,os
+          from pathlib import Path
+          out=Path(os.environ['OUT']);inv=json.load(open(out/'QYM_BASE_INVENTORY.json'));seed=json.load(open(out/'QYM_BASE_SELECTION.json'))
+          clean=bool(inv['qym_clean_build_claimed'] and inv['qym_direct_lean_verified'] and int(inv['QYM_exit'])==0 and int(inv['QYM_error_count'])==0)
+          print('qym_clean='+('true' if clean else 'false'))
+          print('prerequisites_zero='+('true' if seed['all_prerequisites_zero'] else 'false'))
+          print('qym_source_sha256='+inv['source_sha256'])
+          print('qym_error_count='+str(inv['QYM_error_count']))
+          PY
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: v54-direct13-base-${{ github.run_id }}
+          path: build-logs/codex-v54/direct13-base
+          retention-days: 30
+
+  qym_local:
+    name: QYM local-${{ matrix.variant }}
+    needs: [direct13_base]
+    if: needs.direct13_base.outputs.prerequisites_zero == 'true' && needs.direct13_base.outputs.qym_clean != 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        variant:
+          - selected_base
+          - exact_to_simpa
+          - simpa_enriched
+          - simp_all_local
+          - aesop_local
+          - linarith_local
+          - nlinarith_local
+          - ring_normalize_local
+          - combined_conservative
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    env:
+      VARIANT: ${{ matrix.variant }}
+      OUT: build-logs/codex-v54/qym-local/${{ matrix.variant }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: codex/fa-qym-cleanbuild-final-20260811-fast
+          fetch-depth: 1
+          persist-credentials: false
+
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: v54-direct13-base-${{ github.run_id }}
+          path: /tmp/v54-direct13-base
+
+      - name: Apply one QYM inventory-local proof-body candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT"
+          base_source="$(find /tmp/v54-direct13-base -type f -name QYM-base.lean -print -quit)"
+          inventory="$(find /tmp/v54-direct13-base -type f -name QYM_BASE_INVENTORY.json -print -quit)"
+          qym_path_file="$(find /tmp/v54-direct13-base -type f -name qym-path.txt -print -quit)"
+          test -n "$base_source" && test -n "$inventory" && test -n "$qym_path_file"
+          qym_path="$(cat "$qym_path_file")"
+          cp "$base_source" "$qym_path"
+          cp "$inventory" "$OUT/PARENT_QYM_INVENTORY.json"
+          printf '%s\n' "$qym_path" >"$OUT/qym-path.txt"
+          python3 scripts/codex_pipeline_v54.py patch-qym-local \
+            --source "$qym_path" --inventory "$OUT/PARENT_QYM_INVENTORY.json" \
+            --variant "$VARIANT" --out "$OUT"
+
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none >"$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >"$OUT/toolchain.log" 2>&1
+          lake exe cache get >"$OUT/cache.log" 2>&1
+          lean --version >"$OUT/lean-version.txt" 2>&1
+          lake --version >"$OUT/lake-version.txt" 2>&1
+
+      - name: Directly compile QYM candidate and inventory it
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          qym_path="$(cat "$OUT/qym-path.txt")"
+          set +e
+          lake env lean -DmaxErrors=2000 "$qym_path" >"$OUT/QYM.direct.log" 2>&1
+          code=$?
+          set -e
+          printf '%s\n' "$code" >"$OUT/QYM.exit"
+          sha256sum "$OUT/QYM.direct.log" >"$OUT/QYM.direct.log.sha256"
+          python3 scripts/codex_pipeline_v54.py inventory-qym \
+            --source "$qym_path" --log "$OUT/QYM.direct.log" \
+            --exit-file "$OUT/QYM.exit" --variant "$VARIANT" \
+            --out "$OUT/METRIC.json"
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: v54-qym-local-${{ matrix.variant }}-${{ github.run_id }}
+          path: build-logs/codex-v54/qym-local/${{ matrix.variant }}
+          retention-days: 30
+
+  select_qym_local:
+    name: select-local-QYM-candidate
+    needs: [direct13_base, qym_local]
+    if: always() && needs.direct13_base.outputs.prerequisites_zero == 'true' && needs.direct13_base.outputs.qym_clean != 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: codex/fa-qym-cleanbuild-final-20260811-fast
+          fetch-depth: 1
+          persist-credentials: false
+
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          pattern: v54-qym-local-*-${{ github.run_id }}
+          path: /tmp/v54-qym-local
+          merge-multiple: false
+
+      - name: Select measured QYM result and normalize final payload
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/v54-qym-final-payload
+          mkdir -p /tmp/v54-qym-final-payload
+          python3 scripts/codex_pipeline_v54.py select-qym \
+            --root /tmp/v54-qym-local --baseline selected_base \
+            --report /tmp/v54-qym-final-payload/QYM_FINAL_SELECTION.json \
+            --selected-dir /tmp/v54-qym-final-payload/selected
+          metric="$(find /tmp/v54-qym-final-payload/selected -type f -name METRIC.json -print -quit)"
+          source_file="$(find /tmp/v54-qym-final-payload/selected -type f -name QYM-candidate.lean -print -quit)"
+          test -n "$metric" && test -n "$source_file"
+          cp "$metric" /tmp/v54-qym-final-payload/QYM_FINAL_INVENTORY.json
+          cp "$source_file" /tmp/v54-qym-final-payload/QYM_SELECTED_SOURCE.lean
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: v54-qym-final-${{ github.run_id }}
+          path: /tmp/v54-qym-final-payload
+          retention-days: 30
+
+  promote_qym_base:
+    name: promote-base-QYM-result
+    needs: [direct13_base]
+    if: needs.direct13_base.outputs.qym_clean == 'true' || needs.direct13_base.outputs.prerequisites_zero != 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: v54-direct13-base-${{ github.run_id }}
+          path: /tmp/v54-direct13-base
+
+      - name: Normalize base QYM result as final payload
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/v54-qym-final-payload
+          mkdir -p /tmp/v54-qym-final-payload
+          cp "$(find /tmp/v54-direct13-base -type f -name QYM-base.lean -print -quit)" /tmp/v54-qym-final-payload/QYM_SELECTED_SOURCE.lean
+          cp "$(find /tmp/v54-direct13-base -type f -name QYM_BASE_INVENTORY.json -print -quit)" /tmp/v54-qym-final-payload/QYM_FINAL_INVENTORY.json
+          cp "$(find /tmp/v54-direct13-base -type f -name QYM_BASE_SELECTION.json -print -quit)" /tmp/v54-qym-final-payload/QYM_FINAL_SELECTION.json
+          cp "$(find /tmp/v54-direct13-base -type f -name qym-path.txt -print -quit)" /tmp/v54-qym-final-payload/qym-path.txt
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: v54-qym-final-${{ github.run_id }}
+          path: /tmp/v54-qym-final-payload
+          retention-days: 30
+
+  qym_gate:
+    name: final-QYM-gate
+    needs: [direct13_base, select_qym_local, promote_qym_base]
+    if: always() && needs.direct13_base.result == 'success'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    outputs:
+      qym_clean: ${{ steps.state.outputs.qym_clean }}
+      selected_source_sha256: ${{ steps.state.outputs.selected_source_sha256 }}
+      selected_variant: ${{ steps.state.outputs.selected_variant }}
+      error_count: ${{ steps.state.outputs.error_count }}
+      prerequisites_zero: ${{ steps.state.outputs.prerequisites_zero }}
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: v54-qym-final-${{ github.run_id }}
+          path: /tmp/v54-qym-final
+
+      - id: state
+        name: Verify QYM payload and prerequisite chain
+        shell: bash
+        run: |
+          set -euo pipefail
+          inventory="$(find /tmp/v54-qym-final -type f -name QYM_FINAL_INVENTORY.json -print -quit)"
+          selection="$(find /tmp/v54-qym-final -type f -name QYM_FINAL_SELECTION.json -print -quit)"
+          source_file="$(find /tmp/v54-qym-final -type f -name QYM_SELECTED_SOURCE.lean -print -quit)"
+          test -n "$inventory" && test -n "$selection" && test -n "$source_file"
+          INVENTORY="$inventory" SELECTION="$selection" SOURCE_FILE="$source_file" python3 - <<'PY' >>"$GITHUB_OUTPUT"
+          import hashlib,json,os
+          inv=json.load(open(os.environ['INVENTORY']));sel=json.load(open(os.environ['SELECTION']))
+          sha=hashlib.sha256(open(os.environ['SOURCE_FILE'],'rb').read()).hexdigest()
+          expected=inv.get('source_sha256') or inv.get('selected_source_sha256')
+          assert sha==expected,(sha,expected)
+          assert inv['QYM_error_cap_sentinel_present'] is False
+          assert inv['QYM_inventory_complete_by_header_evidence'] is True
+          assert inv['trust_six_zero'] is True
+          clean=bool(inv['qym_clean_build_claimed'] and inv['qym_direct_lean_verified'] and int(inv['QYM_exit'])==0 and int(inv['QYM_error_count'])==0)
+          prerequisites=sel.get('all_prerequisites_zero', True)
+          print('qym_clean='+('true' if clean else 'false'))
+          print('selected_source_sha256='+sha)
+          print('selected_variant='+str(sel.get('selected_variant') or inv.get('variant') or 'unknown'))
+          print('error_count='+str(inv['QYM_error_count']))
+          print('prerequisites_zero='+('true' if prerequisites else 'false'))
+          PY
+
+  publish_qym:
+    name: publish-QYM-source-and-exact-status
+    needs: [qym_gate]
+    if: always() && needs.qym_gate.result == 'success'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: codex/fa-qym-cleanbuild-final-20260811-fast
+          fetch-depth: 0
+          persist-credentials: true
+
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: v54-qym-final-${{ github.run_id }}
+          path: /tmp/v54-qym-final
+
+      - name: Stage selected QYM source and exact status reports
+        shell: bash
+        run: |
+          set -euo pipefail
+          source_file="$(find /tmp/v54-qym-final -type f -name QYM_SELECTED_SOURCE.lean -print -quit)"
+          selection="$(find /tmp/v54-qym-final -type f -name QYM_FINAL_SELECTION.json -print -quit)"
+          inventory="$(find /tmp/v54-qym-final -type f -name QYM_FINAL_INVENTORY.json -print -quit)"
+          qym_paths=( $(find . -path './.git' -prune -o -path './.lake' -prune -o -path './build-logs' -prune -o -name QYM.lean -print) )
+          test "${#qym_paths[@]}" = 1
+          cp "$source_file" "${qym_paths[0]}"
+          mkdir -p .github/codex
+          cp "$selection" .github/codex/QYM_V54_SELECTION.json
+          cp "$inventory" .github/codex/QYM_V54_INVENTORY.json
+          python3 - <<'PY'
+          import json,os
+          from pathlib import Path
+          state={'schema':'codex-v54-qym-publish-v1','github_run_id':os.environ['GITHUB_RUN_ID'],'workflow_head_sha':os.environ['GITHUB_SHA'],'target_branch':os.environ['TARGET_BRANCH']}
+          Path('.github/codex/QYM_V54_PROVENANCE.json').write_text(json.dumps(state,indent=2,sort_keys=True)+'\n')
+          PY
+
+      - name: Commit QYM status without overstating result
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "${qym_paths[0]:-$(find . -name QYM.lean -print -quit)}" \
+            .github/codex/QYM_V54_SELECTION.json \
+            .github/codex/QYM_V54_INVENTORY.json \
+            .github/codex/QYM_V54_PROVENANCE.json
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "Codex: publish exact QYM v54 direct-selection evidence"
+          git pull --rebase origin "$TARGET_BRANCH"
+          git push origin "HEAD:$TARGET_BRANCH"
+
+  final_audit:
+    name: final-13-file-15-of-15-audit
+    needs: [fa_gate, direct13_base, qym_gate, publish_qym]
+    if: needs.fa_gate.outputs.fa_clean == 'true' && needs.direct13_base.outputs.prerequisites_zero == 'true' && needs.qym_gate.outputs.qym_clean == 'true' && needs.publish_qym.result == 'success'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 720
+    env:
+      OUT: build-logs/codex-v54/final-13file-15check
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: codex/fa-qym-cleanbuild-final-20260811-fast
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Verify published source SHAs and prepare checks 01-08 plus axiom plan
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf "$OUT"
+          mkdir -p "$OUT/axioms" "$OUT/direct-pass1" "$OUT/direct-pass2" "$OUT/builds" .github/codex
+          git cat-file -e "${BASELINE_HEAD_SHA}^{commit}"
+          test "$(sha256sum PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | awk '{print $1}')" = "${{ needs.fa_gate.outputs.selected_source_sha256 }}"
+          qym_path="$(find . -path './.git' -prune -o -path './.lake' -prune -o -path './build-logs' -prune -o -name QYM.lean -print -quit)"
+          test -n "$qym_path"
+          test "$(sha256sum "$qym_path" | awk '{print $1}')" = "${{ needs.qym_gate.outputs.selected_source_sha256 }}"
+          python3 scripts/codex_final_15check_v54.py prepare --out "$OUT" --baseline "$BASELINE_HEAD_SHA"
+          python3 - <<'PY'
+          from pathlib import Path
+          import re,os
+          out=Path(os.environ['OUT'])/'axiom-audit-src'
+          for p in out.glob('*.lean'):
+            kept=[]
+            for line in p.read_text().splitlines():
+              if line.startswith('#print axioms '):
+                name=line[len('#print axioms '):].strip()
+                if not name or name in {':','where'} or name.endswith('.:') or name.endswith('.where'):
+                  continue
+              kept.append(line)
+            p.write_text('\n'.join(kept)+'\n')
+          PY
+          git rev-parse HEAD >"$OUT/audited-source-commit.txt"
+          sha256sum lean-toolchain >"$OUT/lean-toolchain.sha256"
+          sha256sum lake-manifest.json >"$OUT/lake-manifest.sha256"
+          test ! -f lakefile.lean || sha256sum lakefile.lean >"$OUT/lakefile.sha256"
+
+      - name: Install exact pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none >"$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >"$OUT/toolchain.log" 2>&1
+          lake exe cache get >"$OUT/cache.log" 2>&1
+          lean --version | tee "$OUT/lean-version.txt"
+          lake --version | tee "$OUT/lake-version.txt"
+
+      - name: Check 09 exported declaration axiom audit
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          python3 - <<'PY' >/tmp/v54-axiom-plan.tsv
+          import json,os
+          for row in json.load(open(os.environ['OUT']+'/AXIOM_AUDIT_PLAN.json')):
+            print(row['file']+'\t'+row['audit_path'])
+          PY
+          : >"$OUT/AXIOM_AUDIT_EXIT.tsv"
+          while IFS=$'\t' read -r name audit; do
+            stem="${name%.lean}"
+            set +e
+            lake env lean "$audit" >"$OUT/axioms/${stem}.axioms.log" 2>&1
+            code=$?
+            set -e
+            printf '%s\t%s\n' "$name" "$code" | tee -a "$OUT/AXIOM_AUDIT_EXIT.tsv"
+            sha256sum "$OUT/axioms/${stem}.axioms.log" >"$OUT/axioms/${stem}.axioms.log.sha256"
+          done </tmp/v54-axiom-plan.tsv
+          python3 scripts/codex_final_15check_v54.py axioms --out "$OUT" --allowed "$ALLOWED_AXIOMS"
+
+      - name: Checks 10-11 first direct Lean pass for all 13
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          : >"$OUT/DIRECT_PASS1_EXIT.tsv"
+          while IFS= read -r file; do
+            name="$(basename "$file" .lean)"
+            set +e
+            lake env lean -DmaxErrors=2000 "$file" >"$OUT/direct-pass1/${name}.log" 2>&1
+            code=$?
+            set -e
+            printf '%s\t%s\t%s\n' "$name" "$code" "$file" | tee -a "$OUT/DIRECT_PASS1_EXIT.tsv"
+            sha256sum "$OUT/direct-pass1/${name}.log" >"$OUT/direct-pass1/${name}.log.sha256"
+          done <"$OUT/file-order.txt"
+          python3 - <<'PY'
+          import os
+          rows={}
+          for line in open(os.environ['OUT']+'/DIRECT_PASS1_EXIT.tsv'):
+            name,code,path=line.rstrip('\n').split('\t',2);rows[name]=int(code)
+          assert len(rows)==13 and all(v==0 for v in rows.values()),rows
+          PY
+          ! grep -R -E '(^|[[:space:]])error:' "$OUT/direct-pass1"
+          ! grep -R -E 'declaration uses.*sorry' "$OUT/direct-pass1"
+
+      - name: Check 12 cold full lake build
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          lake clean >"$OUT/builds/lake-clean.log" 2>&1
+          set +e
+          lake build >"$OUT/builds/lake-build-cold.log" 2>&1
+          code=$?
+          set -e
+          printf '%s\n' "$code" >"$OUT/builds/lake-build-cold.exit"
+          test "$code" = 0
+          ! grep -E '(^|[[:space:]])error:' "$OUT/builds/lake-build-cold.log"
+          sha256sum "$OUT/builds/lake-build-cold.log" >"$OUT/builds/lake-build-cold.log.sha256"
+
+      - name: Check 13 repeat build and second direct pass
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          set +e
+          lake build >"$OUT/builds/lake-build-repeat.log" 2>&1
+          code=$?
+          set -e
+          printf '%s\n' "$code" >"$OUT/builds/lake-build-repeat.exit"
+          test "$code" = 0
+          ! grep -E '(^|[[:space:]])error:' "$OUT/builds/lake-build-repeat.log"
+          sha256sum "$OUT/builds/lake-build-repeat.log" >"$OUT/builds/lake-build-repeat.log.sha256"
+          : >"$OUT/DIRECT_PASS2_EXIT.tsv"
+          while IFS= read -r file; do
+            name="$(basename "$file" .lean)"
+            set +e
+            lake env lean -DmaxErrors=2000 "$file" >"$OUT/direct-pass2/${name}.log" 2>&1
+            ec=$?
+            set -e
+            printf '%s\t%s\t%s\n' "$name" "$ec" "$file" | tee -a "$OUT/DIRECT_PASS2_EXIT.tsv"
+            sha256sum "$OUT/direct-pass2/${name}.log" >"$OUT/direct-pass2/${name}.log.sha256"
+          done <"$OUT/file-order.txt"
+          python3 - <<'PY'
+          import os
+          rows={}
+          for line in open(os.environ['OUT']+'/DIRECT_PASS2_EXIT.tsv'):
+            name,code,path=line.rstrip('\n').split('\t',2);rows[name]=int(code)
+          assert len(rows)==13 and all(v==0 for v in rows.values()),rows
+          PY
+          ! grep -R -E '(^|[[:space:]])error:' "$OUT/direct-pass2"
+          ! grep -R -E 'declaration uses.*sorry' "$OUT/direct-pass2"
+
+      - name: Check 14 source immutability and evidence hashes
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/codex_final_15check_v54.py immutability --out "$OUT"
+
+      - name: Check 15 create final 15-of-15 reports
+        shell: bash
+        run: |
+          set -euo pipefail
+          source_commit="$(cat "$OUT/audited-source-commit.txt")"
+          tag="codex-v54-13file-clean-${source_commit:0:12}-${GITHUB_RUN_ID}"
+          printf '%s\n' "$tag" >/tmp/v54-final-tag.txt
+          python3 scripts/codex_final_15check_v54.py report \
+            --out "$OUT" --repository "$GITHUB_REPOSITORY" --branch "$TARGET_BRANCH" \
+            --baseline "$BASELINE_HEAD_SHA" --source-commit "$source_commit" \
+            --run-id "$GITHUB_RUN_ID" --tag "$tag" \
+            --fa-inventory .github/codex/FA_V54_REMAINING_ERRORS.json \
+            --qym-inventory .github/codex/QYM_V54_INVENTORY.json \
+            --machine-report .github/codex/FINAL_13FILE_15_CHECKLIST_V54.json \
+            --human-report .github/codex/FINAL_13FILE_15_CHECKLIST_V54.md
+
+      - name: Commit reports create immutable tag and lock it
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          source_commit="$(cat "$OUT/audited-source-commit.txt")"
+          tag="$(cat /tmp/v54-final-tag.txt)"
+          git add .github/codex/FINAL_13FILE_15_CHECKLIST_V54.json .github/codex/FINAL_13FILE_15_CHECKLIST_V54.md
+          git commit -m "Codex: record final v54 13-file clean build 15-of-15 PASS"
+          git pull --rebase origin "$TARGET_BRANCH"
+          git push origin "HEAD:$TARGET_BRANCH"
+          report_commit="$(git rev-parse HEAD)"
+          git tag -a "$tag" -m "Verified v54 13-file Lean clean build and 15-of-15 audit; source $source_commit; report $report_commit"
+          git push origin "$tag"
+          SOURCE_COMMIT="$source_commit" REPORT_COMMIT="$report_commit" TAG="$tag" python3 - <<'PY'
+          import json,os
+          from pathlib import Path
+          lock={'schema':'final-13file-clean-lock-v54','repository':os.environ['GITHUB_REPOSITORY'],'branch':os.environ['TARGET_BRANCH'],'audited_source_commit':os.environ['SOURCE_COMMIT'],'evidence_report_commit':os.environ['REPORT_COMMIT'],'immutable_tag':os.environ['TAG'],'tag_target_commit':os.environ['REPORT_COMMIT'],'github_run_id':os.environ['GITHUB_RUN_ID'],'all_15_checks_pass':True,'all_13_clean_build':True,'theorem_statements_changed':False,'declaration_order_changed':False,'source_moves':[]}
+          Path('.github/codex/FINAL_13FILE_CLEAN_LOCK_V54.json').write_text(json.dumps(lock,indent=2,sort_keys=True)+'\n')
+          PY
+          git add .github/codex/FINAL_13FILE_CLEAN_LOCK_V54.json
+          git commit -m "Codex: lock final v54 audit tag and evidence commit"
+          git pull --rebase origin "$TARGET_BRANCH"
+          git push origin "HEAD:$TARGET_BRANCH"
+
+      - name: Upload final complete evidence bundle
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-v54-final-13file-15check-${{ github.sha }}
+          path: |
+            build-logs/codex-v54/final-13file-15check
+            .github/codex/FINAL_13FILE_15_CHECKLIST_V54.json
+            .github/codex/FINAL_13FILE_15_CHECKLIST_V54.md
+            .github/codex/FINAL_13FILE_CLEAN_LOCK_V54.json
+          retention-days: 30

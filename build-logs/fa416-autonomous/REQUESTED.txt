@@ -1,0 +1,1 @@
+Start from the latest checked-in strict champion. Each round may continue only after an actual source change that compiles to exit 0 or a strictly later first error. Final success requires FA x2, Integrated x2, every Mock3 x2, and QYM x2.

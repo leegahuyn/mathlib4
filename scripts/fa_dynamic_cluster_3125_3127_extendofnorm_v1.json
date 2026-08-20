@@ -1,0 +1,25 @@
+{
+  "schema": "fa-dynamic-cluster-3125-3127-extendofnorm-v1",
+  "status": "API_SIGNATURE_VALIDATED_PENDING_MODULE_DIRECT_LEAN",
+  "api_probe_run_id": 31528197337,
+  "repairs": [
+    {
+      "declaration_index": 3125,
+      "declaration_name": "intrinsicPeterssonCuspCutoff",
+      "old_fragment": "  (intrinsicPeterssonCuspCutoffCoreMap N n).extendOfNorm (l2Coordinate n)",
+      "new_fragment": "  LinearMap.extendOfNorm\n    (E := Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n)\n    (Eₗ := OrbitPeterssonHilbert n)\n    (F := OrbitPeterssonHilbert n)\n    (intrinsicPeterssonCuspCutoffCoreMap N n) (l2Coordinate n)"
+    },
+    {
+      "declaration_index": 3126,
+      "declaration_name": "intrinsicPeterssonCuspCutoff_l2Coordinate",
+      "old_fragment": "  exact LinearMap.extendOfNorm_eq (denseRange_l2Coordinate n)\n    ⟨1, fun v ↦ by\n      simpa only [one_mul] using\n        norm_intrinsicPeterssonCuspCutoffCoreMap_le N n v⟩ u",
+      "new_fragment": "  exact LinearMap.extendOfNorm_eq\n    (f := intrinsicPeterssonCuspCutoffCoreMap N n)\n    (e := l2Coordinate n)\n    (denseRange_l2Coordinate n)\n    ⟨1, fun v ↦ by\n      simpa only [one_mul] using\n        norm_intrinsicPeterssonCuspCutoffCoreMap_le N n v⟩ u"
+    },
+    {
+      "declaration_index": 3127,
+      "declaration_name": "norm_intrinsicPeterssonCuspCutoff_apply_le",
+      "old_fragment": "    LinearMap.norm_extendOfNorm_apply_le\n      (denseRange_l2Coordinate n) 1\n      (fun v ↦ by simpa only [one_mul] using\n        norm_intrinsicPeterssonCuspCutoffCoreMap_le N n v) x",
+      "new_fragment": "    LinearMap.norm_extendOfNorm_apply_le\n      (f := intrinsicPeterssonCuspCutoffCoreMap N n)\n      (e := l2Coordinate n)\n      (denseRange_l2Coordinate n) 1\n      (fun v ↦ by simpa only [one_mul] using\n        norm_intrinsicPeterssonCuspCutoffCoreMap_le N n v) x"
+    }
+  ]
+}
