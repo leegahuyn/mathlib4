@@ -1,0 +1,174 @@
+name: GPT final13 native_decide cleanup R3 explicit proofs v1
+
+on:
+  push:
+    branches:
+      - gpt/final13-native-cleanup-r3-proofs-20260820
+    paths:
+      - .github/final13-native-cleanup-r3-trigger.txt
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: gpt-final13-native-cleanup-r3-proofs-v1
+  cancel-in-progress: true
+
+env:
+  BRANCH: gpt/final13-native-cleanup-r3-proofs-20260820
+  GENERATOR: scripts/native_decide_cleanup_r3_generate.py
+  RUNNER: scripts/native_decide_cleanup_r2_run.py
+  SELECTOR: scripts/native_decide_cleanup_r2_select.py
+  SPT1: PrimalitySheafVerification/Spt1.lean
+  MOCK1A: PrimalitySheafVerification/Mock1_Advanced.lean
+
+jobs:
+  candidates:
+    name: candidate-${{ matrix.variant }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        variant:
+          - norm-defs
+          - simp-norm-defs
+          - unfold-norm
+          - rw-structural
+    env:
+      VARIANT: ${{ matrix.variant }}
+      OUT: /tmp/final13-native-r3-${{ matrix.variant }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - name: Gate exact sources and scripts
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf "$OUT"
+          mkdir -p "$OUT"
+          test "$GITHUB_REF_NAME" = "$BRANCH"
+          test "$(tr -d '\r\n' < lean-toolchain)" = leanprover/lean4:v4.33.0-rc1
+          test "$(git hash-object "$SPT1")" = ed554b8268e9504281572d0cea27e40d5ba06a19
+          test "$(git hash-object "$MOCK1A")" = 2dc68bb04df549064b41fc318d18ea02d4d40679
+          python3 -m py_compile "$GENERATOR" "$RUNNER" "$SELECTOR"
+          git rev-parse HEAD | tee "$OUT/trigger-sha.txt"
+
+      - name: Install pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 8 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none > "$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          tc="$(tr -d '\r\n' < lean-toolchain)"
+          ok=0
+          for attempt in 1 2 3 4 5; do
+            if elan toolchain install "$tc" >> "$OUT/toolchain.log" 2>&1; then ok=1; break; fi
+            sleep $((attempt * 5))
+          done
+          test "$ok" = 1
+          lean --version | tee "$OUT/lean-version.txt"
+          lake --version | tee "$OUT/lake-version.txt"
+          ok=0
+          for attempt in 1 2 3 4 5; do
+            if lake exe cache get >> "$OUT/mathlib-cache.log" 2>&1; then ok=1; break; fi
+            sleep $((attempt * 5))
+          done
+          test "$ok" = 1
+
+      - name: Generate candidate and run both direct Lean compiles
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          python3 -B "$RUNNER" "$VARIANT" "$GENERATOR" "$SPT1" "$MOCK1A" "$OUT" "$GITHUB_WORKSPACE"
+          test -s "$OUT/RESULT.json"
+          test -s "$OUT/candidate/Spt1.lean"
+          test -s "$OUT/candidate/Mock1_Advanced.lean"
+
+      - name: Upload immutable candidate evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: final13-native-r3-${{ matrix.variant }}-${{ github.run_id }}
+          path: ${{ env.OUT }}
+          if-no-files-found: error
+          retention-days: 30
+
+  select:
+    name: select-and-persist-cleanup-result
+    needs: candidates
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      DOWNLOAD: /tmp/final13-native-r3-download
+      SELECTED: /tmp/final13-native-r3-selected
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - name: Download all four candidate artifacts
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          pattern: final13-native-r3-*-${{ github.run_id }}
+          path: ${{ env.DOWNLOAD }}
+          merge-multiple: false
+
+      - name: Select actual direct-Lean best
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m py_compile "$SELECTOR"
+          python3 -B "$SELECTOR" "$DOWNLOAD" "$SELECTED"
+          test -s "$SELECTED/SELECTOR_RESULT.json"
+          test -s "$SELECTED/Spt1.best.lean"
+          test -s "$SELECTED/Mock1_Advanced.best.lean"
+
+      - name: Upload selector evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: final13-native-r3-selector-${{ github.run_id }}
+          path: ${{ env.SELECTED }}
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Persist evidence and promote only TRUE PASS
+        shell: bash
+        run: |
+          set -euo pipefail
+          dest=.github/final13-native-cleanup/R3_PROOFS_LATEST
+          rm -rf "$dest"
+          mkdir -p "$dest"
+          cp "$SELECTED/SELECTOR_RESULT.json" "$dest/"
+          cp "$SELECTED/Spt1.best.log" "$dest/"
+          cp "$SELECTED/Mock1_Advanced.best.log" "$dest/"
+          cp "$SELECTED/Spt1.best.lean" "$dest/"
+          cp "$SELECTED/Mock1_Advanced.best.lean" "$dest/"
+          promote="$(python3 -c 'import json; print(str(json.load(open("'"$SELECTED"'/SELECTOR_RESULT.json"))["promote"]).lower())')"
+          if [[ "$promote" = true ]]; then
+            cp "$SELECTED/Spt1.best.lean" "$SPT1"
+            cp "$SELECTED/Mock1_Advanced.best.lean" "$MOCK1A"
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "$dest" "$SPT1" "$MOCK1A"
+          git commit -m "Final13 native_decide cleanup R3 result ${GITHUB_RUN_ID} [skip ci]"
+          for attempt in 1 2 3 4 5; do
+            git fetch origin "$BRANCH"
+            if git rebase "origin/$BRANCH" && git push origin "HEAD:$BRANCH"; then exit 0; fi
+            git rebase --abort || true
+            sleep $((attempt * 5))
+          done
+          exit 1
