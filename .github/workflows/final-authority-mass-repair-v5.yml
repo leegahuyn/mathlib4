@@ -25,17 +25,28 @@ jobs:
           fetch-depth: 0
           persist-credentials: true
 
-      - name: Establish authority branch and verify protected identities
+      - name: Establish authority branch and record initial source identities
         shell: bash
         run: |
           set -euo pipefail
           git switch -C gpt/final-authority-mass-repair-v5-20260820
-          test "$(git hash-object --no-filters PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean)" = "28f614d48e02a0f28d3f5a758e813350b3ea89cf"
-          test "$(git hash-object --no-filters PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean)" = "464f5dd095876b20165d12690c8127ef9d909e6a"
-          test "$(git hash-object --no-filters PrimalitySheafVerification/QYM.lean)" = "7afb309d7c4da97da7bc6b922931734d72830d41"
-          test "$(git hash-object --no-filters PrimalitySheafVerification/Mock1_Advanced.lean)" = "3b6596bbc0790c7d6e427c44e2b0b18b8af3efa6"
-          sha256sum PrimalitySheafVerification/QYM.lean | tee FINAL_V5_QYM_SHA256.txt
-          sha256sum PrimalitySheafVerification/Mock1_Advanced.lean | tee FINAL_V5_M1A_SHA256.txt
+          python3 -m py_compile scripts/final_authority_gate_v5.py
+          {
+            echo "HEAD=$(git rev-parse HEAD)"
+            echo "BRANCH=$(git branch --show-current)"
+            for file in \
+              PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+              PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean \
+              PrimalitySheafVerification/QYM.lean \
+              PrimalitySheafVerification/Mock1_Advanced.lean \
+              PrimalitySheafVerification/Spt1.lean \
+              PrimalitySheafVerification/Mock3.lean
+            do
+              echo "FILE=$file"
+              echo "GIT_BLOB=$(git hash-object --no-filters "$file")"
+              echo "SHA256=$(sha256sum "$file" | awk '{print $1}')"
+            done
+          } | tee FINAL_V5_INITIAL_SOURCE_IDENTITY.txt
 
       - name: Apply Mock3 and Spt1 source blockers as one deterministic batch
         shell: bash
@@ -58,19 +69,21 @@ jobs:
               raise SystemExit('Spt1 exact native_decide target changed, missing, or duplicated')
 
           mock3 = Path('PrimalitySheafVerification/Mock3.lean')
-          mock3.write_text("""import PrimalitySheafVerification.QYM
+          fixed = """import PrimalitySheafVerification.QYM
 
-          /-!
-          # Canonical Mock3 bridge
+/-!
+# Canonical Mock3 bridge
 
-          The project's third Mock development is the frozen `QYM` module. This checked-in
-          bridge gives that development a canonical `Mock3` module path without copying,
-          replacing, or altering any QYM declaration.
+The project's third Mock development is the frozen `QYM` module. This checked-in
+bridge gives that development a canonical `Mock3` module path without copying,
+replacing, or altering any QYM declaration.
 
-          It is intentionally a transparent integration boundary: all mathematical content
-          remains in the source-identical golden `PrimalitySheafVerification.QYM` module.
-          -/
-          """, encoding='utf-8')
+It is intentionally a transparent integration boundary: all mathematical content
+remains in the source-identical golden `PrimalitySheafVerification.QYM` module.
+-/
+"""
+          if mock3.read_text(encoding='utf-8') != fixed:
+              mock3.write_text(fixed, encoding='utf-8')
           PY
           git diff --check
           test "$(grep -m1 -v '^[[:space:]]*$' PrimalitySheafVerification/Mock3.lean)" = "import PrimalitySheafVerification.QYM"
@@ -89,8 +102,17 @@ jobs:
             git commit -m "Final authority: fix Mock3 import and remove Spt1 native_decide"
             git push origin HEAD:refs/heads/gpt/final-authority-mass-repair-v5-20260820
           fi
-          test -z "$(git status --short)"
+          test -z "$(git status --short --untracked-files=no)"
           git rev-parse HEAD | tee FINAL_V5_SOURCE_COMMIT.txt
+          {
+            echo "SOURCE_COMMIT=$(git rev-parse HEAD)"
+            echo "FA_BLOB=$(git hash-object --no-filters PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean)"
+            echo "INTEGRATED_BLOB=$(git hash-object --no-filters PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean)"
+            echo "QYM_BLOB=$(git hash-object --no-filters PrimalitySheafVerification/QYM.lean)"
+            echo "M1A_BLOB=$(git hash-object --no-filters PrimalitySheafVerification/Mock1_Advanced.lean)"
+            echo "SPT1_BLOB=$(git hash-object --no-filters PrimalitySheafVerification/Spt1.lean)"
+            echo "MOCK3_BLOB=$(git hash-object --no-filters PrimalitySheafVerification/Mock3.lean)"
+          } | tee FINAL_V5_COMMITTED_SOURCE_IDENTITY.txt
 
       - name: Install pinned Lean and Mathlib cache
         shell: bash
@@ -156,9 +178,9 @@ jobs:
           name: final-authority-v5-${{ github.run_id }}-attempt${{ github.run_attempt }}
           path: |
             .final_authority
+            FINAL_V5_INITIAL_SOURCE_IDENTITY.txt
             FINAL_V5_SOURCE_COMMIT.txt
-            FINAL_V5_QYM_SHA256.txt
-            FINAL_V5_M1A_SHA256.txt
+            FINAL_V5_COMMITTED_SOURCE_IDENTITY.txt
             FINAL_V5_LEAN_VERSION.txt
             FINAL_V5_LAKE_VERSION.txt
             FINAL_V5_M1A.log
