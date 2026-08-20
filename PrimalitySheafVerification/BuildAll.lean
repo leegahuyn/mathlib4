@@ -1,4 +1,4 @@
-/- Aggregate compile target for the thirteen verification modules. -/
+/- Aggregate compile target for the thirteen primary verification modules and the mandatory integration bridges. -/
 import PrimalitySheafVerification.Spt1
 import PrimalitySheafVerification.Spt2
 import PrimalitySheafVerification.Spt3
@@ -11,4 +11,6 @@ import PrimalitySheafVerification.Mock1_Advanced
 import PrimalitySheafVerification.Mock2
 import PrimalitySheafVerification.Mock2_Advanced
 import PrimalitySheafVerification.Mock2_FunctionalAnalysis
+import PrimalitySheafVerification.Mock2_FunctionalAnalysis_Integrated
 import PrimalitySheafVerification.QYM
+import PrimalitySheafVerification.Mock3
