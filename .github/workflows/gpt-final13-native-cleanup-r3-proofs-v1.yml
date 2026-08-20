@@ -1,4 +1,4 @@
-name: GPT final13 R5 closed-goal proof probe v1
+name: GPT final13 R5 closed-goal proof probe v2
 
 on:
   push:
@@ -13,7 +13,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: gpt-final13-r5-closed-goal-proof-probe-v1
+  group: gpt-final13-r5-closed-goal-proof-probe-v2
   cancel-in-progress: true
 
 env:
@@ -31,12 +31,12 @@ jobs:
       max-parallel: 6
       matrix:
         variant:
-          - decide
-          - decide-depth
-          - rfl
-          - norm-num-range
-          - simp-range
-          - simp-norm
+          - norm-num-delta
+          - norm-num-delta-fold
+          - simp-delta
+          - simp-delta-norm
+          - dsimp-delta-norm
+          - simp-fold-norm
     env:
       VARIANT: ${{ matrix.variant }}
       OUT: /tmp/final13-r5-closed-${{ matrix.variant }}
@@ -109,7 +109,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: final13-r5-closed-${{ matrix.variant }}-${{ github.run_id }}
+          name: final13-r5-v2-${{ matrix.variant }}-${{ github.run_id }}
           path: ${{ env.OUT }}
           if-no-files-found: error
           retention-days: 30
