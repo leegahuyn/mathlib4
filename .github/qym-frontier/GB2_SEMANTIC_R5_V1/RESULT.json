@@ -1,0 +1,54 @@
+{
+  "schema": "qym-gb2-semantic-round5-v1",
+  "authority": "actual full-QYM direct Lean",
+  "origin_verified_gb2_run": 32331314591,
+  "run_id": 32333885673,
+  "trigger_sha": "0bb0937b357a92c60f24a34e7c70dc3f5e49250a",
+  "base_error_headers": 2,
+  "intermediate_sha256": "c798cc256e41e19073cc57aef0723e213ef234e353dde65daf47790a91efcd7f",
+  "source_sha256": "7b0037843b41d19134df52e70c9c6d64fed5563d9a5a1e598cb9fc22c1d98f4b",
+  "source_blob": "3af2b62afce1b62a0613130e484c3da77d29bab9",
+  "exit": 1,
+  "error_headers": 2,
+  "warning_headers": 345,
+  "panic_lines": 0,
+  "elapsed_seconds": 570,
+  "first_error": {
+    "file": "PrimalitySheafVerification/QYM.lean",
+    "line": 50830,
+    "column": 54,
+    "code": null,
+    "message": "unsolved goals",
+    "enclosing_declaration": "actualStagePeterssonInner_self_re_eq_zero_iff"
+  },
+  "forbidden_zero": true,
+  "olean_exists": false,
+  "ilean_exists": false,
+  "error_codes": {
+    "uncoded": 2
+  },
+  "error_declarations": {
+    "actualStagePeterssonInner_self_re_eq_zero_iff": 1,
+    "coordinateHamiltonianForm_re_self": 1
+  },
+  "errors": [
+    {
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 50830,
+      "column": 54,
+      "code": null,
+      "message": "unsolved goals",
+      "enclosing_declaration": "actualStagePeterssonInner_self_re_eq_zero_iff"
+    },
+    {
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 59501,
+      "column": 78,
+      "code": null,
+      "message": "unsolved goals",
+      "enclosing_declaration": "coordinateHamiltonianForm_re_self"
+    }
+  ],
+  "strict_improvement": false,
+  "pass": false
+}
