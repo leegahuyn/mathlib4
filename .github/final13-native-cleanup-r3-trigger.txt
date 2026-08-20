@@ -1,6 +1,6 @@
-triggered_at=2026-08-20T17:32:00+09:00
+triggered_at=2026-08-20T17:45:00+09:00
 branch=gpt/final13-gb0-r5-six-clean-20260820
 authority_mock1_advanced_blob=da99c78fdc2f6f894b55dd79af1438fa2d51a1b6
 authority_errors=6
 candidate_count=6
-strategy=explicit-delta-reduction-local-proof-matrix-v2-retrigger
+strategy=explicit-list-range-11-rewrite-local-proof-matrix-v3
