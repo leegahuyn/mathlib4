@@ -1,0 +1,97 @@
+name: Final Authority Quick Source Probe V8
+
+"on":
+  pull_request:
+    branches:
+      - gpt/final-authority-gb0-canonical-20260820
+
+permissions:
+  contents: read
+
+concurrency:
+  group: final-authority-quick-probe-v8-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  affected-source-probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - name: Checkout exact PR head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Verify persisted source and protected identities
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git hash-object --no-filters PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean)" = "28f614d48e02a0f28d3f5a758e813350b3ea89cf"
+          test "$(git hash-object --no-filters PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean)" = "464f5dd095876b20165d12690c8127ef9d909e6a"
+          test "$(git hash-object --no-filters PrimalitySheafVerification/QYM.lean)" = "7afb309d7c4da97da7bc6b922931734d72830d41"
+          test "$(sha256sum PrimalitySheafVerification/QYM.lean | awk '{print $1}')" = "ab7c394f68b812046bcfae109b274a2d4fa42479bf8e76461c73a9c190fb3204"
+          test "$(git hash-object --no-filters PrimalitySheafVerification/Mock1_Advanced.lean)" = "3b6596bbc0790c7d6e427c44e2b0b18b8af3efa6"
+          ! grep -nE '^[[:space:]]*[^/-].*by[[:space:]]+native_decide([[:space:]]|$)' PrimalitySheafVerification/Spt1.lean
+          ! grep -nF 'noncomputable def logOf [LogInterface A]' PrimalitySheafVerification/Spt3.lean
+          grep -nF 'noncomputable def interfaceLogOf [LogInterface A]' PrimalitySheafVerification/Spt3.lean
+
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="$HOME/.elan/bin:$PATH"
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)"
+          lake exe cache get
+
+      - name: Compile Spt1 and Spt3 actual Lean
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          mkdir -p .quick_probe_v8
+          lake env lean -DmaxErrors=2000 -DwarningAsError=false \
+            -o .lake/build/lib/lean/PrimalitySheafVerification/Spt1.olean \
+            -i .lake/build/lib/lean/PrimalitySheafVerification/Spt1.ilean \
+            PrimalitySheafVerification/Spt1.lean 2>&1 | tee .quick_probe_v8/Spt1.log
+          lake env lean -DmaxErrors=2000 -DwarningAsError=false \
+            -o .lake/build/lib/lean/PrimalitySheafVerification/Spt3.olean \
+            -i .lake/build/lib/lean/PrimalitySheafVerification/Spt3.ilean \
+            PrimalitySheafVerification/Spt3.lean 2>&1 | tee .quick_probe_v8/Spt3.log
+
+      - name: Reproduce aggregate Mathlib-log plus Spt3 import
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          cat > PrimalitySheafVerification/Spt3AggregateProbeV8.lean <<'EOF'
+          import Mathlib.RingTheory.PowerSeries.Log
+          import PrimalitySheafVerification.Spt3
+          EOF
+          lake env lean -DmaxErrors=2000 -DwarningAsError=false \
+            PrimalitySheafVerification/Spt3AggregateProbeV8.lean 2>&1 | tee .quick_probe_v8/Spt3AggregateProbe.log
+          rm -f PrimalitySheafVerification/Spt3AggregateProbeV8.lean
+
+      - name: Record exact probe result
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          {
+            echo "commit=$(git rev-parse HEAD)"
+            echo "Spt1_blob=$(git hash-object --no-filters PrimalitySheafVerification/Spt1.lean)"
+            echo "Spt3_blob=$(git hash-object --no-filters PrimalitySheafVerification/Spt3.lean)"
+            echo "M1A_blob=$(git hash-object --no-filters PrimalitySheafVerification/Mock1_Advanced.lean)"
+          } | tee .quick_probe_v8/RESULT.txt
+
+      - name: Upload quick-probe evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: final-authority-quick-probe-v8-${{ github.run_id }}
+          path: .quick_probe_v8
+          include-hidden-files: true
+          retention-days: 30
