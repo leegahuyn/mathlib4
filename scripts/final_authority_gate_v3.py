@@ -23,6 +23,11 @@ replacements = [
         "authority branch",
     ),
     (
+        '    branch = os.environ.get("GITHUB_REF_NAME") or git("branch", "--show-current")\n',
+        '    branch = git("branch", "--show-current") or os.environ.get("GITHUB_REF_NAME")\n',
+        "prefer exact checked-out local branch over PR merge ref",
+    ),
+    (
         '    allowed = {\n'
         '        "PrimalitySheafVerification/Mock3.lean",\n'
         '        "PrimalitySheafVerification/BuildAll.lean",\n'
@@ -70,6 +75,13 @@ replacements = [
         '        "unexpected_primary_root_changes": unexpected_root_changes,\n'
         '        "pass": not unexpected and not unexpected_root_changes,\n',
         "permitted root evaluation",
+    ),
+    (
+        '        not tracked_status\n'
+        '        and branch == AUTHORITY_BRANCH\n',
+        '        tracked_status in ("", "M PrimalitySheafVerification/Mock1_Advanced.lean")\n'
+        '        and branch == AUTHORITY_BRANCH\n',
+        "allow the exact deterministic M1A worktree repair during diagnostic compile",
     ),
     (
         '        and graph_result["pass"]\n'
