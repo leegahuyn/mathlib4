@@ -17,7 +17,7 @@ permissions:
 
 concurrency:
   group: gpt-qym-gb2-final-v1
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 env:
   BRANCH: gpt/qym-gb5-semantic-round4-20260820
@@ -77,7 +77,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          cat > "$OUT/CastNormalizationProbe.lean" <<'EOF'
+          probe=.github/CastNormalizationProbe.lean
+          cat > "$probe" <<'EOF'
           import Mathlib
 
           example {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
@@ -93,10 +94,10 @@ jobs:
           lake env lean -DwarningAsError=false \
             -o "$OUT/CastNormalizationProbe.olean" \
             -i "$OUT/CastNormalizationProbe.ilean" \
-            "$OUT/CastNormalizationProbe.lean" \
-            > "$OUT/cast-probe.log" 2>&1
+            "$probe" > "$OUT/cast-probe.log" 2>&1
           test -s "$OUT/CastNormalizationProbe.olean"
           test -s "$OUT/CastNormalizationProbe.ilean"
+          rm -f "$probe"
 
       - name: Restore verified QYM dependency objects
         uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830
@@ -196,7 +197,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test -s "$OUT/RESULT.json"
+          if [[ ! -s "$OUT/RESULT.json" ]]; then
+            echo "No full-QYM result was produced; leaving canonical QYM unchanged."
+            exit 0
+          fi
           dest=.github/qym-frontier/GB2_FINAL_V1
           rm -rf "$dest"
           mkdir -p "$dest"
