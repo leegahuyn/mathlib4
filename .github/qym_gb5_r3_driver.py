@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-# Explicit second-push trigger: the workflow now already exists on the branch.
-
 import bisect
 import collections
 import hashlib
@@ -19,11 +17,14 @@ BASE = pathlib.Path(os.environ.get(
     "BASE",
     ".github/qym-frontier/GB10_SEMANTIC_R2_V2/QYM_GB10_SEMANTIC_R2_V2.lean",
 ))
-PATCH = pathlib.Path(os.environ.get("PATCH", ".github/qym_patch_gb5_semantic_round3.py"))
-QYM = pathlib.Path(os.environ.get("QYM", "PrimalitySheafVerification/QYM.lean"))
+PATCH = pathlib.Path(os.environ.get(
+    "PATCH", ".github/qym_patch_gb5_semantic_round3.py"
+))
+QYM = pathlib.Path(os.environ.get(
+    "QYM", "PrimalitySheafVerification/QYM.lean"
+))
 OUT = pathlib.Path(os.environ.get("OUT", "/tmp/qym-gb5-r3-v1"))
 BASE_SHA256 = "231efe9a0b8f9d05aae5e65ff3904b3636182ef6f1c93c11eac0c05313730998"
-CANDIDATE_SHA256 = "bda4c24cabaf5b855e9e22e367d3c7a966673c3664c75554dc1360988e48e3f9"
 BASE_ERRORS = 5
 
 
@@ -100,10 +101,19 @@ def audit_candidate(candidate: pathlib.Path) -> dict[str, object]:
         "axiom": r"(?m)^\s*(?:public\s+|private\s+)?axiom\b",
         "maxHeartbeats_zero": r"\bmaxHeartbeats\s*(?::=|=)\s*0\b",
     }
-    counts = {name: len(re.findall(pattern, code)) for name, pattern in patterns.items()}
+    counts = {
+        name: len(re.findall(pattern, code))
+        for name, pattern in patterns.items()
+    }
     ok = depth == 0 and all(value == 0 for value in counts.values())
-    result = {"forbidden_zero": ok, "counts": counts, "comment_depth": depth}
-    (OUT / "FORBIDDEN_AUDIT.json").write_text(json.dumps(result, indent=2) + "\n")
+    result = {
+        "forbidden_zero": ok,
+        "counts": counts,
+        "comment_depth": depth,
+    }
+    (OUT / "FORBIDDEN_AUDIT.json").write_text(
+        json.dumps(result, indent=2) + "\n"
+    )
     if not ok:
         raise SystemExit(json.dumps(result, indent=2))
     return result
@@ -124,7 +134,9 @@ def parse_errors(candidate: pathlib.Path, log_text: str) -> list[dict[str, objec
             decl_lines.append(number)
             decl_names.append(match.group(1))
 
-    header = re.compile(r"^(.*\.lean):(\d+):(\d+): error(?:\(([^)]+)\))?:\s*(.*)$")
+    header = re.compile(
+        r"^(.*\.lean):(\d+):(\d+): error(?:\(([^)]+)\))?:\s*(.*)$"
+    )
     errors: list[dict[str, object]] = []
     for line in log_text.splitlines():
         match = header.match(line)
@@ -147,7 +159,7 @@ def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
     actual_base = sha256(BASE)
     if actual_base != BASE_SHA256:
-        raise SystemExit(f"wrong QYM 5-error base bytes: {actual_base}")
+        raise SystemExit(f"wrong QYM five-error base bytes: {actual_base}")
 
     candidate = OUT / "QYM.candidate.lean"
     with (OUT / "patch.log").open("w") as handle:
@@ -157,12 +169,17 @@ def main() -> None:
             stdout=handle,
             stderr=subprocess.STDOUT,
         )
+
     actual_candidate = sha256(candidate)
-    if actual_candidate != CANDIDATE_SHA256:
-        raise SystemExit(f"wrong R3 candidate bytes: {actual_candidate}")
+    expected = os.environ.get("EXPECTED_CANDIDATE_SHA256", "").strip()
+    if expected and actual_candidate != expected:
+        raise SystemExit(
+            f"candidate SHA mismatch: expected {expected}, got {actual_candidate}"
+        )
 
     audit = audit_candidate(candidate)
     shutil.copy2(candidate, QYM)
+
     log = OUT / "full.log"
     start = time.time()
     with log.open("w") as handle:
@@ -179,6 +196,7 @@ def main() -> None:
             check=False,
         )
     elapsed = int(time.time() - start)
+
     log_text = log.read_text(errors="replace")
     errors = parse_errors(candidate, log_text)
     warnings = sum(
@@ -195,8 +213,9 @@ def main() -> None:
     declarations = collections.Counter(
         (error["enclosing_declaration"] or "<none>") for error in errors
     )
+
     result: dict[str, object] = {
-        "schema": "qym-gb5-semantic-round3-v1",
+        "schema": "qym-gb5-semantic-round3-monotone",
         "authority": "actual full-QYM direct Lean",
         "run_id": int(os.environ.get("GITHUB_RUN_ID", "0")),
         "trigger_sha": os.environ.get("GITHUB_SHA"),
@@ -220,7 +239,9 @@ def main() -> None:
         "errors": errors,
     }
     result["semantic_improvement"] = (
-        len(errors) < BASE_ERRORS and panic == 0 and bool(audit["forbidden_zero"])
+        len(errors) < BASE_ERRORS
+        and panic == 0
+        and bool(audit["forbidden_zero"])
     )
     result["numeric_global_improvement"] = result["semantic_improvement"]
     result["pass"] = (
