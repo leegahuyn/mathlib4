@@ -1,0 +1,233 @@
+name: GPT final13 15-checklist clean2 v3
+
+on:
+  push:
+    branches:
+      - 'gpt/final13-final-*'
+    paths:
+      - .github/final13-gate-v3-trigger.txt
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: gpt-final13-15checklist-clean2-v3-${{ github.ref_name }}
+  cancel-in-progress: false
+
+env:
+  PHASE_DRIVER: scripts/final13_phase_v3.py
+  AGGREGATOR: scripts/final13_aggregate_v2.py
+
+jobs:
+  phases:
+    name: phase-${{ matrix.phase }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        phase: [baseline, clean1, clean2]
+    env:
+      PHASE: ${{ matrix.phase }}
+      OUT: /tmp/final13-v3-${{ matrix.phase }}
+      META: /tmp/final13-v3-meta-${{ matrix.phase }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - name: Gate exact source commit and pristine checkout
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf "$OUT" "$META"
+          mkdir -p "$OUT" "$META"
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          git status --porcelain=v1 --untracked-files=all > "$META/git-status-before.txt"
+          test ! -s "$META/git-status-before.txt"
+          test "$(tr -d '\r\n' < lean-toolchain)" = leanprover/lean4:v4.33.0-rc1
+          python3 -m py_compile "$PHASE_DRIVER" "$AGGREGATOR" scripts/final13_phase_v2.py
+          git rev-parse HEAD > "$META/github-sha.txt"
+          git rev-parse --abbrev-ref HEAD > "$META/checkout-branch.txt"
+
+      - name: Install pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 8 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none > "$META/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          tc="$(tr -d '\r\n' < lean-toolchain)"
+          ok=0
+          for attempt in 1 2 3 4 5; do
+            if elan toolchain install "$tc" >> "$META/toolchain.log" 2>&1; then ok=1; break; fi
+            sleep $((attempt * 5))
+          done
+          test "$ok" = 1
+          lean --version | tee "$META/lean-version.txt"
+          lake --version | tee "$META/lake-version.txt"
+          ok=0
+          for attempt in 1 2 3 4 5; do
+            if lake exe cache get >> "$META/mathlib-cache.log" 2>&1; then ok=1; break; fi
+            sleep $((attempt * 5))
+          done
+          test "$ok" = 1
+
+      - name: Run authoritative phase
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          python3 -B "$PHASE_DRIVER" --repo "$GITHUB_WORKSPACE" --out "$OUT" --mode "$PHASE" \
+            > "$META/phase-driver.stdout.log" 2>&1
+          test -s "$OUT/PHASE_RESULT.json"
+          test -s "$OUT/SOURCE_MANIFEST.before.json"
+          test -s "$OUT/SOURCE_MANIFEST.after.json"
+          test -s "$OUT/COMPILER_LOG_AUDIT.json"
+
+      - name: Freeze environment and worktree evidence
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT" "$META"
+          git status --porcelain=v1 --untracked-files=all > "$META/git-status-after.txt"
+          python3 - <<'PY'
+          import hashlib, json, os, pathlib
+          meta = pathlib.Path(os.environ['META'])
+          out = pathlib.Path(os.environ['OUT'])
+          def lines(name):
+              p = meta / name
+              return p.read_text(errors='replace').splitlines() if p.exists() else []
+          def text(name):
+              p = meta / name
+              return p.read_text(errors='replace').strip() if p.exists() else None
+          def digest(path):
+              p = pathlib.Path(path)
+              return hashlib.sha256(p.read_bytes()).hexdigest() if p.is_file() else None
+          environment = {
+              'schema': 'final13-environment-v3',
+              'phase': os.environ['PHASE'],
+              'run_id': int(os.environ.get('GITHUB_RUN_ID', '0')),
+              'github_sha': os.environ.get('GITHUB_SHA'),
+              'github_ref_name': os.environ.get('GITHUB_REF_NAME'),
+              'checkout_sha': text('github-sha.txt'),
+              'checkout_branch': text('checkout-branch.txt'),
+              'git_status_before': lines('git-status-before.txt'),
+              'git_status_after': lines('git-status-after.txt'),
+              'toolchain': pathlib.Path('lean-toolchain').read_text().strip(),
+              'lean_version': text('lean-version.txt'),
+              'lake_version': text('lake-version.txt'),
+              'lean_toolchain_sha256': digest('lean-toolchain'),
+              'lake_manifest_sha256': digest('lake-manifest.json'),
+              'lakefile_sha256': digest('lakefile.lean'),
+              'phase_driver_sha256': digest(os.environ['PHASE_DRIVER']),
+              'phase_base_sha256': digest('scripts/final13_phase_v2.py'),
+              'aggregator_sha256': digest(os.environ['AGGREGATOR']),
+          }
+          out.mkdir(parents=True, exist_ok=True)
+          (out / 'ENVIRONMENT.json').write_text(json.dumps(environment, indent=2, sort_keys=True) + '\n')
+          PY
+          cp "$META/phase-driver.stdout.log" "$OUT/" 2>/dev/null || true
+          cp "$META/lean-version.txt" "$OUT/" 2>/dev/null || true
+          cp "$META/lake-version.txt" "$OUT/" 2>/dev/null || true
+
+      - name: Upload immutable phase evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: final13-v3-${{ matrix.phase }}-${{ github.run_id }}
+          path: ${{ env.OUT }}
+          if-no-files-found: error
+          retention-days: 90
+
+  aggregate:
+    name: aggregate-15-checklist-and-tag
+    needs: phases
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      DOWNLOAD: /tmp/final13-v3-download
+      FINAL: /tmp/final13-v3-final
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - name: Download baseline and two independent clean artifacts
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          pattern: final13-v3-*-${{ github.run_id }}
+          path: ${{ env.DOWNLOAD }}
+          merge-multiple: false
+
+      - name: Aggregate all 15 gates
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$FINAL"
+          python3 -m py_compile "$AGGREGATOR"
+          python3 -B "$AGGREGATOR" "$DOWNLOAD" "$FINAL" | tee "$FINAL/aggregate.stdout.log"
+          for file in checklist_15_final.json execution_report.json execution_report.md final_status_card.md gmail_final_body.md evidence_sha256.txt; do
+            test -s "$FINAL/$file"
+          done
+
+      - name: Upload final immutable evidence bundle
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: final13-15checklist-v3-${{ github.run_id }}
+          path: ${{ env.FINAL }}
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Persist report and create source tag only on 15-of-15 TRUE PASS
+        shell: bash
+        run: |
+          set -euo pipefail
+          dest=".github/final13-evidence/RUN_${GITHUB_RUN_ID}"
+          mkdir -p "$dest"
+          cp "$FINAL/checklist_15_final.json" "$dest/"
+          cp "$FINAL/execution_report.json" "$dest/"
+          cp "$FINAL/execution_report.md" "$dest/"
+          cp "$FINAL/final_status_card.md" "$dest/"
+          cp "$FINAL/gmail_final_body.md" "$dest/"
+          cp "$FINAL/evidence_sha256.txt" "$dest/"
+          all_pass="$(python3 -c 'import json; print(str(json.load(open("'"$FINAL"'/checklist_15_final.json"))["all_pass"]).lower())')"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "$dest"
+          git commit -m "Final13 15-checklist v3 result ${GITHUB_RUN_ID} [skip ci]"
+          for attempt in 1 2 3 4 5; do
+            git fetch origin "$GITHUB_REF_NAME"
+            if git rebase "origin/$GITHUB_REF_NAME" && git push origin "HEAD:$GITHUB_REF_NAME"; then break; fi
+            git rebase --abort || true
+            if [[ "$attempt" = 5 ]]; then exit 1; fi
+            sleep $((attempt * 5))
+          done
+          if [[ "$all_pass" = true ]]; then
+            test -s "$FINAL/TRUE_PASS"
+            tag="$(cat "$FINAL/TAG_NAME.txt")"
+            git tag -a "$tag" "$GITHUB_SHA" -m "Lean 13-file TRUE PASS: 13 roots, BuildAll, clean x2, checklist 15/15"
+            git push origin "refs/tags/$tag"
+          fi
+
+      - name: Fail unless all 15 gates passed
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, os
+          result = json.load(open(os.path.join(os.environ['FINAL'], 'checklist_15_final.json')))
+          if result.get('all_pass') is not True or result.get('passed_count') != 15:
+              raise SystemExit(f"final gate failed: {result.get('passed_count')}/15")
+          print('FINAL TRUE PASS 15/15')
+          PY
