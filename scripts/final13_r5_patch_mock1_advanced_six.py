@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Patch only the six VERIFIED residual Mock1_Advanced proof bodies.
 
-The input must be the immutable 6-error authority source.  Statements and all
-other declarations are byte-preserved.  The first five residuals are closed,
-decidable Rat/list equalities; the sixth is a one-line normalization after the
-already-successful block-sum rewrite.
+The input must be the immutable 6-error authority source. Statements and all
+other declarations are byte-preserved. The first five proofs use the locally
+verified explicit `List.range 11` reduction; the sixth closes the already
+normalized scalar identity.
 """
 from __future__ import annotations
 
@@ -15,28 +15,49 @@ from pathlib import Path
 EXPECTED_INPUT_SHA256 = (
     "d2cf9f101e04d58e0fd87e62d1f102b8eb910d4cc5e3e9d2b903e5c7df0f98f2"
 )
+RANGE11 = "[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]"
+HRANGE = f"  have hrange : List.range 11 = {RANGE11} := by rfl\n"
 
-CLOSED_NAMES = (
-    "advanced_claims_ii_paper_t1t2_full_solution_table",
-    "advanced_claims_ii_paper_t1t2_full_matvec",
-    "advanced_claims_ii_paper_t1t2_full_pair_targets",
-    "advanced_claims_ii_paper_t1t2_full_pair_flatten",
-    "advanced_claims_ii_paper_t1t2_full_pair_squared_norm",
-)
-
-TACTICS = {
-    "decide": "by\n  decide",
-    "decide-depth": "by\n  set_option maxRecDepth 200000 in\n    decide",
-    "simp-norm": (
-        "by\n  simp [AdvancedClaimsIIPaperT1T2FullSolution,\n"
-        "    AdvancedClaimsIIPaperT1T2FullPairSolution,\n"
-        "    AdvancedClaimsIIPaperT1T2FullDepth, referenceMock1MList,\n"
-        "    AdvancedClaimsIIRatCoordinateVector,\n"
-        "    AdvancedClaimsIISignedIdentityMatrix,\n"
-        "    AdvancedClaimsIISignedIdentityRow,\n"
-        "    AdvancedClaimsIISignedPairTargets,\n"
-        "    AdvancedClaimsIIFlattenSignedPairs,\n"
-        "    AdvancedClaimsIISignedPairSquaredNorm, MatVecRat, dotRat] <;> norm_num"
+PROOFS = {
+    "advanced_claims_ii_paper_t1t2_full_solution_table": (
+        "by\n"
+        + HRANGE
+        + "  norm_num [AdvancedClaimsIIPaperT1T2FullSolution,\n"
+          "    AdvancedClaimsIIPaperT1T2FullDepth, referenceMock1MList,\n"
+          "    AdvancedClaimsIIRatCoordinateVector, hrange]"
+    ),
+    "advanced_claims_ii_paper_t1t2_full_matvec": (
+        "by\n"
+        "  rw [advanced_claims_ii_paper_t1t2_full_matrix_formula,\n"
+        "    advanced_claims_ii_paper_t1t2_full_solution_table,\n"
+        "    advanced_claims_ii_paper_t1t2_full_rhs_table]\n"
+        + HRANGE
+        + "  norm_num [MatVecRat, dotRat, AdvancedClaimsIISignedIdentityMatrix,\n"
+          "    AdvancedClaimsIISignedIdentityRow, AdvancedClaimsIIRatCoordinateVector,\n"
+          "    hrange]"
+    ),
+    "advanced_claims_ii_paper_t1t2_full_pair_targets": (
+        "by\n"
+        "  rw [advanced_claims_ii_paper_t1t2_full_rhs_table]\n"
+        + HRANGE
+        + "  norm_num [AdvancedClaimsIISignedPairTargets,\n"
+          "    AdvancedClaimsIIPaperT1T2FullPairSolution,\n"
+          "    AdvancedClaimsIIPaperT1T2FullDepth, referenceMock1MList, hrange]"
+    ),
+    "advanced_claims_ii_paper_t1t2_full_pair_flatten": (
+        "by\n"
+        "  rw [advanced_claims_ii_paper_t1t2_full_solution_table]\n"
+        + HRANGE
+        + "  norm_num [AdvancedClaimsIIFlattenSignedPairs,\n"
+          "    AdvancedClaimsIIPaperT1T2FullPairSolution,\n"
+          "    AdvancedClaimsIIPaperT1T2FullDepth, referenceMock1MList, hrange]"
+    ),
+    "advanced_claims_ii_paper_t1t2_full_pair_squared_norm": (
+        "by\n"
+        + HRANGE
+        + "  norm_num [AdvancedClaimsIISignedPairSquaredNorm,\n"
+          "    AdvancedClaimsIIPaperT1T2FullPairSolution,\n"
+          "    AdvancedClaimsIIPaperT1T2FullDepth, referenceMock1MList, hrange]"
     ),
 }
 
@@ -75,27 +96,20 @@ def replace_proof(text: str, name: str, proof: str) -> str:
 
 
 def patch_fixed_shadow(text: str) -> str:
-    anchor = "  fixed_shadow_scale_link := by\n"
-    start = text.find(anchor)
-    if start < 0:
-        raise ValueError("missing fixed_shadow_scale_link proof")
-    if text.find(anchor, start + 1) >= 0:
-        raise ValueError("duplicate fixed_shadow_scale_link proof")
     old = (
         "  fixed_shadow_scale_link := by\n"
         "    change (1 : Rat) =\n"
         "      AdvancedClaimsIIPaperT3BlockSum * (1 : Rat)\n"
         "    rw [advanced_claims_ii_paper_t3_block_sum]\n"
     )
-    if text[start : start + len(old)] != old:
-        raise ValueError("fixed_shadow_scale_link authority body changed")
-    new = old + "    norm_num\n"
-    return text[:start] + new + text[start + len(old) :]
+    if text.count(old) != 1:
+        raise ValueError("fixed_shadow_scale_link authority body changed or duplicated")
+    return text.replace(old, old + "    norm_num\n", 1)
 
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("variant", choices=sorted(TACTICS))
+    parser.add_argument("variant", choices=["hrange-rfl-norm"])
     parser.add_argument("input", type=Path)
     parser.add_argument("output", type=Path)
     args = parser.parse_args()
@@ -107,8 +121,7 @@ def main() -> None:
             f"refusing non-authority input: expected {EXPECTED_INPUT_SHA256}, got {actual}"
         )
     text = raw.decode("utf-8")
-    proof = TACTICS[args.variant]
-    for name in CLOSED_NAMES:
+    for name, proof in PROOFS.items():
         text = replace_proof(text, name, proof)
     text = patch_fixed_shadow(text)
 
@@ -119,11 +132,12 @@ def main() -> None:
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(text, encoding="utf-8")
+    output_raw = args.output.read_bytes()
     print(
         f"variant={args.variant}\n"
         f"input_sha256={actual}\n"
-        f"output_sha256={sha256(args.output.read_bytes())}\n"
-        f"line_count={len(args.output.read_bytes().splitlines())}\n"
+        f"output_sha256={sha256(output_raw)}\n"
+        f"line_count={len(output_raw.splitlines())}\n"
     )
 
 
