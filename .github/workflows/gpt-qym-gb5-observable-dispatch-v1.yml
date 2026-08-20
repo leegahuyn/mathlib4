@@ -1,0 +1,55 @@
+name: GPT QYM GB5 observable dispatch v1
+
+on:
+  pull_request:
+    branches:
+      - master
+    types:
+      - opened
+      - synchronize
+      - reopened
+    paths:
+      - .github/qym-gb5-observable-trigger.txt
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  dispatch-and-record:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Dispatch authoritative dual direct-Lean runner
+        id: dispatch
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          workflow=gpt-qym-gb5-dual-master-runner-v1.yml
+          before="$(gh run list --repo "$GH_REPO" --workflow "$workflow" --event workflow_dispatch --limit 1 --json databaseId --jq '.[0].databaseId // 0')"
+          gh workflow run "$workflow" --repo "$GH_REPO" --ref master
+          run_id=0
+          for attempt in $(seq 1 30); do
+            candidate="$(gh run list --repo "$GH_REPO" --workflow "$workflow" --event workflow_dispatch --limit 1 --json databaseId --jq '.[0].databaseId // 0')"
+            if [[ "$candidate" != 0 && "$candidate" != "$before" ]]; then
+              run_id="$candidate"
+              break
+            fi
+            sleep 2
+          done
+          test "$run_id" != 0
+          echo "DISPATCHED_RUN_ID=$run_id"
+          echo "$run_id" > dispatched-run-id.txt
+          gh run view "$run_id" --repo "$GH_REPO" --json databaseId,displayTitle,event,headBranch,headSha,status,conclusion,url
+
+      - name: Upload dispatched run identity
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-gb5-dispatched-run-${{ github.run_id }}
+          path: dispatched-run-id.txt
+          if-no-files-found: error
+          retention-days: 7
