@@ -1,0 +1,11 @@
+{
+  "executed": true,
+  "exit": 0,
+  "error_headers": 0,
+  "warning_headers": 343,
+  "panic_lines": 0,
+  "olean_exists": true,
+  "ilean_exists": true,
+  "source_sha256": "911a6046689b69838391c08b96d684f0469bb2f5c2b23ca1672f7393a4fcf39e",
+  "pass": true
+}
