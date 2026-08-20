@@ -1,0 +1,108 @@
+name: Final Authority PR Gate V7
+
+"on":
+  pull_request:
+    branches:
+      - gpt/final-authority-gb0-canonical-20260820
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: final-authority-pr-gate-v7-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  actual-lean-diagnostic-and-authority:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    steps:
+      - name: Checkout exact PR head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+
+      - name: Record exact source identities
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .final_authority_pr_v7
+          {
+            echo "HEAD=$(git rev-parse HEAD)"
+            echo "FA_BLOB=$(git hash-object --no-filters PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean)"
+            echo "INTEGRATED_BLOB=$(git hash-object --no-filters PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean)"
+            echo "QYM_BLOB=$(git hash-object --no-filters PrimalitySheafVerification/QYM.lean)"
+            echo "QYM_SHA256=$(sha256sum PrimalitySheafVerification/QYM.lean | awk '{print $1}')"
+            echo "M1A_BLOB=$(git hash-object --no-filters PrimalitySheafVerification/Mock1_Advanced.lean)"
+            echo "SPT1_BLOB=$(git hash-object --no-filters PrimalitySheafVerification/Spt1.lean)"
+            echo "SPT3_BLOB=$(git hash-object --no-filters PrimalitySheafVerification/Spt3.lean)"
+            echo "MOCK3_BLOB=$(git hash-object --no-filters PrimalitySheafVerification/Mock3.lean)"
+          } | tee .final_authority_pr_v7/SOURCE_IDENTITY.txt
+          test "$(git hash-object --no-filters PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean)" = "28f614d48e02a0f28d3f5a758e813350b3ea89cf"
+          test "$(git hash-object --no-filters PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean)" = "464f5dd095876b20165d12690c8127ef9d909e6a"
+          test "$(git hash-object --no-filters PrimalitySheafVerification/QYM.lean)" = "7afb309d7c4da97da7bc6b922931734d72830d41"
+          test "$(sha256sum PrimalitySheafVerification/QYM.lean | awk '{print $1}')" = "ab7c394f68b812046bcfae109b274a2d4fa42479bf8e76461c73a9c190fb3204"
+
+      - name: Install pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="$HOME/.elan/bin:$PATH"
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)"
+          lake exe cache get
+          lean --version | tee .final_authority_pr_v7/LEAN_VERSION.txt
+          lake --version | tee .final_authority_pr_v7/LAKE_VERSION.txt
+
+      - name: Run complete non-stopping actual Lean authority sweep
+        shell: bash
+        run: |
+          set -uo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          export GITHUB_SHA="$(git rev-parse HEAD)"
+          export FINAL_AUTHORITY_BRANCH="${{ github.head_ref }}"
+          set +e
+          python3 scripts/final_authority_gate_v5.py 2>&1 | tee .final_authority_pr_v7/AUTHORITY.log
+          rc=${PIPESTATUS[0]}
+          set -e
+          echo "$rc" | tee .final_authority_pr_v7/AUTHORITY_EXIT.txt
+
+      - name: Surface complete actual frontier
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "=== SOURCE IDENTITY ==="
+          cat .final_authority_pr_v7/SOURCE_IDENTITY.txt 2>/dev/null || true
+          echo "=== STATUS CARD ==="
+          cat .final_authority/FINAL_STATUS_CARD.md 2>/dev/null || true
+          for file in PREFLIGHT.json MOCK3_CANONICAL_RESULT.json FINAL13_DIAGNOSTIC_SWEEP.json FINAL_13_BUILD_RESULTS.json BUILDALL_RESULT.json FORBIDDEN_AUDIT.json CLEAN_BUILD_1_RESULT.json CLEAN_BUILD_2_RESULT.json FINAL_15_CHECKLIST_RESULT.json FINAL_SOURCE_IDENTITY.json; do
+            echo "=== $file ==="
+            cat ".final_authority/$file" 2>/dev/null || true
+          done
+          echo "=== AUTHORITY EXIT ==="
+          cat .final_authority_pr_v7/AUTHORITY_EXIT.txt 2>/dev/null || true
+
+      - name: Upload all actual Lean evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: final-authority-pr-gate-v7-${{ github.run_id }}-attempt${{ github.run_attempt }}
+          path: |
+            .final_authority
+            .final_authority_pr_v7
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Enforce complete authority
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f .final_authority_pr_v7/AUTHORITY_EXIT.txt
+          test "$(cat .final_authority_pr_v7/AUTHORITY_EXIT.txt)" = "0"
