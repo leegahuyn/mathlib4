@@ -6,7 +6,7 @@ on:
       - gpt/final-authority-gb0-canonical-20260820
     paths:
       - .github/workflows/final-authority-gb0-actual-lean.yml
-      - scripts/final_authority_gate.py
+      - scripts/**
       - PrimalitySheafVerification/**
       - lean-toolchain
       - lakefile.lean
@@ -44,6 +44,7 @@ jobs:
           test -z "$(git status --porcelain=v1 --untracked-files=all)"
           test "$(tr -d '\r\n' < lean-toolchain)" = "leanprover/lean4:v4.33.0-rc1"
           test -s scripts/final_authority_gate.py
+          test -s scripts/final_authority_gate_v2.py
 
       - name: Install pinned Lean and Mathlib dependency cache
         shell: bash
@@ -67,7 +68,7 @@ jobs:
           set -uo pipefail
           export PATH="$HOME/.elan/bin:$PATH"
           set +e
-          python3 scripts/final_authority_gate.py 2>&1 | tee /tmp/final-authority-runner.log
+          python3 scripts/final_authority_gate_v2.py 2>&1 | tee /tmp/final-authority-runner.log
           rc=${PIPESTATUS[0]}
           set -e
           mkdir -p .final_authority
@@ -76,12 +77,67 @@ jobs:
           echo "exit_code=$rc" >> "$GITHUB_OUTPUT"
           exit "$rc"
 
+      - name: Print compact authority diagnostics
+        if: always()
+        shell: bash
+        run: |
+          set -u
+          if [[ ! -d .final_authority ]]; then
+            echo "No .final_authority directory was produced."
+            exit 0
+          fi
+          find .final_authority -maxdepth 2 -type f -printf '%p\n' | sort
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          root = Path('.final_authority')
+          status = root / 'FINAL_STATUS_CARD.md'
+          if status.is_file():
+              print('\n===== FINAL_STATUS_CARD.md =====')
+              print(status.read_text(encoding='utf-8', errors='replace'))
+
+          preflight_path = root / 'PREFLIGHT.json'
+          if preflight_path.is_file():
+              p = json.loads(preflight_path.read_text(encoding='utf-8'))
+              print('===== PREFLIGHT COMPACT =====')
+              print(json.dumps({
+                  'pass': p.get('pass'),
+                  'branch': p.get('branch'),
+                  'tracked_status': p.get('tracked_status'),
+                  'toolchain_ok': p.get('toolchain') == p.get('toolchain_expected'),
+                  'root_count_ok': p.get('root_count_ok'),
+                  'all_paths_exist': p.get('all_paths_exist_and_are_canonical_files'),
+                  'graph_pass': p.get('graph', {}).get('pass'),
+                  'diff_check_pass': p.get('diff_check', {}).get('pass'),
+                  'temporary_audit_pass': p.get('temporary_file_audit', {}).get('pass'),
+                  'changed_paths_pass': p.get('changed_paths_audit', {}).get('pass'),
+                  'unexpected_paths': p.get('changed_paths_audit', {}).get('unexpected_paths'),
+                  'forbidden_count_final_policy': p.get('forbidden_audit', {}).get('forbidden_count'),
+              }, indent=2, ensure_ascii=False))
+
+          forbidden_path = root / 'FORBIDDEN_AUDIT.json'
+          if forbidden_path.is_file():
+              f = json.loads(forbidden_path.read_text(encoding='utf-8'))
+              nonzero = []
+              for row in f.get('files', []):
+                  counts = {k: v for k, v in row.get('forbidden', {}).items() if v}
+                  if counts:
+                      nonzero.append({'path': row.get('path'), 'counts': counts})
+              print('===== FORBIDDEN AUDIT NONZERO FILES =====')
+              print(json.dumps({
+                  'forbidden_count': f.get('forbidden_count'),
+                  'nonzero_files': nonzero,
+              }, indent=2, ensure_ascii=False))
+          PY
+
       - name: Upload complete authority evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: final-authority-gb0-${{ github.run_id }}-attempt${{ github.run_attempt }}
-          path: .final_authority/**
+          path: .final_authority
           if-no-files-found: error
+          include-hidden-files: true
           retention-days: 30
           compression-level: 6
