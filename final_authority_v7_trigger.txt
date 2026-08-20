@@ -1,0 +1,2 @@
+trigger=1
+registered_workflow_commit=beff55365524fe55e61dc84c59a3068d96841cf8
