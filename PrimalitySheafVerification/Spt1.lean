@@ -862,7 +862,10 @@ example : ¬ (27 : ℕ) ∣ Nat.lcm 12 9 := by norm_num
 example : ¬ (9 : ℕ) ∣ 12 := by norm_num
 example : min 1 2 = 1 := by decide
 example : max 1 2 = 2 := by decide
-example : Fintype.card {x : ZMod 9 // (12 : ZMod 9) * x = 0} = 3 := by native_decide
+example : Fintype.card {x : ZMod 9 // (12 : ZMod 9) * x = 0} = 3 := by
+  rw [← Nat.card_eq_fintype_card]
+  change Nat.card (AddMonoidHom.mulLeft (12 : ZMod 9)).ker = 3
+  simpa using (card_ker_mulLeft 9 12)
 end Examples
 
 /-! ## NEW ADDITIONS  (all fully proved) -/
