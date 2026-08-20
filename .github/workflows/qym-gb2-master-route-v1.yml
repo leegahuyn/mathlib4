@@ -17,10 +17,6 @@ permissions:
   actions: read
   contents: write
 
-concurrency:
-  group: qym-gb2-master-registered-direct-v1
-  cancel-in-progress: false
-
 env:
   SOURCE_BRANCH: gpt/qym-gb5-semantic-round4-matrix-20260820
   OUT: /tmp/qym-gb2-master-route
