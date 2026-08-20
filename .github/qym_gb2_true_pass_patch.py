@@ -46,8 +46,20 @@ HAM_NEW = """@[simp]
 theorem coordinateHamiltonianForm_re_self (u : CoordinateL2) :
     RCLike.re (coordinateHamiltonianForm u u) =
       ‖covariantDerivative u‖ ^ 2 + (1 / 4 : ℝ) * ‖groundProjection u‖ ^ 2 := by
-  rw [coordinateHamiltonianForm_apply, map_add, RCLike.re_ofReal_mul]
-  rw [(norm_sq_eq_re_inner (𝕜 := ℂ) (covariantDerivative u)).symm,
+  rw [coordinateHamiltonianForm_apply, map_add]
+  have hreal :
+      RCLike.re ((((1 : ℝ) / 4 : ℝ) : ℂ) *
+        inner ℂ (groundProjection u) (groundProjection u)) =
+        (1 / 4 : ℝ) *
+          RCLike.re (inner ℂ (groundProjection u) (groundProjection u)) := by
+    change
+      ((((1 : ℝ) / 4 : ℝ) : ℂ) *
+        inner ℂ (groundProjection u) (groundProjection u)).re =
+        (1 / 4 : ℝ) *
+          (inner ℂ (groundProjection u) (groundProjection u)).re
+    simp [Complex.mul_re]
+  rw [hreal,
+    (norm_sq_eq_re_inner (𝕜 := ℂ) (covariantDerivative u)).symm,
     (norm_sq_eq_re_inner (𝕜 := ℂ) (groundProjection u)).symm]
 """
 
