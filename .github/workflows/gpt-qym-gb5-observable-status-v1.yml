@@ -1,4 +1,4 @@
-name: GPT QYM GB5 observable status v1
+name: GPT QYM observable status v1
 
 on:
   pull_request:
@@ -29,14 +29,14 @@ jobs:
         run: |
           set -euo pipefail
           gh api "repos/$GH_REPO/actions/runs?per_page=100" \
-            --jq '.workflow_runs[] | select((.name | test("QYM GB5|QYM GB5 semantic round 4 targeted matrix|QYM GB5 dual authoritative|QYM GB5 semantic round 3|QYM GB5 semantic round 4"; "i"))) | {id,name,event,head_branch,head_sha,status,conclusion,created_at,updated_at,html_url}' \
+            --jq '.workflow_runs[] | select((.name | test("QYM GB2|QYM GB5|QYM semantic|QYM final|QYM two-pass|QYM final13"; "i"))) | {id,name,event,head_branch,head_sha,status,conclusion,created_at,updated_at,html_url}' \
             | tee relevant-qym-runs.jsonl
           test -s relevant-qym-runs.jsonl
 
       - name: Upload run ledger
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: qym-gb5-run-ledger-${{ github.run_id }}
+          name: qym-run-ledger-${{ github.run_id }}
           path: relevant-qym-runs.jsonl
           if-no-files-found: error
           retention-days: 7
