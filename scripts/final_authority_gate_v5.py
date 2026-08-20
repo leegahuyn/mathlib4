@@ -3,7 +3,7 @@
 
 This wrapper preserves the original auditable controller and changes only the
 execution policy needed by the current recovery:
-  * permit the audited Mock1_Advanced and Spt1 primary-root repairs;
+  * permit the audited Mock1_Advanced, Spt1, and Mock3 primary-root repairs;
   * do not let forbidden-token preflight suppress real Lean diagnostics;
   * run the broad Final13 sweep even when the preliminary Mock3 check fails;
   * continue through every independent Final13 root after an earlier failure;
@@ -69,6 +69,7 @@ replacements = [
         '    permitted_root_changes = {\n'
         '        "PrimalitySheafVerification/Spt1.lean",\n'
         '        "PrimalitySheafVerification/Mock1_Advanced.lean",\n'
+        '        "PrimalitySheafVerification/Mock3.lean",\n'
         '    }\n'
         '    unexpected_root_changes = sorted(set(root_changes) - permitted_root_changes)\n'
         '    return {\n',
@@ -126,8 +127,8 @@ replacements = [
         "FA/Integrated status fallback",
     ),
     (
-        '            "Whitespace/diff/mathematical-integrity review; protected mathematical roots remain byte-identical and only bridge/build wiring changes.",\n',
-        '            "Whitespace/diff/mathematical-integrity review; FA, Integrated and QYM remain byte-identical while Mock1_Advanced, Spt1 and Mock3 receive the audited cumulative recovery patch.",\n',
+        '            "Whitespace/diff/mathematical-integrity review; protected mathematical roots remain byte-identical and only bridge/build wiring changes.\",\n',
+        '            "Whitespace/diff/mathematical-integrity review; FA, Integrated and QYM remain byte-identical while Mock1_Advanced, Spt1 and Mock3 receive the audited cumulative recovery patch.\",\n',
         "checklist integrity wording",
     ),
 ]
