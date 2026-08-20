@@ -1,0 +1,83 @@
+name: GPT final13 sync verified QYM and trigger v1
+
+on:
+  push:
+    branches:
+      - 'gpt/final13-final-*'
+    paths:
+      - .github/final13-sync-qym-trigger.txt
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: gpt-final13-sync-qym-${{ github.ref_name }}
+  cancel-in-progress: true
+
+env:
+  SOURCE_BRANCH: gpt/qym-gb5-semantic-round4-20260820
+  QYM: PrimalitySheafVerification/QYM.lean
+  EVIDENCE: .github/qym-frontier/GB2_FINAL_V1
+
+jobs:
+  sync:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - name: Fetch and gate independently replayed QYM TRUE PASS
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin "$SOURCE_BRANCH"
+          rm -rf /tmp/qym-final-sync
+          mkdir -p /tmp/qym-final-sync
+          git show "origin/$SOURCE_BRANCH:$EVIDENCE/RESULT.json" > /tmp/qym-final-sync/RESULT.json
+          git show "origin/$SOURCE_BRANCH:$EVIDENCE/REPLAY_RESULT.json" > /tmp/qym-final-sync/REPLAY_RESULT.json
+          python3 - <<'PY'
+          import json
+          first = json.load(open('/tmp/qym-final-sync/RESULT.json'))
+          replay = json.load(open('/tmp/qym-final-sync/REPLAY_RESULT.json'))
+          assert first.get('pass') is True, first
+          assert first.get('exit') == 0 and first.get('error_headers') == 0, first
+          assert first.get('panic_lines') == 0 and first.get('forbidden_zero') is True, first
+          assert first.get('olean_exists') is True and first.get('ilean_exists') is True, first
+          assert replay.get('pass') is True, replay
+          assert replay.get('exit') == 0 and replay.get('error_headers') == 0, replay
+          assert replay.get('panic_lines') == 0, replay
+          assert replay.get('source_sha256') == first.get('source_sha256'), (first, replay)
+          print(first['source_sha256'])
+          PY
+
+      - name: Synchronize exact passing source and evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          git checkout "origin/$SOURCE_BRANCH" -- "$QYM" "$EVIDENCE"
+          actual="$(sha256sum "$QYM" | awk '{print $1}')"
+          expected="$(python3 -c 'import json; print(json.load(open("'"$EVIDENCE"'/RESULT.json"))["source_sha256"])')"
+          test "$actual" = "$expected"
+          cat > .github/final13-gate-v3-trigger.txt <<EOF
+          Final13 v3 authoritative trigger
+          qym_source_branch=$SOURCE_BRANCH
+          qym_sha256=$actual
+          qym_first_pass=true
+          qym_independent_replay=true
+          source_sync_run=$GITHUB_RUN_ID
+          EOF
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "$QYM" "$EVIDENCE" .github/final13-gate-v3-trigger.txt
+          git commit -m "Sync independently replayed QYM TRUE PASS and trigger Final13 v3"
+          for attempt in 1 2 3 4 5; do
+            git fetch origin "$GITHUB_REF_NAME"
+            if git rebase "origin/$GITHUB_REF_NAME" && git push origin "HEAD:$GITHUB_REF_NAME"; then exit 0; fi
+            git rebase --abort || true
+            sleep $((attempt * 5))
+          done
+          exit 1
