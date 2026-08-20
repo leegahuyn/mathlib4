@@ -41,6 +41,7 @@ replacements = [
         '        ".github/workflows/final-authority-gb0-actual-lean.yml",\n'
         '        ".github/workflows/m1a-native-clean-six-cumulative-actual-lean.yml",\n'
         '        ".github/workflows/final-authority-mass-repair-v3.yml",\n'
+        '        ".github/workflows/final-authority-pr-observable-v1.yml",\n'
         '    }\n',
         "changed-path allowlist",
     ),
