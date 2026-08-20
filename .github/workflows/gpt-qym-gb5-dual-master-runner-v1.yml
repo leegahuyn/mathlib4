@@ -1,5 +1,7 @@
 name: GPT QYM GB5 dual authoritative direct Lean runner v1
 
+# Explicit second-push trigger after this workflow is registered on master.
+
 on:
   push:
     branches:
