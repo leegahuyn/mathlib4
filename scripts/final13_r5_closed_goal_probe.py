@@ -5,16 +5,42 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-DELTA = "coord, signedRow, pairSolution, matVecProbe, dotRatProbe, List.range, Function.comp_def"
-DELTA_FOLD = DELTA + ", List.zip, List.foldl, List.map, List.append, List.sum"
+RANGE11 = "[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]"
+DEFS = "coord, signedRow, pairSolution, matVecProbe, dotRatProbe, Function.comp_def"
+DEFS_FOLD = DEFS + ", List.zip, List.foldl, List.map, List.append, List.sum"
 
 TACTICS = {
-    "norm-num-delta": f"by\n  norm_num [{DELTA}]",
-    "norm-num-delta-fold": f"by\n  norm_num [{DELTA_FOLD}]",
-    "simp-delta": f"by\n  simp [{DELTA}]",
-    "simp-delta-norm": f"by\n  simp [{DELTA}] <;> norm_num",
-    "dsimp-delta-norm": f"by\n  dsimp [{DELTA}]\n  norm_num",
-    "simp-fold-norm": f"by\n  simp [{DELTA_FOLD}] <;> norm_num",
+    "hrange-decide-norm": (
+        "by\n"
+        f"  have hrange : List.range 11 = {RANGE11} := by decide\n"
+        f"  norm_num [{DEFS}, hrange]"
+    ),
+    "hrange-rfl-norm": (
+        "by\n"
+        f"  have hrange : List.range 11 = {RANGE11} := by rfl\n"
+        f"  norm_num [{DEFS}, hrange]"
+    ),
+    "hrange-decide-simp": (
+        "by\n"
+        f"  have hrange : List.range 11 = {RANGE11} := by decide\n"
+        f"  simp [{DEFS}, hrange] <;> norm_num"
+    ),
+    "hrange-decide-fold": (
+        "by\n"
+        f"  have hrange : List.range 11 = {RANGE11} := by decide\n"
+        f"  norm_num [{DEFS_FOLD}, hrange]"
+    ),
+    "hrange-rfl-simp": (
+        "by\n"
+        f"  have hrange : List.range 11 = {RANGE11} := by rfl\n"
+        f"  simp [{DEFS}, hrange] <;> norm_num"
+    ),
+    "hrange-decide-simp-only": (
+        "by\n"
+        f"  have hrange : List.range 11 = {RANGE11} := by decide\n"
+        f"  simp only [{DEFS}, hrange]\n"
+        "  norm_num"
+    ),
 }
 
 
