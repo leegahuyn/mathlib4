@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: m1a-native-clean-six-${{ github.ref }}
@@ -28,7 +28,7 @@ jobs:
         with:
           ref: ${{ github.sha }}
           fetch-depth: 0
-          persist-credentials: false
+          persist-credentials: true
 
       - name: Verify immutable six-error authority input
         shell: bash
@@ -178,4 +178,17 @@ jobs:
               raise SystemExit(1)
           PY
 
-# execution trigger: 2026-08-20 mass-batch-round-1
+      - name: Persist verified source on an immutable promotion branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          branch="gpt/m1a-six-true-pass-${GITHUB_RUN_ID}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- PrimalitySheafVerification/Mock1_Advanced.lean
+          git commit -m "M1A: promote verified native-clean six-proof source"
+          git rev-parse HEAD | tee .m1a_candidate/PROMOTION_COMMIT.txt
+          printf '%s\n' "$branch" | tee .m1a_candidate/PROMOTION_BRANCH.txt
+          git push origin "HEAD:refs/heads/${branch}"
+
+# execution trigger: 2026-08-20 persist-verified-round-2
