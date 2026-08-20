@@ -21,16 +21,16 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
-      - name: List relevant QYM workflow runs
+      - name: List recent relevant QYM workflow runs
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
         run: |
           set -euo pipefail
-          gh api --paginate "repos/$GH_REPO/actions/runs?per_page=100" \
+          gh api "repos/$GH_REPO/actions/runs?per_page=100" \
             --jq '.workflow_runs[] | select((.name | test("QYM GB5|QYM GB5 semantic round 4 targeted matrix|QYM GB5 dual authoritative|QYM GB5 semantic round 3|QYM GB5 semantic round 4"; "i"))) | {id,name,event,head_branch,head_sha,status,conclusion,created_at,updated_at,html_url}' \
-            | head -100 | tee relevant-qym-runs.jsonl
+            | tee relevant-qym-runs.jsonl
           test -s relevant-qym-runs.jsonl
 
       - name: Upload run ledger
