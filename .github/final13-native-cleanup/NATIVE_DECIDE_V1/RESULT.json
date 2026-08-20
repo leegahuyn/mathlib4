@@ -1,0 +1,36 @@
+{
+  "authority": "actual direct Lean on both modified canonical sources",
+  "files": {
+    "Mock1_Advanced": {
+      "error_headers": 0,
+      "exit": null,
+      "first_error": null,
+      "ilean_exists": false,
+      "olean_exists": false,
+      "panic_lines": 0,
+      "source_blob": "2dc68bb04df549064b41fc318d18ea02d4d40679",
+      "source_sha256": "69f0703cc03fd0efde38b9d7018424cc62b724e0afaab7b66e3ccafb4d9f0311",
+      "warning_headers": 0
+    },
+    "Spt1": {
+      "error_headers": 0,
+      "exit": null,
+      "first_error": null,
+      "ilean_exists": false,
+      "olean_exists": false,
+      "panic_lines": 0,
+      "source_blob": "ed554b8268e9504281572d0cea27e40d5ba06a19",
+      "source_sha256": "0ef9289806dcb5b57d1d801526e45fe71bd2c85768b5b6f375fa9de005037e74",
+      "warning_headers": 0
+    }
+  },
+  "pass": false,
+  "patch_report": {},
+  "remaining_native_decide_text_count": 62,
+  "run_id": 32329544820,
+  "schema": "final13-native-decide-cleanup-v1",
+  "total_error_headers": 0,
+  "total_panic_lines": 0,
+  "total_warning_headers": 0,
+  "trigger_sha": "67f159b23601803009d6456509f209f5036ea7da"
+}
