@@ -1,0 +1,211 @@
+name: GPT final13 native_decide cleanup v1
+
+on:
+  push:
+    branches:
+      - gpt/final13-native-cleanup-20260820
+    paths:
+      - scripts/native_decide_cleanup_v1.py
+      - .github/workflows/gpt-final13-native-decide-cleanup-v1.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: gpt-final13-native-decide-cleanup-v1
+  cancel-in-progress: true
+
+env:
+  BRANCH: gpt/final13-native-cleanup-20260820
+  OUT: /tmp/native-decide-cleanup-v1
+  SPT1: PrimalitySheafVerification/Spt1.lean
+  MOCK1A: PrimalitySheafVerification/Mock1_Advanced.lean
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - name: Gate exact branch and prepare external evidence directory
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF_NAME" = "$BRANCH"
+          rm -rf "$OUT"
+          mkdir -p "$OUT"
+          git status --porcelain=v1 | tee "$OUT/checkout-status-before.txt"
+          test ! -s "$OUT/checkout-status-before.txt"
+          git rev-parse HEAD | tee "$OUT/trigger-sha.txt"
+          test "$(git hash-object "$SPT1")" = ed554b8268e9504281572d0cea27e40d5ba06a19
+          test "$(git hash-object "$MOCK1A")" = 2dc68bb04df549064b41fc318d18ea02d4d40679
+          python3 -m py_compile scripts/native_decide_cleanup_v1.py
+
+      - name: Install pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 8 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none > "$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          tc="$(tr -d '\r\n' < lean-toolchain)"
+          test "$tc" = leanprover/lean4:v4.33.0-rc1
+          ok=0
+          for attempt in 1 2 3 4 5; do
+            if elan toolchain install "$tc" >> "$OUT/toolchain.log" 2>&1; then ok=1; break; fi
+            sleep $((attempt * 5))
+          done
+          test "$ok" = 1
+          lean --version | tee "$OUT/lean-version.txt"
+          lake --version | tee "$OUT/lake-version.txt"
+          ok=0
+          for attempt in 1 2 3 4 5; do
+            if lake exe cache get >> "$OUT/mathlib-cache.log" 2>&1; then ok=1; break; fi
+            sleep $((attempt * 5))
+          done
+          test "$ok" = 1
+
+      - name: Remove executable native_decide tokens from the two canonical files
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -B scripts/native_decide_cleanup_v1.py "$OUT/PATCH_REPORT.json" \
+            > "$OUT/patch.log" 2>&1
+          git diff -- "$SPT1" "$MOCK1A" > "$OUT/source.patch"
+          test -s "$OUT/source.patch"
+
+      - name: Direct Lean compile Spt1 and Mock1_Advanced with default trust settings
+        shell: bash
+        run: |
+          set -uo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          set +e
+          lake env lean -DmaxErrors=10000 -DwarningAsError=false \
+            -o "$OUT/Spt1.olean" -i "$OUT/Spt1.ilean" "$SPT1" \
+            > "$OUT/Spt1.log" 2>&1
+          spt1_exit=$?
+          lake env lean -DmaxErrors=10000 -DwarningAsError=false \
+            -o "$OUT/Mock1_Advanced.olean" -i "$OUT/Mock1_Advanced.ilean" "$MOCK1A" \
+            > "$OUT/Mock1_Advanced.log" 2>&1
+          mock1a_exit=$?
+          set -e
+          printf '%s\n' "$spt1_exit" > "$OUT/Spt1.exit"
+          printf '%s\n' "$mock1a_exit" > "$OUT/Mock1_Advanced.exit"
+          exit 0
+
+      - name: Build authoritative cleanup result
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib, json, os, re, subprocess
+          from pathlib import Path
+
+          out = Path(os.environ['OUT'])
+          files = {
+              'Spt1': Path(os.environ['SPT1']),
+              'Mock1_Advanced': Path(os.environ['MOCK1A']),
+          }
+          def read_exit(name):
+              p = out / f'{name}.exit'
+              return int(p.read_text().strip()) if p.exists() else None
+          def digest(path):
+              return hashlib.sha256(path.read_bytes()).hexdigest() if path.exists() else None
+          def blob(path):
+              return subprocess.check_output(['git', 'hash-object', str(path)], text=True).strip() if path.exists() else None
+
+          patch = json.loads((out / 'PATCH_REPORT.json').read_text()) if (out / 'PATCH_REPORT.json').exists() else {}
+          details = {}
+          total_errors = total_warnings = total_panics = 0
+          for name, source in files.items():
+              log_path = out / f'{name}.log'
+              text = log_path.read_text(errors='replace') if log_path.exists() else ''
+              error_headers = [line for line in text.splitlines() if re.match(r'^.*\.lean:\d+:\d+: error', line)]
+              warning_headers = [line for line in text.splitlines() if re.match(r'^.*\.lean:\d+:\d+: warning', line)]
+              panic_lines = [line for line in text.splitlines() if re.search(r'internal error|uncaught exception|panic(!|:| )', line, re.I)]
+              total_errors += len(error_headers)
+              total_warnings += len(warning_headers)
+              total_panics += len(panic_lines)
+              details[name] = {
+                  'exit': read_exit(name),
+                  'error_headers': len(error_headers),
+                  'warning_headers': len(warning_headers),
+                  'panic_lines': len(panic_lines),
+                  'first_error': error_headers[0] if error_headers else None,
+                  'source_sha256': digest(source),
+                  'source_blob': blob(source),
+                  'olean_exists': (out / f'{name}.olean').is_file() and (out / f'{name}.olean').stat().st_size > 0,
+                  'ilean_exists': (out / f'{name}.ilean').is_file() and (out / f'{name}.ilean').stat().st_size > 0,
+              }
+          remaining = sum(source.read_text().count('native_decide') for source in files.values() if source.exists())
+          passed = (
+              patch.get('all_removed') is True
+              and remaining == 0
+              and total_errors == 0
+              and total_panics == 0
+              and all(row['exit'] == 0 and row['olean_exists'] and row['ilean_exists'] for row in details.values())
+          )
+          result = {
+              'schema': 'final13-native-decide-cleanup-v1',
+              'authority': 'actual direct Lean on both modified canonical sources',
+              'run_id': int(os.environ.get('GITHUB_RUN_ID', '0')),
+              'trigger_sha': os.environ.get('GITHUB_SHA'),
+              'pass': passed,
+              'remaining_native_decide_text_count': remaining,
+              'total_error_headers': total_errors,
+              'total_warning_headers': total_warnings,
+              'total_panic_lines': total_panics,
+              'patch_report': patch,
+              'files': details,
+          }
+          (out / 'RESULT.json').write_text(json.dumps(result, indent=2, sort_keys=True) + '\n')
+          print(json.dumps(result, indent=2, sort_keys=True))
+          PY
+
+      - name: Upload immutable cleanup evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: final13-native-decide-cleanup-v1-${{ github.run_id }}
+          path: ${{ env.OUT }}
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Persist result and promote only a direct-Lean PASS
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s "$OUT/RESULT.json"
+          dest=.github/final13-native-cleanup/NATIVE_DECIDE_V1
+          rm -rf "$dest"
+          mkdir -p "$dest"
+          cp "$OUT/RESULT.json" "$dest/"
+          cp "$OUT/PATCH_REPORT.json" "$dest/" 2>/dev/null || true
+          cp "$OUT/Spt1.log" "$dest/" 2>/dev/null || true
+          cp "$OUT/Mock1_Advanced.log" "$dest/" 2>/dev/null || true
+          cp "$OUT/source.patch" "$dest/" 2>/dev/null || true
+          passed="$(python3 -c 'import json; print(str(json.load(open("'"$OUT"'/RESULT.json"))["pass"]).lower())')"
+          if [[ "$passed" != true ]]; then
+            git checkout "$GITHUB_SHA" -- "$SPT1" "$MOCK1A"
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "$dest" "$SPT1" "$MOCK1A"
+          git commit -m "Final13 native_decide cleanup v1 result ${GITHUB_RUN_ID} [skip ci]"
+          for attempt in 1 2 3 4 5; do
+            git fetch origin "$BRANCH"
+            if git rebase "origin/$BRANCH" && git push origin "HEAD:$BRANCH"; then exit 0; fi
+            git rebase --abort || true
+            sleep $((attempt * 5))
+          done
+          exit 1
