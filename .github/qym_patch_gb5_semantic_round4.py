@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+# Explicit second-push trigger after the workflow file exists on this branch.
+
 import hashlib
 import sys
 from pathlib import Path
