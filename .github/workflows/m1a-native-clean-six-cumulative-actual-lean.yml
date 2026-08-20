@@ -1,0 +1,179 @@
+name: M1A Native-Clean Six-Proof Cumulative Actual Lean
+
+on:
+  push:
+    branches:
+      - gpt/final13-m1a-native-clean-six-candidate-20260820
+    paths:
+      - .github/workflows/m1a-native-clean-six-cumulative-actual-lean.yml
+      - scripts/final13_r5_patch_mock1_advanced_six.py
+      - PrimalitySheafVerification/Mock1_Advanced.lean
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: m1a-native-clean-six-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  actual-lean:
+    if: github.ref_name == 'gpt/final13-m1a-native-clean-six-candidate-20260820'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+    steps:
+      - name: Checkout exact candidate source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Verify immutable six-error authority input
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git hash-object PrimalitySheafVerification/Mock1_Advanced.lean)" = \
+            "da99c78fdc2f6f894b55dd79af1438fa2d51a1b6"
+          test "$(sha256sum PrimalitySheafVerification/Mock1_Advanced.lean | awk '{print $1}')" = \
+            "d2cf9f101e04d58e0fd87e62d1f102b8eb910d4cc5e3e9d2b903e5c7df0f98f2"
+          ! grep -nE '\bnative_decide\b|set_option[[:space:]]+maxHeartbeats[[:space:]]+0' \
+            PrimalitySheafVerification/Mock1_Advanced.lean
+
+      - name: Apply all six locally verified proof repairs as one patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .m1a_candidate
+          python3 scripts/final13_r5_patch_mock1_advanced_six.py \
+            hrange-rfl-norm \
+            PrimalitySheafVerification/Mock1_Advanced.lean \
+            .m1a_candidate/Mock1_Advanced.patched.lean \
+            | tee .m1a_candidate/PATCH_RESULT.txt
+          cp .m1a_candidate/Mock1_Advanced.patched.lean \
+            PrimalitySheafVerification/Mock1_Advanced.lean
+          sha256sum PrimalitySheafVerification/Mock1_Advanced.lean \
+            | tee .m1a_candidate/PATCHED_SHA256.txt
+          git hash-object PrimalitySheafVerification/Mock1_Advanced.lean \
+            | tee .m1a_candidate/PATCHED_GIT_BLOB.txt
+          ! grep -nE '\b(sorry|admit|native_decide)\b|set_option[[:space:]]+maxHeartbeats[[:space:]]+0' \
+            PrimalitySheafVerification/Mock1_Advanced.lean
+
+      - name: Install pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="$HOME/.elan/bin:$PATH"
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)"
+          lake exe cache get
+          lean --version | tee .m1a_candidate/LEAN_VERSION.txt
+          lake --version | tee .m1a_candidate/LAKE_VERSION.txt
+
+      - name: Directly compile full patched Mock1_Advanced
+        id: compile
+        shell: bash
+        run: |
+          set -uo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          start=$(date +%s)
+          set +e
+          timeout --signal=TERM --kill-after=60s 10800s \
+            lake env lean PrimalitySheafVerification/Mock1_Advanced.lean \
+            2>&1 | tee .m1a_candidate/Mock1_Advanced.direct.log
+          rc=${PIPESTATUS[0]}
+          set -e
+          end=$(date +%s)
+          printf '%s\n' "$rc" > .m1a_candidate/EXIT_CODE.txt
+          printf '%s\n' "$((end-start))" > .m1a_candidate/ELAPSED_SECONDS.txt
+          echo "exit_code=$rc" >> "$GITHUB_OUTPUT"
+
+      - name: Build authoritative result JSON
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib
+          import json
+          import re
+          import subprocess
+          from pathlib import Path
+
+          out = Path('.m1a_candidate')
+          src = Path('PrimalitySheafVerification/Mock1_Advanced.lean')
+          log_path = out / 'Mock1_Advanced.direct.log'
+          log = log_path.read_text(encoding='utf-8', errors='replace') if log_path.exists() else ''
+          exit_path = out / 'EXIT_CODE.txt'
+          exit_code = int(exit_path.read_text().strip()) if exit_path.exists() else 999
+          raw = src.read_bytes() if src.exists() else b''
+          text = raw.decode('utf-8', errors='replace')
+          error_lines = [line for line in log.splitlines() if re.search(r':\d+:\d+: error:', line)]
+          warning_lines = [line for line in log.splitlines() if re.search(r':\d+:\d+: warning:', line)]
+          forbidden_patterns = {
+              'sorry': r'\bsorry\b',
+              'admit': r'\badmit\b',
+              'native_decide': r'\bnative_decide\b',
+              'maxHeartbeats_0': r'set_option\s+maxHeartbeats\s+0',
+          }
+          forbidden = {name: len(re.findall(pattern, text)) for name, pattern in forbidden_patterns.items()}
+          panic = len(re.findall(r'(?i)\bpanic\b|internal error|uncaught exception', log))
+          blob = subprocess.check_output(['git', 'hash-object', str(src)], text=True).strip() if src.exists() else None
+          result = {
+              'commit': subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip(),
+              'path': str(src),
+              'input_blob': 'da99c78fdc2f6f894b55dd79af1438fa2d51a1b6',
+              'input_sha256': 'd2cf9f101e04d58e0fd87e62d1f102b8eb910d4cc5e3e9d2b903e5c7df0f98f2',
+              'patched_blob': blob,
+              'patched_sha256': hashlib.sha256(raw).hexdigest(),
+              'line_count': len(raw.splitlines()),
+              'command': 'lake env lean PrimalitySheafVerification/Mock1_Advanced.lean',
+              'exit': exit_code,
+              'error_headers': len(error_lines),
+              'warning_headers': len(warning_lines),
+              'panic': panic,
+              'forbidden': forbidden,
+              'forbidden_total': sum(forbidden.values()),
+              'first_error': error_lines[0] if error_lines else None,
+              'all_error_headers': error_lines,
+          }
+          result['pass'] = (
+              exit_code == 0
+              and result['error_headers'] == 0
+              and panic == 0
+              and result['forbidden_total'] == 0
+          )
+          (out / 'M1A_SIX_CUMULATIVE_RESULT.json').write_text(
+              json.dumps(result, indent=2, ensure_ascii=False) + '\n', encoding='utf-8'
+          )
+          print(json.dumps(result, indent=2, ensure_ascii=False))
+          PY
+
+      - name: Upload patched source and complete direct-Lean evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: m1a-native-clean-six-${{ github.run_id }}-attempt${{ github.run_attempt }}
+          path: .m1a_candidate
+          if-no-files-found: error
+          include-hidden-files: true
+          retention-days: 30
+          compression-level: 6
+
+      - name: Enforce TRUE PASS
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          result = json.loads(Path('.m1a_candidate/M1A_SIX_CUMULATIVE_RESULT.json').read_text())
+          if not result['pass']:
+              raise SystemExit(1)
+          PY
