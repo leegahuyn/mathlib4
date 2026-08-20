@@ -65813,9 +65813,10 @@ theorem advanced_claims_ii_paper_t1t2_full_solution_table :
       [ (1 / 2 : Rat), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
       , (-1 / 2 : Rat), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
       ] := by
+  have hrange : List.range 11 = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10] := by rfl
   norm_num [AdvancedClaimsIIPaperT1T2FullSolution,
     AdvancedClaimsIIPaperT1T2FullDepth, referenceMock1MList,
-    AdvancedClaimsIIRatCoordinateVector]
+    AdvancedClaimsIIRatCoordinateVector, hrange]
 
 theorem advanced_claims_ii_paper_t1t2_full_matvec :
     MatVecRat AdvancedClaimsIIPaperT1T2FullMatrix
@@ -65824,8 +65825,10 @@ theorem advanced_claims_ii_paper_t1t2_full_matvec :
   rw [advanced_claims_ii_paper_t1t2_full_matrix_formula,
     advanced_claims_ii_paper_t1t2_full_solution_table,
     advanced_claims_ii_paper_t1t2_full_rhs_table]
+  have hrange : List.range 11 = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10] := by rfl
   norm_num [MatVecRat, dotRat, AdvancedClaimsIISignedIdentityMatrix,
-    AdvancedClaimsIISignedIdentityRow, AdvancedClaimsIIRatCoordinateVector]
+    AdvancedClaimsIISignedIdentityRow, AdvancedClaimsIIRatCoordinateVector,
+    hrange]
 
 theorem advanced_claims_ii_paper_t1t2_full_solution_squared_norm :
     AdvancedClaimsIIRatSquaredNorm AdvancedClaimsIIPaperT1T2FullSolution =
@@ -65843,25 +65846,28 @@ theorem advanced_claims_ii_paper_t1t2_full_pair_targets :
         AdvancedClaimsIIPaperT1T2FullPairSolution =
       AdvancedClaimsIIPaperT1T2FullRHS := by
   rw [advanced_claims_ii_paper_t1t2_full_rhs_table]
+  have hrange : List.range 11 = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10] := by rfl
   norm_num [AdvancedClaimsIISignedPairTargets,
     AdvancedClaimsIIPaperT1T2FullPairSolution,
-    AdvancedClaimsIIPaperT1T2FullDepth, referenceMock1MList]
+    AdvancedClaimsIIPaperT1T2FullDepth, referenceMock1MList, hrange]
 
 theorem advanced_claims_ii_paper_t1t2_full_pair_flatten :
     AdvancedClaimsIIFlattenSignedPairs
         AdvancedClaimsIIPaperT1T2FullPairSolution =
       AdvancedClaimsIIPaperT1T2FullSolution := by
   rw [advanced_claims_ii_paper_t1t2_full_solution_table]
+  have hrange : List.range 11 = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10] := by rfl
   norm_num [AdvancedClaimsIIFlattenSignedPairs,
     AdvancedClaimsIIPaperT1T2FullPairSolution,
-    AdvancedClaimsIIPaperT1T2FullDepth, referenceMock1MList]
+    AdvancedClaimsIIPaperT1T2FullDepth, referenceMock1MList, hrange]
 
 theorem advanced_claims_ii_paper_t1t2_full_pair_squared_norm :
     AdvancedClaimsIISignedPairSquaredNorm
         AdvancedClaimsIIPaperT1T2FullPairSolution = 1 / 2 := by
+  have hrange : List.range 11 = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10] := by rfl
   norm_num [AdvancedClaimsIISignedPairSquaredNorm,
     AdvancedClaimsIIPaperT1T2FullPairSolution,
-    AdvancedClaimsIIPaperT1T2FullDepth, referenceMock1MList]
+    AdvancedClaimsIIPaperT1T2FullDepth, referenceMock1MList, hrange]
 
 theorem advanced_claims_ii_paper_t1t2_pair_assignment_minimality
     (pairs : List (Prod Rat Rat))
@@ -66734,6 +66740,7 @@ theorem reference_advanced_claims_ii_paper_t3_block_portfolio :
     change (1 : Rat) =
       AdvancedClaimsIIPaperT3BlockSum * (1 : Rat)
     rw [advanced_claims_ii_paper_t3_block_sum]
+    norm_num
   declared_scale_nonzero :=
     referenceFixedShadowUnaryThetaDataCertificate.scale_nonzero_at
   principal_terms_kind :=
