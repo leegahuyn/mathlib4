@@ -1,0 +1,231 @@
+{
+  "best": {
+    "authority": "actual direct Lean on both modified canonical paths",
+    "files": {
+      "Mock1_Advanced": {
+        "elapsed_seconds": 244,
+        "error_headers": 16,
+        "errors": [
+          {
+            "code": null,
+            "column": 2,
+            "file": "/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock1_Advanced.lean",
+            "line": 65816,
+            "message": "Tactic `decide` failed for proposition"
+          },
+          {
+            "code": null,
+            "column": 2,
+            "file": "/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock1_Advanced.lean",
+            "line": 65822,
+            "message": "Tactic `decide` failed for proposition"
+          },
+          {
+            "code": null,
+            "column": 2,
+            "file": "/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock1_Advanced.lean",
+            "line": 65827,
+            "message": "Tactic `decide` failed for proposition"
+          },
+          {
+            "code": null,
+            "column": 2,
+            "file": "/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock1_Advanced.lean",
+            "line": 65831,
+            "message": "Tactic `decide` failed for proposition"
+          },
+          {
+            "code": null,
+            "column": 2,
+            "file": "/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock1_Advanced.lean",
+            "line": 65837,
+            "message": "Tactic `decide` failed for proposition"
+          },
+          {
+            "code": null,
+            "column": 2,
+            "file": "/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock1_Advanced.lean",
+            "line": 65843,
+            "message": "Tactic `decide` failed for proposition"
+          },
+          {
+            "code": null,
+            "column": 2,
+            "file": "/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock1_Advanced.lean",
+            "line": 65848,
+            "message": "Tactic `decide` failed for proposition"
+          },
+          {
+            "code": null,
+            "column": 2,
+            "file": "/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock1_Advanced.lean",
+            "line": 66091,
+            "message": "Tactic `decide` failed for proposition"
+          },
+          {
+            "code": null,
+            "column": 2,
+            "file": "/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock1_Advanced.lean",
+            "line": 66262,
+            "message": "Tactic `decide` failed for proposition"
+          },
+          {
+            "code": null,
+            "column": 2,
+            "file": "/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock1_Advanced.lean",
+            "line": 66267,
+            "message": "Tactic `decide` failed for proposition"
+          },
+          {
+            "code": null,
+            "column": 2,
+            "file": "/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock1_Advanced.lean",
+            "line": 66272,
+            "message": "Tactic `decide` failed for proposition"
+          },
+          {
+            "code": null,
+            "column": 2,
+            "file": "/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock1_Advanced.lean",
+            "line": 66277,
+            "message": "Tactic `decide` failed for proposition"
+          },
+          {
+            "code": null,
+            "column": 2,
+            "file": "/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock1_Advanced.lean",
+            "line": 66409,
+            "message": "Tactic `decide` failed for proposition"
+          },
+          {
+            "code": null,
+            "column": 2,
+            "file": "/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock1_Advanced.lean",
+            "line": 66413,
+            "message": "Tactic `decide` failed for proposition"
+          },
+          {
+            "code": null,
+            "column": 4,
+            "file": "/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock1_Advanced.lean",
+            "line": 66694,
+            "message": "Tactic `decide` failed for proposition"
+          },
+          {
+            "code": null,
+            "column": 4,
+            "file": "/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock1_Advanced.lean",
+            "line": 66696,
+            "message": "Tactic `decide` failed for proposition"
+          }
+        ],
+        "exit": 1,
+        "first_error": {
+          "code": null,
+          "column": 2,
+          "file": "/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock1_Advanced.lean",
+          "line": 65816,
+          "message": "Tactic `decide` failed for proposition"
+        },
+        "ilean_exists": false,
+        "olean_exists": false,
+        "panic_lines": 0,
+        "source": "/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock1_Advanced.lean",
+        "source_blob": "8576b028c0adad76d06e8d7f4a51bc686d7bea81",
+        "source_sha256": "e293b7a2bd9ba5259b18f574a6b0bb23be1f030b628c4713644edf5230c9a256",
+        "warning_headers": 112
+      },
+      "Spt1": {
+        "elapsed_seconds": 28,
+        "error_headers": 0,
+        "errors": [],
+        "exit": 0,
+        "first_error": null,
+        "ilean_exists": true,
+        "olean_exists": true,
+        "panic_lines": 0,
+        "source": "/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Spt1.lean",
+        "source_blob": "172b67583e3c491902c2baac7e363fdece1a6907",
+        "source_sha256": "1fa51432d22614e31408f56afd7a080a70421123d141742b0efeaea6c5007162",
+        "warning_headers": 20
+      }
+    },
+    "pass": false,
+    "remaining_native_decide": {
+      "Mock1_Advanced": 0,
+      "Spt1": 0
+    },
+    "run_id": 32331836206,
+    "schema": "final13-native-decide-cleanup-r2-candidate-v1",
+    "total_error_headers": 16,
+    "total_panic_lines": 0,
+    "trigger_sha": "2bc90ccf65a509b31bf190157e05e98a09a9186e",
+    "variant": "all-decide-depth"
+  },
+  "candidate_count": 4,
+  "promote": false,
+  "ranking": [
+    {
+      "mock1_advanced_blob": "8576b028c0adad76d06e8d7f4a51bc686d7bea81",
+      "mock1_advanced_first_error": {
+        "code": null,
+        "column": 2,
+        "file": "/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock1_Advanced.lean",
+        "line": 65816,
+        "message": "Tactic `decide` failed for proposition"
+      },
+      "mock1_advanced_sha256": "e293b7a2bd9ba5259b18f574a6b0bb23be1f030b628c4713644edf5230c9a256",
+      "pass": false,
+      "total_error_headers": 16,
+      "total_panic_lines": 0,
+      "variant": "all-decide-depth"
+    },
+    {
+      "mock1_advanced_blob": "5b2abce16fd93f75e7151497b9a12d75c203a711",
+      "mock1_advanced_first_error": {
+        "code": null,
+        "column": 11,
+        "file": "/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock1_Advanced.lean",
+        "line": 65815,
+        "message": "unsolved goals"
+      },
+      "mock1_advanced_sha256": "7684c0b6341ac419f8da6270797b44d027dbb1abbe167f8eb28827438ee1a9f5",
+      "pass": false,
+      "total_error_headers": 16,
+      "total_panic_lines": 0,
+      "variant": "targeted-norm-depth"
+    },
+    {
+      "mock1_advanced_blob": "e55b0728d1cfb6a9be60f19fa06203d3244f4d25",
+      "mock1_advanced_first_error": {
+        "code": null,
+        "column": 11,
+        "file": "/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock1_Advanced.lean",
+        "line": 65815,
+        "message": "unsolved goals"
+      },
+      "mock1_advanced_sha256": "89d4e66f790b79d71809b42b46c16c0b686e79873b71ae57da7072b76752690c",
+      "pass": false,
+      "total_error_headers": 20,
+      "total_panic_lines": 0,
+      "variant": "targeted-all20-norm-depth"
+    },
+    {
+      "mock1_advanced_blob": "591500887524036b80c595555a9a3f9c81075b66",
+      "mock1_advanced_first_error": {
+        "code": null,
+        "column": 27,
+        "file": "/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock1_Advanced.lean",
+        "line": 64685,
+        "message": "unsolved goals"
+      },
+      "mock1_advanced_sha256": "c9bc37bae7c8098818dfdc6d77c6e0cf49f46a2ca90a64f1b4371fd14501e8f5",
+      "pass": false,
+      "total_error_headers": 60,
+      "total_panic_lines": 0,
+      "variant": "all-norm-depth"
+    }
+  ],
+  "schema": "final13-native-decide-cleanup-r2-selector-v1",
+  "true_pass": false
+}
