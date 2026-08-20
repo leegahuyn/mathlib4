@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+# Explicit second-push trigger: the workflow now already exists on the branch.
+
 import bisect
 import collections
 import hashlib
