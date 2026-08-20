@@ -1,0 +1,3 @@
+QYM GB2 final cast-normalization trigger
+base_sha256=1e545a316c33741875b5c0ca252105f5a0d858f327b44b0e79e8e5193a7986d4
+expected_remaining_declarations=actualStagePeterssonInner_self_re_eq_zero_iff,coordinateHamiltonianForm_re_self
