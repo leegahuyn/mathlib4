@@ -1,0 +1,4 @@
+triggered_at=2026-08-20T14:00:00+09:00
+base_error_headers=5
+base_sha256=231efe9a0b8f9d05aae5e65ff3904b3636182ef6f1c93c11eac0c05313730998
+candidate_count=8
