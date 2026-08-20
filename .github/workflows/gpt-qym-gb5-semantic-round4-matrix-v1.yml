@@ -125,10 +125,12 @@ jobs:
           export PATH="$HOME/.elan/bin:$PATH"
           rm -f "$OLEAN/QYM.olean" "$OLEAN/QYM.ilean"
           start="$(date +%s)"
+          set +e
           lake env lean -DmaxErrors=2000 -DwarningAsError=false \
             -o "$OLEAN/QYM.olean" -i "$OLEAN/QYM.ilean" "$QYM" \
             > "$OUT/full.log" 2>&1
           lean_exit=$?
+          set -e
           elapsed=$(( $(date +%s) - start ))
           errors="$(grep -Ec '^PrimalitySheafVerification/QYM\.lean:[0-9]+:[0-9]+: error:' "$OUT/full.log" || true)"
           warnings="$(grep -Ec '^PrimalitySheafVerification/QYM\.lean:[0-9]+:[0-9]+: warning:' "$OUT/full.log" || true)"
