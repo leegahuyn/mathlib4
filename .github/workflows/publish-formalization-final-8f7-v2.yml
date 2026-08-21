@@ -1,4 +1,5 @@
 name: Publish Formalization FINAL AUTHORITY 8f7 v2
+# Registered second-push trigger for the preservation-only publisher.
 
 on:
   push:
