@@ -1,0 +1,3 @@
+trigger=2
+pr_gate_base_commit=4c66b1159088e605c8fcac58bb37d7d8ff29df01
+strategy=full-sweep-then-two-independent-fixes-batched
