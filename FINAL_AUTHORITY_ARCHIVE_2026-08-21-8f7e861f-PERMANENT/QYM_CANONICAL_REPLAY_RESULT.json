@@ -1,0 +1,16 @@
+{
+  "actual_direct_lean_run": 32344604895,
+  "command": "lake env lean -DmaxErrors=2000 -DwarningAsError=false -o .lake/build/lib/lean/PrimalitySheafVerification/QYM.olean -i .lake/build/lib/lean/PrimalitySheafVerification/QYM.ilean PrimalitySheafVerification/QYM.lean",
+  "elapsed_seconds": 595,
+  "error_headers": 0,
+  "exit": 0,
+  "forbidden": 0,
+  "panic_lines": 0,
+  "pass": true,
+  "sorry_warning_lines": 0,
+  "source_blob": "7afb309d7c4da97da7bc6b922931734d72830d41",
+  "source_commit": "8f7e861f5f76c0aa5d347e0de865516a1ba23922",
+  "source_identity_transfer": "exact immutable QYM bytes at final commit",
+  "source_sha256": "ab7c394f68b812046bcfae109b274a2d4fa42479bf8e76461c73a9c190fb3204",
+  "warning_headers": 345
+}

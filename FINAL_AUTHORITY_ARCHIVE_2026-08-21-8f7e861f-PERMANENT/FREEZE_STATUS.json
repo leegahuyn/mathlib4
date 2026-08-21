@@ -1,0 +1,10 @@
+{
+  "canonical_authority_commit": "8f7e861f5f76c0aa5d347e0de865516a1ba23922",
+  "authority_branch_unchanged": true,
+  "source_archive_branch_exact": true,
+  "permanent_asset_branch": "archive/formalization-final-assets-2026-08-21",
+  "canonical_annotated_tag": "BLOCKED_NOT_CREATED",
+  "github_release": "BLOCKED_NOT_CREATED",
+  "mathematical_source_modified": false,
+  "force_push_used": false
+}

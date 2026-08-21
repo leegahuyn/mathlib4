@@ -1,0 +1,9 @@
+{
+  "status": "TAG_WRITE_PERMISSION_FAILURE",
+  "canonical_tag_requested": "formalization-final-2026-08-21",
+  "canonical_tag_created": false,
+  "release_created": false,
+  "authority_invalidated": false,
+  "reason": "GitHub rejected annotated-tag push and REST ref creation because the connected token lacks workflows permission; no PAT or deploy key was available.",
+  "safety_decision": "No lightweight tag, wrong-target tag, force update, merge-commit authority, or branch-targeted Release was created."
+}
