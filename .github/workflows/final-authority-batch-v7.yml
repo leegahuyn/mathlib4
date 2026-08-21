@@ -1,0 +1,23 @@
+name: Final Authority Batch V7 Smoke
+
+"on":
+  push:
+    branches:
+      - gpt/final-authority-batch-v7-20260820
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Confirm actual job execution
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "FINAL_AUTHORITY_V7_SMOKE=PASS"
+          git rev-parse HEAD
