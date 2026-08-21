@@ -1,0 +1,66 @@
+name: Publish Formalization FINAL AUTHORITY 2026-08-21
+
+on:
+  push:
+    branches:
+      - ops/formalization-final-release-publisher-20260821
+    paths:
+      - ops/final_authority_release_builder.py
+      - ops/final_authority_release_publisher.py
+      - .github/workflows/publish-final-authority-20260821.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: formalization-final-release-2026-08-21
+  cancel-in-progress: false
+
+jobs:
+  publish-exact-final-authority:
+    name: freeze-tag-release-and-permanent-evidence
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - name: Checkout publisher infrastructure only
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+          sparse-checkout: |
+            ops/final_authority_release_builder.py
+            ops/final_authority_release_publisher.py
+          sparse-checkout-cone-mode: false
+
+      - name: Reconcile, freeze, publish, and independently verify
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m py_compile \
+            ops/final_authority_release_builder.py \
+            ops/final_authority_release_publisher.py
+          python3 ops/final_authority_release_publisher.py
+
+      - name: Upload publisher verification package copy
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: formalization-final-release-package-${{ github.run_id }}-attempt${{ github.run_attempt }}
+          path: package/FINAL_AUTHORITY_ARCHIVE_2026-08-21
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 90
+          compression-level: 6
+
+      - name: Enforce archival publisher success
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(python3 -c 'import json; print(str(json.load(open("package/FINAL_AUTHORITY_ARCHIVE_2026-08-21/PUBLISHER_STATE.json"))["pass"]).lower())')" = true
