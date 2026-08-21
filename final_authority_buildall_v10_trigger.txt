@@ -1,0 +1,3 @@
+Final Authority BuildAll V10
+Sequence: initial complete authority build -> confirm sole BuildAll unknown-module-prefix blocker -> delete all project objects -> lake-layout full rebuild -> BuildAll -> clean #1 -> clean #2 -> forbidden=0 -> source identity -> checklist 15/15.
+Protected FA, Integrated, and QYM source identities remain immutable.
