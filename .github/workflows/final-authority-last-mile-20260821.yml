@@ -1,0 +1,247 @@
+name: Final Authority Last Mile 20260821
+
+on:
+  push:
+    branches:
+      - gpt/final-authority-last-mile-20260821
+    paths:
+      - PrimalitySheafVerification/Spt3.lean
+      - scripts/final_authority_gate_v5.py
+      - .github/workflows/final-authority-last-mile-20260821.yml
+      - final_authority_last_mile_trigger.txt
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: final-authority-last-mile-20260821
+  cancel-in-progress: true
+
+jobs:
+  actual-lean-final-authority:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    steps:
+      - name: Checkout exact last-mile commit
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Verify exact protected source identities
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .last_mile
+          {
+            echo "HEAD=$(git rev-parse HEAD)"
+            echo "BRANCH=${GITHUB_REF_NAME}"
+            echo "FA_BLOB=$(git hash-object --no-filters PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean)"
+            echo "INTEGRATED_BLOB=$(git hash-object --no-filters PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean)"
+            echo "QYM_BLOB=$(git hash-object --no-filters PrimalitySheafVerification/QYM.lean)"
+            echo "QYM_SHA256=$(sha256sum PrimalitySheafVerification/QYM.lean | awk '{print $1}')"
+            echo "M1A_BLOB=$(git hash-object --no-filters PrimalitySheafVerification/Mock1_Advanced.lean)"
+            echo "SPT3_BLOB=$(git hash-object --no-filters PrimalitySheafVerification/Spt3.lean)"
+            echo "BUILDALL_BLOB=$(git hash-object --no-filters PrimalitySheafVerification/BuildAll.lean)"
+          } | tee .last_mile/SOURCE_IDENTITY_BEFORE.txt
+          test "$(git hash-object --no-filters PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean)" = "28f614d48e02a0f28d3f5a758e813350b3ea89cf"
+          test "$(git hash-object --no-filters PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean)" = "464f5dd095876b20165d12690c8127ef9d909e6a"
+          test "$(git hash-object --no-filters PrimalitySheafVerification/QYM.lean)" = "7afb309d7c4da97da7bc6b922931734d72830d41"
+          test "$(sha256sum PrimalitySheafVerification/QYM.lean | awk '{print $1}')" = "ab7c394f68b812046bcfae109b274a2d4fa42479bf8e76461c73a9c190fb3204"
+          test "$(git hash-object --no-filters PrimalitySheafVerification/Mock1_Advanced.lean)" = "3b6596bbc0790c7d6e427c44e2b0b18b8af3efa6"
+          test "$(git hash-object --no-filters PrimalitySheafVerification/Spt3.lean)" = "a73d346d060a9a2b8b3dca636e0e611eb394f69c"
+          test -z "$(git status --short --untracked-files=no)"
+
+      - name: Install pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="$HOME/.elan/bin:$PATH"
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)"
+          lake exe cache get
+          lean --version | tee .last_mile/LEAN_VERSION.txt
+          lake --version | tee .last_mile/LAKE_VERSION.txt
+          sha256sum lake-manifest.json | tee .last_mile/LAKE_MANIFEST_SHA256.txt
+
+      - name: Cheap Spt3 and PowerSeries collision probe
+        shell: bash
+        run: |
+          set -uo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          mkdir -p .lake/build/lib/lean/PrimalitySheafVerification .last_mile
+          rm -f \
+            .lake/build/lib/lean/PrimalitySheafVerification/Spt3.olean \
+            .lake/build/lib/lean/PrimalitySheafVerification/Spt3.ilean \
+            .lake/build/lib/lean/PrimalitySheafVerification/BuildAll.olean \
+            .lake/build/lib/lean/PrimalitySheafVerification/BuildAll.ilean
+          set +e
+          timeout --signal=TERM --kill-after=60s 10800s \
+            lake env lean -DmaxErrors=2000 -DwarningAsError=false \
+            -o .lake/build/lib/lean/PrimalitySheafVerification/Spt3.olean \
+            -i .lake/build/lib/lean/PrimalitySheafVerification/Spt3.ilean \
+            PrimalitySheafVerification/Spt3.lean \
+            2>&1 | tee .last_mile/SPT3_DIRECT.log
+          spt3_rc=${PIPESTATUS[0]}
+          set -e
+          echo "$spt3_rc" | tee .last_mile/SPT3_DIRECT_EXIT.txt
+          test "$spt3_rc" = 0
+          ! grep -Eq ':[0-9]+:[0-9]+: error(?:\([^)]*\))?:' .last_mile/SPT3_DIRECT.log
+          ! grep -Eqi 'internal error|uncaught exception|panic!' .last_mile/SPT3_DIRECT.log
+          ! grep -Eqi 'declaration uses.*sorry|declaration has.*sorry|sorryAx' .last_mile/SPT3_DIRECT.log
+          cat > .last_mile/BuildAllCollisionProbe.lean <<'LEAN'
+          import Mathlib.RingTheory.PowerSeries.Log
+          import PrimalitySheafVerification.Spt3
+          LEAN
+          set +e
+          timeout --signal=TERM --kill-after=60s 1800s \
+            lake env lean -DmaxErrors=2000 -DwarningAsError=false \
+            .last_mile/BuildAllCollisionProbe.lean \
+            2>&1 | tee .last_mile/BUILDALL_COLLISION_PROBE.log
+          probe_rc=${PIPESTATUS[0]}
+          set -e
+          echo "$probe_rc" | tee .last_mile/BUILDALL_COLLISION_PROBE_EXIT.txt
+          test "$probe_rc" = 0
+          ! grep -Eq ':[0-9]+:[0-9]+: error(?:\([^)]*\))?:' .last_mile/BUILDALL_COLLISION_PROBE.log
+          ! grep -Eqi "environment already contains 'PowerSeries\.logOf'" .last_mile/BUILDALL_COLLISION_PROBE.log
+          ! grep -Eqi 'internal error|uncaught exception|panic!' .last_mile/BUILDALL_COLLISION_PROBE.log
+
+      - name: Run Final13 BuildAll clean1 clean2 checklist authority chain
+        shell: bash
+        env:
+          FINAL_AUTHORITY_BRANCH: gpt/final-authority-last-mile-20260821
+        run: |
+          set -uo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          export GITHUB_SHA="$(git rev-parse HEAD)"
+          python3 -m py_compile scripts/final_authority_gate_v5.py
+          set +e
+          python3 scripts/final_authority_gate_v5.py \
+            2>&1 | tee .last_mile/FINAL_AUTHORITY_LAST_MILE.log
+          rc=${PIPESTATUS[0]}
+          set -e
+          echo "$rc" | tee .last_mile/FINAL_AUTHORITY_LAST_MILE_EXIT.txt
+
+      - name: Verify final gate JSONs against one exact commit
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          root = Path('.final_authority')
+          def load(name):
+              p = root / name
+              if not p.is_file():
+                  raise SystemExit(f'missing mandatory report: {name}')
+              return json.loads(p.read_text())
+
+          final13 = load('FINAL_13_BUILD_RESULTS.json')
+          buildall = load('BUILDALL_RESULT.json')
+          clean1 = load('CLEAN_BUILD_1_RESULT.json')
+          clean2 = load('CLEAN_BUILD_2_RESULT.json')
+          checklist = load('FINAL_15_CHECKLIST_RESULT.json')
+          forbidden = load('FORBIDDEN_AUDIT.json')
+          identity = load('FINAL_SOURCE_IDENTITY.json')
+          axiom = load('AXIOM_AUDIT.json')
+
+          expected_counts = {'PASS': 13, 'FAIL': 0, 'SKIPPED': 0, 'NOT_RUN': 0}
+          expected_checklist = {'PASS': 15, 'FAIL': 0, 'SKIPPED': 0, 'NOT_RUN': 0}
+          result = {
+              'source_commit': identity.get('tested_source_commit'),
+              'final13_pass': final13.get('pass'),
+              'final13_counts': final13.get('counts'),
+              'buildall_pass': buildall.get('pass'),
+              'clean1_pass': clean1.get('pass'),
+              'clean2_pass': clean2.get('pass'),
+              'checklist_pass': checklist.get('pass'),
+              'checklist_counts': checklist.get('counts'),
+              'forbidden_count': forbidden.get('forbidden_count'),
+              'identity_pass': identity.get('pass'),
+              'axiom_pass': axiom.get('pass'),
+          }
+          passed = (
+              result['final13_pass'] is True
+              and result['final13_counts'] == expected_counts
+              and result['buildall_pass'] is True
+              and result['clean1_pass'] is True
+              and result['clean2_pass'] is True
+              and result['checklist_pass'] is True
+              and result['checklist_counts'] == expected_checklist
+              and result['forbidden_count'] == 0
+              and result['identity_pass'] is True
+              and result['axiom_pass'] is True
+          )
+          result['pass'] = passed
+          Path('.last_mile/FINAL_LAST_MILE_GATE.json').write_text(
+              json.dumps(result, indent=2, sort_keys=True) + '\n'
+          )
+          print(json.dumps(result, indent=2, sort_keys=True))
+          if not passed:
+              raise SystemExit(1)
+          PY
+
+      - name: Surface complete final authority frontier
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "=== QUICK PROBE EXITS ==="
+          cat .last_mile/SPT3_DIRECT_EXIT.txt 2>/dev/null || true
+          cat .last_mile/BUILDALL_COLLISION_PROBE_EXIT.txt 2>/dev/null || true
+          echo "=== FINAL AUTHORITY EXIT ==="
+          cat .last_mile/FINAL_AUTHORITY_LAST_MILE_EXIT.txt 2>/dev/null || true
+          echo "=== FINAL LAST-MILE GATE ==="
+          cat .last_mile/FINAL_LAST_MILE_GATE.json 2>/dev/null || true
+          echo "=== FINAL STATUS CARD ==="
+          cat .final_authority/FINAL_STATUS_CARD.md 2>/dev/null || true
+          for file in \
+            FINAL_13_BUILD_RESULTS.json \
+            BUILDALL_RESULT.json \
+            FORBIDDEN_AUDIT.json \
+            CLEAN_BUILD_1_RESULT.json \
+            CLEAN_BUILD_2_RESULT.json \
+            FINAL_15_CHECKLIST_RESULT.json \
+            AXIOM_AUDIT.json \
+            FINAL_SOURCE_IDENTITY.json
+          do
+            echo "=== $file ==="
+            cat ".final_authority/$file" 2>/dev/null || true
+          done
+
+      - name: Upload exact-source actual-Lean evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: final-authority-last-mile-${{ github.run_id }}-attempt${{ github.run_attempt }}
+          path: |
+            .last_mile
+            .final_authority
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 30
+          compression-level: 6
+
+      - name: Enforce FINAL AUTHORITY PASS
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(cat .last_mile/SPT3_DIRECT_EXIT.txt)" = 0
+          test "$(cat .last_mile/BUILDALL_COLLISION_PROBE_EXIT.txt)" = 0
+          test "$(cat .last_mile/FINAL_AUTHORITY_LAST_MILE_EXIT.txt)" = 0
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          data = json.loads(Path('.last_mile/FINAL_LAST_MILE_GATE.json').read_text())
+          if data.get('pass') is not True:
+              raise SystemExit(1)
+          PY
