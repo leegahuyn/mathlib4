@@ -1,4 +1,5 @@
 name: Probe FINAL AUTHORITY publish credential v5
+# Registered workflow; this update triggers the hidden-value availability probe.
 
 "on":
   push:
