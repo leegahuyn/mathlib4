@@ -1,0 +1,261 @@
+name: Final Authority BuildAll Repair V10
+
+"on":
+  push:
+    branches:
+      - gpt/final-authority-batch-v7-20260820
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: final-authority-buildall-repair-v10-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  repair-and-final-authority:
+    if: ${{ !contains(github.event.head_commit.message || '', '[final-authority-v10-promotion]') }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    steps:
+      - name: Checkout exact pushed source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Establish exact successor authority branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git switch -C gpt/final-authority-batch-v7-20260820
+          mkdir -p .final_authority_v10
+          {
+            echo "INPUT_SHA=${{ github.sha }}"
+            echo "LOCAL_HEAD=$(git rev-parse HEAD)"
+            echo "BRANCH=$(git branch --show-current)"
+            echo "FA_BLOB=$(git hash-object --no-filters PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean)"
+            echo "INTEGRATED_BLOB=$(git hash-object --no-filters PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean)"
+            echo "QYM_BLOB=$(git hash-object --no-filters PrimalitySheafVerification/QYM.lean)"
+            echo "QYM_SHA256=$(sha256sum PrimalitySheafVerification/QYM.lean | awk '{print $1}')"
+          } | tee .final_authority_v10/INPUT_SOURCE_IDENTITY.txt
+          test "$(git hash-object --no-filters PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean)" = "28f614d48e02a0f28d3f5a758e813350b3ea89cf"
+          test "$(git hash-object --no-filters PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean)" = "464f5dd095876b20165d12690c8127ef9d909e6a"
+          test "$(git hash-object --no-filters PrimalitySheafVerification/QYM.lean)" = "7afb309d7c4da97da7bc6b922931734d72830d41"
+          test "$(sha256sum PrimalitySheafVerification/QYM.lean | awk '{print $1}')" = "ab7c394f68b812046bcfae109b274a2d4fa42479bf8e76461c73a9c190fb3204"
+          python3 -m py_compile scripts/buildall_auto_repair_v10.py
+          python3 -m py_compile scripts/final_authority_gate_v10.py
+
+      - name: Install pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="$HOME/.elan/bin:$PATH"
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)"
+          lake exe cache get
+          lean --version | tee .final_authority_v10/LEAN_VERSION.txt
+          lake --version | tee .final_authority_v10/LAKE_VERSION.txt
+
+      - name: Reproduce and repair the sole BuildAll error
+        id: repair
+        shell: bash
+        run: |
+          set -uo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          set +e
+          python3 scripts/buildall_auto_repair_v10.py \
+            2>&1 | tee .final_authority_v10/BUILDALL_REPAIR.log
+          rc=${PIPESTATUS[0]}
+          set -e
+          echo "$rc" | tee .final_authority_v10/BUILDALL_REPAIR_EXIT.txt
+          echo "exit_code=$rc" >> "$GITHUB_OUTPUT"
+          cat .buildall_v10/REPAIR_RESULT.json 2>/dev/null || true
+
+      - name: Commit the exact verified BuildAll source batch locally
+        id: source_commit
+        if: steps.repair.outputs.exit_code == '0'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --check
+          test "$(git hash-object --no-filters PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean)" = "28f614d48e02a0f28d3f5a758e813350b3ea89cf"
+          test "$(git hash-object --no-filters PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean)" = "464f5dd095876b20165d12690c8127ef9d909e6a"
+          test "$(git hash-object --no-filters PrimalitySheafVerification/QYM.lean)" = "7afb309d7c4da97da7bc6b922931734d72830d41"
+          test "$(sha256sum PrimalitySheafVerification/QYM.lean | awk '{print $1}')" = "ab7c394f68b812046bcfae109b274a2d4fa42479bf8e76461c73a9c190fb3204"
+          git config user.name final-authority-bot
+          git config user.email final-authority-bot@users.noreply.github.com
+          git add -- \
+            PrimalitySheafVerification/Spt1.lean \
+            PrimalitySheafVerification/Spt3.lean \
+            PrimalitySheafVerification/Mock1_Advanced.lean \
+            PrimalitySheafVerification/Mock3.lean \
+            PrimalitySheafVerification/BuildAll.lean
+          git diff --cached --check
+          if git diff --cached --quiet; then
+            echo "source_changed=false" >> "$GITHUB_OUTPUT"
+          else
+            git commit -m "[final-authority-v10-promotion] Fix sole BuildAll aggregate error"
+            echo "source_changed=true" >> "$GITHUB_OUTPUT"
+          fi
+          git rev-parse HEAD | tee .final_authority_v10/CANDIDATE_SOURCE_COMMIT.txt
+          echo "source_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          git status --short | tee .final_authority_v10/CANDIDATE_STATUS.txt
+
+      - name: Run complete same-source final authority chain
+        id: authority
+        if: steps.repair.outputs.exit_code == '0'
+        shell: bash
+        env:
+          FINAL_AUTHORITY_BRANCH: gpt/final-authority-batch-v7-20260820
+        run: |
+          set -uo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          export GITHUB_REF_NAME="gpt/final-authority-batch-v7-20260820"
+          export GITHUB_SHA="$(git rev-parse HEAD)"
+          set +e
+          python3 scripts/final_authority_gate_v10.py \
+            2>&1 | tee .final_authority_v10/FINAL_AUTHORITY_V10.log
+          rc=${PIPESTATUS[0]}
+          set -e
+          echo "$rc" | tee .final_authority_v10/FINAL_AUTHORITY_V10_EXIT.txt
+          echo "exit_code=$rc" >> "$GITHUB_OUTPUT"
+
+      - name: Build exact final status report
+        if: always()
+        shell: bash
+        env:
+          RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          INPUT_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+
+          def load(path):
+              p = Path(path)
+              if not p.exists():
+                  return None
+              try:
+                  return json.loads(p.read_text(encoding='utf-8'))
+              except Exception as exc:
+                  return {'parse_error': str(exc), 'raw_tail': p.read_text(encoding='utf-8', errors='replace')[-4000:]}
+
+          repair = load('.buildall_v10/REPAIR_RESULT.json')
+          buildall = load('.final_authority/BUILDALL_RESULT.json')
+          clean1 = load('.final_authority/CLEAN_BUILD_1_RESULT.json')
+          clean2 = load('.final_authority/CLEAN_BUILD_2_RESULT.json')
+          identity = load('.final_authority/FINAL_SOURCE_IDENTITY.json')
+          checklist = load('.final_authority/FINAL_15_CHECKLIST_RESULT.json')
+          final13 = load('.final_authority/FINAL_13_BUILD_RESULTS.json')
+          forbidden = load('.final_authority/FORBIDDEN_AUDIT.json')
+          status_card = Path('.final_authority/FINAL_STATUS_CARD.md').read_text(encoding='utf-8', errors='replace') if Path('.final_authority/FINAL_STATUS_CARD.md').exists() else None
+          repair_exit = Path('.final_authority_v10/BUILDALL_REPAIR_EXIT.txt').read_text().strip() if Path('.final_authority_v10/BUILDALL_REPAIR_EXIT.txt').exists() else None
+          authority_exit = Path('.final_authority_v10/FINAL_AUTHORITY_V10_EXIT.txt').read_text().strip() if Path('.final_authority_v10/FINAL_AUTHORITY_V10_EXIT.txt').exists() else None
+          candidate = Path('.final_authority_v10/CANDIDATE_SOURCE_COMMIT.txt').read_text().strip() if Path('.final_authority_v10/CANDIDATE_SOURCE_COMMIT.txt').exists() else None
+          result = {
+              'run_url': os.environ['RUN_URL'],
+              'input_sha': os.environ['INPUT_SHA'],
+              'candidate_source_commit': candidate,
+              'repair_exit': repair_exit,
+              'authority_exit': authority_exit,
+              'repair': repair,
+              'final13': final13,
+              'buildall': buildall,
+              'forbidden': forbidden,
+              'clean1': clean1,
+              'clean2': clean2,
+              'source_identity': identity,
+              'checklist': checklist,
+              'status_card': status_card,
+          }
+          Path('.final_authority_v10/FINAL_V10_RESULT.json').write_text(json.dumps(result, indent=2, ensure_ascii=False) + '\n')
+
+          checklist_counts = checklist.get('counts') if isinstance(checklist, dict) else None
+          body = [
+              '## Final Authority V10 result', '',
+              f"- run: {result['run_url']}",
+              f"- input SHA: `{result['input_sha']}`",
+              f"- candidate source commit: `{candidate}`",
+              f"- BuildAll repair exit: `{repair_exit}`",
+              f"- final authority exit: `{authority_exit}`",
+              f"- checklist counts: `{checklist_counts}`",
+              '', '### Repair result', '```json',
+              json.dumps(repair, indent=2, ensure_ascii=False)[:12000],
+              '```', '', '### Final status card',
+              status_card or '(not generated)',
+          ]
+          Path('.final_authority_v10/ISSUE_COMMENT.md').write_text('\n'.join(body) + '\n')
+          print(json.dumps({
+              'candidate_source_commit': candidate,
+              'repair_exit': repair_exit,
+              'authority_exit': authority_exit,
+              'checklist_counts': checklist_counts,
+              'buildall_pass': buildall.get('pass') if isinstance(buildall, dict) else None,
+              'clean1_pass': clean1.get('pass') if isinstance(clean1, dict) else None,
+              'clean2_pass': clean2.get('pass') if isinstance(clean2, dict) else None,
+              'identity_pass': identity.get('pass') if isinstance(identity, dict) else None,
+          }, indent=2, ensure_ascii=False))
+          PY
+
+      - name: Publish exact result to execution issue
+        if: always()
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh issue comment 59 --repo "${{ github.repository }}" \
+            --body-file .final_authority_v10/ISSUE_COMMENT.md
+
+      - name: Upload complete final-authority evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: final-authority-buildall-repair-v10-${{ github.run_id }}-attempt${{ github.run_attempt }}
+          path: |
+            .buildall_v10
+            .final_authority
+            .final_authority_v10
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 30
+          compression-level: 6
+
+      - name: Promote verified BuildAll source commit to PR branch
+        if: steps.repair.outputs.exit_code == '0' && steps.source_commit.outputs.source_changed == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git push origin HEAD:refs/heads/gpt/final-authority-batch-v7-20260820
+          echo "PROMOTED_SHA=$(git rev-parse HEAD)" | tee .final_authority_v10/PROMOTION_RESULT.txt
+
+      - name: Enforce complete final authority
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(cat .final_authority_v10/BUILDALL_REPAIR_EXIT.txt)" = "0"
+          test "$(cat .final_authority_v10/FINAL_AUTHORITY_V10_EXIT.txt)" = "0"
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          buildall=json.loads(Path('.final_authority/BUILDALL_RESULT.json').read_text())
+          clean1=json.loads(Path('.final_authority/CLEAN_BUILD_1_RESULT.json').read_text())
+          clean2=json.loads(Path('.final_authority/CLEAN_BUILD_2_RESULT.json').read_text())
+          identity=json.loads(Path('.final_authority/FINAL_SOURCE_IDENTITY.json').read_text())
+          checklist=json.loads(Path('.final_authority/FINAL_15_CHECKLIST_RESULT.json').read_text())
+          expected={'PASS':15,'FAIL':0,'NOT_RUN':0,'SKIPPED':0}
+          ok=(buildall.get('pass') is True and clean1.get('pass') is True and
+              clean2.get('pass') is True and identity.get('pass') is True and
+              checklist.get('counts') == expected and checklist.get('pass') is True)
+          raise SystemExit(0 if ok else 1)
+          PY
