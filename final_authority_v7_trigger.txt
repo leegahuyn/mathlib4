@@ -1,3 +1,4 @@
-trigger=2
-pr_gate_base_commit=4c66b1159088e605c8fcac58bb37d7d8ff29df01
-strategy=full-sweep-then-two-independent-fixes-batched
+trigger=3
+previous_exact_verified_commit=8f7e861f5f76c0aa5d347e0de865516a1ba23922
+strategy=checked-in-v11-full-authority-with-v10-policy
+objective=BuildAll-clean1-clean2-checklist15-source-identity-independent-github
