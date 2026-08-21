@@ -1,5 +1,5 @@
 name: Publish Formalization FINAL AUTHORITY 8f7 v2
-# Registered second-push trigger for the preservation-only publisher.
+# Git Data API tag freeze, followed by permanent release publication.
 
 on:
   push:
@@ -40,6 +40,53 @@ jobs:
           path: _publisher
           fetch-depth: 1
           persist-credentials: false
+
+      - name: Freeze exact authority with canonical annotated tag
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG='formalization-final-2026-08-21'
+          COMMIT='8f7e861f5f76c0aa5d347e0de865516a1ba23922'
+          MESSAGE=$(cat <<'EOF'
+          Formalization FINAL AUTHORITY
+          Exact tested commit: 8f7e861f5f76c0aa5d347e0de865516a1ba23922
+          Actual full-chain Lean run: 32443566530
+          Independent QYM replay run: 32344604895
+          Terminal authority run: 32455051059
+          Final13 13/13; bridges 2/2; BuildAll PASS; clean×2 PASS;
+          checklist 15/15; forbidden 0; panic 0; axiom/source identity PASS.
+          Full actual-Lean evidence SHA256: 81119a111a7a9f28358bea856ca01f8a7377cd79300ebe9ed814bf9b834a0d32
+          QYM replay evidence SHA256: ed82e0e090fd66fa1583fc950bd1686daaff1d1d0865e5b1d927a4b16dbcf830
+          Terminal authority evidence SHA256: a172eb2259dd74e2eae8f3c7e9662ed704f4bd82bc738d3a60539a22158f92ee
+          EOF
+          )
+
+          if REF_JSON=$(gh api "repos/leegahuyn/mathlib4/git/ref/tags/${TAG}" 2>/tmp/tag-read.err); then
+            TAG_OBJECT=$(jq -r '.object.sha' <<<"${REF_JSON}")
+            test "$(jq -r '.object.type' <<<"${REF_JSON}")" = 'tag'
+            TAG_JSON=$(gh api "repos/leegahuyn/mathlib4/git/tags/${TAG_OBJECT}")
+            test "$(jq -r '.tag' <<<"${TAG_JSON}")" = "${TAG}"
+            test "$(jq -r '.object.type' <<<"${TAG_JSON}")" = 'commit'
+            test "$(jq -r '.object.sha' <<<"${TAG_JSON}")" = "${COMMIT}"
+          else
+            TAG_JSON=$(jq -n \
+              --arg tag "${TAG}" \
+              --arg message "${MESSAGE}" \
+              --arg object "${COMMIT}" \
+              --arg date "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+              '{tag:$tag,message:$message,object:$object,type:"commit",tagger:{name:"leegahuyn",email:"102484661+leegahuyn@users.noreply.github.com",date:$date}}' \
+              | gh api --method POST 'repos/leegahuyn/mathlib4/git/tags' --input -)
+            TAG_OBJECT=$(jq -r '.sha' <<<"${TAG_JSON}")
+            jq -n --arg ref "refs/tags/${TAG}" --arg sha "${TAG_OBJECT}" '{ref:$ref,sha:$sha}' \
+              | gh api --method POST 'repos/leegahuyn/mathlib4/git/refs' --input - >/tmp/tag-ref-create.json
+          fi
+
+          git fetch --force origin "refs/tags/${TAG}:refs/tags/${TAG}"
+          test "$(git cat-file -t "${TAG}")" = 'tag'
+          test "$(git rev-list -n 1 "${TAG}")" = "${COMMIT}"
+          test "$(git cat-file tag "${TAG}" | sed -n 's/^object //p')" = "${COMMIT}"
 
       - name: Recover, patch, and execute deterministic publisher
         env:
