@@ -4,6 +4,9 @@ name: Final Authority Terminal Evidence Gate V12
   push:
     branches:
       - gpt/final-authority-terminal-evidence-20260821
+  pull_request:
+    branches:
+      - gpt/final-authority-gb0-canonical-20260820
   workflow_dispatch:
 
 permissions:
