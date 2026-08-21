@@ -1,4 +1,4 @@
-name: Probe FINAL AUTHORITY user token 2026-08-21
+name: Verify FINAL AUTHORITY archival remote status 2026-08-21
 
 on:
   push:
@@ -11,128 +11,172 @@ on:
 permissions:
   contents: read
   actions: read
+  pull-requests: read
 
 jobs:
-  probe-user-token:
+  verify-remote-status:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     env:
-      CAND_PAT: ${{ secrets.PAT }}
-      CAND_GH_PAT: ${{ secrets.GH_PAT }}
-      CAND_GITHUB_PAT: ${{ secrets.GITHUB_PAT }}
-      CAND_PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-      CAND_PERSONAL_TOKEN: ${{ secrets.PERSONAL_TOKEN }}
-      CAND_ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
-      CAND_REPO_PAT: ${{ secrets.REPO_PAT }}
-      CAND_REPOSITORY_PAT: ${{ secrets.REPOSITORY_PAT }}
-      CAND_REPO_TOKEN: ${{ secrets.REPO_TOKEN }}
-      CAND_RELEASE_PAT: ${{ secrets.RELEASE_PAT }}
-      CAND_RELEASE_TOKEN: ${{ secrets.RELEASE_TOKEN }}
-      CAND_GH_RELEASE_TOKEN: ${{ secrets.GH_RELEASE_TOKEN }}
-      CAND_GITHUB_RELEASE_TOKEN: ${{ secrets.GITHUB_RELEASE_TOKEN }}
-      CAND_WORKFLOW_PAT: ${{ secrets.WORKFLOW_PAT }}
-      CAND_WORKFLOW_TOKEN: ${{ secrets.WORKFLOW_TOKEN }}
-      CAND_GITHUB_WORKFLOW_PAT: ${{ secrets.GITHUB_WORKFLOW_PAT }}
-      CAND_GITHUB_WORKFLOW_TOKEN: ${{ secrets.GITHUB_WORKFLOW_TOKEN }}
-      CAND_ACTIONS_PAT: ${{ secrets.ACTIONS_PAT }}
-      CAND_ADMIN_PAT: ${{ secrets.ADMIN_PAT }}
-      CAND_GIT_PAT: ${{ secrets.GIT_PAT }}
-      CAND_BOT_PAT: ${{ secrets.BOT_PAT }}
-      CAND_CODEX_PAT: ${{ secrets.CODEX_PAT }}
-      CAND_OPENAI_GITHUB_PAT: ${{ secrets.OPENAI_GITHUB_PAT }}
-      CAND_OPENAI_GITHUB_TOKEN: ${{ secrets.OPENAI_GITHUB_TOKEN }}
-      CAND_GITHUB_TOKEN_PAT: ${{ secrets.GITHUB_TOKEN_PAT }}
-      CAND_MATHLIB_PAT: ${{ secrets.MATHLIB_PAT }}
-      CAND_MATHLIB4_PAT: ${{ secrets.MATHLIB4_PAT }}
-      CAND_PUSH_TOKEN: ${{ secrets.PUSH_TOKEN }}
-      CAND_TAG_TOKEN: ${{ secrets.TAG_TOKEN }}
-      CAND_DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
-      CAND_CI_PAT: ${{ secrets.CI_PAT }}
-      CAND_CI_TOKEN: ${{ secrets.CI_TOKEN }}
-      CAND_GITHUB_USER_TOKEN: ${{ secrets.GITHUB_USER_TOKEN }}
-      CAND_GITHUB_PERSONAL_TOKEN: ${{ secrets.GITHUB_PERSONAL_TOKEN }}
-      CAND_GH_TOKEN: ${{ secrets.GH_TOKEN }}
+      REPOSITORY: leegahuyn/mathlib4
+      AUTHORITY_COMMIT: 61a48f07e42bc5bf1610a8df3e7cf5ec7e1461c3
+      AUTHORITY_BRANCH: gpt/final-authority-last-mile-20260821
+      ARCHIVE_BRANCH: archive-assets/formalization-final-2026-08-21
+      TAG_NAME: formalization-final-2026-08-21
+      PR_NUMBER: "56"
+      RUN_ID: "32438949135"
+      JOB_ID: "96645636205"
+      ARTIFACT_ID: "9434085968"
+      ARTIFACT_SHA256: 86b2525c7533562b929a573eca0ff006c6b1df1ac054329c906eae009e05954a
+      GH_TOKEN: ${{ github.token }}
     steps:
-      - name: Detect configured user-token candidates without exposing values
+      - name: Read tag release branch PR run job and artifact independently
         shell: bash
         run: |
           set -euo pipefail
           python3 - <<'PY'
-          import json, os, urllib.request
-          mapping = {
-              'PAT': 'CAND_PAT',
-              'GH_PAT': 'CAND_GH_PAT',
-              'GITHUB_PAT': 'CAND_GITHUB_PAT',
-              'PERSONAL_ACCESS_TOKEN': 'CAND_PERSONAL_ACCESS_TOKEN',
-              'PERSONAL_TOKEN': 'CAND_PERSONAL_TOKEN',
-              'ACCESS_TOKEN': 'CAND_ACCESS_TOKEN',
-              'REPO_PAT': 'CAND_REPO_PAT',
-              'REPOSITORY_PAT': 'CAND_REPOSITORY_PAT',
-              'REPO_TOKEN': 'CAND_REPO_TOKEN',
-              'RELEASE_PAT': 'CAND_RELEASE_PAT',
-              'RELEASE_TOKEN': 'CAND_RELEASE_TOKEN',
-              'GH_RELEASE_TOKEN': 'CAND_GH_RELEASE_TOKEN',
-              'GITHUB_RELEASE_TOKEN': 'CAND_GITHUB_RELEASE_TOKEN',
-              'WORKFLOW_PAT': 'CAND_WORKFLOW_PAT',
-              'WORKFLOW_TOKEN': 'CAND_WORKFLOW_TOKEN',
-              'GITHUB_WORKFLOW_PAT': 'CAND_GITHUB_WORKFLOW_PAT',
-              'GITHUB_WORKFLOW_TOKEN': 'CAND_GITHUB_WORKFLOW_TOKEN',
-              'ACTIONS_PAT': 'CAND_ACTIONS_PAT',
-              'ADMIN_PAT': 'CAND_ADMIN_PAT',
-              'GIT_PAT': 'CAND_GIT_PAT',
-              'BOT_PAT': 'CAND_BOT_PAT',
-              'CODEX_PAT': 'CAND_CODEX_PAT',
-              'OPENAI_GITHUB_PAT': 'CAND_OPENAI_GITHUB_PAT',
-              'OPENAI_GITHUB_TOKEN': 'CAND_OPENAI_GITHUB_TOKEN',
-              'GITHUB_TOKEN_PAT': 'CAND_GITHUB_TOKEN_PAT',
-              'MATHLIB_PAT': 'CAND_MATHLIB_PAT',
-              'MATHLIB4_PAT': 'CAND_MATHLIB4_PAT',
-              'PUSH_TOKEN': 'CAND_PUSH_TOKEN',
-              'TAG_TOKEN': 'CAND_TAG_TOKEN',
-              'DEPLOY_TOKEN': 'CAND_DEPLOY_TOKEN',
-              'CI_PAT': 'CAND_CI_PAT',
-              'CI_TOKEN': 'CAND_CI_TOKEN',
-              'GITHUB_USER_TOKEN': 'CAND_GITHUB_USER_TOKEN',
-              'GITHUB_PERSONAL_TOKEN': 'CAND_GITHUB_PERSONAL_TOKEN',
-              'GH_TOKEN': 'CAND_GH_TOKEN',
-          }
-          result = {'configured': [], 'authenticated': []}
-          for secret_name, env_name in mapping.items():
-              token = os.environ.get(env_name, '')
-              if not token:
-                  continue
-              result['configured'].append(secret_name)
+          import json, os, urllib.error, urllib.parse, urllib.request
+
+          repo = os.environ['REPOSITORY']
+          authority = os.environ['AUTHORITY_COMMIT']
+          authority_branch = os.environ['AUTHORITY_BRANCH']
+          archive_branch = os.environ['ARCHIVE_BRANCH']
+          tag = os.environ['TAG_NAME']
+          token = os.environ['GH_TOKEN']
+
+          def get(path):
               request = urllib.request.Request(
-                  'https://api.github.com/user',
+                  f'https://api.github.com/repos/{repo}/{path}',
                   headers={
                       'Authorization': f'Bearer {token}',
                       'Accept': 'application/vnd.github+json',
                       'X-GitHub-Api-Version': '2022-11-28',
-                      'User-Agent': 'final-authority-token-probe',
+                      'User-Agent': 'final-authority-remote-status',
                   },
               )
               try:
                   with urllib.request.urlopen(request, timeout=30) as response:
-                      user = json.load(response)
-                  result['authenticated'].append({'secret_name': secret_name, 'login': user.get('login')})
-              except Exception as exc:
-                  result.setdefault('authentication_failures', []).append({
-                      'secret_name': secret_name,
-                      'error_type': type(exc).__name__,
-                  })
-          with open('FINAL_AUTHORITY_TOKEN_PROBE.json', 'w', encoding='utf-8') as f:
-              json.dump(result, f, indent=2, sort_keys=True)
+                      return response.status, json.load(response)
+              except urllib.error.HTTPError as exc:
+                  try:
+                      body = json.load(exc)
+                  except Exception:
+                      body = {'message': str(exc)}
+                  return exc.code, body
+
+          status = {
+              'repository': repo,
+              'authority_commit': authority,
+              'canonical_tag': tag,
+          }
+
+          code, branch = get(f'branches/{urllib.parse.quote(authority_branch, safe="")}')
+          status['authority_branch_http'] = code
+          status['authority_branch_sha'] = branch.get('commit', {}).get('sha') if code == 200 else None
+          status['authority_branch_unchanged'] = code == 200 and status['authority_branch_sha'] == authority
+
+          code, archive = get(f'branches/{urllib.parse.quote(archive_branch, safe="")}')
+          status['archive_branch_http'] = code
+          status['archive_branch_sha'] = archive.get('commit', {}).get('sha') if code == 200 else None
+          status['archive_branch_exists'] = code == 200
+
+          code, pr = get(f'pulls/{os.environ["PR_NUMBER"]}')
+          status['pr_http'] = code
+          status['pr_head_sha'] = pr.get('head', {}).get('sha') if code == 200 else None
+          status['pr_merged'] = pr.get('merged') if code == 200 else None
+          status['pr_exact_unmerged'] = code == 200 and status['pr_head_sha'] == authority and status['pr_merged'] is False
+
+          code, run = get(f'actions/runs/{os.environ["RUN_ID"]}')
+          status['run_http'] = code
+          status['run_status'] = run.get('status') if code == 200 else None
+          status['run_conclusion'] = run.get('conclusion') if code == 200 else None
+          status['run_head_sha'] = run.get('head_sha') if code == 200 else None
+          status['authority_run_success'] = code == 200 and status['run_status'] == 'completed' and status['run_conclusion'] == 'success' and status['run_head_sha'] == authority
+
+          code, job = get(f'actions/jobs/{os.environ["JOB_ID"]}')
+          status['job_http'] = code
+          status['job_name'] = job.get('name') if code == 200 else None
+          status['job_status'] = job.get('status') if code == 200 else None
+          status['job_conclusion'] = job.get('conclusion') if code == 200 else None
+          status['actual_lean_job_success'] = code == 200 and status['job_name'] == 'actual-lean-final-authority' and status['job_status'] == 'completed' and status['job_conclusion'] == 'success'
+          required_steps = {
+              'Checkout exact last-mile commit',
+              'Verify exact protected source identities',
+              'Install pinned Lean and Mathlib cache',
+              'Cheap Spt3 and PowerSeries collision probe',
+              'Run Final13 BuildAll clean1 clean2 checklist authority chain',
+              'Verify final gate JSONs against one exact commit',
+              'Surface complete final authority frontier',
+              'Upload exact-source actual-Lean evidence',
+              'Enforce FINAL AUTHORITY PASS',
+          }
+          steps = {row.get('name'): row.get('conclusion') for row in job.get('steps', [])} if code == 200 else {}
+          status['required_actual_lean_steps'] = {name: steps.get(name) for name in sorted(required_steps)}
+          status['actual_lean_steps_executed'] = all(steps.get(name) == 'success' for name in required_steps)
+
+          code, artifact = get(f'actions/artifacts/{os.environ["ARTIFACT_ID"]}')
+          status['artifact_http'] = code
+          status['artifact_name'] = artifact.get('name') if code == 200 else None
+          status['artifact_digest'] = artifact.get('digest') if code == 200 else None
+          status['artifact_run_id'] = artifact.get('workflow_run', {}).get('id') if code == 200 else None
+          status['artifact_head_sha'] = artifact.get('workflow_run', {}).get('head_sha') if code == 200 else None
+          status['artifact_expired'] = artifact.get('expired') if code == 200 else None
+          status['artifact_exact'] = (
+              code == 200
+              and status['artifact_name'] == 'final-authority-last-mile-32438949135-attempt1'
+              and status['artifact_digest'] == f'sha256:{os.environ["ARTIFACT_SHA256"]}'
+              and status['artifact_run_id'] == int(os.environ['RUN_ID'])
+              and status['artifact_head_sha'] == authority
+              and status['artifact_expired'] is False
+          )
+
+          encoded_tag = urllib.parse.quote(tag, safe='')
+          code, tag_ref = get(f'git/ref/tags/{encoded_tag}')
+          status['canonical_tag_http'] = code
+          status['canonical_tag_exists'] = code == 200
+          status['canonical_tag_ref_object_type'] = tag_ref.get('object', {}).get('type') if code == 200 else None
+          status['canonical_tag_ref_object_sha'] = tag_ref.get('object', {}).get('sha') if code == 200 else None
+          status['canonical_tag_annotated'] = False
+          status['canonical_tag_target'] = None
+          if code == 200 and status['canonical_tag_ref_object_type'] == 'tag':
+              tag_code, tag_obj = get(f'git/tags/{status["canonical_tag_ref_object_sha"]}')
+              status['canonical_tag_object_http'] = tag_code
+              status['canonical_tag_target'] = tag_obj.get('object', {}).get('sha') if tag_code == 200 else None
+              status['canonical_tag_annotated'] = tag_code == 200
+          elif code == 200:
+              status['canonical_tag_target'] = status['canonical_tag_ref_object_sha']
+          status['canonical_tag_exact'] = status['canonical_tag_annotated'] and status['canonical_tag_target'] == authority
+
+          code, release = get(f'releases/tags/{encoded_tag}')
+          status['release_http'] = code
+          status['release_exists'] = code == 200
+          status['release_url'] = release.get('html_url') if code == 200 else None
+          status['release_tag_name'] = release.get('tag_name') if code == 200 else None
+          status['release_exact_tag'] = code == 200 and status['release_tag_name'] == tag
+
+          status['mathematical_authority_integrity'] = all([
+              status['authority_branch_unchanged'],
+              status['pr_exact_unmerged'],
+              status['authority_run_success'],
+              status['actual_lean_job_success'],
+              status['actual_lean_steps_executed'],
+              status['artifact_exact'],
+              status['archive_branch_exists'],
+          ])
+
+          with open('FINAL_AUTHORITY_REMOTE_STATUS.json', 'w', encoding='utf-8') as f:
+              json.dump(status, f, indent=2, sort_keys=True)
               f.write('\n')
-          print(json.dumps(result, indent=2, sort_keys=True))
-          if not result['authenticated']:
-              raise SystemExit(3)
+          print(json.dumps(status, indent=2, sort_keys=True))
+          if not status['mathematical_authority_integrity']:
+              raise SystemExit(1)
           PY
 
-      - name: Upload non-secret probe result
+      - name: Upload remote status record
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: final-authority-user-token-probe-${{ github.run_id }}
-          path: FINAL_AUTHORITY_TOKEN_PROBE.json
+          name: final-authority-remote-status-${{ github.run_id }}
+          path: FINAL_AUTHORITY_REMOTE_STATUS.json
           if-no-files-found: warn
-          retention-days: 7
+          retention-days: 30
