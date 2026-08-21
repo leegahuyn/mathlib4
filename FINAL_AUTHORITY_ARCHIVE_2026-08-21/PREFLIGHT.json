@@ -1,0 +1,626 @@
+{
+  "all_paths_exist_and_are_canonical_files": true,
+  "branch": "gpt/final-authority-last-mile-20260821",
+  "changed_paths_audit": {
+    "allowed_paths": [
+      ".github/workflows/final-authority-gb0-actual-lean.yml",
+      ".github/workflows/final-authority-last-mile-20260821.yml",
+      ".github/workflows/final-authority-mass-repair-v3.yml",
+      ".github/workflows/final-authority-mass-repair-v5.yml",
+      ".github/workflows/final-authority-mass-repair-v6.yml",
+      ".github/workflows/final-authority-pr-observable-v1.yml",
+      ".github/workflows/gpt-final-authority-gb0-canonical.yml",
+      ".github/workflows/m1a-native-clean-six-cumulative-actual-lean.yml",
+      "PrimalitySheafVerification/BuildAll.lean",
+      "PrimalitySheafVerification/Mock1_Advanced.lean",
+      "PrimalitySheafVerification/Mock3.lean",
+      "PrimalitySheafVerification/Spt1.lean",
+      "PrimalitySheafVerification/Spt3.lean",
+      "final_authority_last_mile_trigger.txt",
+      "scripts/apply_final_authority_verified_sources_v5.py",
+      "scripts/final13_r5_patch_mock1_advanced_six.py",
+      "scripts/final_authority_gate.py",
+      "scripts/final_authority_gate_v2.py",
+      "scripts/final_authority_gate_v3.py",
+      "scripts/final_authority_gate_v5.py",
+      "scripts/final_authority_source_patch_v6.py",
+      "scripts/run_final_authority_verified_v5.sh"
+    ],
+    "base_commit": "c6b3087022f8697983895518074ea07056c64627",
+    "changed_paths": [
+      ".github/workflows/final-authority-last-mile-20260821.yml",
+      "PrimalitySheafVerification/Spt3.lean",
+      "scripts/final_authority_gate_v5.py"
+    ],
+    "pass": true,
+    "permitted_primary_root_changes": [
+      "PrimalitySheafVerification/Mock1_Advanced.lean",
+      "PrimalitySheafVerification/Mock3.lean",
+      "PrimalitySheafVerification/Spt1.lean",
+      "PrimalitySheafVerification/Spt3.lean"
+    ],
+    "primary_root_changes": [
+      "PrimalitySheafVerification/Spt3.lean"
+    ],
+    "source_commit": "61a48f07e42bc5bf1610a8df3e7cf5ec7e1461c3",
+    "unexpected_paths": [],
+    "unexpected_primary_root_changes": []
+  },
+  "commit_date": "2026-08-21T11:10:36+09:00",
+  "commit_subject": "CI: expose last-mile actual Lean gate on trusted PR route",
+  "diff_check": {
+    "command": "git diff --check c6b3087022f8697983895518074ea07056c64627..HEAD",
+    "exit": 0,
+    "output": "",
+    "pass": true
+  },
+  "existence": {
+    "PrimalitySheafVerification/BuildAll.lean": {
+      "exists": true,
+      "is_symlink": false
+    },
+    "PrimalitySheafVerification/Mock1.lean": {
+      "exists": true,
+      "is_symlink": false
+    },
+    "PrimalitySheafVerification/Mock1_Advanced.lean": {
+      "exists": true,
+      "is_symlink": false
+    },
+    "PrimalitySheafVerification/Mock2.lean": {
+      "exists": true,
+      "is_symlink": false
+    },
+    "PrimalitySheafVerification/Mock2_Advanced.lean": {
+      "exists": true,
+      "is_symlink": false
+    },
+    "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean": {
+      "exists": true,
+      "is_symlink": false
+    },
+    "PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean": {
+      "exists": true,
+      "is_symlink": false
+    },
+    "PrimalitySheafVerification/Mock3.lean": {
+      "exists": true,
+      "is_symlink": false
+    },
+    "PrimalitySheafVerification/QYM.lean": {
+      "exists": true,
+      "is_symlink": false
+    },
+    "PrimalitySheafVerification/Spt1.lean": {
+      "exists": true,
+      "is_symlink": false
+    },
+    "PrimalitySheafVerification/Spt2.lean": {
+      "exists": true,
+      "is_symlink": false
+    },
+    "PrimalitySheafVerification/Spt3.lean": {
+      "exists": true,
+      "is_symlink": false
+    },
+    "PrimalitySheafVerification/Spt4.lean": {
+      "exists": true,
+      "is_symlink": false
+    },
+    "PrimalitySheafVerification/Spt5.lean": {
+      "exists": true,
+      "is_symlink": false
+    },
+    "PrimalitySheafVerification/Spt6.lean": {
+      "exists": true,
+      "is_symlink": false
+    },
+    "PrimalitySheafVerification/Spt7.lean": {
+      "exists": true,
+      "is_symlink": false
+    }
+  },
+  "forbidden_audit": {
+    "control_character_count": 0,
+    "files": [
+      {
+        "control_characters": [],
+        "diagnostic_commands": {
+          "#check": 0,
+          "#eval": 0,
+          "#print": 0,
+          "#reduce": 0,
+          "#synth": 0
+        },
+        "forbidden": {
+          "Lean.ofReduceBool": 0,
+          "admit": 0,
+          "axiom_declaration": 0,
+          "fake_pass_marker": 0,
+          "maxHeartbeats_zero": 0,
+          "native_decide": 0,
+          "sorry": 0,
+          "unsafe_declaration": 0
+        },
+        "path": "PrimalitySheafVerification/Spt1.lean",
+        "prose_prefix_ok": true
+      },
+      {
+        "control_characters": [],
+        "diagnostic_commands": {
+          "#check": 0,
+          "#eval": 0,
+          "#print": 0,
+          "#reduce": 0,
+          "#synth": 0
+        },
+        "forbidden": {
+          "Lean.ofReduceBool": 0,
+          "admit": 0,
+          "axiom_declaration": 0,
+          "fake_pass_marker": 0,
+          "maxHeartbeats_zero": 0,
+          "native_decide": 0,
+          "sorry": 0,
+          "unsafe_declaration": 0
+        },
+        "path": "PrimalitySheafVerification/Spt2.lean",
+        "prose_prefix_ok": true
+      },
+      {
+        "control_characters": [],
+        "diagnostic_commands": {
+          "#check": 0,
+          "#eval": 0,
+          "#print": 0,
+          "#reduce": 0,
+          "#synth": 0
+        },
+        "forbidden": {
+          "Lean.ofReduceBool": 0,
+          "admit": 0,
+          "axiom_declaration": 0,
+          "fake_pass_marker": 0,
+          "maxHeartbeats_zero": 0,
+          "native_decide": 0,
+          "sorry": 0,
+          "unsafe_declaration": 0
+        },
+        "path": "PrimalitySheafVerification/Spt3.lean",
+        "prose_prefix_ok": true
+      },
+      {
+        "control_characters": [],
+        "diagnostic_commands": {
+          "#check": 0,
+          "#eval": 0,
+          "#print": 0,
+          "#reduce": 0,
+          "#synth": 0
+        },
+        "forbidden": {
+          "Lean.ofReduceBool": 0,
+          "admit": 0,
+          "axiom_declaration": 0,
+          "fake_pass_marker": 0,
+          "maxHeartbeats_zero": 0,
+          "native_decide": 0,
+          "sorry": 0,
+          "unsafe_declaration": 0
+        },
+        "path": "PrimalitySheafVerification/Spt4.lean",
+        "prose_prefix_ok": true
+      },
+      {
+        "control_characters": [],
+        "diagnostic_commands": {
+          "#check": 0,
+          "#eval": 0,
+          "#print": 0,
+          "#reduce": 0,
+          "#synth": 0
+        },
+        "forbidden": {
+          "Lean.ofReduceBool": 0,
+          "admit": 0,
+          "axiom_declaration": 0,
+          "fake_pass_marker": 0,
+          "maxHeartbeats_zero": 0,
+          "native_decide": 0,
+          "sorry": 0,
+          "unsafe_declaration": 0
+        },
+        "path": "PrimalitySheafVerification/Spt5.lean",
+        "prose_prefix_ok": true
+      },
+      {
+        "control_characters": [],
+        "diagnostic_commands": {
+          "#check": 0,
+          "#eval": 0,
+          "#print": 0,
+          "#reduce": 0,
+          "#synth": 0
+        },
+        "forbidden": {
+          "Lean.ofReduceBool": 0,
+          "admit": 0,
+          "axiom_declaration": 0,
+          "fake_pass_marker": 0,
+          "maxHeartbeats_zero": 0,
+          "native_decide": 0,
+          "sorry": 0,
+          "unsafe_declaration": 0
+        },
+        "path": "PrimalitySheafVerification/Spt6.lean",
+        "prose_prefix_ok": true
+      },
+      {
+        "control_characters": [],
+        "diagnostic_commands": {
+          "#check": 0,
+          "#eval": 0,
+          "#print": 0,
+          "#reduce": 0,
+          "#synth": 0
+        },
+        "forbidden": {
+          "Lean.ofReduceBool": 0,
+          "admit": 0,
+          "axiom_declaration": 0,
+          "fake_pass_marker": 0,
+          "maxHeartbeats_zero": 0,
+          "native_decide": 0,
+          "sorry": 0,
+          "unsafe_declaration": 0
+        },
+        "path": "PrimalitySheafVerification/Spt7.lean",
+        "prose_prefix_ok": true
+      },
+      {
+        "control_characters": [],
+        "diagnostic_commands": {
+          "#check": 0,
+          "#eval": 0,
+          "#print": 1155,
+          "#reduce": 0,
+          "#synth": 0
+        },
+        "forbidden": {
+          "Lean.ofReduceBool": 0,
+          "admit": 0,
+          "axiom_declaration": 0,
+          "fake_pass_marker": 0,
+          "maxHeartbeats_zero": 0,
+          "native_decide": 0,
+          "sorry": 0,
+          "unsafe_declaration": 0
+        },
+        "path": "PrimalitySheafVerification/Mock1.lean",
+        "prose_prefix_ok": true
+      },
+      {
+        "control_characters": [],
+        "diagnostic_commands": {
+          "#check": 0,
+          "#eval": 0,
+          "#print": 5985,
+          "#reduce": 0,
+          "#synth": 0
+        },
+        "forbidden": {
+          "Lean.ofReduceBool": 0,
+          "admit": 0,
+          "axiom_declaration": 0,
+          "fake_pass_marker": 0,
+          "maxHeartbeats_zero": 0,
+          "native_decide": 0,
+          "sorry": 0,
+          "unsafe_declaration": 0
+        },
+        "path": "PrimalitySheafVerification/Mock1_Advanced.lean",
+        "prose_prefix_ok": true
+      },
+      {
+        "control_characters": [],
+        "diagnostic_commands": {
+          "#check": 0,
+          "#eval": 0,
+          "#print": 1989,
+          "#reduce": 0,
+          "#synth": 0
+        },
+        "forbidden": {
+          "Lean.ofReduceBool": 0,
+          "admit": 0,
+          "axiom_declaration": 0,
+          "fake_pass_marker": 0,
+          "maxHeartbeats_zero": 0,
+          "native_decide": 0,
+          "sorry": 0,
+          "unsafe_declaration": 0
+        },
+        "path": "PrimalitySheafVerification/Mock2.lean",
+        "prose_prefix_ok": true
+      },
+      {
+        "control_characters": [],
+        "diagnostic_commands": {
+          "#check": 0,
+          "#eval": 0,
+          "#print": 2001,
+          "#reduce": 0,
+          "#synth": 0
+        },
+        "forbidden": {
+          "Lean.ofReduceBool": 0,
+          "admit": 0,
+          "axiom_declaration": 0,
+          "fake_pass_marker": 0,
+          "maxHeartbeats_zero": 0,
+          "native_decide": 0,
+          "sorry": 0,
+          "unsafe_declaration": 0
+        },
+        "path": "PrimalitySheafVerification/Mock2_Advanced.lean",
+        "prose_prefix_ok": true
+      },
+      {
+        "control_characters": [],
+        "diagnostic_commands": {
+          "#check": 0,
+          "#eval": 0,
+          "#print": 765,
+          "#reduce": 0,
+          "#synth": 4
+        },
+        "forbidden": {
+          "Lean.ofReduceBool": 0,
+          "admit": 0,
+          "axiom_declaration": 0,
+          "fake_pass_marker": 0,
+          "maxHeartbeats_zero": 0,
+          "native_decide": 0,
+          "sorry": 0,
+          "unsafe_declaration": 0
+        },
+        "path": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+        "prose_prefix_ok": true
+      },
+      {
+        "control_characters": [],
+        "diagnostic_commands": {
+          "#check": 0,
+          "#eval": 0,
+          "#print": 1023,
+          "#reduce": 0,
+          "#synth": 0
+        },
+        "forbidden": {
+          "Lean.ofReduceBool": 0,
+          "admit": 0,
+          "axiom_declaration": 0,
+          "fake_pass_marker": 0,
+          "maxHeartbeats_zero": 0,
+          "native_decide": 0,
+          "sorry": 0,
+          "unsafe_declaration": 0
+        },
+        "path": "PrimalitySheafVerification/QYM.lean",
+        "prose_prefix_ok": true
+      },
+      {
+        "control_characters": [],
+        "diagnostic_commands": {
+          "#check": 0,
+          "#eval": 0,
+          "#print": 0,
+          "#reduce": 0,
+          "#synth": 0
+        },
+        "forbidden": {
+          "Lean.ofReduceBool": 0,
+          "admit": 0,
+          "axiom_declaration": 0,
+          "fake_pass_marker": 0,
+          "maxHeartbeats_zero": 0,
+          "native_decide": 0,
+          "sorry": 0,
+          "unsafe_declaration": 0
+        },
+        "path": "PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean",
+        "prose_prefix_ok": true
+      },
+      {
+        "control_characters": [],
+        "diagnostic_commands": {
+          "#check": 0,
+          "#eval": 0,
+          "#print": 0,
+          "#reduce": 0,
+          "#synth": 0
+        },
+        "forbidden": {
+          "Lean.ofReduceBool": 0,
+          "admit": 0,
+          "axiom_declaration": 0,
+          "fake_pass_marker": 0,
+          "maxHeartbeats_zero": 0,
+          "native_decide": 0,
+          "sorry": 0,
+          "unsafe_declaration": 0
+        },
+        "path": "PrimalitySheafVerification/Mock3.lean",
+        "prose_prefix_ok": true
+      },
+      {
+        "control_characters": [],
+        "diagnostic_commands": {
+          "#check": 0,
+          "#eval": 0,
+          "#print": 0,
+          "#reduce": 0,
+          "#synth": 0
+        },
+        "forbidden": {
+          "Lean.ofReduceBool": 0,
+          "admit": 0,
+          "axiom_declaration": 0,
+          "fake_pass_marker": 0,
+          "maxHeartbeats_zero": 0,
+          "native_decide": 0,
+          "sorry": 0,
+          "unsafe_declaration": 0
+        },
+        "path": "PrimalitySheafVerification/BuildAll.lean",
+        "prose_prefix_ok": true
+      }
+    ],
+    "forbidden_count": 0,
+    "pass": true,
+    "policy": {
+      "forbidden": "sorry/admit/project axiom/native_decide/Lean.ofReduceBool/unsafe proof escape/maxHeartbeats 0/fake-pass markers must be zero",
+      "warnings": "counted and preserved; nonzero ordinary warnings do not override the current GB0 authority"
+    },
+    "prose_prefix_failures": 0
+  },
+  "github_run_attempt": "1",
+  "github_run_id": "32438949135",
+  "github_run_url": "https://github.com/leegahuyn/mathlib4/actions/runs/32438949135",
+  "graph": {
+    "buildall_direct_imports": [
+      "PrimalitySheafVerification.Mock1",
+      "PrimalitySheafVerification.Mock1_Advanced",
+      "PrimalitySheafVerification.Mock2",
+      "PrimalitySheafVerification.Mock2_Advanced",
+      "PrimalitySheafVerification.Mock2_FunctionalAnalysis",
+      "PrimalitySheafVerification.Mock2_FunctionalAnalysis_Integrated",
+      "PrimalitySheafVerification.Mock3",
+      "PrimalitySheafVerification.QYM",
+      "PrimalitySheafVerification.Spt1",
+      "PrimalitySheafVerification.Spt2",
+      "PrimalitySheafVerification.Spt3",
+      "PrimalitySheafVerification.Spt4",
+      "PrimalitySheafVerification.Spt5",
+      "PrimalitySheafVerification.Spt6",
+      "PrimalitySheafVerification.Spt7"
+    ],
+    "buildall_missing_required_imports": [],
+    "buildall_required_imports": [
+      "PrimalitySheafVerification.Mock1",
+      "PrimalitySheafVerification.Mock1_Advanced",
+      "PrimalitySheafVerification.Mock2",
+      "PrimalitySheafVerification.Mock2_Advanced",
+      "PrimalitySheafVerification.Mock2_FunctionalAnalysis",
+      "PrimalitySheafVerification.Mock2_FunctionalAnalysis_Integrated",
+      "PrimalitySheafVerification.Mock3",
+      "PrimalitySheafVerification.QYM",
+      "PrimalitySheafVerification.Spt1",
+      "PrimalitySheafVerification.Spt2",
+      "PrimalitySheafVerification.Spt3",
+      "PrimalitySheafVerification.Spt4",
+      "PrimalitySheafVerification.Spt5",
+      "PrimalitySheafVerification.Spt6",
+      "PrimalitySheafVerification.Spt7"
+    ],
+    "graph": {
+      "PrimalitySheafVerification.BuildAll": [
+        "PrimalitySheafVerification.Spt1",
+        "PrimalitySheafVerification.Spt2",
+        "PrimalitySheafVerification.Spt3",
+        "PrimalitySheafVerification.Spt4",
+        "PrimalitySheafVerification.Spt5",
+        "PrimalitySheafVerification.Spt6",
+        "PrimalitySheafVerification.Spt7",
+        "PrimalitySheafVerification.Mock1",
+        "PrimalitySheafVerification.Mock1_Advanced",
+        "PrimalitySheafVerification.Mock2",
+        "PrimalitySheafVerification.Mock2_Advanced",
+        "PrimalitySheafVerification.Mock2_FunctionalAnalysis",
+        "PrimalitySheafVerification.Mock2_FunctionalAnalysis_Integrated",
+        "PrimalitySheafVerification.QYM",
+        "PrimalitySheafVerification.Mock3"
+      ],
+      "PrimalitySheafVerification.Mock1": [],
+      "PrimalitySheafVerification.Mock1_Advanced": [],
+      "PrimalitySheafVerification.Mock2": [],
+      "PrimalitySheafVerification.Mock2_Advanced": [],
+      "PrimalitySheafVerification.Mock2_FunctionalAnalysis": [],
+      "PrimalitySheafVerification.Mock2_FunctionalAnalysis_Integrated": [
+        "PrimalitySheafVerification.Mock2",
+        "PrimalitySheafVerification.Mock2_Advanced",
+        "PrimalitySheafVerification.Mock2_FunctionalAnalysis"
+      ],
+      "PrimalitySheafVerification.Mock3": [
+        "PrimalitySheafVerification.QYM"
+      ],
+      "PrimalitySheafVerification.QYM": [
+        "PrimalitySheafVerification.Mock2",
+        "PrimalitySheafVerification.Mock2_FunctionalAnalysis_Integrated"
+      ],
+      "PrimalitySheafVerification.Spt1": [],
+      "PrimalitySheafVerification.Spt2": [],
+      "PrimalitySheafVerification.Spt3": [],
+      "PrimalitySheafVerification.Spt4": [],
+      "PrimalitySheafVerification.Spt5": [],
+      "PrimalitySheafVerification.Spt6": [],
+      "PrimalitySheafVerification.Spt7": []
+    },
+    "missing_local_imports": [],
+    "pass": true,
+    "target_modules": [
+      "PrimalitySheafVerification.Spt1",
+      "PrimalitySheafVerification.Spt2",
+      "PrimalitySheafVerification.Spt3",
+      "PrimalitySheafVerification.Spt4",
+      "PrimalitySheafVerification.Spt5",
+      "PrimalitySheafVerification.Spt6",
+      "PrimalitySheafVerification.Spt7",
+      "PrimalitySheafVerification.Mock1",
+      "PrimalitySheafVerification.Mock1_Advanced",
+      "PrimalitySheafVerification.Mock2",
+      "PrimalitySheafVerification.Mock2_Advanced",
+      "PrimalitySheafVerification.Mock2_FunctionalAnalysis",
+      "PrimalitySheafVerification.QYM",
+      "PrimalitySheafVerification.Mock2_FunctionalAnalysis_Integrated",
+      "PrimalitySheafVerification.Mock3",
+      "PrimalitySheafVerification.BuildAll"
+    ],
+    "topological_compile_order": [
+      "PrimalitySheafVerification/Spt1.lean",
+      "PrimalitySheafVerification/Spt2.lean",
+      "PrimalitySheafVerification/Spt3.lean",
+      "PrimalitySheafVerification/Spt4.lean",
+      "PrimalitySheafVerification/Spt5.lean",
+      "PrimalitySheafVerification/Spt6.lean",
+      "PrimalitySheafVerification/Spt7.lean",
+      "PrimalitySheafVerification/Mock1.lean",
+      "PrimalitySheafVerification/Mock1_Advanced.lean",
+      "PrimalitySheafVerification/Mock2.lean",
+      "PrimalitySheafVerification/Mock2_Advanced.lean",
+      "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+      "PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean",
+      "PrimalitySheafVerification/QYM.lean",
+      "PrimalitySheafVerification/Mock3.lean",
+      "PrimalitySheafVerification/BuildAll.lean"
+    ]
+  },
+  "lake_manifest_sha256": "672474eb93bc14c66cd1ff45203c451987fe525f7b5d13ecd83140be46434b26",
+  "lake_version": "Lake version 5.0.0-src+62eed1d (Lean version 4.33.0-rc1)",
+  "lean_version": "Lean (version 4.33.0-rc1, x86_64-unknown-linux-gnu, commit 62eed1db4d67327ec8120be05f1a1b0847d74561, Release)",
+  "pass": true,
+  "remote_url": "https://github.com/leegahuyn/mathlib4",
+  "repository": "leegahuyn/mathlib4",
+  "root_count": 13,
+  "root_count_ok": true,
+  "source_commit": "61a48f07e42bc5bf1610a8df3e7cf5ec7e1461c3",
+  "temporary_file_audit": {
+    "changed_tracked_bad_paths": [],
+    "pass": true
+  },
+  "toolchain": "leanprover/lean4:v4.33.0-rc1",
+  "toolchain_expected": "leanprover/lean4:v4.33.0-rc1",
+  "tracked_status": "",
+  "unique_modules": true,
+  "unique_paths": true
+}

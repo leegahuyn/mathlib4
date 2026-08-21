@@ -1,0 +1,152 @@
+{
+  "canonical_path": "PrimalitySheafVerification/Mock3.lean",
+  "canonical_result": {
+    "blocker_declaration": null,
+    "command": "lake env lean -DmaxErrors=2000 -DwarningAsError=false -o .lake/build/lib/lean/PrimalitySheafVerification/Mock3.olean -i .lake/build/lib/lean/PrimalitySheafVerification/Mock3.ilean PrimalitySheafVerification/Mock3.lean",
+    "elapsed_seconds": 3.564,
+    "error_headers": 0,
+    "exit": 0,
+    "first_error": null,
+    "ilean_generated": true,
+    "ilean_sha256": "04f9303fb7c2186dec5fea47cd204fce61117eee8abea33ce371b91102fb8189",
+    "last_error": null,
+    "log_path": ".final_authority/logs/mock3_canonical/PrimalitySheafVerification__Mock3.log",
+    "module": "PrimalitySheafVerification.Mock3",
+    "olean_generated": true,
+    "olean_sha256": "5f2bed30b5acd758701bfc81582eede2f40087dd3c3af5f58babc61c4fe108d0",
+    "panic_lines": 0,
+    "panic_samples": [],
+    "pass": true,
+    "path": "PrimalitySheafVerification/Mock3.lean",
+    "sorry_warning_lines": 0,
+    "sorry_warning_samples": [],
+    "source_git_blob": "bf2a83664292e58f845c457a82de668b0e65be05",
+    "source_sha256": "f828c0c29a3293f40206244e82dde92b5a54d8e9c01a879edd11449cd0eb0a8c",
+    "warning_headers": 0
+  },
+  "clean_first": false,
+  "pass": true,
+  "protected_after": {
+    "fa": {
+      "bytes": 2821792,
+      "git_blob": "28f614d48e02a0f28d3f5a758e813350b3ea89cf",
+      "is_symlink": false,
+      "lines": 63138,
+      "module": "PrimalitySheafVerification.Mock2_FunctionalAnalysis",
+      "path": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+      "sha256": "c680a35b9f12ea3223d8328ed0f5f0674b3439e650bb62cb900b54917f9653bd"
+    },
+    "integrated": {
+      "bytes": 575,
+      "git_blob": "464f5dd095876b20165d12690c8127ef9d909e6a",
+      "is_symlink": false,
+      "lines": 13,
+      "module": "PrimalitySheafVerification.Mock2_FunctionalAnalysis_Integrated",
+      "path": "PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean",
+      "sha256": "a77f9e67980ec35b0d7b4d1624c10ec68051f575468d3b74859e6cf30e3e0439"
+    },
+    "label": "mock3_canonical:after",
+    "pass": true,
+    "qym": {
+      "bytes": 2958818,
+      "git_blob": "7afb309d7c4da97da7bc6b922931734d72830d41",
+      "is_symlink": false,
+      "lines": 62604,
+      "module": "PrimalitySheafVerification.QYM",
+      "path": "PrimalitySheafVerification/QYM.lean",
+      "sha256": "ab7c394f68b812046bcfae109b274a2d4fa42479bf8e76461c73a9c190fb3204"
+    }
+  },
+  "protected_before": {
+    "fa": {
+      "bytes": 2821792,
+      "git_blob": "28f614d48e02a0f28d3f5a758e813350b3ea89cf",
+      "is_symlink": false,
+      "lines": 63138,
+      "module": "PrimalitySheafVerification.Mock2_FunctionalAnalysis",
+      "path": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+      "sha256": "c680a35b9f12ea3223d8328ed0f5f0674b3439e650bb62cb900b54917f9653bd"
+    },
+    "integrated": {
+      "bytes": 575,
+      "git_blob": "464f5dd095876b20165d12690c8127ef9d909e6a",
+      "is_symlink": false,
+      "lines": 13,
+      "module": "PrimalitySheafVerification.Mock2_FunctionalAnalysis_Integrated",
+      "path": "PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean",
+      "sha256": "a77f9e67980ec35b0d7b4d1624c10ec68051f575468d3b74859e6cf30e3e0439"
+    },
+    "label": "mock3_canonical:before",
+    "pass": true,
+    "qym": {
+      "bytes": 2958818,
+      "git_blob": "7afb309d7c4da97da7bc6b922931734d72830d41",
+      "is_symlink": false,
+      "lines": 62604,
+      "module": "PrimalitySheafVerification.QYM",
+      "path": "PrimalitySheafVerification/QYM.lean",
+      "sha256": "ab7c394f68b812046bcfae109b274a2d4fa42479bf8e76461c73a9c190fb3204"
+    }
+  },
+  "qym_source_identity_after": {
+    "fa": {
+      "bytes": 2821792,
+      "git_blob": "28f614d48e02a0f28d3f5a758e813350b3ea89cf",
+      "is_symlink": false,
+      "lines": 63138,
+      "module": "PrimalitySheafVerification.Mock2_FunctionalAnalysis",
+      "path": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+      "sha256": "c680a35b9f12ea3223d8328ed0f5f0674b3439e650bb62cb900b54917f9653bd"
+    },
+    "integrated": {
+      "bytes": 575,
+      "git_blob": "464f5dd095876b20165d12690c8127ef9d909e6a",
+      "is_symlink": false,
+      "lines": 13,
+      "module": "PrimalitySheafVerification.Mock2_FunctionalAnalysis_Integrated",
+      "path": "PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean",
+      "sha256": "a77f9e67980ec35b0d7b4d1624c10ec68051f575468d3b74859e6cf30e3e0439"
+    },
+    "label": "MOCK3:QYM_RECHECK",
+    "pass": true,
+    "qym": {
+      "bytes": 2958818,
+      "git_blob": "7afb309d7c4da97da7bc6b922931734d72830d41",
+      "is_symlink": false,
+      "lines": 62604,
+      "module": "PrimalitySheafVerification.QYM",
+      "path": "PrimalitySheafVerification/QYM.lean",
+      "sha256": "ab7c394f68b812046bcfae109b274a2d4fa42479bf8e76461c73a9c190fb3204"
+    }
+  },
+  "relationship_to_qym": "transparent checked-in bridge importing the frozen canonical QYM module",
+  "removed_object_count": 0,
+  "removed_objects": [],
+  "results": [
+    {
+      "blocker_declaration": null,
+      "command": "lake env lean -DmaxErrors=2000 -DwarningAsError=false -o .lake/build/lib/lean/PrimalitySheafVerification/Mock3.olean -i .lake/build/lib/lean/PrimalitySheafVerification/Mock3.ilean PrimalitySheafVerification/Mock3.lean",
+      "elapsed_seconds": 3.564,
+      "error_headers": 0,
+      "exit": 0,
+      "first_error": null,
+      "ilean_generated": true,
+      "ilean_sha256": "04f9303fb7c2186dec5fea47cd204fce61117eee8abea33ce371b91102fb8189",
+      "last_error": null,
+      "log_path": ".final_authority/logs/mock3_canonical/PrimalitySheafVerification__Mock3.log",
+      "module": "PrimalitySheafVerification.Mock3",
+      "olean_generated": true,
+      "olean_sha256": "5f2bed30b5acd758701bfc81582eede2f40087dd3c3af5f58babc61c4fe108d0",
+      "panic_lines": 0,
+      "panic_samples": [],
+      "pass": true,
+      "path": "PrimalitySheafVerification/Mock3.lean",
+      "sorry_warning_lines": 0,
+      "sorry_warning_samples": [],
+      "source_git_blob": "bf2a83664292e58f845c457a82de668b0e65be05",
+      "source_sha256": "f828c0c29a3293f40206244e82dde92b5a54d8e9c01a879edd11449cd0eb0a8c",
+      "warning_headers": 0
+    }
+  ],
+  "stage": "mock3_canonical"
+}

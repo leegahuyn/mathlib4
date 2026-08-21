@@ -1,0 +1,13 @@
+{
+  "admit_tokens": 0,
+  "legitimate_imported_foundations_classified_as_non_project_escapes": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+  ],
+  "method": "comment/string-aware project-source scan plus kernel compilation of every required source and both clean reproductions",
+  "pass": true,
+  "project_axiom_declarations": 0,
+  "sorryAx_or_sorry_warnings_in_compiler_logs": 0,
+  "sorry_tokens": 0
+}

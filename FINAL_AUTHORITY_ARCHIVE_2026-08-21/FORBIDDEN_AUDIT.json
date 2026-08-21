@@ -1,0 +1,364 @@
+{
+  "control_character_count": 0,
+  "files": [
+    {
+      "control_characters": [],
+      "diagnostic_commands": {
+        "#check": 0,
+        "#eval": 0,
+        "#print": 0,
+        "#reduce": 0,
+        "#synth": 0
+      },
+      "forbidden": {
+        "Lean.ofReduceBool": 0,
+        "admit": 0,
+        "axiom_declaration": 0,
+        "fake_pass_marker": 0,
+        "maxHeartbeats_zero": 0,
+        "native_decide": 0,
+        "sorry": 0,
+        "unsafe_declaration": 0
+      },
+      "path": "PrimalitySheafVerification/Spt1.lean",
+      "prose_prefix_ok": true
+    },
+    {
+      "control_characters": [],
+      "diagnostic_commands": {
+        "#check": 0,
+        "#eval": 0,
+        "#print": 0,
+        "#reduce": 0,
+        "#synth": 0
+      },
+      "forbidden": {
+        "Lean.ofReduceBool": 0,
+        "admit": 0,
+        "axiom_declaration": 0,
+        "fake_pass_marker": 0,
+        "maxHeartbeats_zero": 0,
+        "native_decide": 0,
+        "sorry": 0,
+        "unsafe_declaration": 0
+      },
+      "path": "PrimalitySheafVerification/Spt2.lean",
+      "prose_prefix_ok": true
+    },
+    {
+      "control_characters": [],
+      "diagnostic_commands": {
+        "#check": 0,
+        "#eval": 0,
+        "#print": 0,
+        "#reduce": 0,
+        "#synth": 0
+      },
+      "forbidden": {
+        "Lean.ofReduceBool": 0,
+        "admit": 0,
+        "axiom_declaration": 0,
+        "fake_pass_marker": 0,
+        "maxHeartbeats_zero": 0,
+        "native_decide": 0,
+        "sorry": 0,
+        "unsafe_declaration": 0
+      },
+      "path": "PrimalitySheafVerification/Spt3.lean",
+      "prose_prefix_ok": true
+    },
+    {
+      "control_characters": [],
+      "diagnostic_commands": {
+        "#check": 0,
+        "#eval": 0,
+        "#print": 0,
+        "#reduce": 0,
+        "#synth": 0
+      },
+      "forbidden": {
+        "Lean.ofReduceBool": 0,
+        "admit": 0,
+        "axiom_declaration": 0,
+        "fake_pass_marker": 0,
+        "maxHeartbeats_zero": 0,
+        "native_decide": 0,
+        "sorry": 0,
+        "unsafe_declaration": 0
+      },
+      "path": "PrimalitySheafVerification/Spt4.lean",
+      "prose_prefix_ok": true
+    },
+    {
+      "control_characters": [],
+      "diagnostic_commands": {
+        "#check": 0,
+        "#eval": 0,
+        "#print": 0,
+        "#reduce": 0,
+        "#synth": 0
+      },
+      "forbidden": {
+        "Lean.ofReduceBool": 0,
+        "admit": 0,
+        "axiom_declaration": 0,
+        "fake_pass_marker": 0,
+        "maxHeartbeats_zero": 0,
+        "native_decide": 0,
+        "sorry": 0,
+        "unsafe_declaration": 0
+      },
+      "path": "PrimalitySheafVerification/Spt5.lean",
+      "prose_prefix_ok": true
+    },
+    {
+      "control_characters": [],
+      "diagnostic_commands": {
+        "#check": 0,
+        "#eval": 0,
+        "#print": 0,
+        "#reduce": 0,
+        "#synth": 0
+      },
+      "forbidden": {
+        "Lean.ofReduceBool": 0,
+        "admit": 0,
+        "axiom_declaration": 0,
+        "fake_pass_marker": 0,
+        "maxHeartbeats_zero": 0,
+        "native_decide": 0,
+        "sorry": 0,
+        "unsafe_declaration": 0
+      },
+      "path": "PrimalitySheafVerification/Spt6.lean",
+      "prose_prefix_ok": true
+    },
+    {
+      "control_characters": [],
+      "diagnostic_commands": {
+        "#check": 0,
+        "#eval": 0,
+        "#print": 0,
+        "#reduce": 0,
+        "#synth": 0
+      },
+      "forbidden": {
+        "Lean.ofReduceBool": 0,
+        "admit": 0,
+        "axiom_declaration": 0,
+        "fake_pass_marker": 0,
+        "maxHeartbeats_zero": 0,
+        "native_decide": 0,
+        "sorry": 0,
+        "unsafe_declaration": 0
+      },
+      "path": "PrimalitySheafVerification/Spt7.lean",
+      "prose_prefix_ok": true
+    },
+    {
+      "control_characters": [],
+      "diagnostic_commands": {
+        "#check": 0,
+        "#eval": 0,
+        "#print": 1155,
+        "#reduce": 0,
+        "#synth": 0
+      },
+      "forbidden": {
+        "Lean.ofReduceBool": 0,
+        "admit": 0,
+        "axiom_declaration": 0,
+        "fake_pass_marker": 0,
+        "maxHeartbeats_zero": 0,
+        "native_decide": 0,
+        "sorry": 0,
+        "unsafe_declaration": 0
+      },
+      "path": "PrimalitySheafVerification/Mock1.lean",
+      "prose_prefix_ok": true
+    },
+    {
+      "control_characters": [],
+      "diagnostic_commands": {
+        "#check": 0,
+        "#eval": 0,
+        "#print": 5985,
+        "#reduce": 0,
+        "#synth": 0
+      },
+      "forbidden": {
+        "Lean.ofReduceBool": 0,
+        "admit": 0,
+        "axiom_declaration": 0,
+        "fake_pass_marker": 0,
+        "maxHeartbeats_zero": 0,
+        "native_decide": 0,
+        "sorry": 0,
+        "unsafe_declaration": 0
+      },
+      "path": "PrimalitySheafVerification/Mock1_Advanced.lean",
+      "prose_prefix_ok": true
+    },
+    {
+      "control_characters": [],
+      "diagnostic_commands": {
+        "#check": 0,
+        "#eval": 0,
+        "#print": 1989,
+        "#reduce": 0,
+        "#synth": 0
+      },
+      "forbidden": {
+        "Lean.ofReduceBool": 0,
+        "admit": 0,
+        "axiom_declaration": 0,
+        "fake_pass_marker": 0,
+        "maxHeartbeats_zero": 0,
+        "native_decide": 0,
+        "sorry": 0,
+        "unsafe_declaration": 0
+      },
+      "path": "PrimalitySheafVerification/Mock2.lean",
+      "prose_prefix_ok": true
+    },
+    {
+      "control_characters": [],
+      "diagnostic_commands": {
+        "#check": 0,
+        "#eval": 0,
+        "#print": 2001,
+        "#reduce": 0,
+        "#synth": 0
+      },
+      "forbidden": {
+        "Lean.ofReduceBool": 0,
+        "admit": 0,
+        "axiom_declaration": 0,
+        "fake_pass_marker": 0,
+        "maxHeartbeats_zero": 0,
+        "native_decide": 0,
+        "sorry": 0,
+        "unsafe_declaration": 0
+      },
+      "path": "PrimalitySheafVerification/Mock2_Advanced.lean",
+      "prose_prefix_ok": true
+    },
+    {
+      "control_characters": [],
+      "diagnostic_commands": {
+        "#check": 0,
+        "#eval": 0,
+        "#print": 765,
+        "#reduce": 0,
+        "#synth": 4
+      },
+      "forbidden": {
+        "Lean.ofReduceBool": 0,
+        "admit": 0,
+        "axiom_declaration": 0,
+        "fake_pass_marker": 0,
+        "maxHeartbeats_zero": 0,
+        "native_decide": 0,
+        "sorry": 0,
+        "unsafe_declaration": 0
+      },
+      "path": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+      "prose_prefix_ok": true
+    },
+    {
+      "control_characters": [],
+      "diagnostic_commands": {
+        "#check": 0,
+        "#eval": 0,
+        "#print": 1023,
+        "#reduce": 0,
+        "#synth": 0
+      },
+      "forbidden": {
+        "Lean.ofReduceBool": 0,
+        "admit": 0,
+        "axiom_declaration": 0,
+        "fake_pass_marker": 0,
+        "maxHeartbeats_zero": 0,
+        "native_decide": 0,
+        "sorry": 0,
+        "unsafe_declaration": 0
+      },
+      "path": "PrimalitySheafVerification/QYM.lean",
+      "prose_prefix_ok": true
+    },
+    {
+      "control_characters": [],
+      "diagnostic_commands": {
+        "#check": 0,
+        "#eval": 0,
+        "#print": 0,
+        "#reduce": 0,
+        "#synth": 0
+      },
+      "forbidden": {
+        "Lean.ofReduceBool": 0,
+        "admit": 0,
+        "axiom_declaration": 0,
+        "fake_pass_marker": 0,
+        "maxHeartbeats_zero": 0,
+        "native_decide": 0,
+        "sorry": 0,
+        "unsafe_declaration": 0
+      },
+      "path": "PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean",
+      "prose_prefix_ok": true
+    },
+    {
+      "control_characters": [],
+      "diagnostic_commands": {
+        "#check": 0,
+        "#eval": 0,
+        "#print": 0,
+        "#reduce": 0,
+        "#synth": 0
+      },
+      "forbidden": {
+        "Lean.ofReduceBool": 0,
+        "admit": 0,
+        "axiom_declaration": 0,
+        "fake_pass_marker": 0,
+        "maxHeartbeats_zero": 0,
+        "native_decide": 0,
+        "sorry": 0,
+        "unsafe_declaration": 0
+      },
+      "path": "PrimalitySheafVerification/Mock3.lean",
+      "prose_prefix_ok": true
+    },
+    {
+      "control_characters": [],
+      "diagnostic_commands": {
+        "#check": 0,
+        "#eval": 0,
+        "#print": 0,
+        "#reduce": 0,
+        "#synth": 0
+      },
+      "forbidden": {
+        "Lean.ofReduceBool": 0,
+        "admit": 0,
+        "axiom_declaration": 0,
+        "fake_pass_marker": 0,
+        "maxHeartbeats_zero": 0,
+        "native_decide": 0,
+        "sorry": 0,
+        "unsafe_declaration": 0
+      },
+      "path": "PrimalitySheafVerification/BuildAll.lean",
+      "prose_prefix_ok": true
+    }
+  ],
+  "forbidden_count": 0,
+  "pass": true,
+  "policy": {
+    "forbidden": "sorry/admit/project axiom/native_decide/Lean.ofReduceBool/unsafe proof escape/maxHeartbeats 0/fake-pass markers must be zero",
+    "warnings": "counted and preserved; nonzero ordinary warnings do not override the current GB0 authority"
+  },
+  "prose_prefix_failures": 0
+}

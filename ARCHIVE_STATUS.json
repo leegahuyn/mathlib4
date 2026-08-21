@@ -1,0 +1,9 @@
+{
+  "archive_branch": "archive-assets/formalization-final-2026-08-21",
+  "authority_commit": "61a48f07e42bc5bf1610a8df3e7cf5ec7e1461c3",
+  "mathematical_authority_changed": false,
+  "original_evidence_sha256": "86b2525c7533562b929a573eca0ff006c6b1df1ac054329c906eae009e05954a",
+  "repository": "leegahuyn/mathlib4",
+  "schema": "formalization-final-authority-archive-assets/v1",
+  "source_changes_covered": false
+}

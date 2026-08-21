@@ -1,0 +1,238 @@
+{
+  "all_pass_evidence_source_identical": true,
+  "base_authority_commit": "c6b3087022f8697983895518074ea07056c64627",
+  "branch": "gpt/final-authority-last-mile-20260821",
+  "bridges": [
+    {
+      "bytes": 575,
+      "git_blob": "464f5dd095876b20165d12690c8127ef9d909e6a",
+      "is_symlink": false,
+      "lines": 13,
+      "module": "PrimalitySheafVerification.Mock2_FunctionalAnalysis_Integrated",
+      "path": "PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean",
+      "sha256": "a77f9e67980ec35b0d7b4d1624c10ec68051f575468d3b74859e6cf30e3e0439"
+    },
+    {
+      "bytes": 438,
+      "git_blob": "bf2a83664292e58f845c457a82de668b0e65be05",
+      "is_symlink": false,
+      "lines": 12,
+      "module": "PrimalitySheafVerification.Mock3",
+      "path": "PrimalitySheafVerification/Mock3.lean",
+      "sha256": "f828c0c29a3293f40206244e82dde92b5a54d8e9c01a879edd11449cd0eb0a8c"
+    }
+  ],
+  "buildall": {
+    "bytes": 774,
+    "git_blob": "fc6fb147b8505b434104cf1ef50dd9243baa79f9",
+    "is_symlink": false,
+    "lines": 16,
+    "module": "PrimalitySheafVerification.BuildAll",
+    "path": "PrimalitySheafVerification/BuildAll.lean",
+    "sha256": "696f8adf76eb014034d5917d0518856b86b922586d324455023754d75107d38a"
+  },
+  "changed_paths_audit": {
+    "allowed_paths": [
+      ".github/workflows/final-authority-gb0-actual-lean.yml",
+      ".github/workflows/final-authority-last-mile-20260821.yml",
+      ".github/workflows/final-authority-mass-repair-v3.yml",
+      ".github/workflows/final-authority-mass-repair-v5.yml",
+      ".github/workflows/final-authority-mass-repair-v6.yml",
+      ".github/workflows/final-authority-pr-observable-v1.yml",
+      ".github/workflows/gpt-final-authority-gb0-canonical.yml",
+      ".github/workflows/m1a-native-clean-six-cumulative-actual-lean.yml",
+      "PrimalitySheafVerification/BuildAll.lean",
+      "PrimalitySheafVerification/Mock1_Advanced.lean",
+      "PrimalitySheafVerification/Mock3.lean",
+      "PrimalitySheafVerification/Spt1.lean",
+      "PrimalitySheafVerification/Spt3.lean",
+      "final_authority_last_mile_trigger.txt",
+      "scripts/apply_final_authority_verified_sources_v5.py",
+      "scripts/final13_r5_patch_mock1_advanced_six.py",
+      "scripts/final_authority_gate.py",
+      "scripts/final_authority_gate_v2.py",
+      "scripts/final_authority_gate_v3.py",
+      "scripts/final_authority_gate_v5.py",
+      "scripts/final_authority_source_patch_v6.py",
+      "scripts/run_final_authority_verified_v5.sh"
+    ],
+    "base_commit": "c6b3087022f8697983895518074ea07056c64627",
+    "changed_paths": [
+      ".github/workflows/final-authority-last-mile-20260821.yml",
+      "PrimalitySheafVerification/Spt3.lean",
+      "scripts/final_authority_gate_v5.py"
+    ],
+    "pass": true,
+    "permitted_primary_root_changes": [
+      "PrimalitySheafVerification/Mock1_Advanced.lean",
+      "PrimalitySheafVerification/Mock3.lean",
+      "PrimalitySheafVerification/Spt1.lean",
+      "PrimalitySheafVerification/Spt3.lean"
+    ],
+    "primary_root_changes": [
+      "PrimalitySheafVerification/Spt3.lean"
+    ],
+    "source_commit": "61a48f07e42bc5bf1610a8df3e7cf5ec7e1461c3",
+    "unexpected_paths": [],
+    "unexpected_primary_root_changes": []
+  },
+  "github_run_id": "32438949135",
+  "github_run_url": "https://github.com/leegahuyn/mathlib4/actions/runs/32438949135",
+  "lake_manifest_sha256": "672474eb93bc14c66cd1ff45203c451987fe525f7b5d13ecd83140be46434b26",
+  "lake_version": "Lake version 5.0.0-src+62eed1d (Lean version 4.33.0-rc1)",
+  "lean_version": "Lean (version 4.33.0-rc1, x86_64-unknown-linux-gnu, commit 62eed1db4d67327ec8120be05f1a1b0847d74561, Release)",
+  "pass": true,
+  "primary_roots": [
+    {
+      "bytes": 365921,
+      "git_blob": "c69b42e0dc4671ace05fe595d29669558b0d4372",
+      "is_symlink": false,
+      "lines": 8087,
+      "module": "PrimalitySheafVerification.Spt1",
+      "path": "PrimalitySheafVerification/Spt1.lean",
+      "sha256": "6edd211fba5824a092c22e38ed748a7e59eb313860995f94623df43ce1e06535"
+    },
+    {
+      "bytes": 403732,
+      "git_blob": "ee1df370ee56549aebd9db0a0aaa0582ae227a5f",
+      "is_symlink": false,
+      "lines": 8878,
+      "module": "PrimalitySheafVerification.Spt2",
+      "path": "PrimalitySheafVerification/Spt2.lean",
+      "sha256": "292f8f64858888aa73b24e895b6b0b9af2a0f53a51a9f5d1aded452024d77cb7"
+    },
+    {
+      "bytes": 430152,
+      "git_blob": "a73d346d060a9a2b8b3dca636e0e611eb394f69c",
+      "is_symlink": false,
+      "lines": 7506,
+      "module": "PrimalitySheafVerification.Spt3",
+      "path": "PrimalitySheafVerification/Spt3.lean",
+      "sha256": "da2c9dfc5787d6121b42df4d1729552c28914f9e54edf30d27d7aba3cd2b347b"
+    },
+    {
+      "bytes": 465620,
+      "git_blob": "dfdbece780686cd0a490ea5ef27a2396728efea2",
+      "is_symlink": false,
+      "lines": 8714,
+      "module": "PrimalitySheafVerification.Spt4",
+      "path": "PrimalitySheafVerification/Spt4.lean",
+      "sha256": "be2a7647d95ab6bb32ee2801269d45c9b57a8e2a7e08ad764618651ad09d6dc5"
+    },
+    {
+      "bytes": 473184,
+      "git_blob": "14ef77d87aaca5db11ca329731e052d000b4bdf5",
+      "is_symlink": false,
+      "lines": 8071,
+      "module": "PrimalitySheafVerification.Spt5",
+      "path": "PrimalitySheafVerification/Spt5.lean",
+      "sha256": "6279d935410d4dab3b5af8a95ef503ccb5a66da1ecfc668aa03e773a837b9203"
+    },
+    {
+      "bytes": 435585,
+      "git_blob": "e4832c95c1dddfc7febec5c6b2891b0149a6c7f9",
+      "is_symlink": false,
+      "lines": 8651,
+      "module": "PrimalitySheafVerification.Spt6",
+      "path": "PrimalitySheafVerification/Spt6.lean",
+      "sha256": "e8c038b4e1e932914ac4394a036a602c19e1bcb6ac3acedbe518eebf9b95a4fe"
+    },
+    {
+      "bytes": 865526,
+      "git_blob": "1de97d018a37190df3a22824d2ad1d6cf3916955",
+      "is_symlink": false,
+      "lines": 18114,
+      "module": "PrimalitySheafVerification.Spt7",
+      "path": "PrimalitySheafVerification/Spt7.lean",
+      "sha256": "a05f56f4fbda508f919e9fe8259a91af464afca35758346d2326f75211a366bd"
+    },
+    {
+      "bytes": 425518,
+      "git_blob": "424fa454ee5f73b75a15e49e2eac931f3b4cd269",
+      "is_symlink": false,
+      "lines": 9831,
+      "module": "PrimalitySheafVerification.Mock1",
+      "path": "PrimalitySheafVerification/Mock1.lean",
+      "sha256": "1bcb9a5c18e0dd5ba115541ba806090daf7800ff0324a3db9e1da4d4eb32c1bd"
+    },
+    {
+      "bytes": 4428854,
+      "git_blob": "3b6596bbc0790c7d6e427c44e2b0b18b8af3efa6",
+      "is_symlink": false,
+      "lines": 90615,
+      "module": "PrimalitySheafVerification.Mock1_Advanced",
+      "path": "PrimalitySheafVerification/Mock1_Advanced.lean",
+      "sha256": "b14bcea1991b4f9b6fcde207b9d25b31cceb54f7601715fd6b6e2d988ecbfe53"
+    },
+    {
+      "bytes": 1119419,
+      "git_blob": "94f8894b5f866701955a105044b8958a8deb7734",
+      "is_symlink": false,
+      "lines": 26607,
+      "module": "PrimalitySheafVerification.Mock2",
+      "path": "PrimalitySheafVerification/Mock2.lean",
+      "sha256": "36a034721c389888b2c235d856753e5f2e38f9f6a258fddabbb70fe751ae3594"
+    },
+    {
+      "bytes": 1390059,
+      "git_blob": "a60fa47ebcd8c1fb6037d705e81b54c80910657a",
+      "is_symlink": false,
+      "lines": 31919,
+      "module": "PrimalitySheafVerification.Mock2_Advanced",
+      "path": "PrimalitySheafVerification/Mock2_Advanced.lean",
+      "sha256": "cf44063abca1d5b47331a9001a3cff45a86b5e889865812fe4e7826c6af41526"
+    },
+    {
+      "bytes": 2821792,
+      "git_blob": "28f614d48e02a0f28d3f5a758e813350b3ea89cf",
+      "is_symlink": false,
+      "lines": 63138,
+      "module": "PrimalitySheafVerification.Mock2_FunctionalAnalysis",
+      "path": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+      "sha256": "c680a35b9f12ea3223d8328ed0f5f0674b3439e650bb62cb900b54917f9653bd"
+    },
+    {
+      "bytes": 2958818,
+      "git_blob": "7afb309d7c4da97da7bc6b922931734d72830d41",
+      "is_symlink": false,
+      "lines": 62604,
+      "module": "PrimalitySheafVerification.QYM",
+      "path": "PrimalitySheafVerification/QYM.lean",
+      "sha256": "ab7c394f68b812046bcfae109b274a2d4fa42479bf8e76461c73a9c190fb3204"
+    }
+  ],
+  "protected": {
+    "fa": {
+      "bytes": 2821792,
+      "git_blob": "28f614d48e02a0f28d3f5a758e813350b3ea89cf",
+      "is_symlink": false,
+      "lines": 63138,
+      "module": "PrimalitySheafVerification.Mock2_FunctionalAnalysis",
+      "path": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+      "sha256": "c680a35b9f12ea3223d8328ed0f5f0674b3439e650bb62cb900b54917f9653bd"
+    },
+    "integrated": {
+      "bytes": 575,
+      "git_blob": "464f5dd095876b20165d12690c8127ef9d909e6a",
+      "is_symlink": false,
+      "lines": 13,
+      "module": "PrimalitySheafVerification.Mock2_FunctionalAnalysis_Integrated",
+      "path": "PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean",
+      "sha256": "a77f9e67980ec35b0d7b4d1624c10ec68051f575468d3b74859e6cf30e3e0439"
+    },
+    "label": "FINAL_SOURCE_IDENTITY",
+    "pass": true,
+    "qym": {
+      "bytes": 2958818,
+      "git_blob": "7afb309d7c4da97da7bc6b922931734d72830d41",
+      "is_symlink": false,
+      "lines": 62604,
+      "module": "PrimalitySheafVerification.QYM",
+      "path": "PrimalitySheafVerification/QYM.lean",
+      "sha256": "ab7c394f68b812046bcfae109b274a2d4fa42479bf8e76461c73a9c190fb3204"
+    }
+  },
+  "repository": "leegahuyn/mathlib4",
+  "tested_source_commit": "61a48f07e42bc5bf1610a8df3e7cf5ec7e1461c3",
+  "toolchain": "leanprover/lean4:v4.33.0-rc1"
+}

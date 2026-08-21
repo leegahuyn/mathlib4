@@ -1,0 +1,325 @@
+{
+  "branch": "gpt/final-authority-last-mile-20260821",
+  "counts": {
+    "FAIL": 0,
+    "NOT_RUN": 0,
+    "PASS": 15,
+    "SKIPPED": 0
+  },
+  "items": [
+    {
+      "command_or_check": "FINAL_13_BUILD_RESULTS + BUILDALL_RESULT + CLEAN_BUILD_1/2_RESULT",
+      "evidence_path": "FINAL_13_BUILD_RESULTS.json",
+      "exact_requirement": "Completion report for all 13 primary files; actual direct Lean exit 0, errors 0, sorry warnings 0, panic 0; integrated/clean/CI-equivalent gates pass. Ordinary warnings are counted under the current GB0 authority override rather than hidden.",
+      "item_number": 1,
+      "result": {
+        "counts": {
+          "FAIL": 0,
+          "NOT_RUN": 0,
+          "PASS": 13,
+          "SKIPPED": 0
+        },
+        "warning_policy": "counted and preserved; nonzero ordinary warnings do not override the current GB0 authority",
+        "warnings_counted": 8829
+      },
+      "source_commit": "61a48f07e42bc5bf1610a8df3e7cf5ec7e1461c3",
+      "status": "PASS"
+    },
+    {
+      "command_or_check": "git/lean/lake preflight",
+      "evidence_path": "PREFLIGHT.json",
+      "exact_requirement": "Record current remote branch, repository identity, pinned Lean/Lake/Mathlib environment, manifest SHA, commit and clean tracked status.",
+      "item_number": 2,
+      "result": {
+        "branch": "gpt/final-authority-last-mile-20260821",
+        "lake": "Lake version 5.0.0-src+62eed1d (Lean version 4.33.0-rc1)",
+        "lean": "Lean (version 4.33.0-rc1, x86_64-unknown-linux-gnu, commit 62eed1db4d67327ec8120be05f1a1b0847d74561, Release)",
+        "toolchain": "leanprover/lean4:v4.33.0-rc1"
+      },
+      "source_commit": "61a48f07e42bc5bf1610a8df3e7cf5ec7e1461c3",
+      "status": "PASS"
+    },
+    {
+      "command_or_check": "git diff --name-only c6b3087022f8697983895518074ea07056c64627..61a48f07e42bc5bf1610a8df3e7cf5ec7e1461c3",
+      "evidence_path": "PREFLIGHT.json",
+      "exact_requirement": "Inspect changed paths/diff statistics and restrict modifications to necessary project integration and authority files.",
+      "item_number": 3,
+      "result": {
+        "allowed_paths": [
+          ".github/workflows/final-authority-gb0-actual-lean.yml",
+          ".github/workflows/final-authority-last-mile-20260821.yml",
+          ".github/workflows/final-authority-mass-repair-v3.yml",
+          ".github/workflows/final-authority-mass-repair-v5.yml",
+          ".github/workflows/final-authority-mass-repair-v6.yml",
+          ".github/workflows/final-authority-pr-observable-v1.yml",
+          ".github/workflows/gpt-final-authority-gb0-canonical.yml",
+          ".github/workflows/m1a-native-clean-six-cumulative-actual-lean.yml",
+          "PrimalitySheafVerification/BuildAll.lean",
+          "PrimalitySheafVerification/Mock1_Advanced.lean",
+          "PrimalitySheafVerification/Mock3.lean",
+          "PrimalitySheafVerification/Spt1.lean",
+          "PrimalitySheafVerification/Spt3.lean",
+          "final_authority_last_mile_trigger.txt",
+          "scripts/apply_final_authority_verified_sources_v5.py",
+          "scripts/final13_r5_patch_mock1_advanced_six.py",
+          "scripts/final_authority_gate.py",
+          "scripts/final_authority_gate_v2.py",
+          "scripts/final_authority_gate_v3.py",
+          "scripts/final_authority_gate_v5.py",
+          "scripts/final_authority_source_patch_v6.py",
+          "scripts/run_final_authority_verified_v5.sh"
+        ],
+        "base_commit": "c6b3087022f8697983895518074ea07056c64627",
+        "changed_paths": [
+          ".github/workflows/final-authority-last-mile-20260821.yml",
+          "PrimalitySheafVerification/Spt3.lean",
+          "scripts/final_authority_gate_v5.py"
+        ],
+        "pass": true,
+        "permitted_primary_root_changes": [
+          "PrimalitySheafVerification/Mock1_Advanced.lean",
+          "PrimalitySheafVerification/Mock3.lean",
+          "PrimalitySheafVerification/Spt1.lean",
+          "PrimalitySheafVerification/Spt3.lean"
+        ],
+        "primary_root_changes": [
+          "PrimalitySheafVerification/Spt3.lean"
+        ],
+        "source_commit": "61a48f07e42bc5bf1610a8df3e7cf5ec7e1461c3",
+        "unexpected_paths": [],
+        "unexpected_primary_root_changes": []
+      },
+      "source_commit": "61a48f07e42bc5bf1610a8df3e7cf5ec7e1461c3",
+      "status": "PASS"
+    },
+    {
+      "command_or_check": "git ls-files temporary-artifact audit",
+      "evidence_path": "PREFLIGHT.json",
+      "exact_requirement": "Keep temporary probes, logs, olean/ilean and scratch files out of tracked production paths.",
+      "item_number": 4,
+      "result": {
+        "changed_tracked_bad_paths": [],
+        "pass": true
+      },
+      "source_commit": "61a48f07e42bc5bf1610a8df3e7cf5ec7e1461c3",
+      "status": "PASS"
+    },
+    {
+      "command_or_check": "scripts/final_authority_gate.py source_audit",
+      "evidence_path": "FORBIDDEN_AUDIT.json",
+      "exact_requirement": "Comment/string-aware forbidden-element audit for sorry, admit, project axiom, native_decide, Lean.ofReduceBool, unsafe proof escapes and fake-pass markers.",
+      "item_number": 5,
+      "result": {
+        "forbidden_count": 0
+      },
+      "source_commit": "61a48f07e42bc5bf1610a8df3e7cf5ec7e1461c3",
+      "status": "PASS"
+    },
+    {
+      "command_or_check": "git diff --check c6b3087022f8697983895518074ea07056c64627..61a48f07e42bc5bf1610a8df3e7cf5ec7e1461c3",
+      "evidence_path": "PREFLIGHT.json",
+      "exact_requirement": "Whitespace/diff/mathematical-integrity review; FA, Integrated and QYM remain byte-identical while Mock1_Advanced, Spt1, Spt3 and Mock3 receive audited cumulative recovery changes.",
+      "item_number": 6,
+      "result": {
+        "diff_check": {
+          "command": "git diff --check c6b3087022f8697983895518074ea07056c64627..HEAD",
+          "exit": 0,
+          "output": "",
+          "pass": true
+        },
+        "protected": true
+      },
+      "source_commit": "61a48f07e42bc5bf1610a8df3e7cf5ec7e1461c3",
+      "status": "PASS"
+    },
+    {
+      "command_or_check": "FINAL_13_ROOTS manifest generation",
+      "evidence_path": "FINAL_13_ROOTS.txt",
+      "exact_requirement": "Record path, line count, byte count, SHA256 and Git blob for all 13 roots and mandatory bridges.",
+      "item_number": 7,
+      "result": {
+        "bridges": 2,
+        "primary": 13
+      },
+      "source_commit": "61a48f07e42bc5bf1610a8df3e7cf5ec7e1461c3",
+      "status": "PASS"
+    },
+    {
+      "command_or_check": "changed-path allowlist + exact-path persistence workflow",
+      "evidence_path": "PREFLIGHT.json",
+      "exact_requirement": "Exact intended staging only; no git add dot and no accidental source/compiler artifacts.",
+      "item_number": 8,
+      "result": {
+        "allowed_paths": [
+          ".github/workflows/final-authority-gb0-actual-lean.yml",
+          ".github/workflows/final-authority-last-mile-20260821.yml",
+          ".github/workflows/final-authority-mass-repair-v3.yml",
+          ".github/workflows/final-authority-mass-repair-v5.yml",
+          ".github/workflows/final-authority-mass-repair-v6.yml",
+          ".github/workflows/final-authority-pr-observable-v1.yml",
+          ".github/workflows/gpt-final-authority-gb0-canonical.yml",
+          ".github/workflows/m1a-native-clean-six-cumulative-actual-lean.yml",
+          "PrimalitySheafVerification/BuildAll.lean",
+          "PrimalitySheafVerification/Mock1_Advanced.lean",
+          "PrimalitySheafVerification/Mock3.lean",
+          "PrimalitySheafVerification/Spt1.lean",
+          "PrimalitySheafVerification/Spt3.lean",
+          "final_authority_last_mile_trigger.txt",
+          "scripts/apply_final_authority_verified_sources_v5.py",
+          "scripts/final13_r5_patch_mock1_advanced_six.py",
+          "scripts/final_authority_gate.py",
+          "scripts/final_authority_gate_v2.py",
+          "scripts/final_authority_gate_v3.py",
+          "scripts/final_authority_gate_v5.py",
+          "scripts/final_authority_source_patch_v6.py",
+          "scripts/run_final_authority_verified_v5.sh"
+        ]
+      },
+      "source_commit": "61a48f07e42bc5bf1610a8df3e7cf5ec7e1461c3",
+      "status": "PASS"
+    },
+    {
+      "command_or_check": "git log c6b3087022f8697983895518074ea07056c64627..61a48f07e42bc5bf1610a8df3e7cf5ec7e1461c3",
+      "evidence_path": "PREFLIGHT.json",
+      "exact_requirement": "Use meaningful logical checkpoint commits; do not create fake empty commits.",
+      "item_number": 9,
+      "result": [
+        {
+          "sha": "61a48f07e42bc5bf1610a8df3e7cf5ec7e1461c3",
+          "subject": "CI: expose last-mile actual Lean gate on trusted PR route"
+        },
+        {
+          "sha": "923603bfb2f54ca36579f26086f68e4db34041db",
+          "subject": "CI: run final authority BuildAll clean2 checklist last mile"
+        },
+        {
+          "sha": "816776d781354996863fd6d52dc8d19042003ef1",
+          "subject": "Final authority: anchor audits at verified c6b308 baseline"
+        },
+        {
+          "sha": "efce22449d3958a8f57b50aa931df6b7bd086c1b",
+          "subject": "Final authority: permit audited Spt3 last-mile repair"
+        },
+        {
+          "sha": "049d75cb23e1e679e4c5c604157aab5900c58ade",
+          "subject": "Final authority: rename project-local PowerSeries log to fix BuildAll collision"
+        }
+      ],
+      "source_commit": "61a48f07e42bc5bf1610a8df3e7cf5ec7e1461c3",
+      "status": "PASS"
+    },
+    {
+      "command_or_check": "git show + toolchain metadata",
+      "evidence_path": "FINAL_SOURCE_IDENTITY.json",
+      "exact_requirement": "Record branch, full/short commit SHA, subject/date, Lean version and Mathlib/environment identity.",
+      "item_number": 10,
+      "result": {
+        "commit": "61a48f07e42bc5bf1610a8df3e7cf5ec7e1461c3",
+        "date": "2026-08-21T11:10:36+09:00",
+        "subject": "CI: expose last-mile actual Lean gate on trusted PR route"
+      },
+      "source_commit": "61a48f07e42bc5bf1610a8df3e7cf5ec7e1461c3",
+      "status": "PASS"
+    },
+    {
+      "command_or_check": "GitHub push-triggered branch identity",
+      "evidence_path": "FINAL_SOURCE_IDENTITY.json",
+      "exact_requirement": "Push only to the designated successor repair branch; never master and never force-push.",
+      "item_number": 11,
+      "result": {
+        "branch": "gpt/final-authority-last-mile-20260821",
+        "run_id": "32438949135"
+      },
+      "source_commit": "61a48f07e42bc5bf1610a8df3e7cf5ec7e1461c3",
+      "status": "PASS"
+    },
+    {
+      "command_or_check": "GitHub Actions run + compiler logs",
+      "evidence_path": "FINAL_TRUE_PASS_REPORT.md",
+      "exact_requirement": "Use GitHub Actions as independent verification and count PASS only where actual direct Lean steps ran.",
+      "item_number": 12,
+      "result": {
+        "run_id": "32438949135",
+        "run_url": "https://github.com/leegahuyn/mathlib4/actions/runs/32438949135"
+      },
+      "source_commit": "61a48f07e42bc5bf1610a8df3e7cf5ec7e1461c3",
+      "status": "PASS"
+    },
+    {
+      "command_or_check": "source fingerprints + full direct Lean commands",
+      "evidence_path": "FINAL_SOURCE_IDENTITY.json",
+      "exact_requirement": "Confirm exact remote source identities, plausible line counts, intended paths, toolchain, full-file compilation and no segment/prefix substitution.",
+      "item_number": 13,
+      "result": {
+        "source_identity": true
+      },
+      "source_commit": "61a48f07e42bc5bf1610a8df3e7cf5ec7e1461c3",
+      "status": "PASS"
+    },
+    {
+      "command_or_check": "static axiom scan + kernel compilation/log audit",
+      "evidence_path": "AXIOM_AUDIT.json",
+      "exact_requirement": "Axiom/trust audit: no sorryAx, user-defined/project axiom or newly introduced proof escape; imported logical foundations classified separately.",
+      "item_number": 14,
+      "result": {
+        "admit_tokens": 0,
+        "legitimate_imported_foundations_classified_as_non_project_escapes": [
+          "propext",
+          "Classical.choice",
+          "Quot.sound"
+        ],
+        "method": "comment/string-aware project-source scan plus kernel compilation of every required source and both clean reproductions",
+        "pass": true,
+        "project_axiom_declarations": 0,
+        "sorryAx_or_sorry_warnings_in_compiler_logs": 0,
+        "sorry_tokens": 0
+      },
+      "source_commit": "61a48f07e42bc5bf1610a8df3e7cf5ec7e1461c3",
+      "status": "PASS"
+    },
+    {
+      "command_or_check": "required artifact existence + clean #1/#2 + source identity",
+      "evidence_path": "FINAL_TRUE_PASS_REPORT.md",
+      "exact_requirement": "Final reproducibility/evidence package tying exact checked-in source bytes to two clean direct-Lean reproductions and all authority gates.",
+      "item_number": 15,
+      "result": {
+        "clean1": true,
+        "clean2": true,
+        "required_reports": [
+          "QYM_GB0_LOCK_RESULT.json",
+          "QYM_CANONICAL_REPLAY_RESULT.json",
+          "MOCK3_CANONICAL_RESULT.json",
+          "FINAL_13_ROOTS.txt",
+          "FINAL_13_BUILD_RESULTS.json",
+          "BUILDALL_RESULT.json",
+          "CLEAN_BUILD_1_RESULT.json",
+          "CLEAN_BUILD_2_RESULT.json",
+          "FINAL_15_CHECKLIST_RESULT.json",
+          "FINAL_SOURCE_IDENTITY.json",
+          "FINAL_STATUS_CARD.md",
+          "FINAL_TRUE_PASS_REPORT.md"
+        ]
+      },
+      "source_commit": "61a48f07e42bc5bf1610a8df3e7cf5ec7e1461c3",
+      "status": "PASS"
+    }
+  ],
+  "pass": true,
+  "repository": "leegahuyn/mathlib4",
+  "required_reports_existing": [
+    "QYM_GB0_LOCK_RESULT.json",
+    "QYM_CANONICAL_REPLAY_RESULT.json",
+    "MOCK3_CANONICAL_RESULT.json",
+    "FINAL_13_ROOTS.txt",
+    "FINAL_13_BUILD_RESULTS.json",
+    "BUILDALL_RESULT.json",
+    "CLEAN_BUILD_1_RESULT.json",
+    "CLEAN_BUILD_2_RESULT.json",
+    "FINAL_15_CHECKLIST_RESULT.json",
+    "FINAL_SOURCE_IDENTITY.json",
+    "FINAL_STATUS_CARD.md",
+    "FINAL_TRUE_PASS_REPORT.md"
+  ],
+  "required_reports_missing": [],
+  "source_commit": "61a48f07e42bc5bf1610a8df3e7cf5ec7e1461c3"
+}

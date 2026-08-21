@@ -1,0 +1,53 @@
+{
+  "final_authority": true,
+  "finished_at_utc": "2026-08-21T04:12:15.407565+00:00",
+  "first_failure": null,
+  "last_completed_authority_gate": "checklist 15/15",
+  "log_summary": {
+    "buildall": {
+      "errors": 0,
+      "panic": 0,
+      "pass": true,
+      "sorry_warnings": 0,
+      "warnings": 0
+    },
+    "clean1": {
+      "errors": 0,
+      "panic": 0,
+      "pass": true,
+      "sorry_warnings": 0,
+      "warnings": 2297
+    },
+    "clean2": {
+      "errors": 0,
+      "panic": 0,
+      "pass": true,
+      "sorry_warnings": 0,
+      "warnings": 2297
+    },
+    "final13": {
+      "errors": 0,
+      "panic": 0,
+      "pass": true,
+      "sorry_warnings": 0,
+      "warnings": 2297
+    },
+    "mock3": {
+      "errors": 0,
+      "panic": 0,
+      "pass": true,
+      "sorry_warnings": 0,
+      "warnings": 0
+    },
+    "qym_replay": {
+      "errors": 0,
+      "panic": 0,
+      "pass": true,
+      "sorry_warnings": 0,
+      "warnings": 1938
+    }
+  },
+  "next_incomplete_gate": "NONE",
+  "stages": {},
+  "started_at_utc": "2026-08-21T02:13:29.189369+00:00"
+}
