@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Mass-sweep controller for the final authority chain.
+"""Mass-sweep controller for the final authority last-mile chain.
 
 This wrapper preserves the original auditable controller and changes only the
-execution policy needed by the current recovery:
-  * permit the audited Mock1_Advanced, Spt1, and Mock3 primary-root repairs;
+execution policy required by the verified cumulative recovery:
+  * permit the audited Mock1_Advanced, Spt1, Spt3, and Mock3 primary-root repairs;
   * do not let forbidden-token preflight suppress real Lean diagnostics;
   * run the broad Final13 sweep even when the preliminary Mock3 check fails;
   * continue through every independent Final13 root after an earlier failure;
@@ -21,11 +21,11 @@ replacements = [
     (
         '    branch = os.environ.get("GITHUB_REF_NAME") or git("branch", "--show-current")\n',
         '    branch = os.environ.get("FINAL_AUTHORITY_BRANCH") or os.environ.get("GITHUB_REF_NAME") or git("branch", "--show-current")\n',
-        "PR-safe branch authority",
+        "branch authority",
     ),
     (
         'AUTHORITY_BRANCH = "gpt/final-authority-gb0-canonical-20260820"',
-        'AUTHORITY_BRANCH = os.environ.get("FINAL_AUTHORITY_BRANCH", "gpt/final-authority-mass-repair-v5-20260820")',
+        'AUTHORITY_BRANCH = os.environ.get("FINAL_AUTHORITY_BRANCH", "gpt/final-authority-last-mile-20260821")',
         "authority branch",
     ),
     (
@@ -37,6 +37,7 @@ replacements = [
         '    }\n',
         '    allowed = {\n'
         '        "PrimalitySheafVerification/Spt1.lean",\n'
+        '        "PrimalitySheafVerification/Spt3.lean",\n'
         '        "PrimalitySheafVerification/Mock1_Advanced.lean",\n'
         '        "PrimalitySheafVerification/Mock3.lean",\n'
         '        "PrimalitySheafVerification/BuildAll.lean",\n'
@@ -53,6 +54,8 @@ replacements = [
         '        ".github/workflows/final-authority-mass-repair-v3.yml",\n'
         '        ".github/workflows/final-authority-pr-observable-v1.yml",\n'
         '        ".github/workflows/final-authority-mass-repair-v5.yml",\n'
+        '        ".github/workflows/final-authority-last-mile-20260821.yml",\n'
+        '        "final_authority_last_mile_trigger.txt",\n'
         '    }\n',
         "changed-path allowlist",
     ),
@@ -68,6 +71,7 @@ replacements = [
         '    )\n'
         '    permitted_root_changes = {\n'
         '        "PrimalitySheafVerification/Spt1.lean",\n'
+        '        "PrimalitySheafVerification/Spt3.lean",\n'
         '        "PrimalitySheafVerification/Mock1_Advanced.lean",\n'
         '        "PrimalitySheafVerification/Mock3.lean",\n'
         '    }\n'
@@ -128,7 +132,7 @@ replacements = [
     ),
     (
         '            "Whitespace/diff/mathematical-integrity review; protected mathematical roots remain byte-identical and only bridge/build wiring changes.\",\n',
-        '            "Whitespace/diff/mathematical-integrity review; FA, Integrated and QYM remain byte-identical while Mock1_Advanced, Spt1 and Mock3 receive the audited cumulative recovery patch.\",\n',
+        '            "Whitespace/diff/mathematical-integrity review; FA, Integrated and QYM remain byte-identical while Mock1_Advanced, Spt1, Spt3 and Mock3 receive audited cumulative recovery changes.\",\n',
         "checklist integrity wording",
     ),
 ]
