@@ -1,0 +1,315 @@
+name: Final Authority BuildAll Object Layout V10
+
+"on":
+  pull_request:
+    branches:
+      - gpt/final-authority-gb0-canonical-20260820
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: final-authority-buildall-v9-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  reproduce-fix-rebuild-clean-twice:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.head_ref == 'gpt/final-authority-batch-v7-20260820' &&
+       github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    steps:
+      - name: Checkout exact repair-branch source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Record and enforce protected mathematical identities
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .final_authority_v10
+          {
+            echo "HEAD=$(git rev-parse HEAD)"
+            echo "BRANCH=${{ github.head_ref }}"
+            echo "FA_BLOB=$(git hash-object --no-filters PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean)"
+            echo "INTEGRATED_BLOB=$(git hash-object --no-filters PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean)"
+            echo "QYM_BLOB=$(git hash-object --no-filters PrimalitySheafVerification/QYM.lean)"
+            echo "QYM_SHA256=$(sha256sum PrimalitySheafVerification/QYM.lean | awk '{print $1}')"
+          } | tee .final_authority_v10/INITIAL_SOURCE_IDENTITY.txt
+          test "$(git hash-object --no-filters PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean)" = \
+            "28f614d48e02a0f28d3f5a758e813350b3ea89cf"
+          test "$(git hash-object --no-filters PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean)" = \
+            "464f5dd095876b20165d12690c8127ef9d909e6a"
+          test "$(git hash-object --no-filters PrimalitySheafVerification/QYM.lean)" = \
+            "7afb309d7c4da97da7bc6b922931734d72830d41"
+          test "$(sha256sum PrimalitySheafVerification/QYM.lean | awk '{print $1}')" = \
+            "ab7c394f68b812046bcfae109b274a2d4fa42479bf8e76461c73a9c190fb3204"
+
+      - name: Install pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="$HOME/.elan/bin:$PATH"
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)"
+          lake exe cache get
+          lean --version | tee .final_authority_v10/LEAN_VERSION.txt
+          lake --version | tee .final_authority_v10/LAKE_VERSION.txt
+
+      - name: Build initial runtime that changes policy allowlist only
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('scripts/final_authority_gate_v5.py')
+          source = path.read_text(encoding='utf-8')
+          marker = '        "scripts/final_authority_gate_v5.py",\\n'
+          additions = [
+              'scripts/final_authority_gate_v10.py',
+              'final_authority_buildall_v9_trigger.txt',
+              'final_authority_buildall_v10_trigger.txt',
+          ]
+          missing = [name for name in additions if name not in source]
+          if missing:
+              if source.count(marker) != 1:
+                  raise SystemExit(
+                      f'initial runtime allowlist marker expected once, found {source.count(marker)}'
+                  )
+              block = marker + ''.join(
+                  f'        "{name}",\\n' for name in missing
+              )
+              source = source.replace(marker, block, 1)
+          output = Path('/tmp/final_authority_gate_v10_initial.py')
+          output.write_text(source, encoding='utf-8')
+          PY
+          python3 -m py_compile /tmp/final_authority_gate_v10_initial.py
+          python3 -m py_compile scripts/final_authority_gate_v10.py
+
+      - name: Remove inherited project objects before initial full build
+        shell: bash
+        run: |
+          set -euo pipefail
+          find PrimalitySheafVerification -type f \
+            \( -name '*.olean' -o -name '*.ilean' \) -delete
+          rm -rf .lake/build/lib/lean/PrimalitySheafVerification
+          rm -rf .lake/build/ir/PrimalitySheafVerification
+          rm -rf .final_authority
+          mkdir -p .final_authority
+
+      - name: Initial end-to-end build without object-layout repair
+        id: initial
+        shell: bash
+        env:
+          FINAL_AUTHORITY_BRANCH: gpt/final-authority-batch-v7-20260820
+        run: |
+          set -uo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          export GITHUB_SHA="$(git rev-parse HEAD)"
+          set +e
+          python3 /tmp/final_authority_gate_v10_initial.py \
+            2>&1 | tee .final_authority_v10/INITIAL_AUTHORITY.log
+          rc=${PIPESTATUS[0]}
+          set -e
+          echo "$rc" | tee .final_authority_v10/INITIAL_AUTHORITY_EXIT.txt
+          echo "exit_code=$rc" >> "$GITHUB_OUTPUT"
+          rm -rf .final_authority_v10/initial_evidence
+          cp -a .final_authority .final_authority_v10/initial_evidence
+
+      - name: Verify the complete initial surface is exactly one BuildAll module-path error
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          root = Path('.final_authority_v10/initial_evidence')
+          final13 = json.loads((root / 'FINAL_13_BUILD_RESULTS.json').read_text())
+          buildall = json.loads((root / 'BUILDALL_RESULT.json').read_text())
+          expected = {'PASS': 13, 'FAIL': 0, 'SKIPPED': 0, 'NOT_RUN': 0}
+          if final13.get('counts') != expected or final13.get('pass') is not True:
+              raise SystemExit(f'initial Final13 is not 13/13: {final13.get("counts")}')
+          if buildall.get('pass') is True:
+              Path('.final_authority_v10/INITIAL_ALREADY_FINAL.txt').write_text('true\n')
+              raise SystemExit(0)
+          results = buildall.get('results', [])
+          errors = sum(int(row.get('error_headers', 0)) for row in results)
+          if errors != 1:
+              raise SystemExit(f'expected exactly one BuildAll error, found {errors}')
+          text_parts = [json.dumps(buildall, ensure_ascii=False)]
+          for row in results:
+              log_path = row.get('log_path')
+              if log_path and Path(log_path).exists():
+                  text_parts.append(Path(log_path).read_text(errors='replace'))
+              elif log_path:
+                  candidate = Path('.final_authority_v10/initial_evidence') / Path(log_path).name
+                  if candidate.exists():
+                      text_parts.append(candidate.read_text(errors='replace'))
+          logs = root / 'logs'
+          if logs.exists():
+              for path in logs.glob('*buildall*'):
+                  if path.is_file():
+                      text_parts.append(path.read_text(errors='replace'))
+          surface = '\n'.join(text_parts)
+          Path('.final_authority_v10/INITIAL_BUILDALL_SURFACE.txt').write_text(surface)
+          folded = surface.lower()
+          if 'unknown module prefix' not in folded:
+              raise SystemExit('the sole BuildAll error is not unknown module prefix')
+          if 'primalitysheafverification' not in folded:
+              raise SystemExit('the unknown module prefix is not PrimalitySheafVerification')
+          Path('.final_authority_v10/INITIAL_BLOCKER_CLASSIFICATION.json').write_text(
+              json.dumps({
+                  'final13': final13.get('counts'),
+                  'buildall_errors': errors,
+                  'classification': 'project olean/ilean output path is outside Lean import search path',
+                  'pass': True,
+              }, indent=2) + '\n'
+          )
+          PY
+
+      - name: Delete every project compiler object before repaired rebuild
+        if: steps.initial.outputs.exit_code != '0'
+        shell: bash
+        run: |
+          set -euo pipefail
+          find PrimalitySheafVerification -type f \
+            \( -name '*.olean' -o -name '*.ilean' \) -delete
+          rm -rf .lake/build/lib/lean/PrimalitySheafVerification
+          rm -rf .lake/build/ir/PrimalitySheafVerification
+          rm -rf .final_authority
+          mkdir -p .final_authority
+
+      - name: Full rebuilt authority with lake-layout project objects
+        id: final
+        shell: bash
+        env:
+          FINAL_AUTHORITY_BRANCH: gpt/final-authority-batch-v7-20260820
+        run: |
+          set -uo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          export GITHUB_SHA="$(git rev-parse HEAD)"
+          if [ "${{ steps.initial.outputs.exit_code }}" = "0" ]; then
+            cp -a .final_authority_v10/initial_evidence/. .final_authority/
+            echo "0" | tee .final_authority_v10/FINAL_AUTHORITY_EXIT.txt
+            echo "exit_code=0" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          set +e
+          python3 scripts/final_authority_gate_v10.py \
+            2>&1 | tee .final_authority_v10/FINAL_AUTHORITY.log
+          rc=${PIPESTATUS[0]}
+          set -e
+          echo "$rc" | tee .final_authority_v10/FINAL_AUTHORITY_EXIT.txt
+          echo "exit_code=$rc" >> "$GITHUB_OUTPUT"
+
+      - name: Enforce BuildAll, clean twice, source identity, forbidden zero, and 15 of 15
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          root = Path('.final_authority')
+          exit_path = Path('.final_authority_v10/FINAL_AUTHORITY_EXIT.txt')
+          if not exit_path.exists() or exit_path.read_text().strip() != '0':
+              raise SystemExit('final authority controller did not exit 0')
+          checks = {}
+          for name in [
+              'BUILDALL_RESULT.json',
+              'CLEAN_BUILD_1_RESULT.json',
+              'CLEAN_BUILD_2_RESULT.json',
+              'FORBIDDEN_AUDIT.json',
+              'FINAL_SOURCE_IDENTITY.json',
+              'FINAL_15_CHECKLIST_RESULT.json',
+          ]:
+              path = root / name
+              if not path.exists():
+                  raise SystemExit(f'missing final evidence: {name}')
+              checks[name] = json.loads(path.read_text())
+          if checks['BUILDALL_RESULT.json'].get('pass') is not True:
+              raise SystemExit('BuildAll is not PASS')
+          if checks['CLEAN_BUILD_1_RESULT.json'].get('pass') is not True:
+              raise SystemExit('clean #1 is not PASS')
+          if checks['CLEAN_BUILD_2_RESULT.json'].get('pass') is not True:
+              raise SystemExit('clean #2 is not PASS')
+          forbidden = checks['FORBIDDEN_AUDIT.json']
+          if forbidden.get('pass') is not True or forbidden.get('forbidden_count') != 0:
+              raise SystemExit(f'forbidden audit is not zero: {forbidden.get("forbidden_count")}')
+          if checks['FINAL_SOURCE_IDENTITY.json'].get('pass') is not True:
+              raise SystemExit('final source identity is not PASS')
+          checklist = checks['FINAL_15_CHECKLIST_RESULT.json']
+          expected = {'PASS': 15, 'FAIL': 0, 'NOT_RUN': 0, 'SKIPPED': 0}
+          if checklist.get('pass') is not True or checklist.get('counts') != expected:
+              raise SystemExit(f'checklist is not 15/15: {checklist.get("counts")}')
+          Path('.final_authority_v10/FINAL_ENFORCEMENT.json').write_text(
+              json.dumps({
+                  'BuildAll': 'PASS',
+                  'clean_1': 'PASS',
+                  'clean_2': 'PASS',
+                  'forbidden': 0,
+                  'source_identity': 'PASS',
+                  'checklist': expected,
+                  'FINAL_AUTHORITY': 'TRUE PASS',
+              }, indent=2) + '\n'
+          )
+          PY
+
+      - name: Surface exact initial and final states
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "=== INITIAL BLOCKER CLASSIFICATION ==="
+          cat .final_authority_v10/INITIAL_BLOCKER_CLASSIFICATION.json 2>/dev/null || true
+          echo "=== FINAL ENFORCEMENT ==="
+          cat .final_authority_v10/FINAL_ENFORCEMENT.json 2>/dev/null || true
+          echo "=== FINAL STATUS CARD ==="
+          cat .final_authority/FINAL_STATUS_CARD.md 2>/dev/null || true
+          for file in \
+            FINAL_13_BUILD_RESULTS.json \
+            BUILDALL_RESULT.json \
+            CLEAN_BUILD_1_RESULT.json \
+            CLEAN_BUILD_2_RESULT.json \
+            FORBIDDEN_AUDIT.json \
+            FINAL_SOURCE_IDENTITY.json \
+            FINAL_15_CHECKLIST_RESULT.json
+          do
+            echo "=== $file ==="
+            cat ".final_authority/$file" 2>/dev/null || true
+          done
+
+      - name: Upload initial and final actual-Lean evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: final-authority-buildall-v10-${{ github.run_id }}-attempt${{ github.run_attempt }}
+          path: |
+            .final_authority
+            .final_authority_v10
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 6
+
+      - name: Enforce FINAL AUTHORITY after evidence upload
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f .final_authority_v10/FINAL_ENFORCEMENT.json
+          grep -q '"FINAL_AUTHORITY": "TRUE PASS"' \
+            .final_authority_v10/FINAL_ENFORCEMENT.json
