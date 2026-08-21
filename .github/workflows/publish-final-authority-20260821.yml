@@ -9,6 +9,7 @@ on:
       - ops/final_authority_release_publisher.py
       - ops/final_authority_release_publisher_v2.py
       - ops/final_authority_release_publisher_v3.py
+      - ops/final_authority_release_publisher_v4.py
       - .github/workflows/publish-final-authority-20260821.yml
   workflow_dispatch:
 
@@ -39,6 +40,7 @@ jobs:
             ops/final_authority_release_publisher.py
             ops/final_authority_release_publisher_v2.py
             ops/final_authority_release_publisher_v3.py
+            ops/final_authority_release_publisher_v4.py
           sparse-checkout-cone-mode: false
 
       - name: Reconcile, freeze, publish, and independently verify
@@ -51,8 +53,9 @@ jobs:
             ops/final_authority_release_builder.py \
             ops/final_authority_release_publisher.py \
             ops/final_authority_release_publisher_v2.py \
-            ops/final_authority_release_publisher_v3.py
-          python3 ops/final_authority_release_publisher_v3.py
+            ops/final_authority_release_publisher_v3.py \
+            ops/final_authority_release_publisher_v4.py
+          python3 ops/final_authority_release_publisher_v4.py
 
       - name: Upload publisher verification package copy
         if: always()
