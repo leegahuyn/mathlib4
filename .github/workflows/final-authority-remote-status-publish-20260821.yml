@@ -1,0 +1,228 @@
+name: Publish FINAL AUTHORITY remote archival status 2026-08-21
+
+on:
+  push:
+    branches:
+      - ops/formalization-final-release-publisher-20260821
+    paths:
+      - .github/workflows/final-authority-remote-status-publish-20260821.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+  pull-requests: read
+
+jobs:
+  publish-remote-status:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      REPOSITORY: leegahuyn/mathlib4
+      AUTHORITY_COMMIT: 61a48f07e42bc5bf1610a8df3e7cf5ec7e1461c3
+      AUTHORITY_BRANCH: gpt/final-authority-last-mile-20260821
+      ARCHIVE_BRANCH: archive-assets/formalization-final-2026-08-21
+      TAG_NAME: formalization-final-2026-08-21
+      PR_NUMBER: "56"
+      RUN_ID: "32438949135"
+      JOB_ID: "96645636205"
+      ARTIFACT_ID: "9434085968"
+      ARTIFACT_SHA256: 86b2525c7533562b929a573eca0ff006c6b1df1ac054329c906eae009e05954a
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Build exact remote status JSON
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import base64, json, os, urllib.error, urllib.parse, urllib.request
+
+          repo = os.environ['REPOSITORY']
+          authority = os.environ['AUTHORITY_COMMIT']
+          tag = os.environ['TAG_NAME']
+          token = os.environ['GH_TOKEN']
+
+          def api(path, method='GET', data=None):
+              headers = {
+                  'Authorization': f'Bearer {token}',
+                  'Accept': 'application/vnd.github+json',
+                  'X-GitHub-Api-Version': '2022-11-28',
+                  'User-Agent': 'final-authority-remote-status-publisher',
+              }
+              raw = None
+              if data is not None:
+                  raw = json.dumps(data).encode()
+                  headers['Content-Type'] = 'application/json'
+              request = urllib.request.Request(
+                  f'https://api.github.com/repos/{repo}/{path}',
+                  headers=headers,
+                  method=method,
+                  data=raw,
+              )
+              try:
+                  with urllib.request.urlopen(request, timeout=30) as response:
+                      body = response.read()
+                      return response.status, json.loads(body) if body else {}
+              except urllib.error.HTTPError as exc:
+                  body = exc.read()
+                  try:
+                      parsed = json.loads(body) if body else {}
+                  except Exception:
+                      parsed = {'message': body.decode(errors='replace')}
+                  return exc.code, parsed
+
+          status = {
+              'schema': 'formalization-final-authority-remote-status/v1',
+              'repository': repo,
+              'authority_commit': authority,
+              'canonical_tag': tag,
+              'status_date': '2026-08-21',
+          }
+
+          def branch_state(name, prefix):
+              code, body = api(f'branches/{urllib.parse.quote(name, safe="")}')
+              status[f'{prefix}_http'] = code
+              status[f'{prefix}_sha'] = body.get('commit', {}).get('sha') if code == 200 else None
+              return code, body
+
+          code, _ = branch_state(os.environ['AUTHORITY_BRANCH'], 'authority_branch')
+          status['authority_branch_unchanged'] = code == 200 and status['authority_branch_sha'] == authority
+          code, _ = branch_state(os.environ['ARCHIVE_BRANCH'], 'archive_branch')
+          status['archive_branch_exists'] = code == 200
+
+          code, pr = api(f'pulls/{os.environ["PR_NUMBER"]}')
+          status.update({
+              'pr_http': code,
+              'pr_head_sha': pr.get('head', {}).get('sha') if code == 200 else None,
+              'pr_merged': pr.get('merged') if code == 200 else None,
+          })
+          status['pr_exact_unmerged'] = code == 200 and status['pr_head_sha'] == authority and status['pr_merged'] is False
+
+          code, run = api(f'actions/runs/{os.environ["RUN_ID"]}')
+          status.update({
+              'run_http': code,
+              'run_status': run.get('status') if code == 200 else None,
+              'run_conclusion': run.get('conclusion') if code == 200 else None,
+              'run_head_sha': run.get('head_sha') if code == 200 else None,
+          })
+          status['authority_run_success'] = code == 200 and status['run_status'] == 'completed' and status['run_conclusion'] == 'success' and status['run_head_sha'] == authority
+
+          code, job = api(f'actions/jobs/{os.environ["JOB_ID"]}')
+          status.update({
+              'job_http': code,
+              'job_name': job.get('name') if code == 200 else None,
+              'job_status': job.get('status') if code == 200 else None,
+              'job_conclusion': job.get('conclusion') if code == 200 else None,
+          })
+          required_steps = {
+              'Checkout exact last-mile commit',
+              'Verify exact protected source identities',
+              'Install pinned Lean and Mathlib cache',
+              'Cheap Spt3 and PowerSeries collision probe',
+              'Run Final13 BuildAll clean1 clean2 checklist authority chain',
+              'Verify final gate JSONs against one exact commit',
+              'Surface complete final authority frontier',
+              'Upload exact-source actual-Lean evidence',
+              'Enforce FINAL AUTHORITY PASS',
+          }
+          steps = {row.get('name'): row.get('conclusion') for row in job.get('steps', [])} if code == 200 else {}
+          status['required_actual_lean_steps'] = {name: steps.get(name) for name in sorted(required_steps)}
+          status['actual_lean_job_success'] = code == 200 and status['job_name'] == 'actual-lean-final-authority' and status['job_status'] == 'completed' and status['job_conclusion'] == 'success'
+          status['actual_lean_steps_executed'] = all(steps.get(name) == 'success' for name in required_steps)
+
+          code, artifact = api(f'actions/artifacts/{os.environ["ARTIFACT_ID"]}')
+          status.update({
+              'artifact_http': code,
+              'artifact_name': artifact.get('name') if code == 200 else None,
+              'artifact_digest': artifact.get('digest') if code == 200 else None,
+              'artifact_run_id': artifact.get('workflow_run', {}).get('id') if code == 200 else None,
+              'artifact_head_sha': artifact.get('workflow_run', {}).get('head_sha') if code == 200 else None,
+              'artifact_expired': artifact.get('expired') if code == 200 else None,
+          })
+          status['artifact_exact'] = (
+              code == 200
+              and status['artifact_name'] == 'final-authority-last-mile-32438949135-attempt1'
+              and status['artifact_digest'] == f'sha256:{os.environ["ARTIFACT_SHA256"]}'
+              and status['artifact_run_id'] == int(os.environ['RUN_ID'])
+              and status['artifact_head_sha'] == authority
+              and status['artifact_expired'] is False
+          )
+
+          encoded_tag = urllib.parse.quote(tag, safe='')
+          code, tag_ref = api(f'git/ref/tags/{encoded_tag}')
+          status.update({
+              'canonical_tag_http': code,
+              'canonical_tag_exists': code == 200,
+              'canonical_tag_ref_object_type': tag_ref.get('object', {}).get('type') if code == 200 else None,
+              'canonical_tag_ref_object_sha': tag_ref.get('object', {}).get('sha') if code == 200 else None,
+              'canonical_tag_annotated': False,
+              'canonical_tag_target': None,
+          })
+          if code == 200 and status['canonical_tag_ref_object_type'] == 'tag':
+              tag_code, tag_obj = api(f'git/tags/{status["canonical_tag_ref_object_sha"]}')
+              status['canonical_tag_object_http'] = tag_code
+              status['canonical_tag_target'] = tag_obj.get('object', {}).get('sha') if tag_code == 200 else None
+              status['canonical_tag_annotated'] = tag_code == 200
+          elif code == 200:
+              status['canonical_tag_target'] = status['canonical_tag_ref_object_sha']
+          status['canonical_tag_exact'] = status['canonical_tag_annotated'] and status['canonical_tag_target'] == authority
+
+          code, release = api(f'releases/tags/{encoded_tag}')
+          status.update({
+              'release_http': code,
+              'release_exists': code == 200,
+              'release_url': release.get('html_url') if code == 200 else None,
+              'release_tag_name': release.get('tag_name') if code == 200 else None,
+          })
+          status['release_exact_tag'] = code == 200 and status['release_tag_name'] == tag
+
+          status['mathematical_authority_integrity'] = all([
+              status['authority_branch_unchanged'],
+              status['archive_branch_exists'],
+              status['pr_exact_unmerged'],
+              status['authority_run_success'],
+              status['actual_lean_job_success'],
+              status['actual_lean_steps_executed'],
+              status['artifact_exact'],
+          ])
+          status['publication_complete'] = status['canonical_tag_exact'] and status['release_exact_tag']
+          status['publication_failure_codes'] = []
+          if not status['canonical_tag_exact']:
+              status['publication_failure_codes'].append('TAG_WRITE_PERMISSION_FAILURE')
+          if not status['release_exact_tag']:
+              status['publication_failure_codes'].append('RELEASE_PERMISSION_FAILURE')
+
+          local_name = 'FINAL_AUTHORITY_REMOTE_STATUS.json'
+          with open(local_name, 'w', encoding='utf-8') as f:
+              json.dump(status, f, indent=2, sort_keys=True)
+              f.write('\n')
+          print(json.dumps(status, indent=2, sort_keys=True))
+          if not status['mathematical_authority_integrity']:
+              raise SystemExit(1)
+
+          path = urllib.parse.quote(local_name, safe='')
+          query_branch = urllib.parse.quote(os.environ['ARCHIVE_BRANCH'], safe='')
+          current_code, current = api(f'contents/{path}?ref={query_branch}')
+          payload = {
+              'message': 'Archive status: record final remote tag release and authority state',
+              'content': base64.b64encode(open(local_name, 'rb').read()).decode(),
+              'branch': os.environ['ARCHIVE_BRANCH'],
+          }
+          if current_code == 200:
+              payload['sha'] = current.get('sha')
+          elif current_code != 404:
+              raise SystemExit(f'unexpected content lookup HTTP {current_code}: {current}')
+          put_code, put = api(f'contents/{path}', method='PUT', data=payload)
+          if put_code not in (200, 201):
+              raise SystemExit(f'archive status publication failed HTTP {put_code}: {put}')
+          print(json.dumps({'archive_status_commit': put.get('commit', {}).get('sha')}, indent=2))
+          PY
+
+      - name: Upload remote status record
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: final-authority-remote-status-${{ github.run_id }}
+          path: FINAL_AUTHORITY_REMOTE_STATUS.json
+          if-no-files-found: warn
+          retention-days: 30
