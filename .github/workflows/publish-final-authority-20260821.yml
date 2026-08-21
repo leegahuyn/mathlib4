@@ -7,6 +7,7 @@ on:
     paths:
       - ops/final_authority_release_builder.py
       - ops/final_authority_release_publisher.py
+      - ops/final_authority_release_publisher_v2.py
       - .github/workflows/publish-final-authority-20260821.yml
   workflow_dispatch:
 
@@ -35,6 +36,7 @@ jobs:
           sparse-checkout: |
             ops/final_authority_release_builder.py
             ops/final_authority_release_publisher.py
+            ops/final_authority_release_publisher_v2.py
           sparse-checkout-cone-mode: false
 
       - name: Reconcile, freeze, publish, and independently verify
@@ -45,8 +47,9 @@ jobs:
           set -euo pipefail
           python3 -m py_compile \
             ops/final_authority_release_builder.py \
-            ops/final_authority_release_publisher.py
-          python3 ops/final_authority_release_publisher.py
+            ops/final_authority_release_publisher.py \
+            ops/final_authority_release_publisher_v2.py
+          python3 ops/final_authority_release_publisher_v2.py
 
       - name: Upload publisher verification package copy
         if: always()
