@@ -1,0 +1,138 @@
+name: Probe FINAL AUTHORITY user token 2026-08-21
+
+on:
+  push:
+    branches:
+      - ops/formalization-final-release-publisher-20260821
+    paths:
+      - .github/workflows/final-authority-user-token-probe-20260821.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  probe-user-token:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      CAND_PAT: ${{ secrets.PAT }}
+      CAND_GH_PAT: ${{ secrets.GH_PAT }}
+      CAND_GITHUB_PAT: ${{ secrets.GITHUB_PAT }}
+      CAND_PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+      CAND_PERSONAL_TOKEN: ${{ secrets.PERSONAL_TOKEN }}
+      CAND_ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+      CAND_REPO_PAT: ${{ secrets.REPO_PAT }}
+      CAND_REPOSITORY_PAT: ${{ secrets.REPOSITORY_PAT }}
+      CAND_REPO_TOKEN: ${{ secrets.REPO_TOKEN }}
+      CAND_RELEASE_PAT: ${{ secrets.RELEASE_PAT }}
+      CAND_RELEASE_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+      CAND_GH_RELEASE_TOKEN: ${{ secrets.GH_RELEASE_TOKEN }}
+      CAND_GITHUB_RELEASE_TOKEN: ${{ secrets.GITHUB_RELEASE_TOKEN }}
+      CAND_WORKFLOW_PAT: ${{ secrets.WORKFLOW_PAT }}
+      CAND_WORKFLOW_TOKEN: ${{ secrets.WORKFLOW_TOKEN }}
+      CAND_GITHUB_WORKFLOW_PAT: ${{ secrets.GITHUB_WORKFLOW_PAT }}
+      CAND_GITHUB_WORKFLOW_TOKEN: ${{ secrets.GITHUB_WORKFLOW_TOKEN }}
+      CAND_ACTIONS_PAT: ${{ secrets.ACTIONS_PAT }}
+      CAND_ADMIN_PAT: ${{ secrets.ADMIN_PAT }}
+      CAND_GIT_PAT: ${{ secrets.GIT_PAT }}
+      CAND_BOT_PAT: ${{ secrets.BOT_PAT }}
+      CAND_CODEX_PAT: ${{ secrets.CODEX_PAT }}
+      CAND_OPENAI_GITHUB_PAT: ${{ secrets.OPENAI_GITHUB_PAT }}
+      CAND_OPENAI_GITHUB_TOKEN: ${{ secrets.OPENAI_GITHUB_TOKEN }}
+      CAND_GITHUB_TOKEN_PAT: ${{ secrets.GITHUB_TOKEN_PAT }}
+      CAND_MATHLIB_PAT: ${{ secrets.MATHLIB_PAT }}
+      CAND_MATHLIB4_PAT: ${{ secrets.MATHLIB4_PAT }}
+      CAND_PUSH_TOKEN: ${{ secrets.PUSH_TOKEN }}
+      CAND_TAG_TOKEN: ${{ secrets.TAG_TOKEN }}
+      CAND_DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
+      CAND_CI_PAT: ${{ secrets.CI_PAT }}
+      CAND_CI_TOKEN: ${{ secrets.CI_TOKEN }}
+      CAND_GITHUB_USER_TOKEN: ${{ secrets.GITHUB_USER_TOKEN }}
+      CAND_GITHUB_PERSONAL_TOKEN: ${{ secrets.GITHUB_PERSONAL_TOKEN }}
+      CAND_GH_TOKEN: ${{ secrets.GH_TOKEN }}
+    steps:
+      - name: Detect configured user-token candidates without exposing values
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, os, urllib.request
+          mapping = {
+              'PAT': 'CAND_PAT',
+              'GH_PAT': 'CAND_GH_PAT',
+              'GITHUB_PAT': 'CAND_GITHUB_PAT',
+              'PERSONAL_ACCESS_TOKEN': 'CAND_PERSONAL_ACCESS_TOKEN',
+              'PERSONAL_TOKEN': 'CAND_PERSONAL_TOKEN',
+              'ACCESS_TOKEN': 'CAND_ACCESS_TOKEN',
+              'REPO_PAT': 'CAND_REPO_PAT',
+              'REPOSITORY_PAT': 'CAND_REPOSITORY_PAT',
+              'REPO_TOKEN': 'CAND_REPO_TOKEN',
+              'RELEASE_PAT': 'CAND_RELEASE_PAT',
+              'RELEASE_TOKEN': 'CAND_RELEASE_TOKEN',
+              'GH_RELEASE_TOKEN': 'CAND_GH_RELEASE_TOKEN',
+              'GITHUB_RELEASE_TOKEN': 'CAND_GITHUB_RELEASE_TOKEN',
+              'WORKFLOW_PAT': 'CAND_WORKFLOW_PAT',
+              'WORKFLOW_TOKEN': 'CAND_WORKFLOW_TOKEN',
+              'GITHUB_WORKFLOW_PAT': 'CAND_GITHUB_WORKFLOW_PAT',
+              'GITHUB_WORKFLOW_TOKEN': 'CAND_GITHUB_WORKFLOW_TOKEN',
+              'ACTIONS_PAT': 'CAND_ACTIONS_PAT',
+              'ADMIN_PAT': 'CAND_ADMIN_PAT',
+              'GIT_PAT': 'CAND_GIT_PAT',
+              'BOT_PAT': 'CAND_BOT_PAT',
+              'CODEX_PAT': 'CAND_CODEX_PAT',
+              'OPENAI_GITHUB_PAT': 'CAND_OPENAI_GITHUB_PAT',
+              'OPENAI_GITHUB_TOKEN': 'CAND_OPENAI_GITHUB_TOKEN',
+              'GITHUB_TOKEN_PAT': 'CAND_GITHUB_TOKEN_PAT',
+              'MATHLIB_PAT': 'CAND_MATHLIB_PAT',
+              'MATHLIB4_PAT': 'CAND_MATHLIB4_PAT',
+              'PUSH_TOKEN': 'CAND_PUSH_TOKEN',
+              'TAG_TOKEN': 'CAND_TAG_TOKEN',
+              'DEPLOY_TOKEN': 'CAND_DEPLOY_TOKEN',
+              'CI_PAT': 'CAND_CI_PAT',
+              'CI_TOKEN': 'CAND_CI_TOKEN',
+              'GITHUB_USER_TOKEN': 'CAND_GITHUB_USER_TOKEN',
+              'GITHUB_PERSONAL_TOKEN': 'CAND_GITHUB_PERSONAL_TOKEN',
+              'GH_TOKEN': 'CAND_GH_TOKEN',
+          }
+          result = {'configured': [], 'authenticated': []}
+          for secret_name, env_name in mapping.items():
+              token = os.environ.get(env_name, '')
+              if not token:
+                  continue
+              result['configured'].append(secret_name)
+              request = urllib.request.Request(
+                  'https://api.github.com/user',
+                  headers={
+                      'Authorization': f'Bearer {token}',
+                      'Accept': 'application/vnd.github+json',
+                      'X-GitHub-Api-Version': '2022-11-28',
+                      'User-Agent': 'final-authority-token-probe',
+                  },
+              )
+              try:
+                  with urllib.request.urlopen(request, timeout=30) as response:
+                      user = json.load(response)
+                  result['authenticated'].append({'secret_name': secret_name, 'login': user.get('login')})
+              except Exception as exc:
+                  result.setdefault('authentication_failures', []).append({
+                      'secret_name': secret_name,
+                      'error_type': type(exc).__name__,
+                  })
+          with open('FINAL_AUTHORITY_TOKEN_PROBE.json', 'w', encoding='utf-8') as f:
+              json.dump(result, f, indent=2, sort_keys=True)
+              f.write('\n')
+          print(json.dumps(result, indent=2, sort_keys=True))
+          if not result['authenticated']:
+              raise SystemExit(3)
+          PY
+
+      - name: Upload non-secret probe result
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: final-authority-user-token-probe-${{ github.run_id }}
+          path: FINAL_AUTHORITY_TOKEN_PROBE.json
+          if-no-files-found: warn
+          retention-days: 7
