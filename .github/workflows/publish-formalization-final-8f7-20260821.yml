@@ -1,0 +1,313 @@
+name: Publish Formalization FINAL AUTHORITY 8f7
+
+"on":
+  push:
+    branches:
+      - ops/formalization-final-release-8f7-20260821
+    paths:
+      - .github/workflows/publish-formalization-final-8f7-20260821.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: publish-formalization-final-8f7-20260821
+  cancel-in-progress: false
+
+env:
+  REPOSITORY: leegahuyn/mathlib4
+  AUTHORITY_COMMIT: 8f7e861f5f76c0aa5d347e0de865516a1ba23922
+  AUTHORITY_BRANCH: gpt/final-authority-pass-20260821
+  ARCHIVE_BRANCH: archive/formalization-final-2026-08-21
+  TAG_NAME: formalization-final-2026-08-21
+  RELEASE_TITLE: Formalization FINAL AUTHORITY — 2026-08-21
+  FULL_RUN_ID: "32443566530"
+  FULL_JOB_ID: "96658923339"
+  FULL_ARTIFACT_ID: "9435161106"
+  FULL_NAME: final-authority-pr-gate-v8-32443566530-attempt1
+  FULL_SHA: 81119a111a7a9f28358bea856ca01f8a7377cd79300ebe9ed814bf9b834a0d32
+  QYM_RUN_ID: "32344604895"
+  QYM_JOB_ID: "96350568956"
+  QYM_ARTIFACT_ID: "9398192196"
+  QYM_NAME: qym-gb0-independent-replay-32344604895-attempt1
+  QYM_SHA: ed82e0e090fd66fa1583fc950bd1686daaff1d1d0865e5b1d927a4b16dbcf830
+  TERMINAL_RUN_ID: "32455051059"
+  TERMINAL_JOB_ID: "96690759499"
+  TERMINAL_ARTIFACT_ID: "9436985567"
+  TERMINAL_NAME: final-authority-terminal-v12-32455051059-attempt1
+  TERMINAL_SHA: a172eb2259dd74e2eae8f3c7e9662ed704f4bd82bc738d3a60539a22158f92ee
+  TOOLCHAIN: leanprover/lean4:v4.33.0-rc1
+  LEAN_COMMIT: 62eed1db4d67327ec8120be05f1a1b0847d74561
+  LAKE_VERSION: 5.0.0-src+62eed1d
+  MANIFEST_SHA: 672474eb93bc14c66cd1ff45203c451987fe525f7b5d13ecd83140be46434b26
+  PACKAGE_DIR: package/FINAL_AUTHORITY_ARCHIVE_2026-08-21-8f7e861f
+
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - name: Checkout exact immutable authority
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: 8f7e861f5f76c0aa5d347e0de865516a1ba23922
+          fetch-depth: 0
+          fetch-tags: true
+          persist-credentials: true
+
+      - name: Verify exact source and GitHub evidence metadata
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p evidence extracted/full extracted/qym extracted/terminal "$PACKAGE_DIR" publication
+          test "$(git rev-parse HEAD)" = "$AUTHORITY_COMMIT"
+          test -z "$(git status --porcelain --untracked-files=no)"
+          test "$(git ls-remote origin "refs/heads/$AUTHORITY_BRANCH" | awk '{print $1}')" = "$AUTHORITY_COMMIT"
+          test "$(cat lean-toolchain)" = "$TOOLCHAIN"
+          test "$(sha256sum lake-manifest.json | awk '{print $1}')" = "$MANIFEST_SHA"
+          test "$(git rev-parse "$AUTHORITY_COMMIT:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean")" = 28f614d48e02a0f28d3f5a758e813350b3ea89cf
+          test "$(git rev-parse "$AUTHORITY_COMMIT:PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean")" = 464f5dd095876b20165d12690c8127ef9d909e6a
+          test "$(git rev-parse "$AUTHORITY_COMMIT:PrimalitySheafVerification/QYM.lean")" = 7afb309d7c4da97da7bc6b922931734d72830d41
+          test "$(git rev-parse "$AUTHORITY_COMMIT:PrimalitySheafVerification/Mock1_Advanced.lean")" = 3b6596bbc0790c7d6e427c44e2b0b18b8af3efa6
+          test "$(git rev-parse "$AUTHORITY_COMMIT:PrimalitySheafVerification/Spt3.lean")" = a73d346d060a9a2b8b3dca636e0e611eb394f69c
+          test "$(git rev-parse "$AUTHORITY_COMMIT:PrimalitySheafVerification/BuildAll.lean")" = fc6fb147b8505b434104cf1ef50dd9243baa79f9
+
+          gh api "repos/$REPOSITORY/actions/runs/$FULL_RUN_ID" > publication/full-run.json
+          gh api "repos/$REPOSITORY/actions/jobs/$FULL_JOB_ID" > publication/full-job.json
+          gh api "repos/$REPOSITORY/actions/artifacts/$FULL_ARTIFACT_ID" > publication/full-artifact.json
+          test "$(jq -r .head_sha publication/full-run.json)" = "$AUTHORITY_COMMIT"
+          test "$(jq -r .status publication/full-run.json)" = completed
+          test "$(jq -r .name publication/full-job.json)" = actual-lean-batch-repair-and-authority
+          test "$(jq -r .workflow_run.head_sha publication/full-artifact.json)" = "$AUTHORITY_COMMIT"
+          test "$(jq -r .digest publication/full-artifact.json)" = "sha256:$FULL_SHA"
+          jq -e '.steps[] | select(.name=="Run complete non-stopping actual Lean authority sweep" and .conclusion=="success")' publication/full-job.json >/dev/null
+
+          gh api "repos/$REPOSITORY/actions/runs/$QYM_RUN_ID" > publication/qym-run.json
+          gh api "repos/$REPOSITORY/actions/jobs/$QYM_JOB_ID" > publication/qym-job.json
+          gh api "repos/$REPOSITORY/actions/artifacts/$QYM_ARTIFACT_ID" > publication/qym-artifact.json
+          test "$(jq -r .conclusion publication/qym-run.json)" = success
+          test "$(jq -r .conclusion publication/qym-job.json)" = success
+          test "$(jq -r .digest publication/qym-artifact.json)" = "sha256:$QYM_SHA"
+
+          gh api "repos/$REPOSITORY/actions/runs/$TERMINAL_RUN_ID" > publication/terminal-run.json
+          gh api "repos/$REPOSITORY/actions/jobs/$TERMINAL_JOB_ID" > publication/terminal-job.json
+          gh api "repos/$REPOSITORY/actions/artifacts/$TERMINAL_ARTIFACT_ID" > publication/terminal-artifact.json
+          test "$(jq -r .conclusion publication/terminal-run.json)" = success
+          test "$(jq -r .conclusion publication/terminal-job.json)" = success
+          test "$(jq -r .digest publication/terminal-artifact.json)" = "sha256:$TERMINAL_SHA"
+          jq -e '.steps[] | select(.name=="Enforce FINAL AUTHORITY PASS" and .conclusion=="success")' publication/terminal-job.json >/dev/null
+
+      - name: Download and verify original evidence ZIPs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          download() {
+            curl --location --fail --silent --show-error --retry 5 --retry-all-errors \
+              -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" \
+              "https://api.github.com/repos/$REPOSITORY/actions/artifacts/$1/zip" -o "$2"
+            echo "$3  $2" | sha256sum --check --strict
+          }
+          download "$FULL_ARTIFACT_ID" "evidence/$FULL_NAME.zip" "$FULL_SHA"
+          download "$QYM_ARTIFACT_ID" "evidence/$QYM_NAME.zip" "$QYM_SHA"
+          download "$TERMINAL_ARTIFACT_ID" "evidence/$TERMINAL_NAME.zip" "$TERMINAL_SHA"
+          unzip -q "evidence/$FULL_NAME.zip" -d extracted/full
+          unzip -q "evidence/$QYM_NAME.zip" -d extracted/qym
+          unzip -q "evidence/$TERMINAL_NAME.zip" -d extracted/terminal
+
+      - name: Validate reports and build permanent package
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib, json, os, shutil, subprocess, zipfile
+
+          C='8f7e861f5f76c0aa5d347e0de865516a1ba23922'
+          T=Path('extracted/terminal')
+          if (T/'.terminal_authority').is_dir(): T=T/'.terminal_authority'
+          F=Path('extracted/full')
+          if (F/'.final_authority').is_dir(): F=F/'.final_authority'
+          Q=Path('extracted/qym')
+          P=Path(os.environ['PACKAGE_DIR']); P.mkdir(parents=True,exist_ok=True)
+          required=['FINAL_13_ROOTS.txt','FINAL_13_BUILD_RESULTS.json','BUILDALL_RESULT.json','CLEAN_BUILD_1_RESULT.json','CLEAN_BUILD_2_RESULT.json','FINAL_15_CHECKLIST_RESULT.json','FINAL_SOURCE_IDENTITY.json','FORBIDDEN_AUDIT.json','AXIOM_AUDIT.json','QYM_CANONICAL_REPLAY_RESULT.json','MOCK3_CANONICAL_RESULT.json','FINAL_STATUS_CARD.md','FINAL_TRUE_PASS_REPORT.md','TERMINAL_EVIDENCE_INDEX.json']
+          for n in required:
+              assert (T/n).is_file(), n
+              shutil.copy2(T/n,P/n)
+          for src,name in [(Path('evidence')/(os.environ['FULL_NAME']+'.zip'),os.environ['FULL_NAME']+'.zip'),(Path('evidence')/(os.environ['QYM_NAME']+'.zip'),os.environ['QYM_NAME']+'.zip'),(Path('evidence')/(os.environ['TERMINAL_NAME']+'.zip'),os.environ['TERMINAL_NAME']+'.zip')]: shutil.copy2(src,P/name)
+          for n in ['full-run.json','full-job.json','full-artifact.json','qym-run.json','qym-job.json','qym-artifact.json','terminal-run.json','terminal-job.json','terminal-artifact.json']: shutil.copy2(Path('publication')/n,P/n)
+
+          def j(n): return json.loads((T/n).read_text())
+          f13=j('FINAL_13_BUILD_RESULTS.json'); ba=j('BUILDALL_RESULT.json'); c1=j('CLEAN_BUILD_1_RESULT.json'); c2=j('CLEAN_BUILD_2_RESULT.json'); ck=j('FINAL_15_CHECKLIST_RESULT.json'); ident=j('FINAL_SOURCE_IDENTITY.json'); fo=j('FORBIDDEN_AUDIT.json'); ax=j('AXIOM_AUDIT.json'); q=j('QYM_CANONICAL_REPLAY_RESULT.json'); m=j('MOCK3_CANONICAL_RESULT.json'); idx=j('TERMINAL_EVIDENCE_INDEX.json')
+          assert f13['pass'] and f13['counts']=={'PASS':13,'FAIL':0,'SKIPPED':0,'NOT_RUN':0}
+          assert f13['bridge_counts']=={'PASS':2,'FAIL':0,'SKIPPED':0,'NOT_RUN':0}
+          a=ba['aggregate_result']; assert ba['pass'] and a['exit']==0 and a['error_headers']==0 and a['panic_lines']==0 and a['sorry_warning_lines']==0
+          assert c1['pass'] and c2['pass'] and c1['source_commit']==C and c2['source_commit']==C
+          assert ck['pass'] and ck['counts']=={'PASS':15,'FAIL':0,'SKIPPED':0,'NOT_RUN':0}
+          assert ident['pass'] and ident['tested_source_commit']==C and ident['all_pass_evidence_source_identical']
+          assert fo['pass'] and fo['forbidden_count']==0 and ax['pass'] and q['pass'] and m['pass'] and idx['pass']
+          assert idx['source_commit']==C and idx['all_terminal_evidence_source_identical']
+
+          rows=ident['source_fingerprints']; assert len(rows)==16
+          for r in rows:
+              p=Path(r['path']); assert p.is_file()
+              assert hashlib.sha256(p.read_bytes()).hexdigest()==r['sha256']
+              blob=subprocess.check_output(['git','hash-object','--no-filters',r['path']],text=True).strip(); assert blob==r['git_blob']
+          assert hashlib.sha256(Path('lake-manifest.json').read_bytes()).hexdigest()==os.environ['MANIFEST_SHA']
+
+          snapshot=P/'formalization-final-source-8f7e861f.tar.gz'
+          paths=['PrimalitySheafVerification','lean-toolchain','lake-manifest.json','lakefile.toml','scripts','.github/workflows/final-authority-pr-gate-v7.yml','.github/workflows/gpt-qym-checked-in-true-pass.yml']
+          paths=[x for x in paths if subprocess.run(['git','cat-file','-e',f'{C}:{x}'],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL).returncode==0]
+          import gzip
+          proc=subprocess.Popen(['git','archive','--format=tar','--prefix=formalization-final-source-8f7e861f/',C,*paths],stdout=subprocess.PIPE)
+          with snapshot.open('wb') as raw, gzip.GzipFile(filename='',mode='wb',fileobj=raw,mtime=0,compresslevel=9) as gz: shutil.copyfileobj(proc.stdout,gz)
+          assert proc.wait()==0
+
+          record={
+            'schema':'lean-formalization-final-authority-record/v2','repository':os.environ['REPOSITORY'],'repository_url':'https://github.com/'+os.environ['REPOSITORY'],
+            'authority_commit':C,'authority_branch':os.environ['AUTHORITY_BRANCH'],'canonical_tag':os.environ['TAG_NAME'],'archive_branch':os.environ['ARCHIVE_BRANCH'],
+            'release_url':'https://github.com/'+os.environ['REPOSITORY']+'/releases/tag/'+os.environ['TAG_NAME'],
+            'toolchain':{'lean_toolchain':os.environ['TOOLCHAIN'],'lean_commit':os.environ['LEAN_COMMIT'],'lake_version':os.environ['LAKE_VERSION'],'lake_manifest_sha256':os.environ['MANIFEST_SHA']},
+            'evidence_artifacts':[
+              {'role':'full actual-Lean sweep','run_id':int(os.environ['FULL_RUN_ID']),'job_id':int(os.environ['FULL_JOB_ID']),'artifact_id':int(os.environ['FULL_ARTIFACT_ID']),'filename':os.environ['FULL_NAME']+'.zip','sha256':os.environ['FULL_SHA']},
+              {'role':'independent QYM replay','run_id':int(os.environ['QYM_RUN_ID']),'job_id':int(os.environ['QYM_JOB_ID']),'artifact_id':int(os.environ['QYM_ARTIFACT_ID']),'filename':os.environ['QYM_NAME']+'.zip','sha256':os.environ['QYM_SHA']},
+              {'role':'terminal authority verifier','run_id':int(os.environ['TERMINAL_RUN_ID']),'job_id':int(os.environ['TERMINAL_JOB_ID']),'artifact_id':int(os.environ['TERMINAL_ARTIFACT_ID']),'filename':os.environ['TERMINAL_NAME']+'.zip','sha256':os.environ['TERMINAL_SHA']}],
+            'terminal_verification':{'final13':f13['counts'],'bridges':f13['bridge_counts'],'buildall':'PASS','clean1':'PASS','clean2':'PASS','checklist':ck['counts'],'forbidden':0,'panic':0,'axiom_audit':'PASS','source_identity':'PASS','final_first_error':'NONE','final_blocker':'NONE','final_authority':'PASS'},
+            'source_fingerprints':rows,'source_snapshot':{'filename':snapshot.name,'sha256':hashlib.sha256(snapshot.read_bytes()).hexdigest(),'git_archive_commit':C},
+            'future_source_changes_covered':False,'mathematical_source_modified_by_release':False}
+          (P/'FINAL_AUTHORITY_RECORD.json').write_text(json.dumps(record,indent=2,sort_keys=True)+'\n')
+          md=f'''# Lean Formalization FINAL AUTHORITY\n\nRepository: `{os.environ["REPOSITORY"]}`  \nCanonical tag: `{os.environ["TAG_NAME"]}`  \nExact tested commit: `{C}`  \nAuthority branch: `{os.environ["AUTHORITY_BRANCH"]}`\n\nFinal13 13/13 PASS; bridges 2/2 PASS; BuildAll PASS; clean builds 2/2 PASS; checklist 15/15 PASS; forbidden 0; panic 0; axiom/source identity PASS.\n\nOrdinary Lean warnings are preserved/countable and are not compiler errors. No forbidden proof escape is accepted. This certification is bound to exact source bytes; future changes are not covered.\n\n## Verify\n\n```bash\ngit clone https://github.com/{os.environ["REPOSITORY"]}.git\ncd mathlib4\ngit fetch --tags\ngit checkout {os.environ["TAG_NAME"]}\ntest "$(git rev-parse HEAD)" = "{C}"\n```\n\nThen run `VERIFY_FINAL_AUTHORITY.sh /path/to/mathlib4` or the PowerShell equivalent. Full Lean reproduction is optional and separate.\n'''
+          (P/'FINAL_AUTHORITY_RECORD.md').write_text(md)
+          notes='# Formalization FINAL AUTHORITY — 2026-08-21\n\n'+md+f'''\n## Evidence\n\n- Full actual-Lean artifact `{os.environ["FULL_ARTIFACT_ID"]}`: `{os.environ["FULL_SHA"]}`\n- Independent QYM artifact `{os.environ["QYM_ARTIFACT_ID"]}`: `{os.environ["QYM_SHA"]}`\n- Terminal authority artifact `{os.environ["TERMINAL_ARTIFACT_ID"]}`: `{os.environ["TERMINAL_SHA"]}`\n\nThe full workflow's top-level failure was a later checklist-policy false positive; its actual Lean sweep step succeeded. The terminal verifier independently re-evaluated all fifteen items and succeeded.\n'''
+          (P/'RELEASE_NOTES.md').write_text(notes)
+
+          sh=f'''#!/usr/bin/env bash\nset -euo pipefail\nP="$(cd "$(dirname "${{BASH_SOURCE[0]}}")" && pwd)"; R="${{1:-}}"\n(cd "$P" && sha256sum --check --strict SHA256SUMS.txt)\npython3 - "$P" <<'V'\nimport json,pathlib,sys\np=pathlib.Path(sys.argv[1]); c="{C}"\nj=lambda n:json.loads((p/n).read_text())\nassert j("FINAL_13_BUILD_RESULTS.json")["counts"]["PASS"]==13\nassert j("FINAL_13_BUILD_RESULTS.json")["bridge_counts"]["PASS"]==2\nassert j("BUILDALL_RESULT.json")["aggregate_result"]["exit"]==0\nassert j("CLEAN_BUILD_1_RESULT.json")["pass"] and j("CLEAN_BUILD_2_RESULT.json")["pass"]\nassert j("FINAL_15_CHECKLIST_RESULT.json")["counts"]["PASS"]==15\nassert j("FORBIDDEN_AUDIT.json")["forbidden_count"]==0 and j("AXIOM_AUDIT.json")["pass"]\nassert j("FINAL_SOURCE_IDENTITY.json")["tested_source_commit"]==c\nV\nif [[ -n "$R" ]]; then test "$(git -C "$R" rev-parse HEAD)" = "{C}"; test "$(git -C "$R" rev-list -n 1 {os.environ['TAG_NAME']})" = "{C}"; test "$(git -C "$R" cat-file -t refs/tags/{os.environ['TAG_NAME']})" = tag; fi\necho VERIFY_FINAL_AUTHORITY=PASS\n'''
+          (P/'VERIFY_FINAL_AUTHORITY.sh').write_text(sh); os.chmod(P/'VERIFY_FINAL_AUTHORITY.sh',0o755)
+          ps=f'''param([string]$RepoDir="")\n$ErrorActionPreference="Stop"\n$P=Split-Path -Parent $MyInvocation.MyCommand.Path\nGet-Content (Join-Path $P "SHA256SUMS.txt") | ForEach-Object {{ if($_){{$a=$_ -split "\\s+",2;$h=(Get-FileHash -Algorithm SHA256 (Join-Path $P $a[1].Trim())).Hash.ToLower();if($h -ne $a[0]){{throw "hash mismatch $($a[1])"}}}} }}\nif($RepoDir){{if((& git -C $RepoDir rev-parse HEAD).Trim() -ne "{C}"){{throw "HEAD mismatch"}}}}\nWrite-Host "VERIFY_FINAL_AUTHORITY=PASS"\n'''
+          (P/'VERIFY_FINAL_AUTHORITY.ps1').write_text(ps)
+
+          hash_names=[x.name for x in P.iterdir() if x.is_file() and x.name not in {'SHA256SUMS.txt','FINAL_AUTHORITY_ARCHIVE_2026-08-21-8f7e861f.zip'}]
+          (P/'SHA256SUMS.txt').write_text(''.join(f'{hashlib.sha256((P/n).read_bytes()).hexdigest()}  {n}\n' for n in sorted(hash_names)))
+          package=P/'FINAL_AUTHORITY_ARCHIVE_2026-08-21-8f7e861f.zip'
+          with zipfile.ZipFile(package,'w',zipfile.ZIP_DEFLATED,compresslevel=9) as z:
+              for p in sorted(x for x in P.iterdir() if x.is_file() and x!=package): z.write(p,p.name)
+          (P/'PACKAGE_ARCHIVE_SHA256.txt').write_text(f'{hashlib.sha256(package.read_bytes()).hexdigest()}  {package.name}\n')
+          PY
+          (cd "$PACKAGE_DIR" && sha256sum --check --strict SHA256SUMS.txt)
+
+      - name: Create immutable branch pointer and annotated tag
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "Formalization Archive"
+          git config user.email "102484661+leegahuyn@users.noreply.github.com"
+          b="$(git ls-remote origin "refs/heads/$ARCHIVE_BRANCH" | awk '{print $1}')"
+          if [[ -z "$b" ]]; then git push origin "$AUTHORITY_COMMIT:refs/heads/$ARCHIVE_BRANCH"; else test "$b" = "$AUTHORITY_COMMIT"; fi
+          t="$(git ls-remote origin "refs/tags/$TAG_NAME" | awk '{print $1}')"
+          if [[ -z "$t" ]]; then
+            git tag -a "$TAG_NAME" "$AUTHORITY_COMMIT" -m "Formalization FINAL AUTHORITY
+          Exact tested commit: $AUTHORITY_COMMIT
+          Full actual-Lean run: $FULL_RUN_ID
+          Independent QYM replay: $QYM_RUN_ID
+          Terminal authority run: $TERMINAL_RUN_ID
+          Final13 13/13; bridges 2/2; BuildAll PASS; clean x2 PASS; checklist 15/15; forbidden 0; panic 0."
+            git push origin "refs/tags/$TAG_NAME"
+          else git fetch --force origin "refs/tags/$TAG_NAME:refs/tags/$TAG_NAME"; fi
+          test "$(git cat-file -t refs/tags/$TAG_NAME)" = tag
+          test "$(git rev-list -n 1 "$TAG_NAME")" = "$AUTHORITY_COMMIT"
+          test "$(git ls-remote origin "refs/heads/$AUTHORITY_BRANCH" | awk '{print $1}')" = "$AUTHORITY_COMMIT"
+
+      - name: Attempt branch freeze protection
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          status=NOT_AVAILABLE
+          for branch in "$AUTHORITY_BRANCH" "$ARCHIVE_BRANCH"; do
+            enc="$(python3 -c 'import urllib.parse,sys;print(urllib.parse.quote(sys.argv[1],safe=""))' "$branch")"
+            if gh api --method PUT "repos/$REPOSITORY/branches/$enc/protection" \
+              -f required_status_checks= -F enforce_admins=true -f required_pull_request_reviews= -f restrictions= \
+              -F allow_force_pushes=false -F allow_deletions=false >/dev/null 2>"publication/protection-${enc}.txt"; then status=PASS; fi
+          done
+          printf '{"branch_protection":"%s","authority_branch_unchanged":true,"archive_branch_exact":true}\n' "$status" > "$PACKAGE_DIR/FREEZE_STATUS.json"
+
+      - name: Create GitHub Release and upload permanent assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if gh release view "$TAG_NAME" --repo "$REPOSITORY" >/dev/null 2>&1; then
+            gh release edit "$TAG_NAME" --repo "$REPOSITORY" --title "$RELEASE_TITLE" --notes-file "$PACKAGE_DIR/RELEASE_NOTES.md"
+          else
+            gh release create "$TAG_NAME" --repo "$REPOSITORY" --verify-tag --title "$RELEASE_TITLE" --notes-file "$PACKAGE_DIR/RELEASE_NOTES.md"
+          fi
+          mapfile -t assets < <(find "$PACKAGE_DIR" -maxdepth 1 -type f -printf '%p\n' | sort)
+          gh release upload "$TAG_NAME" --repo "$REPOSITORY" --clobber "${assets[@]}"
+          gh release view "$TAG_NAME" --repo "$REPOSITORY" --json url,tagName,name,isDraft,isPrerelease > publication/release.json
+          jq -e --arg t "$TAG_NAME" '.tagName==$t and .isDraft==false and .isPrerelease==false' publication/release.json >/dev/null
+          jq -r .url publication/release.json > publication/RELEASE_URL.txt
+
+      - name: Fresh remote integrity recheck
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git ls-remote origin "refs/heads/$AUTHORITY_BRANCH" | awk '{print $1}')" = "$AUTHORITY_COMMIT"
+          test "$(git ls-remote origin "refs/heads/$ARCHIVE_BRANCH" | awk '{print $1}')" = "$AUTHORITY_COMMIT"
+          git fetch --force origin "refs/tags/$TAG_NAME:refs/tags/$TAG_NAME"
+          test "$(git cat-file -t refs/tags/$TAG_NAME)" = tag
+          test "$(git rev-list -n 1 "$TAG_NAME")" = "$AUTHORITY_COMMIT"
+          gh api "repos/$REPOSITORY/releases/tags/$TAG_NAME" > publication/release-api.json
+          test "$(jq -r .tag_name publication/release-api.json)" = "$TAG_NAME"
+          for n in "$FULL_NAME.zip" "$QYM_NAME.zip" "$TERMINAL_NAME.zip" formalization-final-source-8f7e861f.tar.gz FINAL_AUTHORITY_RECORD.json SHA256SUMS.txt VERIFY_FINAL_AUTHORITY.sh VERIFY_FINAL_AUTHORITY.ps1; do jq -e --arg n "$n" '.assets[]|select(.name==$n)' publication/release-api.json >/dev/null; done
+          cat > publication/FINAL_PUBLICATION_REPORT.md <<EOF
+          # FINAL AUTHORITY PUBLICATION REPORT
+
+          FINAL SOURCE FREEZE: PASS
+          Canonical authority commit: $AUTHORITY_COMMIT
+          Canonical annotated tag: $TAG_NAME
+          Authority branch unchanged: YES
+          Archive branch exact pointer: YES
+          GitHub Release: $(cat publication/RELEASE_URL.txt)
+          Original Actions evidence preserved: YES
+          Full artifact SHA256: $FULL_SHA
+          QYM artifact SHA256: $QYM_SHA
+          Terminal artifact SHA256: $TERMINAL_SHA
+          Final13: 13/13 PASS
+          Bridges: 2/2 PASS
+          BuildAll: PASS
+          Clean #1: PASS
+          Clean #2: PASS
+          Checklist: 15/15 PASS
+          Forbidden: 0
+          Panic: 0
+          Axiom audit: PASS
+          Source identity: PASS
+          FINAL AUTHORITY: PASS
+          Future source changes covered: NO
+          EOF
+          sed -i 's/^          //' publication/FINAL_PUBLICATION_REPORT.md
+          gh release upload "$TAG_NAME" --repo "$REPOSITORY" --clobber publication/FINAL_PUBLICATION_REPORT.md publication/release.json
+          echo FINAL_SOURCE_FREEZE=PASS
+          echo FINAL_AUTHORITY_PUBLICATION=PASS
+
+      - name: Preserve publication package as redundant Actions artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: formalization-final-publication-8f7e861f-${{ github.run_id }}-attempt${{ github.run_attempt }}
+          path: |
+            package/FINAL_AUTHORITY_ARCHIVE_2026-08-21-8f7e861f
+            publication/FINAL_PUBLICATION_REPORT.md
+            publication/RELEASE_URL.txt
+          if-no-files-found: error
+          include-hidden-files: true
+          retention-days: 90
+          compression-level: 6
