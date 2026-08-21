@@ -1,0 +1,69 @@
+name: Observable FINAL AUTHORITY archive and release v3
+
+on:
+  pull_request:
+    branches:
+      - archive/formalization-final-2026-08-21
+    paths:
+      - scripts/publish_final_authority_release_v3.sh
+      - .github/workflows/final-authority-release-observable-v3.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: observable-formalization-final-release-20260821
+  cancel-in-progress: false
+
+jobs:
+  publish-and-verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout publisher PR head with complete authority history
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Publish annotated tag, permanent Release, source snapshot, and evidence assets
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          chmod +x scripts/publish_final_authority_release_v3.sh
+          scripts/publish_final_authority_release_v3.sh
+
+      - name: Surface immutable archival result
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat package/PUBLISH_RESULT.json 2>/dev/null || true
+          cat package/GITHUB_RELEASE_RESULT.json 2>/dev/null || true
+          cat package/ANNOTATED_TAG_RESULT.json 2>/dev/null || true
+
+      - name: Upload independently verifiable publisher package copy
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: formalization-final-authority-observable-v3-${{ github.run_id }}
+          path: package
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 90
+          compression-level: 6
+
+      - name: Enforce complete archival publication
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(jq -r .pass package/PUBLISH_RESULT.json)" = true
+          test "$(jq -r .authority_commit package/PUBLISH_RESULT.json)" = \
+            8f7e861f5f76c0aa5d347e0de865516a1ba23922
+          test "$(jq -r .annotated_tag package/PUBLISH_RESULT.json)" = \
+            formalization-final-authority-2026-08-21
