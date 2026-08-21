@@ -3,6 +3,7 @@
 
 This wrapper preserves the original auditable controller and changes only the
 execution policy required by the verified cumulative recovery:
+  * anchor all successor audits at the exact verified c6b308 baseline;
   * permit the audited Mock1_Advanced, Spt1, Spt3, and Mock3 primary-root repairs;
   * do not let forbidden-token preflight suppress real Lean diagnostics;
   * run the broad Final13 sweep even when the preliminary Mock3 check fails;
@@ -27,6 +28,11 @@ replacements = [
         'AUTHORITY_BRANCH = "gpt/final-authority-gb0-canonical-20260820"',
         'AUTHORITY_BRANCH = os.environ.get("FINAL_AUTHORITY_BRANCH", "gpt/final-authority-last-mile-20260821")',
         "authority branch",
+    ),
+    (
+        'BASE_COMMIT = "af501c4355561cfdb5e264bc2ec0d0eb79e4e435"',
+        'BASE_COMMIT = "c6b3087022f8697983895518074ea07056c64627"',
+        "last-mile verified base commit",
     ),
     (
         '    allowed = {\n'
@@ -54,7 +60,9 @@ replacements = [
         '        ".github/workflows/final-authority-mass-repair-v3.yml",\n'
         '        ".github/workflows/final-authority-pr-observable-v1.yml",\n'
         '        ".github/workflows/final-authority-mass-repair-v5.yml",\n'
+        '        ".github/workflows/final-authority-mass-repair-v6.yml",\n'
         '        ".github/workflows/final-authority-last-mile-20260821.yml",\n'
+        '        "scripts/final_authority_source_patch_v6.py",\n'
         '        "final_authority_last_mile_trigger.txt",\n'
         '    }\n',
         "changed-path allowlist",
