@@ -1,0 +1,183 @@
+name: Final Authority BuildAll Diagnostic V9
+
+"on":
+  pull_request:
+    branches:
+      - gpt/final-authority-gb0-canonical-20260820
+    paths:
+      - final_authority_v7_trigger.txt
+      - PrimalitySheafVerification/BuildAll.lean
+      - PrimalitySheafVerification/Spt1.lean
+      - PrimalitySheafVerification/Spt2.lean
+      - PrimalitySheafVerification/Spt3.lean
+      - PrimalitySheafVerification/Spt4.lean
+      - PrimalitySheafVerification/Spt5.lean
+      - PrimalitySheafVerification/Spt6.lean
+      - PrimalitySheafVerification/Spt7.lean
+      - PrimalitySheafVerification/Mock1.lean
+      - PrimalitySheafVerification/Mock1_Advanced.lean
+      - PrimalitySheafVerification/Mock2.lean
+      - PrimalitySheafVerification/Mock2_Advanced.lean
+      - PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+      - PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean
+      - PrimalitySheafVerification/QYM.lean
+      - PrimalitySheafVerification/Mock3.lean
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: final-authority-buildall-v9-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  buildall-diagnostic:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+    steps:
+      - name: Checkout exact PR head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Record protected source identities
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .buildall_v9
+          {
+            echo "HEAD=$(git rev-parse HEAD)"
+            echo "FA_BLOB=$(git hash-object --no-filters PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean)"
+            echo "INTEGRATED_BLOB=$(git hash-object --no-filters PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean)"
+            echo "QYM_BLOB=$(git hash-object --no-filters PrimalitySheafVerification/QYM.lean)"
+            echo "QYM_SHA256=$(sha256sum PrimalitySheafVerification/QYM.lean | awk '{print $1}')"
+          } | tee .buildall_v9/SOURCE_IDENTITY.txt
+          test "$(git hash-object --no-filters PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean)" = "28f614d48e02a0f28d3f5a758e813350b3ea89cf"
+          test "$(git hash-object --no-filters PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean)" = "464f5dd095876b20165d12690c8127ef9d909e6a"
+          test "$(git hash-object --no-filters PrimalitySheafVerification/QYM.lean)" = "7afb309d7c4da97da7bc6b922931734d72830d41"
+          test "$(sha256sum PrimalitySheafVerification/QYM.lean | awk '{print $1}')" = "ab7c394f68b812046bcfae109b274a2d4fa42479bf8e76461c73a9c190fb3204"
+
+      - name: Install pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="$HOME/.elan/bin:$PATH"
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)"
+          lake exe cache get
+          lean --version | tee .buildall_v9/LEAN_VERSION.txt
+          lake --version | tee .buildall_v9/LAKE_VERSION.txt
+
+      - name: Compile BuildAll once and preserve every diagnostic
+        id: buildall
+        shell: bash
+        run: |
+          set -uo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          rm -f PrimalitySheafVerification/BuildAll.olean PrimalitySheafVerification/BuildAll.ilean
+          set +e
+          timeout --signal=TERM --kill-after=60s 14400s \
+            lake env lean -DmaxErrors=2000 -DwarningAsError=false \
+            PrimalitySheafVerification/BuildAll.lean \
+            2>&1 | tee .buildall_v9/BUILDALL.log
+          rc=${PIPESTATUS[0]}
+          set -e
+          echo "$rc" | tee .buildall_v9/BUILDALL_EXIT.txt
+          echo "exit_code=$rc" >> "$GITHUB_OUTPUT"
+
+      - name: Build exact one-error report
+        if: always()
+        shell: bash
+        env:
+          RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, os, re
+          from pathlib import Path
+          p = Path('.buildall_v9/BUILDALL.log')
+          text = p.read_text(encoding='utf-8', errors='replace') if p.exists() else ''
+          diag = re.compile(r'^(.*?\.lean):(\d+):(\d+): error(?:\([^)]*\))?:\s*(.*)$', re.M)
+          matches = list(diag.finditer(text))
+          panic = [x for x in text.splitlines() if re.search(r'(?i)(internal error|uncaught exception|panic!)', x)]
+          rc = int(Path('.buildall_v9/BUILDALL_EXIT.txt').read_text().strip()) if Path('.buildall_v9/BUILDALL_EXIT.txt').exists() else 999
+          rows = [
+            {'file': m.group(1), 'line': int(m.group(2)), 'column': int(m.group(3)), 'message': m.group(4).strip()}
+            for m in matches
+          ]
+          result = {
+            'head_sha': os.environ['HEAD_SHA'],
+            'run_url': os.environ['RUN_URL'],
+            'exit': rc,
+            'error_headers': len(rows),
+            'panic_lines': len(panic),
+            'first_error': rows[0] if rows else None,
+            'all_errors': rows,
+            'pass': rc == 0 and not rows and not panic,
+          }
+          Path('.buildall_v9/BUILDALL_RESULT.json').write_text(json.dumps(result, indent=2, ensure_ascii=False) + '\n')
+          body = [
+            '## Final Authority BuildAll V9 diagnostic',
+            '',
+            f"- HEAD: `{result['head_sha']}`",
+            f"- run: {result['run_url']}",
+            f"- exit: `{result['exit']}`",
+            f"- error headers: `{result['error_headers']}`",
+            f"- panic lines: `{result['panic_lines']}`",
+            '',
+            '### First error',
+            '```text',
+            json.dumps(result['first_error'], ensure_ascii=False, indent=2),
+            '```',
+            '',
+            '### All error headers',
+            '```json',
+            json.dumps(result['all_errors'], ensure_ascii=False, indent=2),
+            '```',
+            '',
+            'Protected FA / Integrated / QYM identities were verified before compilation.',
+          ]
+          Path('.buildall_v9/ISSUE_COMMENT.md').write_text('\n'.join(body) + '\n')
+          print(json.dumps(result, indent=2, ensure_ascii=False))
+          PY
+
+      - name: Publish exact diagnostic to active execution issue
+        if: always()
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh issue comment 59 --repo "${{ github.repository }}" --body-file .buildall_v9/ISSUE_COMMENT.md
+
+      - name: Upload BuildAll evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: final-authority-buildall-v9-${{ github.run_id }}-attempt${{ github.run_attempt }}
+          path: .buildall_v9
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Enforce BuildAll result
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f .buildall_v9/BUILDALL_RESULT.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          result = json.loads(Path('.buildall_v9/BUILDALL_RESULT.json').read_text())
+          raise SystemExit(0 if result['pass'] else 1)
+          PY
