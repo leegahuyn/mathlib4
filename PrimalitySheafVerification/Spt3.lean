@@ -6359,14 +6359,16 @@ class LogInterface where
 
 variable {A}
 
-/-- The formal logarithm supplied by `PowerSeries.LogInterface`. -/
-noncomputable def logOf [LogInterface A] : A⟦X⟧ → A⟦X⟧ :=
+/-- The project-specific formal logarithm supplied by `PowerSeries.LogInterface`.
+The distinct name avoids colliding with Mathlib's global `PowerSeries.logOf`
+when all project roots are imported into one aggregate environment. -/
+noncomputable def interfaceLogOf [LogInterface A] : A⟦X⟧ → A⟦X⟧ :=
   LogInterface.logOf
 
-/-- [INTERFACE] Product additivity of the formal logarithm. -/
+/-- [INTERFACE] Product additivity of the project-specific formal logarithm. -/
 theorem logOf_mul [LogInterface A] {f g : A⟦X⟧}
     (hf : constantCoeff f = 1) (hg : constantCoeff g = 1) :
-    logOf (f * g) = logOf f + logOf g :=
+    interfaceLogOf (f * g) = interfaceLogOf f + interfaceLogOf g :=
   LogInterface.logOf_mul hf hg
 
 end PowerSeries
@@ -6380,7 +6382,8 @@ open PowerSeries
 /-- [INTERFACE] The formal log additivity specialized to `ℚ_[p]⟦X⟧`. -/
 theorem logOf_mul_qp [PowerSeries.LogInterface ℚ_[p]] {f g : (ℚ_[p])⟦X⟧}
     (hf : PowerSeries.constantCoeff f = 1) (hg : PowerSeries.constantCoeff g = 1) :
-    PowerSeries.logOf (f * g) = PowerSeries.logOf f + PowerSeries.logOf g :=
+    PowerSeries.interfaceLogOf (f * g) =
+      PowerSeries.interfaceLogOf f + PowerSeries.interfaceLogOf g :=
   PowerSeries.logOf_mul hf hg
 
 end Spt3PadicLogFormal
