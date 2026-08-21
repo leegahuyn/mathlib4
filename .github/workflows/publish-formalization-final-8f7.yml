@@ -1,0 +1,162 @@
+name: Publish Formalization FINAL AUTHORITY 8f7 2026-08-21
+
+on:
+  push:
+    branches:
+      - ops/formalization-final-release-8f7-20260821
+    paths:
+      - .github/workflows/publish-formalization-final-8f7.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+  pull-requests: read
+
+concurrency:
+  group: publish-formalization-final-8f7-20260821
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - name: Checkout exact immutable authority
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: leegahuyn/mathlib4
+          ref: 8f7e861f5f76c0aa5d347e0de865516a1ba23922
+          fetch-depth: 0
+          fetch-tags: true
+          persist-credentials: true
+
+      - name: Execute deterministic preservation publication
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > /tmp/publish_final_authority_8f7.sh.gz.b64 <<'B64'
+          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
+          TDieSAAA
+          B64
+          base64 --decode /tmp/publish_final_authority_8f7.sh.gz.b64 | gzip --decompress > /tmp/publish_final_authority_8f7.sh
+          test "$(sha256sum /tmp/publish_final_authority_8f7.sh | awk '{print $1}')" = "e4b30e03f79e0750bc8aed2236e4748ed66b7064604c0015a8bd27c8a7b128db"
+          bash -n /tmp/publish_final_authority_8f7.sh
+          bash /tmp/publish_final_authority_8f7.sh
+
+      - name: Redundant Actions backup of permanent package
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: formalization-final-permanent-release-8f7e861f-${{ github.run_id }}-attempt${{ github.run_attempt }}
+          path: |
+            FINAL_AUTHORITY_ARCHIVE_2026-08-21-8f7e861f
+            publication/FINAL_PUBLICATION_STATUS.json
+            publication/FINAL_PUBLICATION_REPORT.md
+            publication/RELEASE_URL.txt
+          if-no-files-found: error
+          retention-days: 90
+          compression-level: 6
