@@ -9,6 +9,14 @@ on:
       - scripts/final_authority_gate_v5.py
       - .github/workflows/final-authority-last-mile-20260821.yml
       - final_authority_last_mile_trigger.txt
+  pull_request:
+    branches:
+      - gpt/final-authority-gb0-canonical-20260820
+    paths:
+      - PrimalitySheafVerification/Spt3.lean
+      - scripts/final_authority_gate_v5.py
+      - .github/workflows/final-authority-last-mile-20260821.yml
+      - final_authority_last_mile_trigger.txt
   workflow_dispatch:
 
 permissions:
@@ -26,7 +34,7 @@ jobs:
       - name: Checkout exact last-mile commit
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
-          ref: ${{ github.sha }}
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 0
           persist-credentials: false
 
@@ -37,7 +45,7 @@ jobs:
           mkdir -p .last_mile
           {
             echo "HEAD=$(git rev-parse HEAD)"
-            echo "BRANCH=${GITHUB_REF_NAME}"
+            echo "BRANCH=${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}"
             echo "FA_BLOB=$(git hash-object --no-filters PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean)"
             echo "INTEGRATED_BLOB=$(git hash-object --no-filters PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean)"
             echo "QYM_BLOB=$(git hash-object --no-filters PrimalitySheafVerification/QYM.lean)"
