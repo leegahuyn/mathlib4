@@ -1,4 +1,5 @@
 name: Create FINAL AUTHORITY annotated tag v4
+# Second push intentionally triggers the already-registered preservation workflow.
 
 "on":
   push:
