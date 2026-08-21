@@ -1,0 +1,201 @@
+name: Final Authority v5 — Commit Source Fixes then End-to-End
+
+on:
+  push:
+    branches:
+      - gpt/final-authority-mass-repair-v5-20260820
+  workflow_dispatch:
+
+concurrency:
+  group: final-authority-v5-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  actual-lean-end-to-end:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    steps:
+      - name: Checkout exact connector-authenticated repair tree
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Establish authority branch and record initial source identities
+        shell: bash
+        run: |
+          set -euo pipefail
+          git switch -C gpt/final-authority-mass-repair-v5-20260820
+          python3 -m py_compile scripts/final_authority_gate_v5.py
+          {
+            echo "HEAD=$(git rev-parse HEAD)"
+            echo "BRANCH=$(git branch --show-current)"
+            for file in \
+              PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+              PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean \
+              PrimalitySheafVerification/QYM.lean \
+              PrimalitySheafVerification/Mock1_Advanced.lean \
+              PrimalitySheafVerification/Spt1.lean \
+              PrimalitySheafVerification/Mock3.lean
+            do
+              echo "FILE=$file"
+              echo "GIT_BLOB=$(git hash-object --no-filters "$file")"
+              echo "SHA256=$(sha256sum "$file" | awk '{print $1}')"
+            done
+          } | tee FINAL_V5_INITIAL_SOURCE_IDENTITY.txt
+
+      - name: Apply Mock3 and Spt1 source blockers as one deterministic batch
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          spt1 = Path('PrimalitySheafVerification/Spt1.lean')
+          text = spt1.read_text(encoding='utf-8')
+          old = "example : Fintype.card {x : ZMod 9 // (12 : ZMod 9) * x = 0} = 3 := by native_decide"
+          new = """example : Fintype.card {x : ZMod 9 // (12 : ZMod 9) * x = 0} = 3 := by
+            rw [← Nat.card_eq_fintype_card]
+            change Nat.card (AddMonoidHom.mulLeft (12 : ZMod 9)).ker = 3
+            simpa using (card_ker_mulLeft 9 12)"""
+          if text.count(old) == 1:
+              text = text.replace(old, new, 1)
+              spt1.write_text(text, encoding='utf-8')
+          elif text.count(new) != 1:
+              raise SystemExit('Spt1 exact native_decide target changed, missing, or duplicated')
+
+          mock3 = Path('PrimalitySheafVerification/Mock3.lean')
+          fixed = """import PrimalitySheafVerification.QYM
+
+/-!
+# Canonical Mock3 bridge
+
+The project's third Mock development is the frozen `QYM` module. This checked-in
+bridge gives that development a canonical `Mock3` module path without copying,
+replacing, or altering any QYM declaration.
+
+It is intentionally a transparent integration boundary: all mathematical content
+remains in the source-identical golden `PrimalitySheafVerification.QYM` module.
+-/
+"""
+          if mock3.read_text(encoding='utf-8') != fixed:
+              mock3.write_text(fixed, encoding='utf-8')
+          PY
+          git diff --check
+          test "$(grep -m1 -v '^[[:space:]]*$' PrimalitySheafVerification/Mock3.lean)" = "import PrimalitySheafVerification.QYM"
+          ! grep -nE '\b(sorry|admit|native_decide)\b|set_option[[:space:]]+maxHeartbeats[[:space:]]+0' PrimalitySheafVerification/{Mock1_Advanced,Mock3}.lean
+          ! grep -nE '^[[:space:]]*[^/-].*\bnative_decide\b|:= by[[:space:]]+native_decide\b' PrimalitySheafVerification/Spt1.lean
+
+      - name: Commit and push exact cumulative source batch before compilation
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "final-authority-bot"
+          git config user.email "final-authority-bot@users.noreply.github.com"
+          git add -- PrimalitySheafVerification/Spt1.lean PrimalitySheafVerification/Mock3.lean
+          git diff --cached --check
+          if ! git diff --cached --quiet; then
+            git commit -m "Final authority: fix Mock3 import and remove Spt1 native_decide"
+            git push origin HEAD:refs/heads/gpt/final-authority-mass-repair-v5-20260820
+          fi
+          test -z "$(git status --short --untracked-files=no)"
+          git rev-parse HEAD | tee FINAL_V5_SOURCE_COMMIT.txt
+          {
+            echo "SOURCE_COMMIT=$(git rev-parse HEAD)"
+            echo "FA_BLOB=$(git hash-object --no-filters PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean)"
+            echo "INTEGRATED_BLOB=$(git hash-object --no-filters PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean)"
+            echo "QYM_BLOB=$(git hash-object --no-filters PrimalitySheafVerification/QYM.lean)"
+            echo "M1A_BLOB=$(git hash-object --no-filters PrimalitySheafVerification/Mock1_Advanced.lean)"
+            echo "SPT1_BLOB=$(git hash-object --no-filters PrimalitySheafVerification/Spt1.lean)"
+            echo "MOCK3_BLOB=$(git hash-object --no-filters PrimalitySheafVerification/Mock3.lean)"
+          } | tee FINAL_V5_COMMITTED_SOURCE_IDENTITY.txt
+
+      - name: Install pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="$HOME/.elan/bin:$PATH"
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)"
+          lake exe cache get
+          lean --version | tee FINAL_V5_LEAN_VERSION.txt
+          lake --version | tee FINAL_V5_LAKE_VERSION.txt
+
+      - name: Reverify actual full-file M1A TRUE PASS
+        shell: bash
+        run: |
+          set -uo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          set +e
+          timeout --signal=TERM --kill-after=60s 10800s lake env lean -DmaxErrors=2000 -DwarningAsError=false PrimalitySheafVerification/Mock1_Advanced.lean 2>&1 | tee FINAL_V5_M1A.log
+          rc=${PIPESTATUS[0]}
+          set -e
+          echo "$rc" > FINAL_V5_M1A_EXIT.txt
+          test "$rc" = 0
+          ! grep -Eq ':[0-9]+:[0-9]+: error(?:\([^)]*\))?:' FINAL_V5_M1A.log
+          ! grep -Eqi 'internal error|uncaught exception|panic!' FINAL_V5_M1A.log
+
+      - name: Run full mass compile and downstream authority chain
+        shell: bash
+        env:
+          FINAL_AUTHORITY_BRANCH: gpt/final-authority-mass-repair-v5-20260820
+        run: |
+          set -uo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          export GITHUB_SHA="$(git rev-parse HEAD)"
+          set +e
+          python3 scripts/final_authority_gate_v5.py 2>&1 | tee FINAL_AUTHORITY_V5.log
+          rc=${PIPESTATUS[0]}
+          set -e
+          echo "$rc" > FINAL_AUTHORITY_V5_EXIT.txt
+
+      - name: Surface complete frontier and every failure cluster
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "=== FINAL STATUS CARD ==="
+          cat .final_authority/FINAL_STATUS_CARD.md 2>/dev/null || true
+          for f in PREFLIGHT.json MOCK3_CANONICAL_RESULT.json FINAL13_DIAGNOSTIC_SWEEP.json FINAL_13_BUILD_RESULTS.json BUILDALL_RESULT.json CLEAN_BUILD_1_RESULT.json CLEAN_BUILD_2_RESULT.json FINAL_15_CHECKLIST_RESULT.json FINAL_SOURCE_IDENTITY.json FORBIDDEN_AUDIT.json; do
+            echo "=== $f ==="
+            cat ".final_authority/$f" 2>/dev/null || true
+          done
+          echo "=== M1A EXIT ==="
+          cat FINAL_V5_M1A_EXIT.txt 2>/dev/null || true
+          echo "=== AUTHORITY EXIT ==="
+          cat FINAL_AUTHORITY_V5_EXIT.txt 2>/dev/null || true
+
+      - name: Upload all actual-Lean evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: final-authority-v5-${{ github.run_id }}-attempt${{ github.run_attempt }}
+          path: |
+            .final_authority
+            FINAL_V5_INITIAL_SOURCE_IDENTITY.txt
+            FINAL_V5_SOURCE_COMMIT.txt
+            FINAL_V5_COMMITTED_SOURCE_IDENTITY.txt
+            FINAL_V5_LEAN_VERSION.txt
+            FINAL_V5_LAKE_VERSION.txt
+            FINAL_V5_M1A.log
+            FINAL_V5_M1A_EXIT.txt
+            FINAL_AUTHORITY_V5.log
+            FINAL_AUTHORITY_V5_EXIT.txt
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 30
+          compression-level: 6
+
+      - name: Enforce complete final authority
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(cat FINAL_V5_M1A_EXIT.txt)" = 0
+          test "$(cat FINAL_AUTHORITY_V5_EXIT.txt)" = 0

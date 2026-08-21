@@ -1,0 +1,4 @@
+trigger=3
+previous_exact_verified_commit=8f7e861f5f76c0aa5d347e0de865516a1ba23922
+strategy=checked-in-v11-full-authority-with-v10-policy
+objective=BuildAll-clean1-clean2-checklist15-source-identity-independent-github

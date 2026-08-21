@@ -1,0 +1,3 @@
+Final Authority BuildAll V9 trigger
+Requested sequence: full build -> batch repair all surfaced BuildAll errors -> full rebuild -> clean #1 -> clean #2 -> checklist 15/15.
+Protected FA, Integrated, and QYM identities must remain unchanged.

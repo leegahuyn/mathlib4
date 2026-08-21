@@ -1,0 +1,3 @@
+Final Authority BuildAll V11
+Mandatory cycle: initial full authority build with old object layout -> verify Final13 13/13 and sole BuildAll unknown-module-prefix error -> delete all project objects -> full authority rebuild with objects under .lake/build/lib/lean -> BuildAll PASS -> clean #1 PASS -> clean #2 PASS -> forbidden=0 -> source identity PASS -> checklist 15/15.
+Protected FA, Integrated, and QYM identities remain immutable.
