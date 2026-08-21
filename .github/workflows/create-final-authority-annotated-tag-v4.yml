@@ -1,0 +1,100 @@
+name: Create FINAL AUTHORITY annotated tag v4
+
+"on":
+  push:
+    branches:
+      - ops/formalization-final-release-8f7-20260821
+    paths:
+      - .github/workflows/create-final-authority-annotated-tag-v4.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: create-final-authority-annotated-tag-v4
+  cancel-in-progress: false
+
+jobs:
+  create-and-verify-tag:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout exact immutable authority
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: leegahuyn/mathlib4
+          ref: 8f7e861f5f76c0aa5d347e0de865516a1ba23922
+          fetch-depth: 0
+          fetch-tags: true
+          persist-credentials: true
+
+      - name: Create or verify canonical annotated tag
+        shell: bash
+        run: |
+          set -euo pipefail
+          COMMIT='8f7e861f5f76c0aa5d347e0de865516a1ba23922'
+          TAG='formalization-final-2026-08-21'
+          AUTHORITY_BRANCH='gpt/final-authority-pass-20260821'
+          ARCHIVE_BRANCH='archive/formalization-final-2026-08-21'
+
+          test "$(git rev-parse HEAD)" = "$COMMIT"
+          test -z "$(git status --porcelain --untracked-files=no)"
+          test "$(git ls-remote origin "refs/heads/$AUTHORITY_BRANCH" | awk '{print $1}')" = "$COMMIT"
+          test "$(git ls-remote origin "refs/heads/$ARCHIVE_BRANCH" | awk '{print $1}')" = "$COMMIT"
+
+          remote_tag="$(git ls-remote origin "refs/tags/$TAG" | awk '{print $1}')"
+          if [[ -z "$remote_tag" ]]; then
+            git config user.name 'Formalization Archive'
+            git config user.email '102484661+leegahuyn@users.noreply.github.com'
+            cat > /tmp/tag-message.txt <<'EOF'
+          Formalization FINAL AUTHORITY
+          Exact tested commit: 8f7e861f5f76c0aa5d347e0de865516a1ba23922
+          Full actual-Lean run/job: 32443566530 / 96658923339
+          Independent QYM replay run/job: 32344604895 / 96350568956
+          Terminal authority run/job: 32455051059 / 96690759499
+          Final13 13/13; bridges 2/2; BuildAll PASS; clean x2 PASS;
+          checklist 15/15; forbidden 0; panic 0; axiom/source identity PASS.
+          Full evidence SHA256: 81119a111a7a9f28358bea856ca01f8a7377cd79300ebe9ed814bf9b834a0d32
+          QYM evidence SHA256: ed82e0e090fd66fa1583fc950bd1686daaff1d1d0865e5b1d927a4b16dbcf830
+          Terminal evidence SHA256: a172eb2259dd74e2eae8f3c7e9662ed704f4bd82bc738d3a60539a22158f92ee
+          EOF
+            sed -i 's/^          //' /tmp/tag-message.txt
+            git tag --annotate "$TAG" "$COMMIT" --file /tmp/tag-message.txt
+            git push origin "refs/tags/$TAG:refs/tags/$TAG"
+          fi
+
+          git fetch --force origin "refs/tags/$TAG:refs/tags/$TAG"
+          object_type="$(git cat-file -t "refs/tags/$TAG")"
+          target="$(git rev-list -n 1 "refs/tags/$TAG")"
+          declared_object="$(git cat-file tag "refs/tags/$TAG" | sed -n 's/^object //p')"
+          test "$object_type" = tag
+          test "$target" = "$COMMIT"
+          test "$declared_object" = "$COMMIT"
+          test "$(git ls-remote origin "refs/heads/$AUTHORITY_BRANCH" | awk '{print $1}')" = "$COMMIT"
+
+          mkdir -p tag-freeze
+          cat > tag-freeze/TAG_FREEZE_STATUS.json <<EOF
+          {
+            "pass": true,
+            "canonical_annotated_tag": "$TAG",
+            "tag_object_type": "$object_type",
+            "tag_target": "$target",
+            "tag_declared_object": "$declared_object",
+            "canonical_authority_commit": "$COMMIT",
+            "authority_branch_unchanged": true,
+            "archive_branch_exact": true,
+            "force_update_used": false
+          }
+          EOF
+          echo FINAL_AUTHORITY_TAG_FREEZE=PASS
+
+      - name: Preserve tag-freeze evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: final-authority-annotated-tag-freeze-${{ github.run_id }}-attempt${{ github.run_attempt }}
+          path: tag-freeze/TAG_FREEZE_STATUS.json
+          if-no-files-found: error
+          retention-days: 90
+          compression-level: 0
