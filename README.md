@@ -16,6 +16,23 @@ The Master Evidence Index records the exact audited bundle snapshot as `overleaf
 
 The Google Drive URL above is the access link for the integrated manuscript bundle. For exact-byte reproducibility, the filename/size/SHA-256 record is the identity anchor.
 
+## Current publication state
+
+**As of 2026-08-24, this is a public pre-release packaging branch, not yet the final standalone repository or a verified release.**
+
+| Item | Current state |
+|---|---|
+| Public code location | `leegahuyn/mathlib4` → `standalone-repo-prep-2026-08-24` |
+| Repository default branch | `master` — this project branch is currently non-default |
+| Standalone identity | planned: `leegahuyn/research-paper-formalization-audit`; not yet created at the time of this note |
+| Latest observed publication-branch CI status | the then-head `706aca3c793f25e429625ad018fa35893549a5a1` had **0 registered combined-status checks** |
+| Aggregate verification claim | **not claimed yet**; a green badge/workflow name alone is insufficient |
+| Verified-release gate | exact release commit + clean `BuildAll` exit `0` + assumption/shortcut audits + preserved logs/hashes |
+
+This distinction matters for two different audiences. A reader who receives this branch URL can already inspect the manuscripts, Lean correspondence, AI disclosure, correction case study, citation metadata, and reproduction commands. However, **passive GitHub discoverability remains weaker while the project lives on a non-default branch of a Mathlib fork**. The intended final publication step is therefore to move the project-facing files and formalization sources into a dedicated standalone repository whose default branch is the research artifact itself.
+
+The status row above records an observed historical head so that it cannot be mistaken for a permanent live badge. Every future release must be judged from the status and evidence attached to **that exact release commit**.
+
 This repository packages a large experiment in **AI-assisted mathematical auditing and formalization**. The workflow is deliberately explicit:
 
 `AI-assisted manuscript draft → Lean formal audit → proof/counterexample/error detection → corrected or conditional statement → machine-checkable artifact`
@@ -188,6 +205,19 @@ Suggested topics:
 `lean4` · `mathlib` · `formal-mathematics` · `theorem-proving` · `formal-verification` · `ai-assisted-mathematics`
 
 No community announcement is required for the repository to be useful. The objective here is **passive discoverability**: if a researcher finds the artifact independently, the first page should make its purpose, limitations, verification path, source manuscripts, and AI involvement immediately understandable.
+
+### Standalone publication gate
+
+The final standalone repository should not be called a verified release until all of the following are true on one exact commit:
+
+1. the repository itself is `leegahuyn/research-paper-formalization-audit` (or the final chosen standalone name) and the research artifact is on its default branch;
+2. the Mathlib dependency is explicitly pinned rather than inherited implicitly from this fork snapshot;
+3. a dedicated CI job checks `lake env lean BuildAll.lean` from a clean checkout and is green on the exact release commit;
+4. the release records `sorry`/`sorryAx`, project-specific axiom, and prohibited-shortcut audits;
+5. `hashes.sha256`, environment/toolchain information, and build logs are preserved under a release-specific evidence directory;
+6. the GitHub release/tag points to that exact commit and the citation metadata is updated from pre-release to the frozen release identifier.
+
+Until those conditions hold, this branch should continue to be described as a **publicly inspectable pre-release research artifact**, not as a final independently verified release.
 
 ## Citation
 
