@@ -1,11 +1,12 @@
 # Verification of *"Primality Sheaf via Local Filters and Derived Equalizers"*
 
-Lean 4 / Mathlib formalisation of the algebraic core of the paper by **Lee ga Hyun**
+Lean 4 / Mathlib formalisation of the algebraic core of the paper by **Lee Ga Hyun**
 (September 2025).
 
 - Lean file: [`Verification.lean`](./Verification.lean)
-- Target: Mathlib (toolchain `leanprover/lean4:v4.30.0-rc1`, as pinned by the repo's
+- Target: Mathlib (toolchain `leanprover/lean4:v4.33.0-rc1`, as pinned by the repo's
   `lean-toolchain`).
+- Integrated manuscript bundle: [10 manuscripts / 507 pages on Google Drive](https://drive.google.com/file/d/1nmbfHF5Qkw8kFMwHn9CmnjWpGZuGKi2X/view)
 
 ## How to check
 
@@ -14,13 +15,10 @@ Lean 4 / Mathlib formalisation of the algebraic core of the paper by **Lee ga Hy
 lake env lean PrimalitySheafVerification/Verification.lean
 ```
 
-A successful run with no errors means every theorem and `example` in the file has
-been machine-checked by the Lean kernel.
-
-> **Authoring note.** No Lean toolchain was installed in the environment where this
-> was written, so the file was authored against the *vendored Mathlib source*
-> (every lemma name was checked against `Mathlib/…`) but not compiled there.
-> Please run the command above to confirm.
+A successful run with no errors means every theorem and `example` in this focused
+file has been machine-checked by the Lean kernel under its declared imports and
+hypotheses. This statement concerns the Lean declarations in `Verification.lean`;
+it is not a claim that every sentence of the corresponding manuscript is proved.
 
 ---
 
