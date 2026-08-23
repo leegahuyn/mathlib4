@@ -1,0 +1,26 @@
+cff-version: 1.2.0
+message: "If you use this formalization audit, please cite this repository and, when relevant, the underlying manuscript bundle and Mathlib separately."
+title: "Research Paper Formalization Audit"
+type: software
+authors:
+  - family-names: "Lee"
+    given-names: "Ga Hyun"
+version: "0.1.0-pre-release"
+date-released: 2026-08-24
+repository-code: "https://github.com/leegahuyn/mathlib4/tree/standalone-repo-prep-2026-08-24"
+url: "https://github.com/leegahuyn/mathlib4/tree/standalone-repo-prep-2026-08-24"
+license: Apache-2.0
+abstract: >-
+  AI-assisted Lean 4/Mathlib audit of ten mathematical manuscript sketches
+  (507 pages), developed using GPT and Codex to identify errors, isolate
+  assumptions, construct counterexamples, distinguish conditional from
+  unconditional claims, and machine-check formalizable cores. This metadata
+  describes the pre-release packaging branch and does not assert that every
+  manuscript statement has been proved.
+keywords:
+  - Lean 4
+  - Mathlib
+  - formal mathematics
+  - theorem proving
+  - formal verification
+  - AI-assisted mathematics
