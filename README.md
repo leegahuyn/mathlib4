@@ -1,168 +1,172 @@
-# mathlib4
+# Research Paper Formalization Audit
 
-![GitHub CI](https://github.com/leanprover-community/mathlib4/actions/workflows/build.yml/badge.svg?branch=master)
-[![Bors enabled](https://raw.githubusercontent.com/bors-ng/bors-ng.github.io/refs/heads/master/images/badge_small.svg)](https://mathlib-bors-ca18eefec4cb.herokuapp.com/repositories/16)
-[![project chat](https://img.shields.io/badge/zulip-join_chat-brightgreen.svg)](https://leanprover.zulipchat.com)
-[![Gitpod Ready-to-Code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/leanprover-community/mathlib4)
+> **AI-assisted Lean 4 / Mathlib audit of ten mathematical manuscript sketches (507 pages), developed using GPT and Codex to identify errors, isolate assumptions, construct counterexamples, and machine-check the formalizable cores.**
 
-[Mathlib](https://leanprover-community.github.io) is a user maintained library for the [Lean theorem prover](https://leanprover.github.io).
-It contains both programming infrastructure and mathematics,
-as well as tactics that use the former and allow to develop the latter.
+**Scope:** 10 manuscript sketches · 507 pages · ~352k Lean LOC  
+**Proof assistant:** Lean 4 + Mathlib  
+**Pinned Lean toolchain:** `leanprover/lean4:v4.33.0-rc1`  
+**AI assistance:** GPT + Codex  
+**Primary objective:** public, reproducible mathematical auditing — not a claim that every sentence of every manuscript has been proved.
 
-## Installation
+This repository packages a large experiment in **AI-assisted mathematical auditing and formalization**. The workflow is deliberately explicit:
 
-You can find detailed instructions to install Lean, mathlib, and supporting tools on [our website](https://leanprover-community.github.io/get_started.html).
-Alternatively, click on one of the buttons below to open a GitHub Codespace or a Gitpod workspace containing the project.
+`AI-assisted manuscript draft → Lean formal audit → proof/counterexample/error detection → corrected or conditional statement → machine-checkable artifact`
 
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/leanprover-community/mathlib4)
+The important artifact is not the line count by itself. The goal is to make it possible for another person to inspect the statements, assumptions, corrections, proof interfaces, and build evidence without relying on the author's description alone.
 
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/leanprover-community/mathlib4)
+## What is being audited
 
-## Using `mathlib4` as a dependency
+The formalization sources are under [`PrimalitySheafVerification/`](./PrimalitySheafVerification/). The current aggregate target contains **thirteen primary verification modules** plus two mandatory integration bridges.
 
-Please refer to
-[https://github.com/leanprover-community/mathlib4/wiki/Using-mathlib4-as-a-dependency](https://github.com/leanprover-community/mathlib4/wiki/Using-mathlib4-as-a-dependency)
+| Manuscript family | Primary Lean modules | Integration / aggregate role |
+|---|---|---|
+| Manuscripts 1–7 | `Spt1.lean` … `Spt7.lean` | Seven primary modules |
+| Manuscript 8 / Mock 1 family | `Mock1.lean`, `Mock1_Advanced.lean` | Elementary + advanced audit |
+| Manuscript 9 / Mock 2 family | `Mock2.lean`, `Mock2_Advanced.lean`, `Mock2_FunctionalAnalysis.lean` | `Mock2_FunctionalAnalysis_Integrated.lean` is the integration bridge |
+| Manuscript 10 / Mock 3–QYM family | `QYM.lean` | `Mock3.lean` is the integration bridge |
 
-## Experimenting
+The canonical aggregate importer is [`PrimalitySheafVerification/BuildAll.lean`](./PrimalitySheafVerification/BuildAll.lean). A repository-root [`BuildAll.lean`](./BuildAll.lean) is provided as the public entry point.
 
-Got everything installed? Why not start with the [tutorial project](https://leanprover-community.github.io/install/project.html)?
+> The family labels above describe the present code grouping. A standalone release should replace generic manuscript labels with the final public titles and manuscript links/identifiers.
 
-For more pointers, see [Learning Lean](https://leanprover-community.github.io/learn.html).
+## Reproduce the aggregate check
 
-## Documentation
+From a clean checkout of this repository/ref:
 
-Besides the installation guides above and [Lean's general
-documentation](https://docs.lean-lang.org/lean4/doc/), the documentation
-of mathlib consists of:
-
-- [The mathlib4 docs](https://leanprover-community.github.io/mathlib4_docs/index.html): documentation [generated
-  automatically](https://github.com/leanprover/doc-gen4) from the source `.lean` files.
-- A description of [currently covered theories](https://leanprover-community.github.io/theories.html),
-  as well as an [overview](https://leanprover-community.github.io/mathlib-overview.html) for mathematicians.
-- Some [extra Lean documentation](https://leanprover-community.github.io/learn.html) not specific to mathlib (see "Miscellaneous topics")
-- Documentation for people who would like to [contribute to mathlib](https://leanprover-community.github.io/contribute/index.html)
-
-Much of the discussion surrounding mathlib occurs in a [Zulip chat
-room](https://leanprover.zulipchat.com/), and you are welcome to join, or read
-along without signing up.  Questions from users at all levels of expertise are
-welcome!  We also provide an [archive of the public
-discussions](https://leanprover-community.github.io/archive/), which is useful
-for quick reference.
-
-## Contributing
-
-The complete documentation for contributing to ``mathlib`` is located
-[on the community guide contribute to mathlib](https://leanprover-community.github.io/contribute/index.html)
-
-You may want to subscribe to the `mathlib4` channel on [Zulip](https://leanprover.zulipchat.com/) to introduce yourself and your plan to the community.
-Often you can find community members willing to help you get started and advise you on the fit and
-feasibility of your project.
-
-* To obtain precompiled `olean` files, run `lake exe cache get`. (Skipping this step means the next step will be very slow.)
-* To build `mathlib4` run `lake build`.
-* To build and run all tests, run `lake test`.
-* You can use `lake build Mathlib.Import.Path` to build a particular file, e.g. `lake build Mathlib.Algebra.Group.Defs`.
-* If you added a new file, run the following command to update `Mathlib.lean`
-
-  ```shell
-  lake exe mk_all
-  ```
-
-### Guidelines
-
-Mathlib has the following guidelines and conventions that must be followed
-
- - The [style guide](https://leanprover-community.github.io/contribute/style.html)
- - A guide on the [naming convention](https://leanprover-community.github.io/contribute/naming.html)
- - The [documentation style](https://leanprover-community.github.io/contribute/doc.html)
-
-### Downloading cached build files
-
-You can run `lake exe cache get` to download cached build files that are computed by `mathlib4`'s automated workflow.
-
-If something goes mysteriously wrong,
-you can try one of `lake clean` or `rm -rf .lake` before trying `lake exe cache get` again.
-In some circumstances you might try `lake exe cache get!`
-which re-downloads cached build files even if they are available locally.
-
-Call `lake exe cache` to see its help menu.
-
-### Building HTML documentation
-
-The [mathlib4_docs repository](https://github.com/leanprover-community/mathlib4_docs)
-is responsible for generating and publishing the
-[mathlib4 docs](https://leanprover-community.github.io/mathlib4_docs/index.html).
-
-That repo can be used to build the docs locally:
-```shell
-git clone https://github.com/leanprover-community/mathlib4_docs.git
-cd mathlib4_docs
-cp ../mathlib4/lean-toolchain .
+```bash
+git clone https://github.com/leegahuyn/mathlib4.git
+cd mathlib4
+git checkout standalone-repo-prep-2026-08-24
 lake exe cache get
-lake build Mathlib:docs
+lake env lean BuildAll.lean
 ```
-The last step may take a while (>20 minutes).
-The HTML files can then be found in `.lake/build/doc`.
 
-## Transitioning from Lean 3
+A release should be described as **clean-build verified only when this command exits with status 0 on a clean checkout**, together with the project's forbidden-feature / assumption audits. A README, commit, workflow name, or generated candidate is not by itself proof of a successful aggregate build.
 
-For users familiar with Lean 3 who want to get up to speed in Lean 4 and migrate their existing
-Lean 3 code we have:
+### Reproducibility anchor
 
-- A [survival guide](https://github.com/leanprover-community/mathlib4/wiki/Lean-4-survival-guide-for-Lean-3-users)
-  for Lean 3 users
-- [Instructions to run `mathport`](https://github.com/leanprover-community/mathport#running-on-a-project-other-than-mathlib)
-  on a project other than mathlib. `mathport` is the tool the community used to port the entirety
-  of `mathlib` from Lean 3 to Lean 4.
+This packaging branch was created from the frozen source ref `formalization-final-authority-2026-08-21`, resolving to source commit:
 
-### Dependencies
+`8f7e861f5f76c0aa5d347e0de865516a1ba23922`
 
-If you are a mathlib contributor and want to update dependencies, use `lake update`,
-or `lake update batteries aesop` (or similar) to update a subset of the dependencies.
-This will update the `lake-manifest.json` file correctly.
-You will need to make a PR after committing the changes to this file.
+The Lean toolchain is pinned by [`lean-toolchain`](./lean-toolchain) to:
 
-Please do not run `lake update -Kdoc=on` as previously advised, as the documentation related
-dependencies should only be included when CI is building documentation.
+`leanprover/lean4:v4.33.0-rc1`
 
-## Maintainers:
+Because this preparation branch is still based on a full Mathlib fork, the **exact repository commit is part of the Mathlib source snapshot**. When the project is extracted into a small standalone repository, the equivalent Mathlib dependency commit must be pinned explicitly in the Lake manifest/configuration; do not replace it with a floating `master` dependency.
 
-For a list containing more detailed information, see https://leanprover-community.github.io/teams/maintainers.html
+## Verification status — read this before citing the project
 
-* Anne Baanen (@Vierkantor): algebra, number theory, tactics
-* Matthew Robert Ballard (@mattrobball): algebra, algebraic geometry, category theory
-* Riccardo Brasca (@riccardobrasca): algebra, number theory, algebraic geometry, category theory
-* Kevin Buzzard (@kbuzzard): algebra, number theory, algebraic geometry, category theory
-* Mario Carneiro (@digama0): lean formalization, tactics, type theory, proof engineering
-* Bryan Gin-ge Chen (@bryangingechen): documentation, infrastructure
-* Johan Commelin (@jcommelin): algebra, number theory, category theory, algebraic geometry
-* Anatole Dedecker (@ADedecker): topology, functional analysis, calculus
-* Rémy Degenne (@RemyDegenne): probability, measure theory, analysis
-* Floris van Doorn (@fpvandoorn): measure theory, model theory, tactics
-* Frédéric Dupuis (@dupuisf): linear algebra, functional analysis
-* Sébastien Gouëzel (@sgouezel): topology, calculus, geometry, analysis, measure theory
-* Markus Himmel (@TwoFX): category theory
-* Yury G. Kudryashov (@urkud): analysis, topology, measure theory
-* Robert Y. Lewis (@robertylewis): tactics, documentation
-* Jireh Loreaux (@j-loreaux): analysis, topology, operator algebras
-* Heather Macbeth (@hrmacbeth): geometry, analysis
-* Patrick Massot (@patrickmassot): documentation, topology, geometry
-* Bhavik Mehta (@b-mehta): category theory, combinatorics
-* Kyle Miller (@kmill): combinatorics, tactics, metaprogramming
-* Kim Morrison (@kim-em): category theory, tactics
-* Oliver Nash (@ocfnash): algebra, geometry, topology
-* Filippo A. E. Nuccio (@faenuccio): algebra, functional analysis, homology, number theory
-* Joël Riou (@joelriou): category theory, homology, algebraic geometry
-* Michael Rothgang (@grunweg): differential geometry, analysis, topology, linters
-* Damiano Testa (@adomani): algebra, algebraic geometry, number theory, tactics, linters
-* Adam Topaz (@adamtopaz): algebra, category theory, algebraic geometry
-* Eric Wieser (@eric-wieser): algebra, infrastructure
+This branch is a **standalone-repository packaging branch**, not a declaration that every aggregate authority gate is green.
 
-## Past maintainers:
+Before a public release/tag is called verified, record at minimum:
 
-* Jeremy Avigad (@avigad): analysis
-* Reid Barton (@rwbarton): category theory, topology
-* Gabriel Ebner (@gebner): tactics, infrastructure, core, formal languages
-* Johannes Hölzl (@johoelzl): measure theory, topology
-* Simon Hudon (@cipher1024): tactics
-* Chris Hughes (@ChrisHughes24): algebra
+- `lake env lean BuildAll.lean` → exit `0` from a clean checkout;
+- the exact Git commit SHA and hashes of the principal large artifacts;
+- the exact Lean/Mathlib dependency pins;
+- an audit for `sorry` / `sorryAx` and any newly introduced axioms;
+- an audit for prohibited proof shortcuts used by the project policy (for example, any forbidden `native_decide` usage if that is part of the release policy);
+- the explicit hypothesis set for every result classified as conditional;
+- two repeat clean builds if the release protocol requires reproducibility across repeated runs;
+- preserved CI logs / JSON evidence sufficient to reconstruct the final authority decision.
+
+Do **not** infer mathematical status from file size, warning count, branch names, or generated workflow activity.
+
+## Result-status vocabulary
+
+The following labels are intended to prevent a formal artifact from being described more strongly than it deserves.
+
+| Label | Meaning |
+|---|---|
+| **PROVED** | The stated Lean theorem has a kernel-checked proof from its declared imports and assumptions; no additional project-specific conjecture is being silently treated as proved. |
+| **CONDITIONAL** | Lean proves the result from hypotheses that encode assumptions not established by the project. Those hypotheses must be visible and documented. |
+| **CERTIFICATE** | Lean checks a concrete witness, finite computation, identity, bound, or other certificate relevant to the manuscript claim. This is evidence for the certified statement, not automatically a proof of a broader narrative claim. |
+| **INTERFACE** | A formal specification, abstraction boundary, or bridge is provided, but the full mathematical content advertised by the surrounding prose is not claimed to be proved. |
+| **CORRECTED** | Formalization exposed a problem in the manuscript statement and the repository proves/checks a corrected formulation. |
+| **NO-GO** | The original formulation is false, inconsistent with other stated claims, unsupported at the required level, or otherwise cannot honestly be promoted as a proved theorem in its stated form. Counterexamples or blocker evidence should be preserved where available. |
+
+These labels are **semantic audit labels**, not decorations. They should be assigned theorem-by-theorem or manuscript-by-manuscript only after checking that the Lean statement matches the mathematical claim being classified.
+
+## A concrete correction found by formalization
+
+The project already contains an example of why the audit layer matters. In the primality-sheaf manuscript, the paper attached a `min(v_p M, k)` thickness formula to the localized **intersection / lcm** object. The formalization separates the two quantities:
+
+- the `p`-adic valuation of the relevant `lcm` uses **`max`**;
+- the valuation of the `gcd` / common-residue-fiber / `Tor₁` quantity uses **`min`**.
+
+For the manuscript's own example `M = 12`, `p = 3`, `k = 2`, the intersection is generated by `lcm(12, 9) = 36`, whose 3-adic thickness is `2 = max(1,2)`, while the common residue quantity has exponent `1 = min(1,2)`.
+
+That is the intended research story of this repository: not “AI generated a very large Lean codebase,” but **formal checking forced two mathematically different objects to be distinguished and exposed a statement that needed correction**. The detailed catalogue is preserved in [`PrimalitySheafVerification/README.md`](./PrimalitySheafVerification/README.md).
+
+## AI-use disclosure
+
+This project is explicitly **AI-assisted**.
+
+GPT and Codex were used for tasks including manuscript-to-formal-statement translation, Lean code generation, proof-search assistance, refactoring, debugging, candidate generation, documentation, and the investigation of formalization failures. The use of AI is part of the experimental workflow and is not hidden.
+
+The project therefore does **not** make the claim that one human manually typed or independently discovered every line of the Lean source. Likewise, AI output is not treated as mathematical authority merely because it is plausible or extensive.
+
+For compiled declarations, the Lean kernel is the final checker of the formal proof term. Separate human/audit responsibility remains necessary for questions the kernel cannot answer automatically, especially:
+
+1. whether the Lean theorem actually expresses the corresponding manuscript statement;
+2. whether hypotheses have been weakened, strengthened, or silently changed;
+3. whether a theorem is unconditional or only conditional;
+4. whether a computational certificate supports the broader mathematical interpretation attached to it;
+5. whether an apparent correction or counterexample has been interpreted correctly in the manuscript context.
+
+## What an independent reviewer should check first
+
+A useful review does not need to start by reading ~352k lines. Start with:
+
+1. **Clean checkout:** does `lake env lean BuildAll.lean` actually compile?
+2. **Assumption audit:** are there `sorryAx`, project-specific axioms, or forbidden proof shortcuts?
+3. **Statement correspondence:** do the Lean statements match the manuscript claims they are said to audit?
+4. **Conditionality:** are certificate hypotheses and unproved assumptions explicit?
+5. **Corrections:** which manuscript statements changed because formalization found an error or counterexample?
+6. **AI boundary:** which parts were generated/assisted by GPT or Codex, and what was independently checked afterward?
+
+## Repository layout
+
+```text
+BuildAll.lean                         # public aggregate entry point
+PrimalitySheafVerification/
+  BuildAll.lean                       # canonical aggregate importer
+  Verification.lean                   # focused primality-sheaf verification
+  Spt1.lean … Spt7.lean               # seven primary manuscript modules
+  Mock1.lean
+  Mock1_Advanced.lean
+  Mock2.lean
+  Mock2_Advanced.lean
+  Mock2_FunctionalAnalysis.lean
+  Mock2_FunctionalAnalysis_Integrated.lean
+  QYM.lean
+  Mock3.lean
+build-evidence/                        # preserved verification evidence
+build-logs/                            # preserved build logs where applicable
+```
+
+The historical fork contains substantially more development, repair, and workflow evidence than a reader needs on the first screen. A final standalone repository should keep the audit trail that is necessary for reproducibility while moving exploratory repair machinery out of the primary reading path.
+
+## Recommended standalone identity
+
+Recommended repository name:
+
+**`research-paper-formalization-audit`**
+
+Suggested GitHub description:
+
+> AI-assisted Lean 4/Mathlib audit of 10 mathematical manuscript sketches (507 pages), with machine-checkable proofs, assumptions, corrections, counterexamples, and reproducible build evidence.
+
+Suggested topics:
+
+`lean4` · `mathlib` · `formal-mathematics` · `theorem-proving` · `formal-verification` · `ai-assisted-mathematics`
+
+No community announcement is required for the repository to be useful. The objective here is **passive discoverability**: if a researcher finds the artifact independently, the first page should make its purpose, limitations, verification path, and AI involvement immediately understandable.
+
+## Release policy
+
+Do not create a “verified” release merely because the source has been frozen. A release/tag should identify one exact authority commit for which the documented aggregate build and audits have actually passed. Preserve the evidence and make the release immutable in practice by citing the exact commit SHA and artifact hashes.
+
+## Attribution and license note
+
+This preparation branch still contains the full Mathlib fork and therefore must preserve Mathlib's existing license and attribution requirements. If the formalization project is extracted into a smaller standalone repository, retain all licenses/notices required by copied Mathlib-derived material and clearly distinguish project-authored files from upstream dependencies.
