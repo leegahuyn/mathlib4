@@ -8,26 +8,40 @@
 **AI assistance:** GPT + Codex  
 **Primary objective:** public, reproducible mathematical auditing — not a claim that every sentence of every manuscript has been proved.
 
+**Integrated manuscript bundle (10 manuscripts / 507 pages):** [overleaf_bundle (Copy).pdf — Google Drive](https://drive.google.com/file/d/1nmbfHF5Qkw8kFMwHn9CmnjWpGZuGKi2X/view)
+
+The Master Evidence Index records the exact audited bundle snapshot as `overleaf_bundle (Copy)(20260812-034123).pdf`, **507 physical PDF pages**, **4,304,556 bytes**, SHA-256:
+
+`12eb737301b3312dbad255f7b6d2f74c43c9ba27a2955157c134d36c9c0e53c5`
+
+The Google Drive URL above is the access link for the integrated manuscript bundle. For exact-byte reproducibility, the filename/size/SHA-256 record is the identity anchor.
+
 This repository packages a large experiment in **AI-assisted mathematical auditing and formalization**. The workflow is deliberately explicit:
 
 `AI-assisted manuscript draft → Lean formal audit → proof/counterexample/error detection → corrected or conditional statement → machine-checkable artifact`
 
-The important artifact is not the line count by itself. The goal is to make it possible for another person to inspect the statements, assumptions, corrections, proof interfaces, and build evidence without relying on the author's description alone.
+The important artifact is not the line count by itself. The goal is to make it possible for another person to inspect the statements, assumptions, corrections, proof interfaces, manuscript correspondence, and build evidence without relying on the author's description alone.
 
-## What is being audited
+## Ten manuscripts and Lean correspondence
 
-The formalization sources are under [`PrimalitySheafVerification/`](./PrimalitySheafVerification/). The current aggregate target contains **thirteen primary verification modules** plus two mandatory integration bridges.
+The 507-page bundle contains the following ten manuscripts. Physical PDF page ranges include the bundle's two front-matter pages.
 
-| Manuscript family | Primary Lean modules | Integration / aggregate role |
-|---|---|---|
-| Manuscripts 1–7 | `Spt1.lean` … `Spt7.lean` | Seven primary modules |
-| Manuscript 8 / Mock 1 family | `Mock1.lean`, `Mock1_Advanced.lean` | Elementary + advanced audit |
-| Manuscript 9 / Mock 2 family | `Mock2.lean`, `Mock2_Advanced.lean`, `Mock2_FunctionalAnalysis.lean` | `Mock2_FunctionalAnalysis_Integrated.lean` is the integration bridge |
-| Manuscript 10 / Mock 3–QYM family | `QYM.lean` | `Mock3.lean` is the integration bridge |
+| # | Manuscript | Physical PDF pages | Primary Lean authority |
+|---:|---|---:|---|
+| 1 | **Primality Sheaf via Local Filters and Derived Equalizers** | 5–26 | `Spt1.lean`; focused audit in `Verification.lean` |
+| 2 | **Master Equivalence on Arithmetic Curves** | 27–51 | `Spt2.lean` |
+| 3 | **A Primality Sheaf and Global Certification** | 52–91 | `Spt3.lean` |
+| 4 | **Primality Sheaves and the Étale–Motivic–Derived Package on Arithmetic Curves** | 92–145 | `Spt4.lean` |
+| 5 | **Principal-Open Methods on Arithmetic Curves: From Equalizer–Tor to Supersingular Dichotomy** | 146–183 | `Spt5.lean` |
+| 6 | **Equalizer–Tor, Gate Synchronization, and Étale–Motivic Detectors on Arithmetic Curves** | 184–226 | `Spt6.lean` |
+| 7 | **Geometric Reformulation of the Riemann Hypothesis via a Four-Layer Sheaf Framework** | 227–297 | `Spt7.lean` |
+| 8 | **Entropy–Growth and Sheaf Stability for Mock/Partial Theta and Jacobi Objects** | 298–397 | `Mock1.lean`, `Mock1_Advanced.lean` |
+| 9 | **Global Poincaré Matching and Kloosterman-Compatible Test Kernels for Half-Integral Weight Mock–Theta Gauge Objects** | 398–458 | `Mock2.lean`, `Mock2_Advanced.lean`, `Mock2_FunctionalAnalysis.lean` |
+| 10 | **Modular q–Yang–Mills on Γ(2)\H: Admissible Gauge Slices, Modular Flow, and a Spectral Mass–Gap Mechanism** | 459–507 | `QYM.lean` |
+
+The current aggregate target therefore contains **thirteen primary verification modules**: `Spt1`–`Spt7` (7), the two Mock 1 modules (2), the three Mock 2 modules (3), and `QYM` (1). Two mandatory integration bridges, `Mock2_FunctionalAnalysis_Integrated.lean` and `Mock3.lean`, connect those primary modules into the aggregate build. `Verification.lean` is a focused Paper 1 audit and is not counted among the thirteen primary modules.
 
 The canonical aggregate importer is [`PrimalitySheafVerification/BuildAll.lean`](./PrimalitySheafVerification/BuildAll.lean). A repository-root [`BuildAll.lean`](./BuildAll.lean) is provided as the public entry point.
-
-> The family labels above describe the present code grouping. A standalone release should replace generic manuscript labels with the final public titles and manuscript links/identifiers.
 
 ## Reproduce the aggregate check
 
@@ -70,7 +84,7 @@ Before a public release/tag is called verified, record at minimum:
 - two repeat clean builds if the release protocol requires reproducibility across repeated runs;
 - preserved CI logs / JSON evidence sufficient to reconstruct the final authority decision.
 
-Do **not** infer mathematical status from file size, warning count, branch names, or generated workflow activity.
+Do **not** infer mathematical status from file size, warning count, branch names, or generated workflow activity. Likewise, the manuscript-to-module table above is a correspondence map, **not** a manuscript-wide claim that every statement in that row is proved.
 
 ## Result-status vocabulary
 
@@ -118,12 +132,13 @@ For compiled declarations, the Lean kernel is the final checker of the formal pr
 
 A useful review does not need to start by reading ~352k lines. Start with:
 
-1. **Clean checkout:** does `lake env lean BuildAll.lean` actually compile?
-2. **Assumption audit:** are there `sorryAx`, project-specific axioms, or forbidden proof shortcuts?
-3. **Statement correspondence:** do the Lean statements match the manuscript claims they are said to audit?
-4. **Conditionality:** are certificate hypotheses and unproved assumptions explicit?
-5. **Corrections:** which manuscript statements changed because formalization found an error or counterexample?
-6. **AI boundary:** which parts were generated/assisted by GPT or Codex, and what was independently checked afterward?
+1. **Manuscript identity:** open the [507-page integrated bundle](https://drive.google.com/file/d/1nmbfHF5Qkw8kFMwHn9CmnjWpGZuGKi2X/view) and, when exact identity matters, compare it with the recorded SHA-256 above.
+2. **Clean checkout:** does `lake env lean BuildAll.lean` actually compile?
+3. **Assumption audit:** are there `sorryAx`, project-specific axioms, or forbidden proof shortcuts?
+4. **Statement correspondence:** do the Lean statements match the manuscript claims they are said to audit?
+5. **Conditionality:** are certificate hypotheses and unproved assumptions explicit?
+6. **Corrections:** which manuscript statements changed because formalization found an error or counterexample?
+7. **AI boundary:** which parts were generated/assisted by GPT or Codex, and what was independently checked afterward?
 
 ## Repository layout
 
@@ -131,21 +146,32 @@ A useful review does not need to start by reading ~352k lines. Start with:
 BuildAll.lean                         # public aggregate entry point
 PrimalitySheafVerification/
   BuildAll.lean                       # canonical aggregate importer
-  Verification.lean                   # focused primality-sheaf verification
-  Spt1.lean … Spt7.lean               # seven primary manuscript modules
+  Verification.lean                   # focused Paper 1 audit
+  Spt1.lean … Spt7.lean               # Papers 1–7
   Mock1.lean
-  Mock1_Advanced.lean
+  Mock1_Advanced.lean                 # Paper 8 family
   Mock2.lean
   Mock2_Advanced.lean
   Mock2_FunctionalAnalysis.lean
-  Mock2_FunctionalAnalysis_Integrated.lean
+  Mock2_FunctionalAnalysis_Integrated.lean  # Paper 9 family + integration
   QYM.lean
-  Mock3.lean
-build-evidence/                        # preserved verification evidence
-build-logs/                            # preserved build logs where applicable
+  Mock3.lean                          # Paper 10 family + integration
+build-evidence/                       # preserved verification evidence
+build-logs/                           # preserved build logs where applicable
+CITATION.md                           # project + Mathlib citation guidance
+CITATION.cff                          # GitHub-readable citation metadata
 ```
 
-The historical fork contains substantially more development, repair, and workflow evidence than a reader needs on the first screen. A final standalone repository should keep the audit trail that is necessary for reproducibility while moving exploratory repair machinery out of the primary reading path.
+The historical fork contains substantially more development, repair, and workflow evidence than a reader needs on the first screen. A final standalone repository should keep the audit trail that is necessary for reproducibility while moving exploratory repair machinery out of the primary reading path. Release evidence is best organized by exact release/authority commit, for example:
+
+```text
+evidence/
+  release-YYYY-MM-DD/
+    build.log
+    axiom-audit.txt
+    hashes.sha256
+    environment.txt
+```
 
 ## Recommended standalone identity
 
@@ -161,7 +187,11 @@ Suggested topics:
 
 `lean4` · `mathlib` · `formal-mathematics` · `theorem-proving` · `formal-verification` · `ai-assisted-mathematics`
 
-No community announcement is required for the repository to be useful. The objective here is **passive discoverability**: if a researcher finds the artifact independently, the first page should make its purpose, limitations, verification path, and AI involvement immediately understandable.
+No community announcement is required for the repository to be useful. The objective here is **passive discoverability**: if a researcher finds the artifact independently, the first page should make its purpose, limitations, verification path, source manuscripts, and AI involvement immediately understandable.
+
+## Citation
+
+Citation metadata is provided in [`CITATION.cff`](./CITATION.cff), with human-readable guidance in [`CITATION.md`](./CITATION.md). Cite the formalization project separately from the underlying manuscript bundle and from Mathlib itself.
 
 ## Release policy
 
