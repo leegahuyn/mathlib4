@@ -25,13 +25,13 @@ The Google Drive URL above is the access link for the integrated manuscript bund
 | Public code location | `leegahuyn/mathlib4` → `standalone-repo-prep-2026-08-24` |
 | Repository default branch | `master` — this project branch is currently non-default |
 | Standalone identity | planned: `leegahuyn/research-paper-formalization-audit`; not yet created at the time of this note |
-| Latest observed publication-branch CI status | the then-head `706aca3c793f25e429625ad018fa35893549a5a1` had **0 registered combined-status checks** |
+| CI observation anchor | branch head `b362ef27e2a9e25bf31aff63e70c0ef45a6b5a0e` was checked on **2026-08-24**: **0 registered combined-status checks** and **0 pull-request-triggered workflow runs** were returned for that exact commit |
 | Aggregate verification claim | **not claimed yet**; a green badge/workflow name alone is insufficient |
 | Verified-release gate | exact release commit + clean `BuildAll` exit `0` + assumption/shortcut audits + preserved logs/hashes |
 
 This distinction matters for two different audiences. A reader who receives this branch URL can already inspect the manuscripts, Lean correspondence, AI disclosure, correction case study, citation metadata, and reproduction commands. However, **passive GitHub discoverability remains weaker while the project lives on a non-default branch of a Mathlib fork**. The intended final publication step is therefore to move the project-facing files and formalization sources into a dedicated standalone repository whose default branch is the research artifact itself.
 
-The status row above records an observed historical head so that it cannot be mistaken for a permanent live badge. Every future release must be judged from the status and evidence attached to **that exact release commit**.
+Because editing this README necessarily creates a new Git commit, the SHA in the table is intentionally an **observation anchor**, not a self-referential live-head label. Every future release must be judged from the CI/status evidence attached to **that exact release commit**.
 
 This repository packages a large experiment in **AI-assisted mathematical auditing and formalization**. The workflow is deliberately explicit:
 
@@ -216,6 +216,8 @@ The final standalone repository should not be called a verified release until al
 4. the release records `sorry`/`sorryAx`, project-specific axiom, and prohibited-shortcut audits;
 5. `hashes.sha256`, environment/toolchain information, and build logs are preserved under a release-specific evidence directory;
 6. the GitHub release/tag points to that exact commit and the citation metadata is updated from pre-release to the frozen release identifier.
+
+For stronger long-term provenance, the final standalone repository may additionally enable default-branch protection and use a signed release tag (or signed commits). These are useful integrity/provenance controls, but they are **not substitutes for Lean kernel checking or the release audits above**.
 
 Until those conditions hold, this branch should continue to be described as a **publicly inspectable pre-release research artifact**, not as a final independently verified release.
 
