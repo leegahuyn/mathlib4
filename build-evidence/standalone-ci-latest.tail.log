@@ -1,0 +1,90 @@
+=== provenance ===
+repository=leegahuyn/mathlib4
+ref=refs/heads/standalone-repo-prep-2026-08-24
+sha=b7e28f28d464c8278ad509dad4f56fec08f49c7f
+run_id=32682327772
+run_attempt=1
+runner_arch=ARM64
+runner_os=Linux
+utc_started=2026-08-24T02:13:37Z
+
+=== cache tail ===
+info: plausible: cloning https://github.com/leanprover-community/plausible
+info: plausible: checking out revision 'b1c4a69a7e247ab7df20460212001673d74f08c0'
+info: LeanSearchClient: cloning https://github.com/leanprover-community/LeanSearchClient
+info: LeanSearchClient: checking out revision '0498c7c070c143a3bf7379f4d99a2c63bb9d9715'
+info: importGraph: cloning https://github.com/leanprover-community/import-graph
+info: importGraph: checking out revision '18a90119a5d316358fde6c86e0ca24e59212e32c'
+info: proofwidgets: cloning https://github.com/leanprover-community/ProofWidgets4
+info: proofwidgets: checking out revision 'b1436dc749e722c9920036b52cdc43b3451d0b69'
+info: aesop: cloning https://github.com/leanprover-community/aesop
+info: aesop: checking out revision '57d3325be72a842920813bcb40f96a6f7393c185'
+info: Qq: cloning https://github.com/leanprover-community/quote4
+info: Qq: checking out revision 'ee41917ae11d38479fb8fb24745f7ca4bf0a784d'
+info: batteries: cloning https://github.com/leanprover-community/batteries
+info: batteries: checking out revision '0ecf8993df88c044962426c2cbca0de5717d6150'
+info: Cli: cloning https://github.com/leanprover/lean4-cli
+info: Cli: checking out revision 'da07ca808b6718cb2aed14dba154e5a08b8f8ecf'
+✔ [1/5] Built Cache.Cli (235ms)
+✔ [2/5] Built Cache.Lean (284ms)
+✔ [7/26] Built Cache.Cli:c.o (123ms)
+✔ [8/26] Built Cache.Lean:c.o (162ms)
+✔ [9/26] Built Cache.Infra (285ms)
+✔ [10/26] Built Cache.Infra:c.o (186ms)
+✔ [11/26] Built Cache.IO (1.2s)
+✔ [12/26] Built Batteries.Tactic.OpenPrivate:c.o (1.1s)
+✔ [13/26] Built Cache.Hashing (628ms)
+✔ [14/26] Built Cache.Hashing:c.o (377ms)
+✔ [15/26] Built Cache.IO:c.o (1.4s)
+✔ [16/26] Built Cache.Requests (1.7s)
+✔ [17/26] Built Cache.Marker (435ms)
+✔ [18/26] Built Cache.Marker:c.o (104ms)
+✔ [19/26] Built Cache.Query (532ms)
+✔ [20/26] Built Cache.Query:c.o (258ms)
+✔ [21/26] Built Cache.Warning (509ms)
+✔ [22/26] Built Cache.Warning:c.o (217ms)
+✔ [23/26] Built Cache.Main (988ms)
+✔ [24/26] Built Cache.Requests:c.o (2.6s)
+✔ [25/26] Built Cache.Main:c.o (832ms)
+✔ [26/26] Built cache:exe (593ms)
+
+NOTE: no cache found for HEAD (f66a333683baf91fe675e7fc117a6644dfd250c2) on fork leegahuyn/mathlib4.
+This commit hasn't been built by CI for this fork yet. You'll still
+get cache hits for files that match mathlib's master cache; only
+files unique to this PR will need to be rebuilt.
+
+To use a prior CI run from this fork, find a cached commit:
+    lake exe cache query
+
+then re-run with:
+    lake exe cache get --scope=<that-sha>
+
+Important: using another commit's scope means trusting the artifacts
+produced at that commit. `cache get` will print a security notice
+when you do.
+
+Current branch: standalone-repo-prep-2026-08-24
+Using cache from origin: (some leegahuyn/mathlib4)
+Attempting to download 8681 file(s) from leegahuyn/mathlib4 cache at https://lakecache.blob.core.windows.net/mathlib4-master
+Downloaded: 1 file(s) [attempted 1/8681 = 0%, 28 KB/s], Decompressed: 0Downloaded: 60 file(s) [attempted 60/8681 = 0%, 998 KB/s], Decompressed: 11Downloaded: 290 file(s) [attempted 290/8681 = 3%, 1442 KB/s], Decompressed: 68Downloaded: 652 file(s) [attempted 652/8681 = 7%, 1644 KB/s], Decompressed: 68Downloaded: 971 file(s) [attempted 971/8681 = 11%, 4637 KB/s], Decompressed: 68Downloaded: 1283 file(s) [attempted 1283/8681 = 14%, 8544 KB/s], Decompressed: 213Downloaded: 1627 file(s) [attempted 1627/8681 = 18%, 620 KB/s], Decompressed: 213Downloaded: 1915 file(s) [attempted 1915/8681 = 22%, 10100 KB/s], Decompressed: 213Downloaded: 2157 file(s) [attempted 2157/8681 = 24%, 19666 KB/s], Decompressed: 213Downloaded: 2497 file(s) [attempted 2497/8681 = 28%, 16311 KB/s], Decompressed: 213Downloaded: 2840 file(s) [attempted 2840/8681 = 32%, 22616 KB/s], Decompressed: 213Downloaded: 3152 file(s) [attempted 3152/8681 = 36%, 185 KB/s], Decompressed: 213Downloaded: 3418 file(s) [attempted 3418/8681 = 39%, 208 KB/s], Decompressed: 213Downloaded: 3718 file(s) [attempted 3718/8681 = 42%, 6589 KB/s], Decompressed: 213Downloaded: 4026 file(s) [attempted 4026/8681 = 46%, 2539 KB/s], Decompressed: 213Downloaded: 4359 file(s) [attempted 4359/8681 = 50%, 28443 KB/s], Decompressed: 213Downloaded: 4627 file(s) [attempted 4627/8681 = 53%, 856 KB/s], Decompressed: 213Downloaded: 4932 file(s) [attempted 4932/8681 = 56%, 11861 KB/s], Decompressed: 213Downloaded: 5336 file(s) [attempted 5336/8681 = 61%, 8974 KB/s], Decompressed: 213Downloaded: 5496 file(s) [attempted 5496/8681 = 63%, 16528 KB/s], Decompressed: 213Downloaded: 5545 file(s) [attempted 5545/8681 = 63%, 644 KB/s], Decompressed: 213Downloaded: 5873 file(s) [attempted 5873/8681 = 67%, 27022 KB/s], Decompressed: 213Downloaded: 6219 file(s) [attempted 6219/8681 = 71%, 7121 KB/s], Decompressed: 213Downloaded: 6556 file(s) [attempted 6556/8681 = 75%, 1180 KB/s], Decompressed: 213Downloaded: 6904 file(s) [attempted 6904/8681 = 79%, 588 KB/s], Decompressed: 1123Downloaded: 7169 file(s) [attempted 7169/8681 = 82%, 3572 KB/s], Decompressed: 1123Downloaded: 7528 file(s) [attempted 7528/8681 = 86%, 1895 KB/s], Decompressed: 1123Downloaded: 7796 file(s) [attempted 7796/8681 = 89%, 1495 KB/s], Decompressed: 1123Downloaded: 8099 file(s) [attempted 8099/8681 = 93%, 695 KB/s], Decompressed: 1123Downloaded: 8199 file(s) [attempted 8199/8681 = 94%, 690 KB/s], Decompressed: 1123Downloaded: 8549 file(s) [attempted 8549/8681 = 98%, 2083 KB/s], Decompressed: 1123Downloaded: 8681 file(s) [attempted 8681/8681 = 100%, 2083 KB/s], Decompressed: 1123
+Decompressed 8681 file(s)
+Already decompressed 8681 file(s)
+
+=== BuildAll tail ===
+BuildAll.lean:8:0: error: unknown module prefix 'PrimalitySheafVerification'
+
+No directory 'PrimalitySheafVerification' or file 'PrimalitySheafVerification.olean' in the search path entries:
+/home/runner/work/mathlib4/mathlib4/.lake/packages/Cli/.lake/build/lib/lean
+/home/runner/work/mathlib4/mathlib4/.lake/packages/batteries/.lake/build/lib/lean
+/home/runner/work/mathlib4/mathlib4/.lake/packages/Qq/.lake/build/lib/lean
+/home/runner/work/mathlib4/mathlib4/.lake/packages/aesop/.lake/build/lib/lean
+/home/runner/work/mathlib4/mathlib4/.lake/packages/proofwidgets/.lake/build/lib/lean
+/home/runner/work/mathlib4/mathlib4/.lake/packages/importGraph/.lake/build/lib/lean
+/home/runner/work/mathlib4/mathlib4/.lake/packages/LeanSearchClient/.lake/build/lib/lean
+/home/runner/work/mathlib4/mathlib4/.lake/packages/plausible/.lake/build/lib/lean
+/home/runner/work/mathlib4/mathlib4/.lake/build/lib/lean
+/home/runner/.elan/toolchains/leanprover--lean4---v4.33.0-rc1/lib/lean
+/home/runner/.elan/toolchains/leanprover--lean4---v4.33.0-rc1/lib/lean
+
+=== BuildAll exit ===
+1
