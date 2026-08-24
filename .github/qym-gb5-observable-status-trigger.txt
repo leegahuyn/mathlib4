@@ -1,0 +1,2 @@
+QYM GB5 observable status ledger trigger
+requested_at_kst=2026-08-20
