@@ -27,47 +27,35 @@ require "leanprover-community" / "plausible" @ git "main"
 `lake build` uses them, as well as `Archive` and `Counterexamples`. -/
 abbrev mathlibOnlyLinters : Array LeanOption := #[
   ⟨`linter.mathlibStandardSet, true⟩,
-  -- Explicitly enable the header linter, since the standard set is defined in `Mathlib.Init`
-  -- but we want to run this linter in files imported by `Mathlib.Init`.
   ⟨`linter.style.header, true⟩,
   ⟨`linter.checkInitImports, true⟩,
   ⟨`linter.allScriptsDocumented, true⟩,
   ⟨`linter.pythonStyle, true⟩,
   ⟨`linter.style.longFile, .ofNat 1500⟩,
-  -- ⟨`linter.nightlyRegressionSet, true⟩,
-  -- `latest_import.yml` uses this comment: if you edit it, make sure that the workflow still works
 ]
 
 /-- These options are passed as `leanOptions` to building mathlib, as well as the
 `Archive` and `Counterexamples`. -/
 abbrev mathlibLeanOptions := #[
-    ⟨`pp.unicode.fun, true⟩, -- pretty-prints `fun a ↦ b`
+    ⟨`pp.unicode.fun, true⟩,
     ⟨`autoImplicit, false⟩,
     ⟨`maxSynthPendingDepth, .ofNat 3⟩,
-  ] ++ -- options that are used in `lake build`
+  ] ++
     mathlibOnlyLinters.map fun s ↦ { s with name := `weak ++ s.name }
 
 /-- These options are passed as `leanOptions` when building `MathlibTest`. We don't use the typical
 mathlib options in order to simulate the default downstream environment. -/
 abbrev mathlibTestOptions : Array LeanOption := #[
-    ⟨`pp.mvars.anonymous, false⟩ -- test stability: pretty-print `?m.37` as `?_`
+    ⟨`pp.mvars.anonymous, false⟩
   ]
 
 package mathlib where
   testDriver := "MathlibTest"
   lintDriver := "batteries/runLinter"
   lintDriverArgs := #["Mathlib"]
-  -- A version of Mathlib only supports the toolchain it is built with.
   fixedToolchain := true
-  -- Mathlib oleans are built on Linux CI and used across platforms.
   platformIndependent := true
-  -- Mathlib currently expects artifacts to be in the build directory.
   restoreAllArtifacts := true
-  -- These are additional settings which do not affect the lake hash,
-  -- so they can be enabled in CI and disabled locally or vice versa.
-  -- Warning: Do not put any options here that actually change the olean files,
-  -- or inconsistent behavior may result
-  -- weakLeanArgs := #[]
 
 /-!
 ## Mathlib libraries
@@ -75,11 +63,8 @@ package mathlib where
 
 @[default_target]
 lean_lib Mathlib where
-  -- Enforce Mathlib's default linters and style options.
   leanOptions := mathlibLeanOptions
 
--- NB. When adding further libraries, check if they should be excluded from `getLeanLibs` in
--- `scripts/mk_all.lean`.
 lean_lib Cache where
   globs := #[`Cache.+]
 
@@ -92,6 +77,9 @@ lean_lib Archive where
 
 lean_lib Counterexamples where
   leanOptions := mathlibLeanOptions
+
+/-- Project-local library containing the research-paper formalization audit modules. -/
+lean_lib PrimalitySheafVerification
 
 /-- Additional documentation in the form of modules that only contain module docstrings. -/
 lean_lib docs where
@@ -106,7 +94,7 @@ lean_lib docs where
 This requires GitHub CLI `gh` to be installed!
 
 Calling `lake exe autolabel` without a PR number will print the result without applying
-any labels online.
+it.
 -/
 lean_exe autolabel where
   srcDir := "scripts"
@@ -130,14 +118,12 @@ lean_exe «check-yaml» where
 lean_exe mk_all where
   srcDir := "scripts"
   supportInterpreter := true
-  -- Executables which import `Lake` must set `-lLake`.
   weakLinkArgs := #["-lLake"]
 
 /-- `lake exe lint-style` runs text-based style linters. -/
 lean_exe «lint-style» where
   srcDir := "scripts"
   supportInterpreter := true
-  -- Executables which import `Lake` must set `-lLake`.
   weakLinkArgs := #["-lLake"]
 
 /-- `lake exe check-title-labels` checks if a PR title obeys some basic formatting requirements.
@@ -163,15 +149,13 @@ update its toolchain to match Mathlib's and fetch the new cache.
 post_update pkg do
   let rootPkg ← getRootPackage
   if rootPkg.baseName = pkg.baseName then
-    return -- do not run in Mathlib itself
+    return
   if (← IO.getEnv "MATHLIB_NO_CACHE_ON_UPDATE") != some "1" then
-    -- Check if Lake version matches toolchain version
     let toolchainFile := rootPkg.dir / "lean-toolchain"
     let toolchainContent ← IO.FS.readFile toolchainFile
     let toolchainVersion := match toolchainContent.trimAscii.copy.splitOn ":" with
       | [_, version] => version
-      | _ => toolchainContent.trimAscii.copy  -- fallback to full content if format is unexpected
-    -- Lean.versionString does not start with a `v`, while the `lean-toolchain` file is flexible.
+      | _ => toolchainContent.trimAscii.copy
     let toolchainVersion := (toolchainVersion.dropPrefix "v").copy
     if Lean.versionString ≠ toolchainVersion then
       IO.println s!"Not running `lake exe cache get` yet, as \
@@ -180,8 +164,6 @@ post_update pkg do
         You should run `lake exe cache get` manually."
       return
     let exeFile ← runBuild cache.fetch
-    -- Run the command in the root package directory,
-    -- which is the one that holds the .lake folder and lean-toolchain file.
     let cwd ← IO.Process.getCurrentDir
     let exitCode ← try
       IO.Process.setCurrentDir rootPkg.dir
