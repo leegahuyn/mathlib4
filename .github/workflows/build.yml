@@ -22,7 +22,7 @@ concurrency:
 
 # Limit permissions for GITHUB_TOKEN for the entire workflow
 permissions:
-  contents: read
+  contents: write
   id-token: write
   actions: read  # Allow get-tools to download the prebuilt tools artifact from master's publish_tools runs
   pull-requests: write  # Only allow PR comments/labels
@@ -90,6 +90,7 @@ jobs:
           fetch-depth: 1
 
       - name: Record provenance
+        id: provenance
         shell: bash
         run: |
           set -euo pipefail
@@ -99,6 +100,8 @@ jobs:
             "repository=${GITHUB_REPOSITORY}" \
             "ref=${GITHUB_REF}" \
             "sha=${GITHUB_SHA}" \
+            "run_id=${GITHUB_RUN_ID}" \
+            "run_attempt=${GITHUB_RUN_ATTEMPT}" \
             "runner_arch=${RUNNER_ARCH}" \
             "runner_os=${RUNNER_OS}" \
             "utc_started=$(date -u +%FT%TZ)" \
@@ -106,6 +109,7 @@ jobs:
           git status --short | tee "${LOGDIR}/git-status-before.txt"
 
       - name: Install pinned Lean toolchain
+        id: setup
         shell: bash
         run: |
           set -euo pipefail
@@ -122,12 +126,14 @@ jobs:
           cp lake-manifest.json "${LOGDIR}/lake-manifest.json"
 
       - name: Restore Mathlib cache
+        id: cache
         shell: bash
         run: |
           set -euo pipefail
           lake exe cache get 2>&1 | tee "${LOGDIR}/cache-get.log"
 
       - name: Run clean aggregate BuildAll gate
+        id: buildall
         shell: bash
         run: |
           set -uo pipefail
@@ -147,3 +153,59 @@ jobs:
           path: /tmp/standalone-buildall-ci
           if-no-files-found: warn
           retention-days: 14
+
+      - name: Persist inspectable CI result on branch
+        if: ${{ always() }}
+        shell: bash
+        env:
+          PROVENANCE_OUTCOME: ${{ steps.provenance.outcome }}
+          SETUP_OUTCOME: ${{ steps.setup.outcome }}
+          CACHE_OUTCOME: ${{ steps.cache.outcome }}
+          BUILDALL_OUTCOME: ${{ steps.buildall.outcome }}
+        run: |
+          set -euo pipefail
+          mkdir -p build-evidence
+          python3 - <<'PY'
+          import json, os
+          from datetime import datetime, timezone
+          data = {
+              "repository": os.environ.get("GITHUB_REPOSITORY"),
+              "ref": os.environ.get("GITHUB_REF"),
+              "source_sha": os.environ.get("GITHUB_SHA"),
+              "run_id": int(os.environ.get("GITHUB_RUN_ID", "0")),
+              "run_attempt": int(os.environ.get("GITHUB_RUN_ATTEMPT", "0")),
+              "run_url": f"https://github.com/{os.environ.get('GITHUB_REPOSITORY')}/actions/runs/{os.environ.get('GITHUB_RUN_ID')}",
+              "recorded_at_utc": datetime.now(timezone.utc).isoformat(),
+              "steps": {
+                  "provenance": os.environ.get("PROVENANCE_OUTCOME"),
+                  "setup": os.environ.get("SETUP_OUTCOME"),
+                  "cache": os.environ.get("CACHE_OUTCOME"),
+                  "buildall": os.environ.get("BUILDALL_OUTCOME"),
+              },
+          }
+          path = "build-evidence/standalone-ci-latest.json"
+          with open(path, "w", encoding="utf-8") as f:
+              json.dump(data, f, indent=2, sort_keys=True)
+              f.write("\n")
+          PY
+          {
+            echo '=== provenance ==='
+            cat "${LOGDIR}/provenance.txt" 2>/dev/null || true
+            echo
+            echo '=== cache tail ==='
+            tail -n 80 "${LOGDIR}/cache-get.log" 2>/dev/null || true
+            echo
+            echo '=== BuildAll tail ==='
+            tail -n 240 "${LOGDIR}/buildall.log" 2>/dev/null || true
+            echo
+            echo '=== BuildAll exit ==='
+            cat "${LOGDIR}/buildall.exit-code.txt" 2>/dev/null || true
+          } > build-evidence/standalone-ci-latest.tail.log
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add build-evidence/standalone-ci-latest.json build-evidence/standalone-ci-latest.tail.log
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git commit -m 'Record standalone BuildAll CI result [skip ci]'
+          git push origin HEAD:standalone-repo-prep-2026-08-24
