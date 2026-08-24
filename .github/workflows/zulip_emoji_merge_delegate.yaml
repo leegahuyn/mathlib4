@@ -6,46 +6,69 @@ on:
       - master
       - nightly-testing
       - bump/*
+  workflow_dispatch:
 
 jobs:
   zulip-emoji-merged:
     runs-on: ubuntu-latest
-    if: github.repository == 'leanprover-community/mathlib4' ||
-        github.repository == 'leanprover-community/mathlib4-nightly-testing'
+    timeout-minutes: 30
 
     steps:
+    - name: Check Zulip credentials
+      id: zulip
+      shell: bash
+      env:
+        ZULIP_API_KEY: ${{ secrets.ZULIP_API_KEY }}
+      run: |
+        set -euo pipefail
+        if [[ -n "${ZULIP_API_KEY:-}" ]]; then
+          echo 'enabled=true' >> "${GITHUB_OUTPUT}"
+          echo 'ZULIP_API_KEY is configured; Zulip reaction update is enabled.'
+        else
+          echo 'enabled=false' >> "${GITHUB_OUTPUT}"
+          echo 'ZULIP_API_KEY is not configured on this fork; the job is running successfully, but external Zulip mutation is intentionally disabled.'
+        fi
+
     - name: Checkout mathlib4 repository history
+      if: ${{ steps.zulip.outputs.enabled == 'true' }}
       uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       with:
         fetch-depth: 0 # download the full repository
 
     - name: Checkout local actions
+      if: ${{ steps.zulip.outputs.enabled == 'true' }}
       uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       with:
         ref: ${{ github.workflow_sha }}
         fetch-depth: 1
         sparse-checkout: .github/actions
         path: workflow-actions
+
     - name: Checkout mathlib-ci
+      if: ${{ steps.zulip.outputs.enabled == 'true' }}
       uses: ./workflow-actions/.github/actions/get-mathlib-ci
 
     - name: Set up Python
+      if: ${{ steps.zulip.outputs.enabled == 'true' }}
       uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
       with:
         python-version: '3.x'
 
     - name: Install dependencies
+      if: ${{ steps.zulip.outputs.enabled == 'true' }}
       run: |
         python -m pip install --upgrade pip
         pip install -r "$CI_SCRIPTS_DIR/zulip/requirements.txt"
 
     - name: Update zulip emoji reactions
+      if: ${{ steps.zulip.outputs.enabled == 'true' }}
       continue-on-error: true  # Emoji updates are cosmetic; never fail CI over them
       env:
         ZULIP_API_KEY: ${{ secrets.ZULIP_API_KEY }}
         ZULIP_EMAIL: github-mathlib4-bot@leanprover.zulipchat.com
         ZULIP_SITE: https://leanprover.zulipchat.com
       run: |
+          set -euo pipefail
           # scan the commits of the past 10 minutes, assuming that the timezone of the current machine
           # is the same that performed the commit
           git log --since="10 minutes ago" --pretty=oneline
@@ -54,4 +77,4 @@ jobs:
           while read -r pr_number; do
             printf $'Running the python script with pr "%s"\n' "${pr_number}"
             python "${CI_SCRIPTS_DIR}/zulip/zulip_emoji_reactions.py" "$ZULIP_API_KEY" "$ZULIP_EMAIL" "$ZULIP_SITE" "[Merged by Bors]" "none" "${pr_number}"
-          done < <(git log --oneline -n 10 | grep -oP '.*\(#\K\d+(?=\))')
+          done < <(git log --oneline -n 10 | grep -oP '.*\(#\K\d+(?=\))' || true)

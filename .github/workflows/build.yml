@@ -116,7 +116,7 @@ jobs:
 
   standalone-buildall:
     name: ci
-    if: ${{ github.repository == 'leegahuyn/mathlib4' && (github.ref == 'refs/heads/standalone-repo-prep-2026-08-24' || github.ref == 'refs/heads/master') && !contains(github.event.head_commit.message, '[upstream-only]') }}
+    if: ${{ github.repository == 'leegahuyn/mathlib4' && (github.ref == 'refs/heads/standalone-repo-prep-2026-08-24' || github.ref == 'refs/heads/master') }}
     runs-on: ubuntu-24.04-arm
     timeout-minutes: 360
     env:
