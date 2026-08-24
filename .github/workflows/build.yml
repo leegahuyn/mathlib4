@@ -71,11 +71,15 @@ jobs:
           set -euo pipefail
           lake exe cache get 2>&1 | tee "${LOGDIR}/cache-get.log"
 
-      - name: Check generated aggregate imports
+      - name: Check generated upstream aggregate imports
         shell: bash
         run: |
           set -euo pipefail
-          lake exe mk_all --check 2>&1 | tee "${LOGDIR}/mk-all.log"
+          : > "${LOGDIR}/mk-all.log"
+          for lib in Mathlib Mathlib/Tactic Archive Counterexamples docs; do
+            echo "=== mk_all --check --lib ${lib} ===" | tee -a "${LOGDIR}/mk-all.log"
+            lake exe mk_all --check --lib "${lib}" 2>&1 | tee -a "${LOGDIR}/mk-all.log"
+          done
 
       - name: Build upstream Mathlib libraries
         shell: bash
@@ -112,7 +116,7 @@ jobs:
 
   standalone-buildall:
     name: ci
-    if: ${{ github.repository == 'leegahuyn/mathlib4' && (github.ref == 'refs/heads/standalone-repo-prep-2026-08-24' || github.ref == 'refs/heads/master') }}
+    if: ${{ github.repository == 'leegahuyn/mathlib4' && (github.ref == 'refs/heads/standalone-repo-prep-2026-08-24' || github.ref == 'refs/heads/master') && !contains(github.event.head_commit.message, '[upstream-only]') }}
     runs-on: ubuntu-24.04-arm
     timeout-minutes: 360
     env:
