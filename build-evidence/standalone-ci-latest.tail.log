@@ -1,12 +1,12 @@
 === provenance ===
 repository=leegahuyn/mathlib4
 ref=refs/heads/standalone-repo-prep-2026-08-24
-sha=b7e28f28d464c8278ad509dad4f56fec08f49c7f
-run_id=32682327772
+sha=d1446e5cdf9d05055f13c11ef83b6aa0a281a876
+run_id=32682566812
 run_attempt=1
 runner_arch=ARM64
 runner_os=Linux
-utc_started=2026-08-24T02:13:37Z
+utc_started=2026-08-24T02:17:44Z
 
 === cache tail ===
 info: plausible: cloning https://github.com/leanprover-community/plausible
@@ -25,30 +25,30 @@ info: batteries: cloning https://github.com/leanprover-community/batteries
 info: batteries: checking out revision '0ecf8993df88c044962426c2cbca0de5717d6150'
 info: Cli: cloning https://github.com/leanprover/lean4-cli
 info: Cli: checking out revision 'da07ca808b6718cb2aed14dba154e5a08b8f8ecf'
-✔ [1/5] Built Cache.Cli (235ms)
-✔ [2/5] Built Cache.Lean (284ms)
-✔ [7/26] Built Cache.Cli:c.o (123ms)
-✔ [8/26] Built Cache.Lean:c.o (162ms)
-✔ [9/26] Built Cache.Infra (285ms)
-✔ [10/26] Built Cache.Infra:c.o (186ms)
-✔ [11/26] Built Cache.IO (1.2s)
-✔ [12/26] Built Batteries.Tactic.OpenPrivate:c.o (1.1s)
-✔ [13/26] Built Cache.Hashing (628ms)
-✔ [14/26] Built Cache.Hashing:c.o (377ms)
+✔ [1/5] Built Cache.Cli (240ms)
+✔ [2/5] Built Cache.Lean (303ms)
+✔ [7/26] Built Cache.Cli:c.o (119ms)
+✔ [8/26] Built Cache.Lean:c.o (136ms)
+✔ [9/26] Built Cache.Infra (327ms)
+✔ [10/26] Built Cache.Infra:c.o (191ms)
+✔ [11/26] Built Batteries.Tactic.OpenPrivate:c.o (1.1s)
+✔ [12/26] Built Cache.IO (1.3s)
+✔ [13/26] Built Cache.Hashing (644ms)
+✔ [14/26] Built Cache.Hashing:c.o (383ms)
 ✔ [15/26] Built Cache.IO:c.o (1.4s)
 ✔ [16/26] Built Cache.Requests (1.7s)
-✔ [17/26] Built Cache.Marker (435ms)
-✔ [18/26] Built Cache.Marker:c.o (104ms)
-✔ [19/26] Built Cache.Query (532ms)
-✔ [20/26] Built Cache.Query:c.o (258ms)
-✔ [21/26] Built Cache.Warning (509ms)
-✔ [22/26] Built Cache.Warning:c.o (217ms)
-✔ [23/26] Built Cache.Main (988ms)
-✔ [24/26] Built Cache.Requests:c.o (2.6s)
-✔ [25/26] Built Cache.Main:c.o (832ms)
-✔ [26/26] Built cache:exe (593ms)
+✔ [17/26] Built Cache.Marker (459ms)
+✔ [18/26] Built Cache.Marker:c.o (120ms)
+✔ [19/26] Built Cache.Query (574ms)
+✔ [20/26] Built Cache.Query:c.o (260ms)
+✔ [21/26] Built Cache.Warning (531ms)
+✔ [22/26] Built Cache.Warning:c.o (230ms)
+✔ [23/26] Built Cache.Requests:c.o (2.5s)
+✔ [24/26] Built Cache.Main (1.0s)
+✔ [25/26] Built Cache.Main:c.o (856ms)
+✔ [26/26] Built cache:exe (607ms)
 
-NOTE: no cache found for HEAD (f66a333683baf91fe675e7fc117a6644dfd250c2) on fork leegahuyn/mathlib4.
+NOTE: no cache found for HEAD (f16addcfef69d427450b78cd1abdbe27e2546cfe) on fork leegahuyn/mathlib4.
 This commit hasn't been built by CI for this fork yet. You'll still
 get cache hits for files that match mathlib's master cache; only
 files unique to this PR will need to be rebuilt.
@@ -66,25 +66,268 @@ when you do.
 Current branch: standalone-repo-prep-2026-08-24
 Using cache from origin: (some leegahuyn/mathlib4)
 Attempting to download 8681 file(s) from leegahuyn/mathlib4 cache at https://lakecache.blob.core.windows.net/mathlib4-master
-Downloaded: 1 file(s) [attempted 1/8681 = 0%, 28 KB/s], Decompressed: 0Downloaded: 60 file(s) [attempted 60/8681 = 0%, 998 KB/s], Decompressed: 11Downloaded: 290 file(s) [attempted 290/8681 = 3%, 1442 KB/s], Decompressed: 68Downloaded: 652 file(s) [attempted 652/8681 = 7%, 1644 KB/s], Decompressed: 68Downloaded: 971 file(s) [attempted 971/8681 = 11%, 4637 KB/s], Decompressed: 68Downloaded: 1283 file(s) [attempted 1283/8681 = 14%, 8544 KB/s], Decompressed: 213Downloaded: 1627 file(s) [attempted 1627/8681 = 18%, 620 KB/s], Decompressed: 213Downloaded: 1915 file(s) [attempted 1915/8681 = 22%, 10100 KB/s], Decompressed: 213Downloaded: 2157 file(s) [attempted 2157/8681 = 24%, 19666 KB/s], Decompressed: 213Downloaded: 2497 file(s) [attempted 2497/8681 = 28%, 16311 KB/s], Decompressed: 213Downloaded: 2840 file(s) [attempted 2840/8681 = 32%, 22616 KB/s], Decompressed: 213Downloaded: 3152 file(s) [attempted 3152/8681 = 36%, 185 KB/s], Decompressed: 213Downloaded: 3418 file(s) [attempted 3418/8681 = 39%, 208 KB/s], Decompressed: 213Downloaded: 3718 file(s) [attempted 3718/8681 = 42%, 6589 KB/s], Decompressed: 213Downloaded: 4026 file(s) [attempted 4026/8681 = 46%, 2539 KB/s], Decompressed: 213Downloaded: 4359 file(s) [attempted 4359/8681 = 50%, 28443 KB/s], Decompressed: 213Downloaded: 4627 file(s) [attempted 4627/8681 = 53%, 856 KB/s], Decompressed: 213Downloaded: 4932 file(s) [attempted 4932/8681 = 56%, 11861 KB/s], Decompressed: 213Downloaded: 5336 file(s) [attempted 5336/8681 = 61%, 8974 KB/s], Decompressed: 213Downloaded: 5496 file(s) [attempted 5496/8681 = 63%, 16528 KB/s], Decompressed: 213Downloaded: 5545 file(s) [attempted 5545/8681 = 63%, 644 KB/s], Decompressed: 213Downloaded: 5873 file(s) [attempted 5873/8681 = 67%, 27022 KB/s], Decompressed: 213Downloaded: 6219 file(s) [attempted 6219/8681 = 71%, 7121 KB/s], Decompressed: 213Downloaded: 6556 file(s) [attempted 6556/8681 = 75%, 1180 KB/s], Decompressed: 213Downloaded: 6904 file(s) [attempted 6904/8681 = 79%, 588 KB/s], Decompressed: 1123Downloaded: 7169 file(s) [attempted 7169/8681 = 82%, 3572 KB/s], Decompressed: 1123Downloaded: 7528 file(s) [attempted 7528/8681 = 86%, 1895 KB/s], Decompressed: 1123Downloaded: 7796 file(s) [attempted 7796/8681 = 89%, 1495 KB/s], Decompressed: 1123Downloaded: 8099 file(s) [attempted 8099/8681 = 93%, 695 KB/s], Decompressed: 1123Downloaded: 8199 file(s) [attempted 8199/8681 = 94%, 690 KB/s], Decompressed: 1123Downloaded: 8549 file(s) [attempted 8549/8681 = 98%, 2083 KB/s], Decompressed: 1123Downloaded: 8681 file(s) [attempted 8681/8681 = 100%, 2083 KB/s], Decompressed: 1123
-Decompressed 8681 file(s)
-Already decompressed 8681 file(s)
+Downloaded: 0 file(s) [attempted 1/8681 = 0%, 0 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 147/8681 = 1%, 5 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 305/8681 = 3%, 7 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 450/8681 = 5%, 6 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 603/8681 = 6%, 6 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 768/8681 = 8%, 6 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 914/8681 = 10%, 5 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 1064/8681 = 12%, 7 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 1219/8681 = 14%, 5 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 1374/8681 = 15%, 7 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 1525/8681 = 17%, 5 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 1675/8681 = 19%, 7 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 1830/8681 = 21%, 7 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 1988/8681 = 22%, 7 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 2141/8681 = 24%, 5 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 2291/8681 = 26%, 6 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 2444/8681 = 28%, 7 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 2596/8681 = 29%, 7 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 2754/8681 = 31%, 7 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 2905/8681 = 33%, 7 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 3059/8681 = 35%, 5 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 3208/8681 = 36%, 6 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 3358/8681 = 38%, 6 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 3515/8681 = 40%, 5 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 3666/8681 = 42%, 5 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 3816/8681 = 43%, 5 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 3967/8681 = 45%, 7 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 4119/8681 = 47%, 5 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 4271/8681 = 49%, 7 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 4425/8681 = 50%, 7 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 4578/8681 = 52%, 5 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 4731/8681 = 54%, 7 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 4886/8681 = 56%, 7 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 5031/8681 = 57%, 7 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 5186/8681 = 59%, 5 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 5337/8681 = 61%, 7 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 5487/8681 = 63%, 5 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 5640/8681 = 64%, 6 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 5795/8681 = 66%, 5 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 5941/8681 = 68%, 5 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 6097/8681 = 70%, 6 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 6246/8681 = 71%, 7 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 6394/8681 = 73%, 6 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 6552/8681 = 75%, 5 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 6698/8681 = 77%, 7 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 6850/8681 = 78%, 7 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 7006/8681 = 80%, 5 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 7158/8681 = 82%, 6 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 7313/8681 = 84%, 5 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 7461/8681 = 85%, 6 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 7621/8681 = 87%, 6 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 7774/8681 = 89%, 5 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 7924/8681 = 91%, 5 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 8077/8681 = 93%, 7 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 8232/8681 = 94%, 7 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 8383/8681 = 96%, 6 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 8536/8681 = 98%, 6 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 8681/8681 = 100%, 6 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 8681/8681 = 100%, 6 KB/s], Decompressed: 0
+Attempting to download 8681 file(s) from leegahuyn/mathlib4 cache at https://lakecache.blob.core.windows.net/mathlib4-forks (scope f16addcfef69d427450b78cd1abdbe27e2546cfe)
+Downloaded: 0 file(s) [attempted 1/8681 = 0%, 0 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 144/8681 = 1%, 5 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 301/8681 = 3%, 5 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 440/8681 = 5%, 7 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 591/8681 = 6%, 6 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 747/8681 = 8%, 6 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 890/8681 = 10%, 5 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 1037/8681 = 11%, 7 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 1190/8681 = 13%, 6 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 1339/8681 = 15%, 7 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 1484/8681 = 17%, 7 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 1633/8681 = 18%, 6 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 1786/8681 = 20%, 7 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 1933/8681 = 22%, 6 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 2076/8681 = 23%, 5 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 2231/8681 = 25%, 5 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 2380/8681 = 27%, 6 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 2529/8681 = 29%, 7 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 2678/8681 = 30%, 4 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 2724/8681 = 31%, 6 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 2732/8681 = 31%, 7 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 2736/8681 = 31%, 1 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 2764/8681 = 31%, 0 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 2852/8681 = 32%, 7 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 3007/8681 = 34%, 5 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 3148/8681 = 36%, 5 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 3295/8681 = 37%, 6 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 3448/8681 = 39%, 6 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 3601/8681 = 41%, 5 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 3748/8681 = 43%, 5 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 3895/8681 = 44%, 7 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 4046/8681 = 46%, 4 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 4197/8681 = 48%, 5 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 4340/8681 = 49%, 5 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 4489/8681 = 51%, 7 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 4642/8681 = 53%, 5 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 4794/8681 = 55%, 5 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 4941/8681 = 56%, 5 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 5088/8681 = 58%, 5 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 5241/8681 = 60%, 6 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 5390/8681 = 62%, 6 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 5541/8681 = 63%, 6 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 5682/8681 = 65%, 5 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 5829/8681 = 67%, 7 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 5982/8681 = 68%, 7 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 6133/8681 = 70%, 4 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 6282/8681 = 72%, 5 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 6433/8681 = 74%, 5 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 6580/8681 = 75%, 7 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 6727/8681 = 77%, 7 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 6876/8681 = 79%, 7 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 7025/8681 = 80%, 5 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 7176/8681 = 82%, 6 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 7323/8681 = 84%, 5 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 7472/8681 = 86%, 7 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 7625/8681 = 87%, 5 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 7770/8681 = 89%, 7 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 7921/8681 = 91%, 5 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 8072/8681 = 92%, 7 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 8223/8681 = 94%, 7 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 8375/8681 = 96%, 7 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 8519/8681 = 98%, 7 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 8675/8681 = 99%, 6 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 8681/8681 = 100%, 6 KB/s], Decompressed: 0
+Attempting to download 8681 file(s) from leegahuyn/mathlib4 cache at https://lakecache.blob.core.windows.net/mathlib4
+Downloaded: 0 file(s) [attempted 1/8681 = 0%, 0 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 147/8681 = 1%, 5 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 307/8681 = 3%, 5 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 431/8681 = 4%, 5 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 594/8681 = 6%, 6 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 740/8681 = 8%, 5 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 896/8681 = 10%, 7 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 1056/8681 = 12%, 5 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 1203/8681 = 13%, 6 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 1351/8681 = 15%, 5 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 1495/8681 = 17%, 6 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 1658/8681 = 19%, 7 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 1813/8681 = 20%, 6 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 1964/8681 = 22%, 6 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 2117/8681 = 24%, 6 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 2271/8681 = 26%, 7 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 2426/8681 = 27%, 7 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 2573/8681 = 29%, 6 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 2724/8681 = 31%, 4 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 2879/8681 = 33%, 7 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 3026/8681 = 34%, 5 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 3181/8681 = 36%, 7 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 3334/8681 = 38%, 6 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 3485/8681 = 40%, 7 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 3639/8681 = 41%, 5 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 3789/8681 = 43%, 5 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 3943/8681 = 45%, 6 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 4098/8681 = 47%, 7 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 4251/8681 = 48%, 6 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 4407/8681 = 50%, 6 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 4563/8681 = 52%, 5 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 4716/8681 = 54%, 7 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 4869/8681 = 56%, 7 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 5020/8681 = 57%, 7 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 5173/8681 = 59%, 7 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 5329/8681 = 61%, 6 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 5482/8681 = 63%, 7 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 5638/8681 = 64%, 7 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 5786/8681 = 66%, 5 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 5939/8681 = 68%, 7 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 6093/8681 = 70%, 6 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 6244/8681 = 71%, 5 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 6395/8681 = 73%, 6 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 6543/8681 = 75%, 5 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 6701/8681 = 77%, 7 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 6854/8681 = 78%, 7 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 7008/8681 = 80%, 7 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 7159/8681 = 82%, 6 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 7314/8681 = 84%, 7 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 7465/8681 = 85%, 4 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 7614/8681 = 87%, 6 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 7769/8681 = 89%, 5 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 7920/8681 = 91%, 4 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 8048/8681 = 92%, 5 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 8099/8681 = 93%, 4 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 8160/8681 = 93%, 5 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 8222/8681 = 94%, 3 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 8252/8681 = 95%, 4 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 8302/8681 = 95%, 3 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 8366/8681 = 96%, 7 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 8389/8681 = 96%, 0 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 8417/8681 = 96%, 1 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 8467/8681 = 97%, 0 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 8506/8681 = 97%, 3 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 8581/8681 = 98%, 7 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 8634/8681 = 99%, 2 KB/s], Decompressed: 0Downloaded: 0 file(s) [attempted 8681/8681 = 100%, 2 KB/s], Decompressed: 0
+Warning: some files were not found in the cache.
+This usually means that your local checkout of mathlib4 has diverged from upstream.
 
-=== BuildAll tail ===
-BuildAll.lean:8:0: error: unknown module prefix 'PrimalitySheafVerification'
+  * If you push your commits to a PR to the mathlib4 repository
+    (use a draft PR if it is not ready for review),
+    then CI will build the oleans and they will be available later.
+  * If you have already opened a PR, this may mean
+    the CI build has failed part-way through building.
+Decompressed 0 file(s)
+No cache files to decompress
 
-No directory 'PrimalitySheafVerification' or file 'PrimalitySheafVerification.olean' in the search path entries:
-/home/runner/work/mathlib4/mathlib4/.lake/packages/Cli/.lake/build/lib/lean
-/home/runner/work/mathlib4/mathlib4/.lake/packages/batteries/.lake/build/lib/lean
-/home/runner/work/mathlib4/mathlib4/.lake/packages/Qq/.lake/build/lib/lean
-/home/runner/work/mathlib4/mathlib4/.lake/packages/aesop/.lake/build/lib/lean
-/home/runner/work/mathlib4/mathlib4/.lake/packages/proofwidgets/.lake/build/lib/lean
-/home/runner/work/mathlib4/mathlib4/.lake/packages/importGraph/.lake/build/lib/lean
-/home/runner/work/mathlib4/mathlib4/.lake/packages/LeanSearchClient/.lake/build/lib/lean
-/home/runner/work/mathlib4/mathlib4/.lake/packages/plausible/.lake/build/lib/lean
-/home/runner/work/mathlib4/mathlib4/.lake/build/lib/lean
-/home/runner/.elan/toolchains/leanprover--lean4---v4.33.0-rc1/lib/lean
-/home/runner/.elan/toolchains/leanprover--lean4---v4.33.0-rc1/lib/lean
+=== project aggregate build tail ===
+info: PrimalitySheafVerification/QYM.lean:60851:0: 'QYM.FullCertification.Mock3Items2To8ExactBoundaryExtension.item5_finiteCoordinate_literal_DstarD_plus_V_realization' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: PrimalitySheafVerification/QYM.lean:60852:0: 'QYM.FullCertification.Mock3Items2To8ExactBoundaryExtension.item6_finiteCoordinate_closed_selfAdjoint_compactResolvent' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: PrimalitySheafVerification/QYM.lean:60853:0: 'QYM.FullCertification.Mock3Items2To8ExactBoundaryExtension.item6_finiteCoordinate_groundBlockSpectrum' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: PrimalitySheafVerification/QYM.lean:60854:0: 'QYM.FullCertification.Mock3Items2To8ExactBoundaryExtension.item6_finiteCoordinate_offGroundBlock_isNontrivial' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: PrimalitySheafVerification/QYM.lean:60855:0: 'QYM.FullCertification.Mock3Items2To8ExactBoundaryExtension.item6_actualStage_boundedCompactResolventSurrogate_noGo' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: PrimalitySheafVerification/QYM.lean:60856:0: 'QYM.FullCertification.Mock3Items2To8ExactBoundaryExtension.item7_lowerFrame_and_energyComparison_imply_excessCoercivity' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: PrimalitySheafVerification/QYM.lean:60857:0: 'QYM.FullCertification.Mock3Items2To8ExactBoundaryExtension.item7_actualInverseEtaRankOne_isNotLowerFrame' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: PrimalitySheafVerification/QYM.lean:60858:0: 'QYM.FullCertification.Mock3Items2To8ExactBoundaryExtension.item7_actualOffGround_compactAnalysis_noPositiveLowerFrame' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: PrimalitySheafVerification/QYM.lean:60859:0: 'QYM.FullCertification.Mock3Items2To8ExactBoundaryExtension.item8_cutoffNegativeOneShift_rightInverse' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: PrimalitySheafVerification/QYM.lean:60860:0: 'QYM.FullCertification.Mock3Items2To8ExactBoundaryExtension.item8_cutoffNegativeOneShift_leftInverse' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: PrimalitySheafVerification/QYM.lean:60861:0: 'QYM.FullCertification.Mock3Items2To8ExactBoundaryExtension.item8_cutoffNegativeOneShift_bijective' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: PrimalitySheafVerification/QYM.lean:60862:0: 'QYM.FullCertification.Mock3Items2To8ExactBoundaryExtension.item8_cutoffNegativeOneResolvent_tendstoStrong' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: PrimalitySheafVerification/QYM.lean:60863:0: 'QYM.FullCertification.Mock3Items2To8ExactBoundaryExtension.item8_cutoffStrongResolventFirewall' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: PrimalitySheafVerification/QYM.lean:60864:0: 'QYM.FullCertification.Mock3Items2To8ExactBoundaryExtension.item8_movingOffGroundNontrivial_iff_nonzeroFixedVector' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: PrimalitySheafVerification/QYM.lean:60865:0: 'QYM.FullCertification.Mock3Items2To8ExactBoundaryExtension.item8_pointwisePositiveConstants_doNotSupplyUniformGap' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: PrimalitySheafVerification/QYM.lean:60866:0: 'QYM.FullCertification.Mock3Items2To8ExactBoundaryExtension.items2To8_actualMockRS_and_cutoffBoundary' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: PrimalitySheafVerification/QYM.lean:61143:0: 'QYM.FullCertification.Mock4ActualCurvilinearStokesGreenExtension.actualHighCutoffBoundaryEqualityAt_iff_bulkDivergence_zero' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: PrimalitySheafVerification/QYM.lean:61144:0: 'QYM.FullCertification.Mock4ActualCurvilinearStokesGreenExtension.actualCompactFluxBulkDivergenceZero_iff_gammaTwoCompactFluxStokes' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: PrimalitySheafVerification/QYM.lean:61145:0: 'QYM.FullCertification.Mock4ActualCurvilinearStokesGreenExtension.actualHighCutoffResidual_iff_everyCompactFluxBulkDivergence_zero' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: PrimalitySheafVerification/QYM.lean:61146:0: 'QYM.FullCertification.Mock4ActualCurvilinearStokesGreenExtension.actualHighCutoffResidual_iff_bulkZero_at_every_admissible_cut' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: PrimalitySheafVerification/QYM.lean:61147:0: 'QYM.FullCertification.Mock4ActualCurvilinearStokesGreenExtension.gammaTwoBoundaryParametrization_does_not_force_C1Embedding' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: PrimalitySheafVerification/QYM.lean:61148:0: 'QYM.FullCertification.Mock4ActualCurvilinearStokesGreenExtension.scalarMatterStokes_and_deckCoulombDomain_firewall' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+warning: PrimalitySheafVerification/QYM.lean:61335:16: `ContinuousLinearMap.coe_comp'` has been deprecated: Use `ContinuousLinearMap.coe_comp` instead
+info: PrimalitySheafVerification/QYM.lean:61661:0: 'QYM.FullCertification.Mock4ActualQuotientH1HamiltonianExtension.actualStage_topological_and_smooth_boundary_iff_smoothResidual' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: PrimalitySheafVerification/QYM.lean:61662:0: 'QYM.FullCertification.Mock4ActualQuotientH1HamiltonianExtension.actualStage_continuousCore_injective_dense' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: PrimalitySheafVerification/QYM.lean:61663:0: 'QYM.FullCertification.Mock4ActualQuotientH1HamiltonianExtension.actualStage_unitaryHolonomy_sectorPotential_eq_zero' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: PrimalitySheafVerification/QYM.lean:61664:0: 'QYM.FullCertification.Mock4ActualQuotientH1HamiltonianExtension.supplied_deckCovariantCoulombSlice_mem_iff' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: PrimalitySheafVerification/QYM.lean:61665:0: 'QYM.FullCertification.Mock4ActualQuotientH1HamiltonianExtension.supplied_gaugeDeckPullback_isRepresentation_iff' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: PrimalitySheafVerification/QYM.lean:61666:0: 'QYM.FullCertification.Mock4ActualQuotientH1HamiltonianExtension.actualStage_identity_not_compact' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: PrimalitySheafVerification/QYM.lean:61667:0: 'QYM.FullCertification.Mock4ActualQuotientH1HamiltonianExtension.actualStage_boundedDerivative_graphEmbedding_not_compact' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: PrimalitySheafVerification/QYM.lean:61668:0: 'QYM.FullCertification.Mock4ActualQuotientH1HamiltonianExtension.actualStage_boundedProjectedDerivative_Rellich_noGo' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: PrimalitySheafVerification/QYM.lean:61669:0: 'QYM.FullCertification.Mock4ActualQuotientH1HamiltonianExtension.actualStage_compactResolvent_forces_no_bounded_ambient_shift' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: PrimalitySheafVerification/QYM.lean:61670:0: 'QYM.FullCertification.Mock4ActualQuotientH1HamiltonianExtension.actualStage_sectorPotentialPMap_no_compactResolvent' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: PrimalitySheafVerification/QYM.lean:61671:0: 'QYM.FullCertification.Mock4ActualQuotientH1HamiltonianExtension.actualStage_compactResolvent_cannot_agree_with_bounded_DstarDPlusV' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: PrimalitySheafVerification/QYM.lean:61672:0: 'QYM.FullCertification.Mock4ActualQuotientH1HamiltonianExtension.actualStage_boundedDerivative_H1_Hamiltonian_double_noGo' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: PrimalitySheafVerification/QYM.lean:61673:0: 'QYM.FullCertification.Mock4ActualQuotientH1HamiltonianExtension.actualStage_boundedProjectedDerivative_H1_Hamiltonian_double_noGo' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: PrimalitySheafVerification/QYM.lean:61674:0: 'QYM.FullCertification.Mock4ActualQuotientH1HamiltonianExtension.actualStage_constructedData_and_boundedNoGo' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+warning: PrimalitySheafVerification/QYM.lean:61915:5: Variable name `q` is not explicitly referenced.
 
-=== BuildAll exit ===
-1
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _q
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: PrimalitySheafVerification/QYM.lean:61968:4: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+warning: PrimalitySheafVerification/QYM.lean:61970:4: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+warning: PrimalitySheafVerification/QYM.lean:61991:13: `ContinuousLinearMap.zero_apply` has been deprecated: Use `zero_apply` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.zero_apply` to `zero_apply x`).
+warning: PrimalitySheafVerification/QYM.lean:62070:4: `ContinuousLinearMap.smul_apply` has been deprecated: Use `smul_apply` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.smul_apply` to `smul_apply x`).
+warning: PrimalitySheafVerification/QYM.lean:62081:4: `push_neg` has been deprecated. Prefer using `push Not` instead.
+If you'd rather continue using `push_neg` in your project, you can implement it as follows:
+```
+open Lean.Parser.Tactic in
+macro "push_neg" cfg:optConfig loc:(location)? : tactic =>
+  `(tactic| push $cfg:optConfig Not $[$loc]?)
+```
+warning: PrimalitySheafVerification/QYM.lean:62085:16: `ContinuousLinearMap.zero_apply` has been deprecated: Use `zero_apply` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.zero_apply` to `zero_apply x`).
+warning: PrimalitySheafVerification/QYM.lean:62131:4: `push_neg` has been deprecated. Prefer using `push Not` instead.
+If you'd rather continue using `push_neg` in your project, you can implement it as follows:
+```
+open Lean.Parser.Tactic in
+macro "push_neg" cfg:optConfig loc:(location)? : tactic =>
+  `(tactic| push $cfg:optConfig Not $[$loc]?)
+```
+info: PrimalitySheafVerification/QYM.lean:62344:0: 'QYM.FullCertification.Mock4ActualMockRSMoscoUniformGapExtension.actualInverseEtaAnalysis_no_twoSidedFrameEnergyEstimate' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: PrimalitySheafVerification/QYM.lean:62345:0: 'QYM.FullCertification.Mock4ActualMockRSMoscoUniformGapExtension.actualInverseEtaRankOneOperator_no_twoSidedFrameEnergyEstimate' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: PrimalitySheafVerification/QYM.lean:62346:0: 'QYM.FullCertification.Mock4ActualMockRSMoscoUniformGapExtension.actualOffGround_compactAnalysis_no_twoSidedFrameEnergyEstimate' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: PrimalitySheafVerification/QYM.lean:62347:0: 'QYM.FullCertification.Mock4ActualMockRSMoscoUniformGapExtension.actualCutoffEscapeOpenSet_nonempty' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: PrimalitySheafVerification/QYM.lean:62348:0: 'QYM.FullCertification.Mock4ActualMockRSMoscoUniformGapExtension.actualCutoffEscapeOpenSet_measure_pos' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: PrimalitySheafVerification/QYM.lean:62349:0: 'QYM.FullCertification.Mock4ActualMockRSMoscoUniformGapExtension.actualCutoffEscapeWitness_ne_zero' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: PrimalitySheafVerification/QYM.lean:62350:0: 'QYM.FullCertification.Mock4ActualMockRSMoscoUniformGapExtension.globalStageProjection_escapeWitness_eq_zero' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: PrimalitySheafVerification/QYM.lean:62351:0: 'QYM.FullCertification.Mock4ActualMockRSMoscoUniformGapExtension.actualCutoffEscapeHamiltonian_ne_zero' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: PrimalitySheafVerification/QYM.lean:62352:0: 'QYM.FullCertification.Mock4ActualMockRSMoscoUniformGapExtension.actualCutoffMovingOffGround_nontrivial' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: PrimalitySheafVerification/QYM.lean:62353:0: 'QYM.FullCertification.Mock4ActualMockRSMoscoUniformGapExtension.actualCutoffEscapeHamiltonian_norm_ge_one' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: PrimalitySheafVerification/QYM.lean:62354:0: 'QYM.FullCertification.Mock4ActualMockRSMoscoUniformGapExtension.actualCutoffExcitationProjection_not_tendsto_norm_zero' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: PrimalitySheafVerification/QYM.lean:62355:0: 'QYM.FullCertification.Mock4ActualMockRSMoscoUniformGapExtension.actualCutoffNegativeOneResolventError_eq_half_escape' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: PrimalitySheafVerification/QYM.lean:62356:0: 'QYM.FullCertification.Mock4ActualMockRSMoscoUniformGapExtension.actualCutoffNegativeOneResolventError_norm_ge_half' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: PrimalitySheafVerification/QYM.lean:62357:0: 'QYM.FullCertification.Mock4ActualMockRSMoscoUniformGapExtension.actualCutoffNegativeOneResolventError_norm_ge_half_at_every_stage' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: PrimalitySheafVerification/QYM.lean:62358:0: 'QYM.FullCertification.Mock4ActualMockRSMoscoUniformGapExtension.actualCutoffNegativeOneResolvent_not_tendsto_norm_of_not_eventually_zero' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: PrimalitySheafVerification/QYM.lean:62359:0: 'QYM.FullCertification.Mock4ActualMockRSMoscoUniformGapExtension.actualCutoffNegativeOneResolvent_not_tendsto_norm' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: PrimalitySheafVerification/QYM.lean:62360:0: 'QYM.FullCertification.Mock4ActualMockRSMoscoUniformGapExtension.actualCutoffNegativeOneResolvent_tendsto_norm_forces_eventually_trivial' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: PrimalitySheafVerification/QYM.lean:62361:0: 'QYM.FullCertification.Mock4ActualMockRSMoscoUniformGapExtension.actualCutoff_normResolvent_and_persistentExcitation_incompatible' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: PrimalitySheafVerification/QYM.lean:62362:0: 'QYM.FullCertification.Mock4ActualMockRSMoscoUniformGapExtension.actualCutoffMovingOffGround_not_eventually_trivial' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: PrimalitySheafVerification/QYM.lean:62363:0: 'QYM.FullCertification.Mock4ActualMockRSMoscoUniformGapExtension.actualCutoffEscapeEnergy_tendsto_zero' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: PrimalitySheafVerification/QYM.lean:62364:0: 'QYM.FullCertification.Mock4ActualMockRSMoscoUniformGapExtension.mem_every_actualCutoffMovingOffGround_implies_zero' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: PrimalitySheafVerification/QYM.lean:62365:0: 'QYM.FullCertification.Mock4ActualMockRSMoscoUniformGapExtension.actualCutoffLimitOffGroundBlock_eq_bot' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: PrimalitySheafVerification/QYM.lean:62366:0: 'QYM.FullCertification.Mock4ActualMockRSMoscoUniformGapExtension.actualCutoffLimit_has_no_nonzero_offGroundVector' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: PrimalitySheafVerification/QYM.lean:62367:0: 'QYM.FullCertification.Mock4ActualMockRSMoscoUniformGapExtension.not_hasStableNontrivialUniformCutoffGap' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: PrimalitySheafVerification/QYM.lean:62368:0: 'QYM.FullCertification.Mock4ActualMockRSMoscoUniformGapExtension.actualMockRSMoscoUniformGapIncompatibilityCertificate' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: PrimalitySheafVerification/QYM.lean:62597:0: 'QYM.FullCertification.Mock4TerminalActualFunctionalAnalysisBoundaryExtension.currentBoundedSurrogateAcceptance_false_by_Rellich' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: PrimalitySheafVerification/QYM.lean:62598:0: 'QYM.FullCertification.Mock4TerminalActualFunctionalAnalysisBoundaryExtension.currentBoundedSurrogateAcceptance_false_by_compactResolvent' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: PrimalitySheafVerification/QYM.lean:62599:0: 'QYM.FullCertification.Mock4TerminalActualFunctionalAnalysisBoundaryExtension.currentBoundedSurrogateAcceptance_false_by_lowerFrame' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: PrimalitySheafVerification/QYM.lean:62600:0: 'QYM.FullCertification.Mock4TerminalActualFunctionalAnalysisBoundaryExtension.currentBoundedSurrogateAcceptance_false_by_uniformLimit' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: PrimalitySheafVerification/QYM.lean:62601:0: 'QYM.FullCertification.Mock4TerminalActualFunctionalAnalysisBoundaryExtension.currentConcreteSuppliers_terminalBoundary' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: PrimalitySheafVerification/QYM.lean:62602:0: 'QYM.FullCertification.Mock4TerminalActualFunctionalAnalysisBoundaryExtension.currentBoundedSurrogateAcceptance_false' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+✔ [8716/8717] Built PrimalitySheafVerification.Mock3 (2.2s)
+✔ [8717/8717] Built PrimalitySheafVerification.BuildAll (4.2s)
+Build completed successfully (8717 jobs).
+
+=== project aggregate build exit ===
+0
+
+=== root BuildAll tail ===
+
+=== root BuildAll exit ===
+0

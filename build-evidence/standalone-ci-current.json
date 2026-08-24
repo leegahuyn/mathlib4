@@ -1,10 +1,17 @@
 {
+  "recorded_at_utc": "2026-08-24T04:56:53.563979+00:00",
   "ref": "refs/heads/standalone-repo-prep-2026-08-24",
   "repository": "leegahuyn/mathlib4",
   "run_attempt": 1,
   "run_id": 32682566812,
   "run_url": "https://github.com/leegahuyn/mathlib4/actions/runs/32682566812",
   "source_sha": "d1446e5cdf9d05055f13c11ef83b6aa0a281a876",
-  "started_at_utc": "2026-08-24T02:17:44.284937+00:00",
-  "state": "in_progress"
+  "state": "success",
+  "steps": {
+    "buildall": "success",
+    "cache": "success",
+    "live_marker": "success",
+    "provenance": "success",
+    "setup": "success"
+  }
 }
