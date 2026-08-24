@@ -3,24 +3,17 @@ name: continuous integration
 on:
   push:
     branches-ignore:
-      # ignore tmp branches used by bors
       - 'staging.tmp*'
       - 'trying.tmp*'
       - 'staging*.tmp'
-      # ignore staging and trying branches used by bors, these are handled by bors.yml
       - 'staging'
       - 'trying'
-      # ignore branches meant for experiments
       - 'ci-dev/**'
 
 concurrency:
-  # label each workflow run; only the latest with each label will run
-  # workflows on master get more expressive labels
   group: ${{ github.workflow }}-${{ github.ref }}-${{ (github.event_name == 'push' && github.ref == 'refs/heads/master' && github.run_id) || '' }}
-  # cancel any running workflow with the same label
   cancel-in-progress: true
 
-# Limit permissions for GITHUB_TOKEN for the entire workflow
 permissions:
   contents: write
   id-token: write
@@ -148,16 +141,24 @@ jobs:
           set -euo pipefail
           lake exe cache get 2>&1 | tee "${LOGDIR}/cache-get.log"
 
-      - name: Run clean aggregate BuildAll gate
+      - name: Build aggregate library and validate public BuildAll entry point
         id: buildall
         shell: bash
         run: |
           set -uo pipefail
           set +e
+          lake build PrimalitySheafVerification.BuildAll 2>&1 | tee "${LOGDIR}/project-build.log"
+          library_code=${PIPESTATUS[0]}
+          printf '%s\n' "${library_code}" | tee "${LOGDIR}/project-build.exit-code.txt"
+          if [[ "${library_code}" -ne 0 ]]; then
+            printf '%s\n' 'SKIPPED: project aggregate library did not build' > "${LOGDIR}/buildall.log"
+            printf '%s\n' 'not-run' > "${LOGDIR}/buildall.exit-code.txt"
+            exit "${library_code}"
+          fi
           lake env lean BuildAll.lean 2>&1 | tee "${LOGDIR}/buildall.log"
           code=${PIPESTATUS[0]}
-          set -e
           printf '%s\n' "${code}" | tee "${LOGDIR}/buildall.exit-code.txt"
+          set -e
           exit "${code}"
 
       - name: Upload standalone CI evidence
@@ -216,10 +217,16 @@ jobs:
             echo '=== cache tail ==='
             tail -n 80 "${LOGDIR}/cache-get.log" 2>/dev/null || true
             echo
-            echo '=== BuildAll tail ==='
+            echo '=== project aggregate build tail ==='
+            tail -n 240 "${LOGDIR}/project-build.log" 2>/dev/null || true
+            echo
+            echo '=== project aggregate build exit ==='
+            cat "${LOGDIR}/project-build.exit-code.txt" 2>/dev/null || true
+            echo
+            echo '=== root BuildAll tail ==='
             tail -n 240 "${LOGDIR}/buildall.log" 2>/dev/null || true
             echo
-            echo '=== BuildAll exit ==='
+            echo '=== root BuildAll exit ==='
             cat "${LOGDIR}/buildall.exit-code.txt" 2>/dev/null || true
           } > build-evidence/standalone-ci-latest.tail.log
           git config user.name 'github-actions[bot]'
