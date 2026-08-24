@@ -30,7 +30,7 @@ permissions:
 
 jobs:
   build:
-    name: ci
+    name: ci (upstream)
     if: ${{ github.repository == 'leanprover-community/mathlib4' || github.repository == 'leanprover-community/mathlib4-nightly-testing' }}
     uses: ./.github/workflows/build_template.yml
     with:
@@ -74,3 +74,76 @@ jobs:
       publish_cache: ${{ github.repository == 'leanprover-community/mathlib4' && github.event_name == 'push' && github.ref == 'refs/heads/master' }}
       runs_on: pr
     secrets: inherit
+
+  standalone-buildall:
+    name: ci
+    if: ${{ github.repository == 'leegahuyn/mathlib4' && github.ref == 'refs/heads/standalone-repo-prep-2026-08-24' }}
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 360
+    env:
+      LOGDIR: /tmp/standalone-buildall-ci
+
+    steps:
+      - name: Checkout exact commit
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Record provenance
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "${LOGDIR}"
+          test "$(git rev-parse HEAD)" = "${GITHUB_SHA}"
+          printf '%s\n' \
+            "repository=${GITHUB_REPOSITORY}" \
+            "ref=${GITHUB_REF}" \
+            "sha=${GITHUB_SHA}" \
+            "runner_arch=${RUNNER_ARCH}" \
+            "runner_os=${RUNNER_OS}" \
+            "utc_started=$(date -u +%FT%TZ)" \
+            | tee "${LOGDIR}/provenance.txt"
+          git status --short | tee "${LOGDIR}/git-status-before.txt"
+
+      - name: Install pinned Lean toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          echo "${HOME}/.elan/bin" >> "${GITHUB_PATH}"
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          elan toolchain install "$(cat lean-toolchain)"
+          lean --version | tee "${LOGDIR}/lean-version.txt"
+          lake --version | tee "${LOGDIR}/lake-version.txt"
+          cp lean-toolchain "${LOGDIR}/lean-toolchain.txt"
+          cp lake-manifest.json "${LOGDIR}/lake-manifest.json"
+
+      - name: Restore Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          lake exe cache get 2>&1 | tee "${LOGDIR}/cache-get.log"
+
+      - name: Run clean aggregate BuildAll gate
+        shell: bash
+        run: |
+          set -uo pipefail
+          set +e
+          lake env lean BuildAll.lean 2>&1 | tee "${LOGDIR}/buildall.log"
+          code=${PIPESTATUS[0]}
+          set -e
+          printf '%s\n' "${code}" | tee "${LOGDIR}/buildall.exit-code.txt"
+          git status --short | tee "${LOGDIR}/git-status-after.txt"
+          exit "${code}"
+
+      - name: Upload standalone CI evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: standalone-buildall-ci-${{ github.run_id }}-${{ github.run_attempt }}
+          path: /tmp/standalone-buildall-ci
+          if-no-files-found: warn
+          retention-days: 14
