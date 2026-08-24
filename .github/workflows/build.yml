@@ -57,7 +57,7 @@ jobs:
 
   standalone-buildall:
     name: ci
-    if: ${{ github.repository == 'leegahuyn/mathlib4' && github.ref == 'refs/heads/standalone-repo-prep-2026-08-24' }}
+    if: ${{ github.repository == 'leegahuyn/mathlib4' && (github.ref == 'refs/heads/standalone-repo-prep-2026-08-24' || github.ref == 'refs/heads/master') }}
     runs-on: ubuntu-24.04-arm
     timeout-minutes: 360
     env:
@@ -115,7 +115,7 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add "${EVIDENCE_JSON}"
           git commit -m 'Record standalone CI start [skip ci]'
-          git push origin HEAD:standalone-repo-prep-2026-08-24
+          git push origin HEAD:"${GITHUB_REF_NAME}"
 
       - name: Install pinned Lean toolchain
         id: setup
@@ -236,4 +236,4 @@ jobs:
             exit 0
           fi
           git commit -m 'Record standalone BuildAll CI result [skip ci]'
-          git push origin HEAD:standalone-repo-prep-2026-08-24
+          git push origin HEAD:"${GITHUB_REF_NAME}"
