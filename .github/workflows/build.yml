@@ -24,9 +24,8 @@ concurrency:
 permissions:
   contents: write
   id-token: write
-  actions: read  # Allow get-tools to download the prebuilt tools artifact from master's publish_tools runs
-  pull-requests: write  # Only allow PR comments/labels
-  # All other permissions are implicitly 'none'
+  actions: read
+  pull-requests: write
 
 jobs:
   build:
@@ -36,12 +35,6 @@ jobs:
     with:
       concurrency_group: ${{ github.workflow }}-${{ github.ref }}-${{ (github.event_name == 'push' && github.ref == 'refs/heads/master' && github.run_id) || '' }}
       pr_branch_ref: ${{ github.sha }}
-      # Trust-level dispatch for the cache writer app:
-      #   - mathlib4/master                                                 → MASTER writer
-      #   - mathlib4-nightly-testing/(nightly-testing | nightly-testing-green | bump/*)
-      #                                                                     → NIGHTLY_TESTING writer
-      #   - mathlib4-nightly-testing/(anything else)                        → PR_TOOLCHAIN_TESTS writer
-      #   - everything else (dev branches on mathlib4, etc.)                → NON_MASTER (forks) writer
       cache_application_id: >-
         ${{
              (github.repository == 'leanprover-community/mathlib4'
@@ -56,11 +49,6 @@ jobs:
                && vars.CACHE_PR_TOOLCHAIN_TESTS_WRITER_AZURE_APP_ID
           || vars.CACHE_NON_MASTER_WRITER_AZURE_APP_ID
         }}
-      # OIDC environment binding for the upload_cache job. MUST track the cache_application_id
-      # mapping above so the minted token's `:environment:` subject matches the writer app's
-      # federated credential. mathlib4-nightly-testing intentionally uses branch/ref-scoped
-      # trust instead of an environment: each nightly writer app is RBAC-isolated to its own
-      # container, so branch scoping is sufficient there.
       cache_environment: >-
         ${{
              (github.repository == 'leanprover-community/mathlib4'
@@ -70,7 +58,6 @@ jobs:
                && 'cache-upload-forks'
           || ''
         }}
-      # the single producer: the master `push` build
       publish_cache: ${{ github.repository == 'leanprover-community/mathlib4' && github.event_name == 'push' && github.ref == 'refs/heads/master' }}
       runs_on: pr
     secrets: inherit
@@ -82,6 +69,7 @@ jobs:
     timeout-minutes: 360
     env:
       LOGDIR: /tmp/standalone-buildall-ci
+      EVIDENCE_JSON: build-evidence/standalone-ci-current.json
 
     steps:
       - name: Checkout exact commit
@@ -94,7 +82,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p "${LOGDIR}"
+          mkdir -p "${LOGDIR}" build-evidence
           test "$(git rev-parse HEAD)" = "${GITHUB_SHA}"
           printf '%s\n' \
             "repository=${GITHUB_REPOSITORY}" \
@@ -106,7 +94,35 @@ jobs:
             "runner_os=${RUNNER_OS}" \
             "utc_started=$(date -u +%FT%TZ)" \
             | tee "${LOGDIR}/provenance.txt"
-          git status --short | tee "${LOGDIR}/git-status-before.txt"
+
+      - name: Persist live in-progress marker
+        id: live_marker
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, os
+          from datetime import datetime, timezone
+          data = {
+              "state": "in_progress",
+              "repository": os.environ.get("GITHUB_REPOSITORY"),
+              "ref": os.environ.get("GITHUB_REF"),
+              "source_sha": os.environ.get("GITHUB_SHA"),
+              "run_id": int(os.environ.get("GITHUB_RUN_ID", "0")),
+              "run_attempt": int(os.environ.get("GITHUB_RUN_ATTEMPT", "0")),
+              "run_url": f"https://github.com/{os.environ.get('GITHUB_REPOSITORY')}/actions/runs/{os.environ.get('GITHUB_RUN_ID')}",
+              "started_at_utc": datetime.now(timezone.utc).isoformat(),
+          }
+          with open(os.environ["EVIDENCE_JSON"], "w", encoding="utf-8") as f:
+              json.dump(data, f, indent=2, sort_keys=True)
+              f.write("\n")
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "${EVIDENCE_JSON}"
+          git commit -m 'Record standalone CI start [skip ci]'
+          git push origin HEAD:standalone-repo-prep-2026-08-24
 
       - name: Install pinned Lean toolchain
         id: setup
@@ -142,7 +158,6 @@ jobs:
           code=${PIPESTATUS[0]}
           set -e
           printf '%s\n' "${code}" | tee "${LOGDIR}/buildall.exit-code.txt"
-          git status --short | tee "${LOGDIR}/git-status-after.txt"
           exit "${code}"
 
       - name: Upload standalone CI evidence
@@ -154,11 +169,12 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
-      - name: Persist inspectable CI result on branch
+      - name: Persist final inspectable CI result on branch
         if: ${{ always() }}
         shell: bash
         env:
           PROVENANCE_OUTCOME: ${{ steps.provenance.outcome }}
+          LIVE_MARKER_OUTCOME: ${{ steps.live_marker.outcome }}
           SETUP_OUTCOME: ${{ steps.setup.outcome }}
           CACHE_OUTCOME: ${{ steps.cache.outcome }}
           BUILDALL_OUTCOME: ${{ steps.buildall.outcome }}
@@ -168,7 +184,17 @@ jobs:
           python3 - <<'PY'
           import json, os
           from datetime import datetime, timezone
+          steps = {
+              "provenance": os.environ.get("PROVENANCE_OUTCOME"),
+              "live_marker": os.environ.get("LIVE_MARKER_OUTCOME"),
+              "setup": os.environ.get("SETUP_OUTCOME"),
+              "cache": os.environ.get("CACHE_OUTCOME"),
+              "buildall": os.environ.get("BUILDALL_OUTCOME"),
+          }
+          required = [steps["provenance"], steps["setup"], steps["cache"], steps["buildall"]]
+          state = "success" if all(x == "success" for x in required) else "failure"
           data = {
+              "state": state,
               "repository": os.environ.get("GITHUB_REPOSITORY"),
               "ref": os.environ.get("GITHUB_REF"),
               "source_sha": os.environ.get("GITHUB_SHA"),
@@ -176,17 +202,12 @@ jobs:
               "run_attempt": int(os.environ.get("GITHUB_RUN_ATTEMPT", "0")),
               "run_url": f"https://github.com/{os.environ.get('GITHUB_REPOSITORY')}/actions/runs/{os.environ.get('GITHUB_RUN_ID')}",
               "recorded_at_utc": datetime.now(timezone.utc).isoformat(),
-              "steps": {
-                  "provenance": os.environ.get("PROVENANCE_OUTCOME"),
-                  "setup": os.environ.get("SETUP_OUTCOME"),
-                  "cache": os.environ.get("CACHE_OUTCOME"),
-                  "buildall": os.environ.get("BUILDALL_OUTCOME"),
-              },
+              "steps": steps,
           }
-          path = "build-evidence/standalone-ci-latest.json"
-          with open(path, "w", encoding="utf-8") as f:
-              json.dump(data, f, indent=2, sort_keys=True)
-              f.write("\n")
+          for path in [os.environ["EVIDENCE_JSON"], "build-evidence/standalone-ci-latest.json"]:
+              with open(path, "w", encoding="utf-8") as f:
+                  json.dump(data, f, indent=2, sort_keys=True)
+                  f.write("\n")
           PY
           {
             echo '=== provenance ==='
@@ -203,7 +224,7 @@ jobs:
           } > build-evidence/standalone-ci-latest.tail.log
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add build-evidence/standalone-ci-latest.json build-evidence/standalone-ci-latest.tail.log
+          git add "${EVIDENCE_JSON}" build-evidence/standalone-ci-latest.json build-evidence/standalone-ci-latest.tail.log
           if git diff --cached --quiet; then
             exit 0
           fi
