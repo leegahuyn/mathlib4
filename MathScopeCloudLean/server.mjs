@@ -94,10 +94,17 @@ async function startLspSession(ws) {
   }
 
   const sessionId = randomUUID()
-  const sessionDir = path.join(ROOT, '.mathscope-cloud', 'lsp', sessionId)
+  const sessionKey = sessionId.replace(/[^A-Za-z0-9_]/g, '_')
+  // Keep transient LSP files inside the declared MathScope Lean library so
+  // lake setup-file can resolve a real module path for the file worker.
+  const sessionDir = path.join(ROOT, 'MathScope', 'CloudLsp', 'Session_' + sessionKey)
   const documentPath = path.join(sessionDir, 'Main.lean')
   await mkdir(sessionDir, { recursive: true })
-  await writeFile(documentPath, 'import Mathlib\n', 'utf8')
+  await writeFile(documentPath, '-- transient MathScope Cloud LSP document\n', 'utf8')
+  console.log('LSP_SESSION_START', JSON.stringify({
+    sessionId,
+    modulePath: path.relative(ROOT, documentPath)
+  }))
 
   const child = spawn('lake', ['serve'], {
     cwd: ROOT,
@@ -128,6 +135,15 @@ async function startLspSession(ws) {
   }
 
   const framer = new LspFramer(message => {
+    if (message?.method === 'textDocument/publishDiagnostics' || message?.id != null) {
+      console.log('LSP_SERVER_MESSAGE', JSON.stringify({
+        sessionId,
+        id: message?.id ?? null,
+        method: message?.method ?? null,
+        diagnostics: Array.isArray(message?.params?.diagnostics) ? message.params.diagnostics.length : null,
+        version: message?.params?.version ?? null
+      }))
+    }
     if (ws.readyState === ws.OPEN) ws.send(JSON.stringify(message))
   })
 
@@ -157,6 +173,15 @@ async function startLspSession(ws) {
     refreshIdle()
     try {
       const message = JSON.parse(data.toString('utf8'))
+      if (message?.method === 'initialize' || message?.method === 'textDocument/didOpen' ||
+          message?.method === 'textDocument/didChange' || message?.method === 'textDocument/waitForDiagnostics') {
+        console.log('LSP_CLIENT_MESSAGE', JSON.stringify({
+          sessionId,
+          id: message?.id ?? null,
+          method: message?.method ?? null,
+          version: message?.params?.version ?? message?.params?.textDocument?.version ?? null
+        }))
+      }
       child.stdin.write(frameLsp(message))
     } catch {
       ws.send(JSON.stringify({ mathscope: { type: 'error', text: 'invalid LSP JSON' } }))
