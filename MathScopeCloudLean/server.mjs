@@ -260,27 +260,7 @@ async function verifyC014(semanticReviewed) {
   const sourceHash = sha256(source)
   const fp = await fingerprint()
 
-  const direct = await run('lake', ['build', 'MathScope.Claims.C014'], ROOT, Math.max(TIMEOUT_MS, 300000))
-  if (direct.timedOut || direct.code !== 0) {
-    return {
-      id,
-      claimId: 'C-014',
-      createdAt: new Date().toISOString(),
-      state: {
-        truth: 'OPEN',
-        evidence: 'NONE',
-        run: direct.timedOut ? 'TIMEOUT' : 'ERROR',
-        freshness: 'CURRENT',
-        trust: 'UNCONDITIONAL'
-      },
-      sourceHash,
-      ...fp,
-      stdout: direct.stdout,
-      stderr: direct.stderr,
-      axiomAuditOutput: ''
-    }
-  }
-
+  const deployCommit = process.env.RENDER_GIT_COMMIT || ''
   const auditDir = path.join(ROOT, '.mathscope-cloud')
   await mkdir(auditDir, { recursive: true })
   const auditRel = path.join('.mathscope-cloud', 'audit-' + id + '.lean')
@@ -290,7 +270,7 @@ async function verifyC014(semanticReviewed) {
     'import MathScope.Claims.C014\n#print axioms MathScope.Claims.C014.c014_slice_radius\n',
     'utf8'
   )
-  const audit = await run('lake', ['env', 'lean', auditRel], ROOT, Math.max(TIMEOUT_MS, 180000))
+  const audit = await run('lake', ['env', 'lean', auditRel], ROOT, Math.max(TIMEOUT_MS, 120000))
   await rm(auditFull, { force: true })
 
   const output = (audit.stdout + '\n' + audit.stderr).trim()
@@ -309,8 +289,9 @@ async function verifyC014(semanticReviewed) {
     },
     sourceHash,
     ...fp,
-    stdout: direct.stdout,
-    stderr: direct.stderr + (audit.stderr ? '\n' + audit.stderr : ''),
+    deployCommit,
+    stdout: audit.stdout,
+    stderr: audit.stderr,
     axiomAuditOutput: output
   }
 }
