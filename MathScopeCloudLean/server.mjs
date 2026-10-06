@@ -3,6 +3,8 @@ import { spawn } from 'node:child_process'
 import { createHash, randomUUID } from 'node:crypto'
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises'
 import path from 'node:path'
+import { pathToFileURL } from 'node:url'
+import { WebSocketServer } from 'ws'
 
 const PORT = Number(process.env.PORT || 10000)
 const ROOT = path.resolve(process.env.MATHSCOPE_PROJECT_ROOT || './lean-project')
@@ -14,9 +16,12 @@ const ORIGINS = new Set(
 )
 const TIMEOUT_MS = Number(process.env.MATHSCOPE_VERIFY_TIMEOUT_MS || 120000)
 const MAX_QUEUE = Number(process.env.MATHSCOPE_MAX_QUEUE || 8)
+const MAX_LSP_SESSIONS = Number(process.env.MATHSCOPE_MAX_LSP_SESSIONS || 2)
+const LSP_IDLE_MS = Number(process.env.MATHSCOPE_LSP_IDLE_MS || 900000)
 let running = false
 let lastSelfTest = null
 const queue = []
+const lspSessions = new Map()
 
 function sha256(value) {
   return createHash('sha256').update(value).digest('hex')
@@ -38,6 +43,138 @@ function cors(origin) {
   return origin && ORIGINS.has(origin)
     ? { 'access-control-allow-origin': origin, 'vary': 'Origin' }
     : {}
+}
+
+function terminateChild(child) {
+  if (!child || child.killed) return
+  try {
+    if (process.platform === 'win32') child.kill()
+    else process.kill(-child.pid, 'SIGTERM')
+  } catch {
+    try { child.kill('SIGTERM') } catch {}
+  }
+}
+
+function frameLsp(message) {
+  const body = JSON.stringify(message)
+  return 'Content-Length: ' + Buffer.byteLength(body, 'utf8') + '\r\n\r\n' + body
+}
+
+class LspFramer {
+  constructor(onMessage) {
+    this.buffer = Buffer.alloc(0)
+    this.onMessage = onMessage
+  }
+
+  push(chunk) {
+    this.buffer = Buffer.concat([this.buffer, chunk])
+    while (true) {
+      const headerEnd = this.buffer.indexOf('\r\n\r\n')
+      if (headerEnd < 0) return
+      const header = this.buffer.subarray(0, headerEnd).toString('ascii')
+      const match = /Content-Length:\s*(\d+)/i.exec(header)
+      if (!match) {
+        this.buffer = this.buffer.subarray(headerEnd + 4)
+        continue
+      }
+      const length = Number(match[1])
+      const bodyStart = headerEnd + 4
+      if (this.buffer.length < bodyStart + length) return
+      const body = this.buffer.subarray(bodyStart, bodyStart + length).toString('utf8')
+      this.buffer = this.buffer.subarray(bodyStart + length)
+      try { this.onMessage(JSON.parse(body)) } catch {}
+    }
+  }
+}
+
+async function startLspSession(ws) {
+  if (lspSessions.size >= MAX_LSP_SESSIONS) {
+    ws.close(1013, 'Lean LSP capacity reached')
+    return
+  }
+
+  const sessionId = randomUUID()
+  const sessionDir = path.join(ROOT, '.mathscope-cloud', 'lsp', sessionId)
+  const documentPath = path.join(sessionDir, 'Main.lean')
+  await mkdir(sessionDir, { recursive: true })
+  await writeFile(documentPath, 'import Mathlib\n', 'utf8')
+
+  const child = spawn('lake', ['serve'], {
+    cwd: ROOT,
+    env: leanEnv(),
+    shell: false,
+    windowsHide: true,
+    stdio: ['pipe', 'pipe', 'pipe'],
+    detached: process.platform !== 'win32',
+  })
+
+  const session = { child, sessionDir, timer: null }
+  lspSessions.set(sessionId, session)
+
+  const cleanup = () => {
+    if (!lspSessions.has(sessionId)) return
+    lspSessions.delete(sessionId)
+    if (session.timer) clearTimeout(session.timer)
+    terminateChild(child)
+    rm(sessionDir, { recursive: true, force: true }).catch(() => {})
+  }
+
+  const refreshIdle = () => {
+    if (session.timer) clearTimeout(session.timer)
+    session.timer = setTimeout(() => {
+      try { ws.close(1000, 'Lean LSP idle timeout') } catch {}
+      cleanup()
+    }, LSP_IDLE_MS)
+  }
+
+  const framer = new LspFramer(message => {
+    if (ws.readyState === ws.OPEN) ws.send(JSON.stringify(message))
+  })
+
+  child.stdout.on('data', chunk => framer.push(chunk))
+  child.stderr.on('data', chunk => {
+    if (ws.readyState === ws.OPEN) {
+      ws.send(JSON.stringify({
+        mathscope: { type: 'stderr', text: chunk.toString('utf8') }
+      }))
+    }
+  })
+  child.on('error', error => {
+    if (ws.readyState === ws.OPEN) {
+      ws.send(JSON.stringify({
+        mathscope: { type: 'error', text: String(error?.message || error) }
+      }))
+      ws.close(1011, 'Lean LSP failed')
+    }
+    cleanup()
+  })
+  child.on('close', () => {
+    if (ws.readyState === ws.OPEN) ws.close(1000, 'Lean LSP stopped')
+    cleanup()
+  })
+
+  ws.on('message', data => {
+    refreshIdle()
+    try {
+      const message = JSON.parse(data.toString('utf8'))
+      child.stdin.write(frameLsp(message))
+    } catch {
+      ws.send(JSON.stringify({ mathscope: { type: 'error', text: 'invalid LSP JSON' } }))
+    }
+  })
+  ws.on('close', cleanup)
+  ws.on('error', cleanup)
+
+  refreshIdle()
+  ws.send(JSON.stringify({
+    mathscope: {
+      type: 'session',
+      sessionId,
+      documentUri: pathToFileURL(documentPath).href,
+      rootUri: pathToFileURL(ROOT + path.sep).href,
+      idleTimeoutMs: LSP_IDLE_MS,
+    }
+  }))
 }
 
 function reply(res, status, body, origin) {
@@ -191,6 +328,7 @@ async function drain() {
   const job = queue.shift()
   try {
     const result = await verifyC014(job.semanticReviewed)
+    if (result?.state?.run === 'SUCCESS' && result?.state?.evidence === 'FORMAL') lastSelfTest = result
     reply(job.res, 200, result, job.origin)
   } catch (error) {
     reply(job.res, 500, { error: String(error?.message || error) }, job.origin)
@@ -222,6 +360,9 @@ const server = http.createServer(async (req, res) => {
       service: 'mathscope-cloud-lean',
       mode: 'restricted-c014',
       verifierReady: lastSelfTest?.state?.run === 'SUCCESS' && lastSelfTest?.state?.evidence === 'FORMAL',
+      lspReady: true,
+      lspSessions: lspSessions.size,
+      lspCapacity: MAX_LSP_SESSIONS,
       running,
       queued: queue.length
     }, origin)
@@ -265,9 +406,31 @@ const server = http.createServer(async (req, res) => {
   reply(res, 404, { error: 'not found' }, origin)
 })
 
+const wss = new WebSocketServer({ noServer: true, maxPayload: 1_000_000 })
+server.on('upgrade', (req, socket, head) => {
+  const origin = req.headers.origin || ''
+  if (!ORIGINS.has(origin)) {
+    socket.destroy()
+    return
+  }
+  const url = new URL(req.url || '/', 'http://localhost')
+  if (url.pathname !== '/v1/lsp') {
+    socket.destroy()
+    return
+  }
+  wss.handleUpgrade(req, socket, head, ws => {
+    startLspSession(ws).catch(error => {
+      try {
+        ws.send(JSON.stringify({ mathscope: { type: 'error', text: String(error?.message || error) } }))
+        ws.close(1011, 'Lean LSP session failed')
+      } catch {}
+    })
+  })
+})
+
 server.listen(PORT, '0.0.0.0', async () => {
   console.log('MathScope Cloud Lean listening on', PORT)
-  if (process.env.MATHSCOPE_SELF_TEST === '1') {
+  if (process.env.MATHSCOPE_SELF_TEST !== '0') {
     try {
       const result = await verifyC014(false)
       lastSelfTest = result
