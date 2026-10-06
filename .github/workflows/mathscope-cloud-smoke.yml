@@ -1,0 +1,38 @@
+name: MathScope Cloud Lean smoke
+
+on:
+  push:
+    branches: [mathscope-cloud-lean]
+  workflow_dispatch:
+
+jobs:
+  cloud-c014:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify live health
+        run: |
+          set -euo pipefail
+          curl -fsS https://mathscope-cloud-lean.onrender.com/health | tee /tmp/health.json
+          jq -e '.ok == true and .mode == "restricted-c014"' /tmp/health.json
+
+      - name: Verify C-014 through live Cloud API
+        run: |
+          set -euo pipefail
+          curl -fsS             -X POST             -H 'Origin: https://project29770.websitepublisher.ai'             -H 'Content-Type: application/json'             --data '{"semanticReviewed":false}'             https://mathscope-cloud-lean.onrender.com/v1/verify/c014             | tee /tmp/c014.json
+
+          jq -e '
+            .claimId == "C-014" and
+            .state.run == "SUCCESS" and
+            .state.evidence == "FORMAL" and
+            .state.freshness == "CURRENT" and
+            (.sourceHash | length == 64) and
+            (.environmentHash | length == 64) and
+            (.dependencyLockHash | length == 64)
+          ' /tmp/c014.json
+
+      - name: Show axiom audit
+        if: always()
+        run: |
+          if [ -f /tmp/c014.json ]; then
+            jq -r '.axiomAuditOutput // ""' /tmp/c014.json
+          fi
