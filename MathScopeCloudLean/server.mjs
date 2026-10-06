@@ -24,9 +24,14 @@ function sha256(value) {
 
 function leanEnv() {
   const home = process.env.HOME || ''
-  const elan = path.join(home, '.elan', 'bin')
   const current = process.env.PATH || ''
-  return { ...process.env, PATH: [elan, current].filter(Boolean).join(path.delimiter) }
+  const candidates = [
+    process.env.ELAN_HOME ? path.join(process.env.ELAN_HOME, 'bin') : '',
+    '/opt/render/.elan/bin',
+    home ? path.join(home, '.elan', 'bin') : '',
+    current,
+  ].filter(Boolean)
+  return { ...process.env, PATH: candidates.join(path.delimiter) }
 }
 
 function cors(origin) {
@@ -98,6 +103,12 @@ async function fingerprint() {
     run('lean', ['--version'], ROOT, 10000),
     run('lake', ['--version'], ROOT, 10000),
   ])
+  if (lean.timedOut || lean.code !== 0) {
+    throw new Error('Lean runtime unavailable: ' + (lean.stderr || lean.stdout || 'unknown error'))
+  }
+  if (lake.timedOut || lake.code !== 0) {
+    throw new Error('Lake runtime unavailable: ' + (lake.stderr || lake.stdout || 'unknown error'))
+  }
   return {
     toolchain: toolchain.trim(),
     environmentHash: sha256([lean.stdout, lean.stderr, lake.stdout, lake.stderr, toolchain].join('\n')),
@@ -210,6 +221,7 @@ const server = http.createServer(async (req, res) => {
       ok: true,
       service: 'mathscope-cloud-lean',
       mode: 'restricted-c014',
+      verifierReady: lastSelfTest?.state?.run === 'SUCCESS' && lastSelfTest?.state?.evidence === 'FORMAL',
       running,
       queued: queue.length
     }, origin)
