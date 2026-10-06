@@ -248,6 +248,24 @@ const server = http.createServer(async (req, res) => {
   reply(res, 404, { error: 'not found' }, origin)
 })
 
-server.listen(PORT, '0.0.0.0', () => {
+server.listen(PORT, '0.0.0.0', async () => {
   console.log('MathScope Cloud Lean listening on', PORT)
+  if (process.env.MATHSCOPE_SELF_TEST === '1') {
+    try {
+      const result = await verifyC014(false)
+      console.log('C014_SELF_TEST', JSON.stringify({
+        run: result.state.run,
+        truth: result.state.truth,
+        evidence: result.state.evidence,
+        freshness: result.state.freshness,
+        trust: result.state.trust,
+        sourceHash: result.sourceHash,
+        environmentHash: result.environmentHash,
+        dependencyLockHash: result.dependencyLockHash,
+        axiomAuditOutput: result.axiomAuditOutput
+      }))
+    } catch (error) {
+      console.error('C014_SELF_TEST_ERROR', String(error?.stack || error))
+    }
+  }
 })
