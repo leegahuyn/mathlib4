@@ -188,6 +188,16 @@ function reply(res, status, body, origin) {
   res.end(payload)
 }
 
+function replyHtml(res, status, html, origin) {
+  res.writeHead(status, {
+    'content-type': 'text/html; charset=utf-8',
+    'cache-control': 'no-store',
+    'content-length': Buffer.byteLength(html),
+    ...cors(origin),
+  })
+  res.end(html)
+}
+
 function run(command, args, cwd, timeoutMs = TIMEOUT_MS) {
   return new Promise(resolve => {
     let stdout = ''
@@ -335,6 +345,32 @@ const server = http.createServer(async (req, res) => {
   if (origin && !ORIGINS.has(origin)) return reply(res, 403, { error: 'origin denied' })
 
   const url = new URL(req.url || '/', 'http://localhost')
+  if (req.method === 'GET' && url.pathname === '/') {
+    const ready = lastSelfTest?.state?.run === 'SUCCESS' && lastSelfTest?.state?.evidence === 'FORMAL'
+    const html = `<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MathScope Cloud Lean</title>
+<style>
+body{margin:0;background:#071722;color:#d9edf0;font-family:system-ui,-apple-system,Segoe UI,sans-serif}
+main{max-width:760px;margin:0 auto;padding:48px 22px}.card{border:1px solid #244657;background:#0b2230;border-radius:16px;padding:22px}
+h1{margin:0 0 8px;font-size:28px}p{color:#9ebcc5;line-height:1.6}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-top:18px}
+.item{border:1px solid #234354;border-radius:12px;padding:14px;background:#091c28}.k{font-size:12px;color:#7fa2ad}.v{margin-top:4px;font-weight:700}.ok{color:#8de4b0}.warn{color:#f2c96d}
+a{color:#8ed7ff}code{font-family:ui-monospace,Consolas,monospace}
+</style></head><body><main><div class="card">
+<h1>MathScope Cloud Lean</h1>
+<p>Cloud-first Lean 4 + mathlib verification backend. Browser LSP and final proof issuance are intentionally separated.</p>
+<div class="grid">
+<div class="item"><div class="k">Service</div><div class="v ok">ONLINE</div></div>
+<div class="item"><div class="k">LSP</div><div class="v ok">READY</div></div>
+<div class="item"><div class="k">C-014 verifier</div><div class="v ${ready?'ok':'warn'}">${ready?'VERIFIED':'CHECKING'}</div></div>
+<div class="item"><div class="k">Mode</div><div class="v">restricted-c014</div></div>
+</div>
+<p><a href="/health">/health</a> · <a href="/v1/meta">/v1/meta</a> · <a href="/v1/self-test">/v1/self-test</a><br>
+Web app: <a href="https://project29770.websitepublisher.ai/index.html">MathScope</a></p>
+</div></main></body></html>`
+    return replyHtml(res, 200, html, origin)
+  }
+
   if (req.method === 'GET' && url.pathname === '/health') {
     return reply(res, 200, {
       ok: true,
