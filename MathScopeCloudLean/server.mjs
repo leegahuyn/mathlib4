@@ -15,6 +15,7 @@ const ORIGINS = new Set(
 const TIMEOUT_MS = Number(process.env.MATHSCOPE_VERIFY_TIMEOUT_MS || 120000)
 const MAX_QUEUE = Number(process.env.MATHSCOPE_MAX_QUEUE || 8)
 let running = false
+let lastSelfTest = null
 const queue = []
 
 function sha256(value) {
@@ -214,6 +215,10 @@ const server = http.createServer(async (req, res) => {
     }, origin)
   }
 
+  if (req.method === 'GET' && url.pathname === '/v1/self-test') {
+    return reply(res, lastSelfTest ? 200 : 503, lastSelfTest || { status: 'PENDING' }, origin)
+  }
+
   if (req.method === 'GET' && url.pathname === '/v1/meta') {
     try {
       return reply(res, 200, {
@@ -253,6 +258,7 @@ server.listen(PORT, '0.0.0.0', async () => {
   if (process.env.MATHSCOPE_SELF_TEST === '1') {
     try {
       const result = await verifyC014(false)
+      lastSelfTest = result
       console.log('C014_SELF_TEST', JSON.stringify({
         run: result.state.run,
         truth: result.state.truth,
@@ -262,9 +268,12 @@ server.listen(PORT, '0.0.0.0', async () => {
         sourceHash: result.sourceHash,
         environmentHash: result.environmentHash,
         dependencyLockHash: result.dependencyLockHash,
-        axiomAuditOutput: result.axiomAuditOutput
+        axiomAuditOutput: result.axiomAuditOutput,
+        stdout: result.stdout,
+        stderr: result.stderr
       }))
     } catch (error) {
+      lastSelfTest = { status: 'ERROR', error: String(error?.stack || error) }
       console.error('C014_SELF_TEST_ERROR', String(error?.stack || error))
     }
   }
