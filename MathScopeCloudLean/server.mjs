@@ -94,16 +94,15 @@ async function startLspSession(ws) {
   }
 
   const sessionId = randomUUID()
-  const sessionKey = sessionId.replace(/[^A-Za-z0-9_]/g, '_')
-  // Keep transient LSP files inside the declared MathScope Lean library so
-  // lake setup-file can resolve a real module path for the file worker.
-  const sessionDir = path.join(ROOT, 'MathScope', 'CloudLsp', 'Session_' + sessionKey)
-  const documentPath = path.join(sessionDir, 'Main.lean')
-  await mkdir(sessionDir, { recursive: true })
-  await writeFile(documentPath, '-- transient MathScope Cloud LSP document\n', 'utf8')
+  // Reuse a real, already-built Lean module path for LSP configuration. The browser's
+  // didOpen payload supplies an in-memory smoke document, so the audited C014 file on
+  // disk is never modified by the LSP session.
+  const sessionDir = null
+  const documentPath = path.join(ROOT, 'MathScope', 'Claims', 'C014.lean')
   console.log('LSP_SESSION_START', JSON.stringify({
     sessionId,
-    modulePath: path.relative(ROOT, documentPath)
+    modulePath: path.relative(ROOT, documentPath),
+    backingMode: 'existing-built-module-in-memory-buffer'
   }))
 
   const child = spawn('lake', ['serve'], {
@@ -123,7 +122,7 @@ async function startLspSession(ws) {
     lspSessions.delete(sessionId)
     if (session.timer) clearTimeout(session.timer)
     terminateChild(child)
-    rm(sessionDir, { recursive: true, force: true }).catch(() => {})
+    if (sessionDir) rm(sessionDir, { recursive: true, force: true }).catch(() => {})
   }
 
   const refreshIdle = () => {
