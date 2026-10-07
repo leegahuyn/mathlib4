@@ -87,6 +87,117 @@ class LspFramer {
   }
 }
 
+async function runLspSelfTest(timeoutMs = 180000) {
+  return await new Promise(resolve => {
+    const documentPath = path.join(ROOT, 'MathScope', 'Claims', 'C014.lean')
+    const documentUri = pathToFileURL(documentPath).href
+    const rootUri = pathToFileURL(ROOT + path.sep).href
+    const child = spawn('lake', ['serve'], {
+      cwd: ROOT,
+      env: leanEnv(),
+      shell: false,
+      windowsHide: true,
+      stdio: ['pipe', 'pipe', 'pipe'],
+      detached: process.platform !== 'win32',
+    })
+    const startedAt = Date.now()
+    const initId = 41001
+    let settled = false
+    let stderr = ''
+    let messageCount = 0
+    let diagnosticsSeen = 0
+
+    const send = message => {
+      if (!settled && child.stdin.writable) child.stdin.write(frameLsp(message))
+    }
+    const finish = result => {
+      if (settled) return
+      settled = true
+      clearTimeout(timer)
+      terminateChild(child)
+      resolve({
+        ...result,
+        elapsedMs: Date.now() - startedAt,
+        messageCount,
+        diagnosticsSeen,
+        stderr: stderr.slice(-12000),
+      })
+    }
+    const responseForServerRequest = message => {
+      if (message.method === 'workspace/configuration') {
+        return Array.isArray(message?.params?.items) ? message.params.items.map(() => null) : []
+      }
+      if (message.method === 'workspace/workspaceFolders') return []
+      if (message.method === 'workspace/applyEdit') return { applied: false }
+      return null
+    }
+
+    const framer = new LspFramer(message => {
+      messageCount++
+      if (message?.method && message?.id != null) {
+        send({ jsonrpc: '2.0', id: message.id, result: responseForServerRequest(message) })
+        return
+      }
+      if (message?.id === initId && message?.result) {
+        send({ jsonrpc: '2.0', method: 'initialized', params: {} })
+        send({
+          jsonrpc: '2.0',
+          method: 'textDocument/didOpen',
+          params: {
+            textDocument: {
+              uri: documentUri,
+              languageId: 'lean4',
+              version: 1,
+              text: 'def mathscopeAcceptanceBroken : Nat :=\n'
+            },
+            dependencyBuildMode: 'never'
+          }
+        })
+        return
+      }
+      if (message?.method === 'textDocument/publishDiagnostics') {
+        const ds = Array.isArray(message?.params?.diagnostics) ? message.params.diagnostics : []
+        diagnosticsSeen += ds.length
+        if (ds.length > 0) {
+          finish({
+            ok: true,
+            diagnosticCount: ds.length,
+            diagnostics: ds.slice(0, 8).map(d => ({
+              message: String(d?.message || ''),
+              severity: d?.severity ?? null,
+              range: d?.range ?? null
+            }))
+          })
+        }
+      }
+    })
+
+    child.stdout.on('data', chunk => framer.push(chunk))
+    child.stderr.on('data', chunk => { if (stderr.length < 50000) stderr += chunk.toString('utf8') })
+    child.on('error', error => finish({ ok: false, error: 'spawn error: ' + String(error?.message || error) }))
+    child.on('close', code => {
+      if (!settled) finish({ ok: false, error: 'lake serve exited before diagnostic', exitCode: code })
+    })
+
+    const timer = setTimeout(() => finish({ ok: false, error: 'LSP self-test timeout' }), timeoutMs)
+    send({
+      jsonrpc: '2.0',
+      id: initId,
+      method: 'initialize',
+      params: {
+        processId: null,
+        clientInfo: { name: 'MathScope Cloud Self-Test', version: '0.2.1.1' },
+        rootUri,
+        capabilities: {
+          textDocument: { publishDiagnostics: { relatedInformation: true } },
+          workspace: { configuration: true, workspaceFolders: true }
+        },
+        workspaceFolders: [{ uri: rootUri, name: 'MathScope' }]
+      }
+    })
+  })
+}
+
 async function startLspSession(ws) {
   if (lspSessions.size >= MAX_LSP_SESSIONS) {
     ws.close(1013, 'Lean LSP capacity reached')
@@ -411,6 +522,15 @@ Web app: <a href="https://project29770.websitepublisher.ai/index.html">MathScope
 
   if (req.method === 'GET' && url.pathname === '/v1/self-test') {
     return reply(res, lastSelfTest ? 200 : 503, lastSelfTest || { status: 'PENDING' }, origin)
+  }
+
+  if (req.method === 'GET' && url.pathname === '/v1/lsp-self-test') {
+    try {
+      const result = await runLspSelfTest()
+      return reply(res, result.ok ? 200 : 503, result, origin)
+    } catch (error) {
+      return reply(res, 500, { ok: false, error: String(error?.stack || error) }, origin)
+    }
   }
 
   if (req.method === 'GET' && url.pathname === '/v1/meta') {
