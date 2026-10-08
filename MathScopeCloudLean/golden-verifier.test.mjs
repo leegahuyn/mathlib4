@@ -5,7 +5,7 @@ import { readFile } from 'node:fs/promises'
 import { goldenMeta, verifyGolden, validGoldenAxiomAudit } from './golden-verifier.mjs'
 
 const claimId = 'GOLDEN-NONLINEAR-ALGEBRA-001'
-const sourceHash = 'f2b1831e2828556ce42161ec24edfb4e11cb56050689bdab78d3ff456fb68508'
+const sourceHash = '6e5dca8c5675e0c262d80ddd351b3cb6ea0ff5111b00873435893e3ed513daeb'
 const input = { claimId, sourceHash, semanticReviewed: true }
 const version = 'Lean (version 4.34.0-rc2, test-platform, commit 6a10ac8c22beadecabdbb0919c2b50214762f91d, Release)'
 const names = ['exact_perturbation', 'constant_one_stationary', 'constant_one_linear_coefficient']
