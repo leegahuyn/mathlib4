@@ -5,6 +5,7 @@ import { mkdir, readFile, rm, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { WebSocketServer } from 'ws'
+import { goldenMeta, verifyGolden } from './golden-verifier.mjs'
 
 const PORT = Number(process.env.PORT || 10000)
 const ROOT = path.resolve(process.env.MATHSCOPE_PROJECT_ROOT || './lean-project')
@@ -453,11 +454,13 @@ async function drain() {
   running = true
   const job = queue.shift()
   try {
-    const result = await verifyC014(job.semanticReviewed)
-    if (result?.state?.run === 'SUCCESS' && result?.state?.evidence === 'FORMAL') lastSelfTest = result
+    const result = job.kind === 'golden'
+      ? await verifyGolden(job.input, { env: leanEnv() })
+      : await verifyC014(job.semanticReviewed)
+    if (job.kind !== 'golden' && result?.state?.run === 'SUCCESS' && result?.state?.evidence === 'FORMAL') lastSelfTest = result
     reply(job.res, 200, result, job.origin)
   } catch (error) {
-    reply(job.res, 500, { error: String(error?.message || error) }, job.origin)
+    reply(job.res, error?.statusCode || 500, { error: String(error?.message || error) }, job.origin)
   } finally {
     running = false
     drain()
@@ -543,6 +546,29 @@ Web app: <a href="https://project29770.websitepublisher.ai/index.html">MathScope
     } catch (error) {
       return reply(res, 500, { error: String(error?.message || error) }, origin)
     }
+  }
+
+  if (req.method === 'GET' && url.pathname === '/v1/golden/meta') {
+    try {
+      return reply(res, 200, await goldenMeta({ env: leanEnv() }), origin)
+    } catch (error) {
+      return reply(res, 500, { error: String(error?.message || error) }, origin)
+    }
+  }
+
+  if (req.method === 'POST' && url.pathname === '/v1/verify/golden') {
+    let body = ''
+    for await (const chunk of req) {
+      body += chunk.toString('utf8')
+      if (body.length > 4096) return reply(res, 413, { error: 'request too large' }, origin)
+    }
+    let parsed
+    try { parsed = JSON.parse(body) } catch {
+      return reply(res, 400, { error: 'invalid JSON' }, origin)
+    }
+    const accepted = enqueue({ kind: 'golden', res, origin, input: parsed })
+    if (!accepted) return reply(res, 429, { error: 'verification queue full' }, origin)
+    return
   }
 
   if (req.method === 'POST' && url.pathname === '/v1/verify/c014') {
