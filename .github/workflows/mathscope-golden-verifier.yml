@@ -1,0 +1,31 @@
+name: MathScope Golden verifier
+on:
+  pull_request:
+    branches: [mathscope-cloud-lean]
+    paths: ['MathScopeCloudLean/**', '.github/workflows/mathscope-golden-verifier.yml']
+  push:
+    branches: [mathscope-cloud-lean]
+    paths: ['MathScopeCloudLean/**', '.github/workflows/mathscope-golden-verifier.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  restricted-verifier:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: MathScopeCloudLean
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Install pinned Lean core runtime
+        run: |
+          curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          "$HOME/.elan/bin/elan" toolchain install leanprover/lean4:v4.34.0-rc2
+      - run: npm install --omit=dev --no-package-lock
+      - run: npm run check
+      - run: npm run test:golden
