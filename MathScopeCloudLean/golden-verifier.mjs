@@ -6,6 +6,9 @@ import { fileURLToPath } from 'node:url'
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), 'golden')
 const CLAIM = 'GOLDEN-NONLINEAR-ALGEBRA-001'
+// Pin the reviewed source and every manifest field independently of one another.
+const SOURCE_HASH = 'd27a3c8baa37889217d546a9020ea54552e850888590739062300821406ce593'
+const MANIFEST_HASH = '1cdd08f98fcd2991112a238be44dcf0384e2f7be947b56a35b865451b79bad6b'
 const MODE = 'restricted-golden-algebra'
 const TOOLCHAIN = 'leanprover/lean4:v4.34.0-rc2'
 const LEAN_COMMIT = '6a10ac8c22beadecabdbb0919c2b50214762f91d'
@@ -41,10 +44,11 @@ export function validGoldenAxiomAudit(stdout) {
 
 async function target() {
   const [sourceBytes, manifestBytes, toolchainBytes] = await Promise.all(['GoldenAlgebra.lean', 'golden-manifest.json', 'lean-toolchain'].map(n => readFile(path.join(ROOT, n))))
-  const manifest = JSON.parse(manifestBytes.toString('utf8'))
   const sourceHash = sha(sourceBytes)
-  if (manifest.claimId !== CLAIM || manifest.sourceHash !== sourceHash || toolchainBytes.toString('utf8').trim() !== TOOLCHAIN) throw Error('Golden source/toolchain integrity failure')
-  return { source: sourceBytes.toString('utf8'), sourceHash, manifest, dependencyLockHash: sha(manifestBytes) }
+  const dependencyLockHash = sha(manifestBytes)
+  if (sourceHash !== SOURCE_HASH || dependencyLockHash !== MANIFEST_HASH || toolchainBytes.toString('utf8').trim() !== TOOLCHAIN) throw Error('Golden source/manifest/toolchain integrity failure')
+  const manifest = JSON.parse(manifestBytes.toString('utf8'))
+  return { source: sourceBytes.toString('utf8'), sourceHash, manifest, dependencyLockHash }
 }
 
 export async function goldenMeta(options = {}) {
